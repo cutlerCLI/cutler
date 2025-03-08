@@ -1,12 +1,13 @@
-<div align="center">
-
-<img src="assets/logo.png" width="200px">
+<img src="assets/logo.png" width="200px" align="right">
 
 # <img src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/rust/rust.png" width="40px"> cutler
 
-### Declarative macOS defaults management at your fingertips, with speed.
+Declarative macOS defaults management at your fingertips, with speed.
 
-</div>
+> [!WARNING]
+> This project is still under active development. Some of the
+> written functionality here might be missing. Please wait for the initial
+> release.
 
 ## Table of Contents
 
