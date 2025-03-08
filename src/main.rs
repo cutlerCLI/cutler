@@ -39,6 +39,12 @@ enum Commands {
 }
 
 fn main() {
+    // Check if the tool is running on macOS.
+    if cfg!(not(target_os = "macos")) {
+        eprintln!("{}[ERROR] This tool only works on macOS.{}", RED, RESET);
+        std::process::exit(1);
+    }
+
     let cli = Cli::parse();
 
     let result = match &cli.command {
