@@ -1,0 +1,90 @@
+# cutler
+
+Declarative macOS defaults management at your fingertips, with speed.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Overview
+
+cutler is a command-line tool that allows you to manage macOS defaults with a
+simple TOML file. It is made using Rust to facilitate tiny binary size for its
+functionality, and obviously, speed.
+
+Many of us tend to use the `defaults` command-line tool to
+declare specific settings on our Macs. However, this boils down to unnecessary
+scripting and might also increase the chances of accidentally harming your
+default configurations.
+
+## Installation
+
+- Using `cargo`:
+
+```bash
+cargo install cutler
+```
+
+- Using `mise`:
+
+```bash
+mise use -g cargo
+```
+
+- Using Homebrew:
+
+```bash
+# still a work-in-progress
+```
+
+## Usage
+
+The command-line interface respects `$XDG_CONFIG_HOME` and depending on your
+macOS settings, `cutler` will read the `config.toml` for your written defaults
+from this path:
+
+- `$XDG_CONFIG_HOME/cutler/config.toml` or,
+- `~/.config/cutler/config.toml`
+
+The overall structure for cutler's configuration should be as follows:
+
+```toml
+[dock]
+tilesize = 46
+
+[menuextra.clock]
+FlashDateSeparators = true
+```
+
+Here, the following TOML code translates to the following command being executed:
+
+```bash
+defaults write com.apple.dock "tilesize" -int "46"
+defaults delete com.apple.menuextra.clock "FlashDateSeparators"
+```
+
+The interface is also type-safe and uses generic TOML parsing to ensure that the
+types are designated properly. So, to apply this configuration, simply run:
+
+```bash
+cutler apply
+```
+
+Please note that `cutler apply` also generates a default configuration file for
+you to get started with if no file is found in the designated directories.
+SImply accept the prompt and you're good to go.
+
+## Contributing
+
+This is one of my hobby projects that I've made to solve one of my most common
+problems - repeatedly applying the same settings on my MacBook. So, pull
+requests are always welcome! Feel free to submit your changes or improvements by
+[creating a pull request]() or by [submitting an issue]().
+
+## License
+
+This project has been licensed under the [MIT License](LICENSE).
