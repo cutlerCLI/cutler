@@ -2,6 +2,8 @@
 
 # <img src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/rust/rust.png" width="40px"> cutler
 
+[![Release Builds](https://github.com/hitblast/trimsec/actions/workflows/release.yml/badge.svg)](https://github.com/hitblast/trimsec/actions/workflows/release.yml)
+
 Declarative macOS defaults management at your fingertips, with speed.
 
 > [!WARNING]
@@ -95,7 +97,7 @@ If you'd like to remove the file entirely, you can run the following command:
 (generally not recommended since currently applied settings could become untrackable)
 
 ```bash
-cutler remove
+cutler delete
 ```
 
 ## Contributing
