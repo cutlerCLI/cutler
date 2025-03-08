@@ -1,4 +1,6 @@
-# cutler
+<img src="assets/logo.png" width="200px" align="right">
+
+# <img src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/rust/rust.png" width="40px"> cutler
 
 Declarative macOS defaults management at your fingertips, with speed.
 
@@ -64,7 +66,7 @@ Here, the following TOML code translates to the following command being executed
 
 ```bash
 defaults write com.apple.dock "tilesize" -int "46"
-defaults delete com.apple.menuextra.clock "FlashDateSeparators"
+defaults write com.apple.menuextra.clock "FlashDateSeparators"
 ```
 
 The interface is also type-safe and uses generic TOML parsing to ensure that the
@@ -77,6 +79,19 @@ cutler apply
 Please note that `cutler apply` also generates a default configuration file for
 you to get started with if no file is found in the designated directories.
 SImply accept the prompt and you're good to go.
+
+Now, to unapply the configuration, simply run:
+
+```bash
+cutler unapply
+```
+
+If you'd like to remove the file entirely, you can run the following command:
+(generally not recommended since currently applied settings could become untrackable)
+
+```bash
+cutler remove
+```
 
 ## Contributing
 
