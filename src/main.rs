@@ -27,6 +27,14 @@ enum Commands {
 }
 
 fn main() {
+    if cfg!(not(target_os = "macos")) {
+        eprintln!(
+            "{}[ERROR]{} This tool is designed for macOS. Exiting.",
+            RED, RESET
+        );
+        std::process::exit(1);
+    }
+
     let cli = Cli::parse();
 
     let result = match &cli.command {
