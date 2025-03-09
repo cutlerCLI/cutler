@@ -97,6 +97,13 @@ ApplePressAndHoldEnabled = true
 linear = true
 ```
 
+`cutler` will translate the following TOML to:
+
+```bash
+defaults write NSGlobalDomain "ApplePressAndHoldEnabled" -bool true
+defaults write NSGlobalDomain com.apple.mouse.linear -bool true
+```
+
 Note that if you run `cutler apply` for the first time without a configuration
 file, it will generate a sample config for you. You can also take a look at
 [examples/cutler.toml](https://github.com/hitblast/cutler/blob/main/examples/cutler.toml)
