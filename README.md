@@ -139,4 +139,4 @@ my MacBook. Pull requests are always welcome! Feel free to contribute by
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](https://github.com/hitblast/cutler/blob/main/LICENSE).
