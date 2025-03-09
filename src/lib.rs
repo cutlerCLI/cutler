@@ -33,9 +33,13 @@ pub fn get_config_path() -> PathBuf {
 /// Returns the path for the snapshot file.
 /// The snapshot stores the last-applied configuration.
 pub fn get_snapshot_path() -> PathBuf {
-    let mut snapshot_path = get_config_path();
-    snapshot_path.set_file_name(".cutler_snapshot");
-    snapshot_path
+    if let Some(home) = env::var_os("HOME") {
+        let mut snapshot_path = PathBuf::from(home);
+        snapshot_path.push(".cutler_snapshot");
+        snapshot_path
+    } else {
+        PathBuf::from(".cutler_snapshot")
+    }
 }
 
 /// Helper: Read and parse the configuration file from a given path.
