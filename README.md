@@ -50,7 +50,7 @@ cargo install cutler
 - Using `mise`:
 
 ```bash
-mise use -g cargo
+mise use -g cargo:cutler
 ```
 
 > [!TIP]
