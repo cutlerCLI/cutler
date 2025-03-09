@@ -43,7 +43,7 @@ fn main() {
                     GREEN, RESET
                 );
             } else {
-                println!("👍 Done!");
+                println!("🍻 Done!");
             }
             if let Err(e) = restart_system_services(cli.verbose) {
                 eprintln!("{}[ERROR] Failed to restart services: {}{}", RED, e, RESET);

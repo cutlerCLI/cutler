@@ -1,0 +1,19 @@
+# This is just an example for you to get started with.
+# Learn more: https://github.com/hitblast/cutler
+
+[dock]
+tilesize = 50
+autohide = true
+
+[finder]
+AppleShowAllFiles = true
+CreateDesktop = false
+
+[NSGlobalDomain]
+ApplePressAndHoldEnabled = true
+
+# Also valid: If you want to store a prefixed key under NSGlobalDomain,
+# you can provide a subdomain. In the example below, the key will become
+# "com.apple.mouse.linear".
+[NSGlobalDomain.com.apple.mouse]
+linear = true

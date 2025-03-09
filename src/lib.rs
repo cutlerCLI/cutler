@@ -47,8 +47,16 @@ autohide = true
 [finder]
 AppleShowAllFiles = true
 CreateDesktop = false
-    "#;
 
+[NSGlobalDomain]
+ApplePressAndHoldEnabled = true
+
+# Also valid: If you want to store a prefixed key under NSGlobalDomain,
+# you can provide a subdomain. In the example below, the key will become
+# "com.apple.mouse.linear".
+[NSGlobalDomain.com.apple.mouse]
+linear = true
+    "#;
     fs::write(path, example.trim_start())?;
     if verbose {
         println!(
@@ -102,6 +110,33 @@ fn flatten_domains(
     }
 }
 
+/// Given a flattened domain (from config) and a key, returns the effective
+/// domain and key to use with defaults.
+///
+/// • For entries not beginning with "NSGlobalDomain", returns:
+///      ("com.apple.<domain>", key)
+/// • For an entry exactly equal to "NSGlobalDomain", returns:
+///      ("NSGlobalDomain", key)
+/// • For an entry that starts with "NSGlobalDomain.", returns:
+///      ("NSGlobalDomain", "<rest-of-domain>.<key>")
+fn get_effective_domain_and_key(domain: &str, key: &str) -> (String, String) {
+    if domain == "NSGlobalDomain" {
+        ("NSGlobalDomain".to_string(), key.to_string())
+    } else if domain.starts_with("NSGlobalDomain.") {
+        let remainder = domain.strip_prefix("NSGlobalDomain.").unwrap_or("");
+        if remainder.is_empty() {
+            ("NSGlobalDomain".to_string(), key.to_string())
+        } else {
+            (
+                "NSGlobalDomain".to_string(),
+                format!("{}.{}", remainder, key),
+            )
+        }
+    } else {
+        (format!("com.apple.{}", domain), key.to_string())
+    }
+}
+
 /// Checks whether a given domain exists using `defaults read`.
 pub fn check_domain_exists(full_domain: &str) -> Result<(), Box<dyn std::error::Error>> {
     // Execute: defaults read <full_domain>
@@ -151,12 +186,23 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
     }
 
     for (domain, settings_table) in domains {
-        let full_domain = format!("com.apple.{}", domain);
+        // Special NSGlobalDomain support.
+        // For non-global entries we build the domain normally.
+        // For NSGlobalDomain entries, the effective domain will be "NSGlobalDomain"
+        // and any dotted suffix in the flattened domain is prepended to each key.
+        // (See get_effective_domain_and_key.)
+        // Check whether the effective domain exists.
+        // (Note: defaults read NSGlobalDomain works as expected.)
+        let effective_domain = if domain.starts_with("NSGlobalDomain") {
+            "NSGlobalDomain".to_string()
+        } else {
+            format!("com.apple.{}", domain)
+        };
+        check_domain_exists(&effective_domain)?;
 
-        check_domain_exists(&full_domain)?;
-
-        // For each key, determine the flag and call defaults write.
+        // For each key in the settings table, determine the effective domain and key.
         for (key, value) in settings_table {
+            let (eff_domain, eff_key) = get_effective_domain_and_key(&domain, &key);
             let (flag, value_str) = match value {
                 Value::Boolean(b) => ("-bool", b.to_string()),
                 Value::Integer(i) => ("-int", i.to_string()),
@@ -174,14 +220,14 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
             if verbose {
                 println!(
                     "Applying: defaults write {} \"{}\" {} \"{}\"",
-                    full_domain, key, flag, value_str
+                    eff_domain, eff_key, flag, value_str
                 );
             }
 
             let output = Command::new("defaults")
                 .arg("write")
-                .arg(&full_domain)
-                .arg(&key)
+                .arg(&eff_domain)
+                .arg(&eff_key)
                 .arg(flag)
                 .arg(&value_str)
                 .output()?;
@@ -189,17 +235,17 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
             if !output.status.success() {
                 eprintln!(
                     "{}[ERROR]{} Failed to apply setting '{}' for {}.",
-                    RED, RESET, key, full_domain
+                    RED, RESET, eff_key, eff_domain
                 );
             } else if verbose {
                 println!(
                     "{}[SUCCESS]{} Applied setting '{}' for {}.",
-                    GREEN, RESET, key, full_domain
+                    GREEN, RESET, eff_key, eff_domain
                 );
             }
         }
         if !verbose {
-            println!("Updated {}", full_domain);
+            println!("Updated {}", effective_domain);
         }
     }
     Ok(())
@@ -227,34 +273,39 @@ pub fn unapply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>>
     }
 
     for (domain, settings_table) in domains {
-        let full_domain = format!("com.apple.{}", domain);
-        check_domain_exists(&full_domain)?;
+        let effective_domain = if domain.starts_with("NSGlobalDomain") {
+            "NSGlobalDomain".to_string()
+        } else {
+            format!("com.apple.{}", domain)
+        };
+        check_domain_exists(&effective_domain)?;
 
         for (key, _value) in settings_table {
+            let (eff_domain, eff_key) = get_effective_domain_and_key(&domain, &key);
             if verbose {
-                println!("Unapplying: defaults delete {} \"{}\"", full_domain, key);
+                println!("Unapplying: defaults delete {} \"{}\"", eff_domain, eff_key);
             }
 
             let output = Command::new("defaults")
                 .arg("delete")
-                .arg(&full_domain)
-                .arg(&key)
+                .arg(&eff_domain)
+                .arg(&eff_key)
                 .output()?;
 
             if !output.status.success() {
                 eprintln!(
                     "{}[ERROR]{} Failed to unapply setting '{}' for {}.",
-                    RED, RESET, key, full_domain
+                    RED, RESET, eff_key, eff_domain
                 );
             } else if verbose {
                 println!(
                     "{}[SUCCESS]{} Unapplied setting '{}' for {}.",
-                    GREEN, RESET, key, full_domain
+                    GREEN, RESET, eff_key, eff_domain
                 );
             }
         }
         if !verbose {
-            println!("Reverted {}", full_domain);
+            println!("Reverted {}", effective_domain);
         }
     }
     Ok(())
