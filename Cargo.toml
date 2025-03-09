@@ -1,8 +1,8 @@
 [package]
 name = "cutler"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
-description = "Declarative macOS defaults management at your fingertips, with speed."
+description = "Declarative macOS settings management at your fingertips, with speed."
 license = "MIT"
 
 [dependencies]
