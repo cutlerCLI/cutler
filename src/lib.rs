@@ -1,3 +1,4 @@
+// Imports.
 use std::collections::HashMap;
 use std::env;
 use std::fs;
@@ -160,6 +161,79 @@ fn get_effective_domain_and_key(domain: &str, key: &str) -> (String, String) {
     }
 }
 
+/// Helper: Executes a "defaults write" command with the provided parameters.
+fn execute_defaults_write(
+    eff_domain: &str,
+    eff_key: &str,
+    flag: &str,
+    value_str: &str,
+    action: &str,
+    verbose: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
+    if verbose {
+        println!(
+            "{}: defaults write {} \"{}\" {} \"{}\"",
+            action, eff_domain, eff_key, flag, value_str
+        );
+    }
+    let output = Command::new("defaults")
+        .arg("write")
+        .arg(eff_domain)
+        .arg(eff_key)
+        .arg(flag)
+        .arg(value_str)
+        .output()?;
+    if !output.status.success() {
+        eprintln!(
+            "{}[ERROR]{} Failed to {} setting '{}' for {}.",
+            RED,
+            RESET,
+            action.to_lowercase(),
+            eff_key,
+            eff_domain
+        );
+    } else if verbose {
+        println!(
+            "{}[SUCCESS]{} {} setting '{}' for {}.",
+            GREEN, RESET, action, eff_key, eff_domain
+        );
+    }
+    Ok(())
+}
+
+/// Helper: Executes a "defaults delete" command with the provided parameters.
+fn execute_defaults_delete(
+    eff_domain: &str,
+    eff_key: &str,
+    action: &str,
+    verbose: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
+    if verbose {
+        println!("{}: defaults delete {} \"{}\"", action, eff_domain, eff_key);
+    }
+    let output = Command::new("defaults")
+        .arg("delete")
+        .arg(eff_domain)
+        .arg(eff_key)
+        .output()?;
+    if !output.status.success() {
+        eprintln!(
+            "{}[ERROR]{} Failed to {} setting '{}' for {}.",
+            RED,
+            RESET,
+            action.to_lowercase(),
+            eff_key,
+            eff_domain
+        );
+    } else if verbose {
+        println!(
+            "{}[SUCCESS]{} {} setting '{}' for {}.",
+            GREEN, RESET, action, eff_key, eff_domain
+        );
+    }
+    Ok(())
+}
+
 /// Checks whether a given domain exists using `defaults read`.
 pub fn check_domain_exists(full_domain: &str) -> Result<(), Box<dyn std::error::Error>> {
     // Execute: defaults read <full_domain>
@@ -269,31 +343,14 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
                     }
                 };
 
-                if verbose {
-                    println!(
-                        "Applying: defaults write {} \"{}\" {} \"{}\"",
-                        eff_domain, eff_key, flag, value_str
-                    );
-                }
-                let output = Command::new("defaults")
-                    .arg("write")
-                    .arg(&eff_domain)
-                    .arg(&eff_key)
-                    .arg(flag)
-                    .arg(&value_str)
-                    .output()?;
-
-                if !output.status.success() {
-                    eprintln!(
-                        "{}[ERROR]{} Failed to apply setting '{}' for {}.",
-                        RED, RESET, eff_key, eff_domain
-                    );
-                } else if verbose {
-                    println!(
-                        "{}[SUCCESS]{} Applied setting '{}' for {}.",
-                        GREEN, RESET, eff_key, eff_domain
-                    );
-                }
+                execute_defaults_write(
+                    &eff_domain,
+                    &eff_key,
+                    flag,
+                    &value_str,
+                    "Applying",
+                    verbose,
+                )?;
             }
             if !verbose {
                 println!("Updated {}", effective_domain);
@@ -361,31 +418,14 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
                     }
                 };
 
-                if verbose {
-                    println!(
-                        "Applying/Updating: defaults write {} \"{}\" {} \"{}\"",
-                        eff_domain, eff_key, flag, value_str
-                    );
-                }
-                let output = Command::new("defaults")
-                    .arg("write")
-                    .arg(&eff_domain)
-                    .arg(&eff_key)
-                    .arg(flag)
-                    .arg(&value_str)
-                    .output()?;
-
-                if !output.status.success() {
-                    eprintln!(
-                        "{}[ERROR]{} Failed to apply/update setting '{}' for {}.",
-                        RED, RESET, eff_key, eff_domain
-                    );
-                } else if verbose {
-                    println!(
-                        "{}[SUCCESS]{} Applied/Updated setting '{}' for {}.",
-                        GREEN, RESET, eff_key, eff_domain
-                    );
-                }
+                execute_defaults_write(
+                    &eff_domain,
+                    &eff_key,
+                    flag,
+                    &value_str,
+                    "Applying/Updating",
+                    verbose,
+                )?;
             }
             if !verbose {
                 println!("Updated {}", effective_domain);
@@ -403,28 +443,7 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
             check_domain_exists(&effective_domain)?;
             for (key, _value) in settings_table {
                 let (eff_domain, eff_key) = get_effective_domain_and_key(&domain, key);
-                if verbose {
-                    println!(
-                        "Unapplying (removed): defaults delete {} \"{}\"",
-                        eff_domain, eff_key
-                    );
-                }
-                let output = Command::new("defaults")
-                    .arg("delete")
-                    .arg(&eff_domain)
-                    .arg(&eff_key)
-                    .output()?;
-                if !output.status.success() {
-                    eprintln!(
-                        "{}[ERROR]{} Failed to unapply setting '{}' for {}.",
-                        RED, RESET, eff_key, eff_domain
-                    );
-                } else if verbose {
-                    println!(
-                        "{}[SUCCESS]{} Unapplied setting '{}' for {}.",
-                        GREEN, RESET, eff_key, eff_domain
-                    );
-                }
+                execute_defaults_delete(&eff_domain, &eff_key, "Unapplying (removed)", verbose)?;
             }
             if !verbose {
                 println!("Reverted {}", effective_domain);
@@ -484,25 +503,7 @@ pub fn unapply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>>
         check_domain_exists(&effective_domain)?;
         for (key, _value) in settings_table {
             let (eff_domain, eff_key) = get_effective_domain_and_key(&domain, &key);
-            if verbose {
-                println!("Unapplying: defaults delete {} \"{}\"", eff_domain, eff_key);
-            }
-            let output = Command::new("defaults")
-                .arg("delete")
-                .arg(&eff_domain)
-                .arg(&eff_key)
-                .output()?;
-            if !output.status.success() {
-                eprintln!(
-                    "{}[ERROR]{} Failed to unapply setting '{}' for {}.",
-                    RED, RESET, eff_key, eff_domain
-                );
-            } else if verbose {
-                println!(
-                    "{}[SUCCESS]{} Unapplied setting '{}' for {}.",
-                    GREEN, RESET, eff_key, eff_domain
-                );
-            }
+            execute_defaults_delete(&eff_domain, &eff_key, "Unapplying", verbose)?;
         }
         if !verbose {
             println!("Reverted {}", effective_domain);
