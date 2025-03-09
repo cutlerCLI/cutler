@@ -132,6 +132,10 @@ make it harder to keep track of your settings), run:
 cutler delete
 ```
 
+You can use `--verbose` to see more details about the behind-the-scenes command
+execution. More information about all of the commands can be found by running
+`cutler help`.
+
 ## Resources
 
 Finding the perfect set of defaults can be a bit of a hassle. Check out [the
