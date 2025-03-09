@@ -4,12 +4,12 @@ use cutler::{
     apply_defaults, delete_config, restart_system_services, unapply_defaults, GREEN, RED, RESET,
 };
 
-/// Fast macOS defaults manager for your terminal.
+/// Declarative macOS settings management at your fingertips, with speed.
 #[derive(Parser)]
 #[command(name = "cutler", version, about)]
 struct Cli {
-    /// Increase output verbosity
-    #[arg(short, long)]
+    /// Increase output verbosity (can be supplied before or after the subcommand)
+    #[arg(short, long, global = true)]
     verbose: bool,
 
     #[command(subcommand)]
