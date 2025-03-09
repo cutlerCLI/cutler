@@ -4,7 +4,7 @@
 
 [![Release Builds](https://github.com/hitblast/cutler/actions/workflows/release.yml/badge.svg)](https://github.com/hitblast/cutler/actions/workflows/release.yml)
 
-Declarative macOS settings management at your fingertips, with speed.
+Declarative macOS settings management at your fingertips, with speed. <br>
 **Builds available for macOS 14 (Sonoma) and later.**
 
 ```bash
