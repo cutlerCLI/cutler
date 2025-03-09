@@ -5,7 +5,6 @@
 [![Release Builds](https://github.com/hitblast/cutler/actions/workflows/release.yml/badge.svg)](https://github.com/hitblast/cutler/actions/workflows/release.yml)
 
 Declarative macOS settings management at your fingertips, with speed. <br>
-**Prebuilt binaries are compiled on macOS 14 (Sonoma) and later.**
 
 ```bash
 # Install using Homebrew.
@@ -52,6 +51,9 @@ mise use -g cargo
 > [!TIP]
 > If you still can't find a suitable installation method, consider looking at the latest GitHub release.
 > Or, consider the periodic release workflows which have a 90-day retention period.
+
+> [!IMPORTANT] > Prebuilt binaries are compiled on and shipped from macOS 14 on arm64 architecture.
+> Expect it to work on suitable Macs with same architecture.
 
 ## Usage
 
