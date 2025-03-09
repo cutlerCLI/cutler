@@ -81,7 +81,8 @@ tilesize = 46
 FlashDateSeparators = true
 ```
 
-Here, the TOML code translates to the following commands being executed:
+Please check out [Resources](#resources) for references regarding the different types of `defaults` domains
+and values for macOS users. For now, the TOML code above translates to these commands:
 
 ```bash
 defaults write com.apple.dock "tilesize" -int "46"
@@ -106,6 +107,11 @@ If you'd like to remove the file entirely, you can run the following command:
 ```bash
 cutler delete
 ```
+
+## Resources
+
+Figuring out the perfect list of defaults to set for your configuration can be tedious.
+So, you can check out [the "macOS defaults" website](https://macos-defaults.com/) for a full list of domains.
 
 ## Contributing
 
