@@ -5,7 +5,7 @@
 [![Release Builds](https://github.com/hitblast/cutler/actions/workflows/release.yml/badge.svg)](https://github.com/hitblast/cutler/actions/workflows/release.yml)
 
 Declarative macOS settings management at your fingertips, with speed.
-**Builds available for macOS 13 (Ventura) and later.**
+**Builds available for macOS 14 (Sonoma) and later.**
 
 ```bash
 # Install using Homebrew.
