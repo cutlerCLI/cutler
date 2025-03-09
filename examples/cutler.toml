@@ -1,19 +1,26 @@
-# This is just an example for you to get started with.
-# Learn more: https://github.com/hitblast/cutler
-
-[dock]
-tilesize = 50
-autohide = true
+[menuextra.clock]   
+FlashDateSeparators = true
+DateFormat = "\"HH:mm:ss\""
 
 [finder]
 AppleShowAllFiles = true
 CreateDesktop = false
+ShowPathbar = true
+FXRemoveOldTrashItems = true
 
-[NSGlobalDomain]
-ApplePressAndHoldEnabled = true
+[AppleMultitouchTrackpad]
+FirstClickThreshold = 0
+TrackpadThreeFingerDrag = true
 
-# Also valid: If you want to store a prefixed key under NSGlobalDomain,
-# you can provide a subdomain. In the example below, the key will become
-# "com.apple.mouse.linear".
-[NSGlobalDomain.com.apple.mouse]
-linear = true
+[dock]
+tilesize = 46
+autohide = true
+orientation = "left"
+mineffect = "suck"
+autohide-delay = 0
+autohide-time-modifier = 0.6
+expose-group-apps = true
+
+[NSGlobalDomain.com.apple.keyboard]
+fnState = false
+
