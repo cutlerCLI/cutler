@@ -8,7 +8,7 @@ use cutler::{
 #[derive(Parser)]
 #[command(name = "cutler", version, about)]
 struct Cli {
-    /// Increase output verbosity (can be supplied before or after the subcommand)
+    /// Increase output verbosity
     #[arg(short, long, global = true)]
     verbose: bool,
 
@@ -39,18 +39,24 @@ fn main() {
         Ok(_) => {
             if cli.verbose {
                 println!(
-                    "{}[SUCCESS] Process completed successfully.{}",
+                    "{}[SUCCESS]{} Process completed successfully.",
                     GREEN, RESET
                 );
             } else {
                 println!("🍻 Done!");
             }
-            if let Err(e) = restart_system_services(cli.verbose) {
-                eprintln!("{}[ERROR] Failed to restart services: {}{}", RED, e, RESET);
+            // Restart system services only for Apply and Unapply.
+            match &cli.command {
+                Commands::Apply | Commands::Unapply => {
+                    if let Err(e) = restart_system_services(cli.verbose) {
+                        eprintln!("{}[ERROR]{} Failed to restart services: {}", RED, RESET, e);
+                    }
+                }
+                _ => {} // Do nothing for Delete
             }
         }
         Err(e) => {
-            eprintln!("{}[ERROR] {}{}", RED, e, RESET);
+            eprintln!("{}[ERROR]{} {}", RED, RESET, e);
             std::process::exit(1);
         }
     }

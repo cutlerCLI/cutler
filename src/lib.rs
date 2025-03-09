@@ -1,4 +1,4 @@
-// Imports.
+use std::collections::HashMap;
 use std::env;
 use std::fs;
 use std::io::{self, Write};
@@ -7,7 +7,6 @@ use std::process::Command;
 
 use toml::Value;
 
-// ANSI color escape codes – exported so main.rs can use them.
 pub const RED: &str = "\x1b[31m";
 pub const GREEN: &str = "\x1b[32m";
 pub const RESET: &str = "\x1b[0m";
@@ -29,6 +28,21 @@ pub fn get_config_path() -> PathBuf {
         // Fallback to a relative path if HOME is not set.
         PathBuf::from("config.toml")
     }
+}
+
+/// Returns the path for the snapshot file.
+/// The snapshot stores the last-applied configuration.
+pub fn get_snapshot_path() -> PathBuf {
+    let mut snapshot_path = get_config_path();
+    snapshot_path.set_file_name(".cutler_snapshot");
+    snapshot_path
+}
+
+/// Helper: Read and parse the configuration file from a given path.
+fn load_config(path: &PathBuf) -> Result<Value, Box<dyn std::error::Error>> {
+    let content = fs::read_to_string(path)?;
+    let parsed: Value = content.parse::<Value>()?;
+    Ok(parsed)
 }
 
 /// When no config file is present, create an example one.
@@ -93,7 +107,7 @@ fn flatten_domains(
 
     if !flat_table.is_empty() {
         let domain = match &prefix {
-            Some(p) => p.clone(),
+            Some(x) => x.clone(),
             None => String::new(),
         };
         dest.push((domain, flat_table));
@@ -101,9 +115,14 @@ fn flatten_domains(
 
     for (key, value) in nested_tables {
         if let Value::Table(inner) = value {
-            let new_prefix = match &prefix {
-                Some(p) if !p.is_empty() => format!("{}.{}", p, key),
-                _ => key.clone(),
+            let new_prefix = if let Some(ref p) = prefix {
+                if p.is_empty() {
+                    key.clone()
+                } else {
+                    format!("{}.{}", p, key)
+                }
+            } else {
+                key.clone()
             };
             flatten_domains(Some(new_prefix), &inner, dest);
         }
@@ -150,10 +169,38 @@ pub fn check_domain_exists(full_domain: &str) -> Result<(), Box<dyn std::error::
     Ok(())
 }
 
-/// Reads the config file, validates domains, and applies each default via `defaults write`.
+/// Helper: Collect domains and their settings from a toml::Value.
+/// Returns a HashMap where keys are "domain" strings and values are the flattened settings table.
+fn collect_domains(
+    parsed: &Value,
+) -> Result<HashMap<String, toml::value::Table>, Box<dyn std::error::Error>> {
+    let root_table = parsed
+        .as_table()
+        .ok_or("Invalid config format: expected table at top level")?;
+    let mut domains = HashMap::new();
+    for (key, value) in root_table {
+        if let Value::Table(inner) = value {
+            let mut flat: Vec<(String, toml::value::Table)> = Vec::new();
+            flatten_domains(Some(key.clone()), inner, &mut flat);
+            for (domain, table) in flat {
+                domains.insert(domain, table);
+            }
+        }
+    }
+    Ok(domains)
+}
+
+/// Applies settings by comparing the current config against a snapshot (if one exists).
+/// If no snapshot exists, all settings from the config file are applied.
+/// If a snapshot exists, then:
+///   • New domains are applied.
+///   • Modified domains are re-applied (updated).
+///   • Removed domains (present in the snapshot but not in the current config) are unapplied.
+/// After applying changes, a new snapshot is stored.
 pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
     let config_path = get_config_path();
 
+    // If no config file found, offer to create an example.
     if !config_path.exists() {
         if verbose {
             println!("Config file not found at {:?}.", config_path);
@@ -172,126 +219,275 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    let content = fs::read_to_string(&config_path)?;
-    let parsed: Value = content.parse::<Value>()?;
-    let root_table = parsed
-        .as_table()
-        .ok_or("Invalid config format: expected table at top level")?;
+    // Load and parse the current config.
+    let current_parsed = load_config(&config_path)?;
+    let current_domains = collect_domains(&current_parsed)?;
 
-    let mut domains: Vec<(String, toml::value::Table)> = Vec::new();
-    for (key, value) in root_table {
-        if let Value::Table(inner) = value {
-            flatten_domains(Some(key.clone()), inner, &mut domains);
+    let snapshot_path = get_snapshot_path();
+    let snapshot_exists = snapshot_path.exists();
+
+    // If snapshot exists, load it and compare.
+    let snapshot_domains = if snapshot_exists {
+        let snap_parsed = load_config(&snapshot_path)?;
+        collect_domains(&snap_parsed)?
+    } else {
+        HashMap::new()
+    };
+
+    // For protection, always check each domain's existence using defaults read.
+    // Now decide what to do.
+    if !snapshot_exists {
+        if verbose {
+            println!("No snapshot found – applying all settings.");
         }
-    }
-
-    for (domain, settings_table) in domains {
-        // Special NSGlobalDomain support.
-        // For non-global entries we build the domain normally.
-        // For NSGlobalDomain entries, the effective domain will be "NSGlobalDomain"
-        // and any dotted suffix in the flattened domain is prepended to each key.
-        // (See get_effective_domain_and_key.)
-        // Check whether the effective domain exists.
-        // (Note: defaults read NSGlobalDomain works as expected.)
-        let effective_domain = if domain.starts_with("NSGlobalDomain") {
-            "NSGlobalDomain".to_string()
-        } else {
-            format!("com.apple.{}", domain)
-        };
-        check_domain_exists(&effective_domain)?;
-
-        // For each key in the settings table, determine the effective domain and key.
-        for (key, value) in settings_table {
-            let (eff_domain, eff_key) = get_effective_domain_and_key(&domain, &key);
-            let (flag, value_str) = match value {
-                Value::Boolean(b) => ("-bool", b.to_string()),
-                Value::Integer(i) => ("-int", i.to_string()),
-                Value::Float(f) => ("-float", f.to_string()),
-                Value::String(s) => ("-string", s.clone()),
-                _ => {
-                    return Err(format!(
-                        "Unsupported type for key '{}' in domain '{}'",
-                        key, domain
-                    )
-                    .into())
-                }
+        // Apply every domain in current_domains.
+        for (domain, settings_table) in &current_domains {
+            // For NSGlobalDomain support.
+            let effective_domain = if domain.starts_with("NSGlobalDomain") {
+                "NSGlobalDomain".to_string()
+            } else {
+                format!("com.apple.{}", domain)
             };
+            check_domain_exists(&effective_domain)?;
+            for (key, value) in settings_table {
+                let (eff_domain, eff_key) = get_effective_domain_and_key(&domain, key);
+                let (flag, value_str) = match value {
+                    Value::Boolean(b) => ("-bool", b.to_string()),
+                    Value::Integer(i) => ("-int", i.to_string()),
+                    Value::Float(f) => ("-float", f.to_string()),
+                    Value::String(s) => ("-string", s.clone()),
+                    _ => {
+                        return Err(format!(
+                            "Unsupported type for key '{}' in domain '{}'",
+                            key, domain
+                        )
+                        .into())
+                    }
+                };
 
-            if verbose {
-                println!(
-                    "Applying: defaults write {} \"{}\" {} \"{}\"",
-                    eff_domain, eff_key, flag, value_str
-                );
+                if verbose {
+                    println!(
+                        "Applying: defaults write {} \"{}\" {} \"{}\"",
+                        eff_domain, eff_key, flag, value_str
+                    );
+                }
+                let output = Command::new("defaults")
+                    .arg("write")
+                    .arg(&eff_domain)
+                    .arg(&eff_key)
+                    .arg(flag)
+                    .arg(&value_str)
+                    .output()?;
+
+                if !output.status.success() {
+                    eprintln!(
+                        "{}[ERROR]{} Failed to apply setting '{}' for {}.",
+                        RED, RESET, eff_key, eff_domain
+                    );
+                } else if verbose {
+                    println!(
+                        "{}[SUCCESS]{} Applied setting '{}' for {}.",
+                        GREEN, RESET, eff_key, eff_domain
+                    );
+                }
             }
-
-            let output = Command::new("defaults")
-                .arg("write")
-                .arg(&eff_domain)
-                .arg(&eff_key)
-                .arg(flag)
-                .arg(&value_str)
-                .output()?;
-
-            if !output.status.success() {
-                eprintln!(
-                    "{}[ERROR]{} Failed to apply setting '{}' for {}.",
-                    RED, RESET, eff_key, eff_domain
-                );
-            } else if verbose {
-                println!(
-                    "{}[SUCCESS]{} Applied setting '{}' for {}.",
-                    GREEN, RESET, eff_key, eff_domain
-                );
+            if !verbose {
+                println!("Updated {}", effective_domain);
             }
         }
-        if !verbose {
-            println!("Updated {}", effective_domain);
+    } else {
+        // Compare snapshot with current:
+        let mut new_domains = Vec::new();
+        let mut modified_domains = Vec::new();
+        let mut removed_domains = Vec::new();
+
+        // Determine new or modified domains.
+        for (domain, current_table) in &current_domains {
+            match snapshot_domains.get(domain) {
+                None => new_domains.push(domain.clone()),
+                Some(old_table) => {
+                    if old_table != current_table {
+                        modified_domains.push(domain.clone())
+                    }
+                }
+            }
+        }
+        // Determine removed domains.
+        for domain in snapshot_domains.keys() {
+            if !current_domains.contains_key(domain) {
+                removed_domains.push(domain.clone());
+            }
+        }
+
+        if verbose {
+            println!("Changes detected:");
+            if !new_domains.is_empty() {
+                println!("New domains: {:?}", new_domains);
+            }
+            if !modified_domains.is_empty() {
+                println!("Modified domains: {:?}", modified_domains);
+            }
+            if !removed_domains.is_empty() {
+                println!("Removed domains (to be unapplied): {:?}", removed_domains);
+            }
+        }
+
+        // Apply new domains and update modified ones.
+        for domain in new_domains.iter().chain(modified_domains.iter()) {
+            let settings_table = current_domains.get(domain).unwrap();
+            let effective_domain = if domain.starts_with("NSGlobalDomain") {
+                "NSGlobalDomain".to_string()
+            } else {
+                format!("com.apple.{}", domain)
+            };
+            check_domain_exists(&effective_domain)?;
+            for (key, value) in settings_table {
+                let (eff_domain, eff_key) = get_effective_domain_and_key(&domain, key);
+                let (flag, value_str) = match value {
+                    Value::Boolean(b) => ("-bool", b.to_string()),
+                    Value::Integer(i) => ("-int", i.to_string()),
+                    Value::Float(f) => ("-float", f.to_string()),
+                    Value::String(s) => ("-string", s.clone()),
+                    _ => {
+                        return Err(format!(
+                            "Unsupported type for key '{}' in domain '{}'",
+                            key, domain
+                        )
+                        .into())
+                    }
+                };
+
+                if verbose {
+                    println!(
+                        "Applying/Updating: defaults write {} \"{}\" {} \"{}\"",
+                        eff_domain, eff_key, flag, value_str
+                    );
+                }
+                let output = Command::new("defaults")
+                    .arg("write")
+                    .arg(&eff_domain)
+                    .arg(&eff_key)
+                    .arg(flag)
+                    .arg(&value_str)
+                    .output()?;
+
+                if !output.status.success() {
+                    eprintln!(
+                        "{}[ERROR]{} Failed to apply/update setting '{}' for {}.",
+                        RED, RESET, eff_key, eff_domain
+                    );
+                } else if verbose {
+                    println!(
+                        "{}[SUCCESS]{} Applied/Updated setting '{}' for {}.",
+                        GREEN, RESET, eff_key, eff_domain
+                    );
+                }
+            }
+            if !verbose {
+                println!("Updated {}", effective_domain);
+            }
+        }
+        // Unapply domains that were removed from the config.
+        for domain in removed_domains {
+            // Use the snapshot for the settings.
+            let settings_table = snapshot_domains.get(&domain).unwrap();
+            let effective_domain = if domain.starts_with("NSGlobalDomain") {
+                "NSGlobalDomain".to_string()
+            } else {
+                format!("com.apple.{}", domain)
+            };
+            check_domain_exists(&effective_domain)?;
+            for (key, _value) in settings_table {
+                let (eff_domain, eff_key) = get_effective_domain_and_key(&domain, key);
+                if verbose {
+                    println!(
+                        "Unapplying (removed): defaults delete {} \"{}\"",
+                        eff_domain, eff_key
+                    );
+                }
+                let output = Command::new("defaults")
+                    .arg("delete")
+                    .arg(&eff_domain)
+                    .arg(&eff_key)
+                    .output()?;
+                if !output.status.success() {
+                    eprintln!(
+                        "{}[ERROR]{} Failed to unapply setting '{}' for {}.",
+                        RED, RESET, eff_key, eff_domain
+                    );
+                } else if verbose {
+                    println!(
+                        "{}[SUCCESS]{} Unapplied setting '{}' for {}.",
+                        GREEN, RESET, eff_key, eff_domain
+                    );
+                }
+            }
+            if !verbose {
+                println!("Reverted {}", effective_domain);
+            }
         }
     }
+
+    // Save the current config as the new snapshot.
+    fs::copy(&config_path, &snapshot_path)?;
+    if verbose {
+        println!(
+            "{}[SUCCESS]{} Snapshot updated at {:?}.",
+            GREEN, RESET, snapshot_path
+        );
+    }
+
     Ok(())
 }
 
-/// Reads the config file, validates domains, and unapplies each default via `defaults delete`.
+/// Unapplies settings by using the stored snapshot for comparison.
+/// If no snapshot exists, an error is returned.
+/// If the current configuration differs from the snapshot, the user is warned and asked for confirmation.
 pub fn unapply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
-    let config_path = get_config_path();
+    let snapshot_path = get_snapshot_path();
 
-    if !config_path.exists() {
-        return Err(format!("Config file not found at {:?}.", config_path).into());
+    if !snapshot_path.exists() {
+        return Err("No snapshot found. Please apply settings first before unapplying.".into());
     }
 
-    let content = fs::read_to_string(&config_path)?;
-    let parsed: Value = content.parse::<Value>()?;
-    let root_table = parsed
-        .as_table()
-        .ok_or("Invalid config format: expected table at top level")?;
+    // Load snapshot and current config.
+    let snap_parsed = load_config(&snapshot_path)?;
+    let snap_domains = collect_domains(&snap_parsed)?;
 
-    let mut domains: Vec<(String, toml::value::Table)> = Vec::new();
-    for (key, value) in root_table {
-        if let Value::Table(inner) = value {
-            flatten_domains(Some(key.clone()), inner, &mut domains);
+    let config_path = get_config_path();
+    let current_parsed = load_config(&config_path)?;
+    let current_domains = collect_domains(&current_parsed)?;
+
+    // Compare snapshot and current.
+    if snap_domains != current_domains {
+        println!("Warning: The snapshot (last applied) differs from the current configuration.");
+        print!("Are you sure you want to unapply everything? [y/N]: ");
+        io::stdout().flush()?;
+        let mut input = String::new();
+        io::stdin().read_line(&mut input)?;
+        if input.trim().to_lowercase() != "y" {
+            return Err("Aborted unapply due to configuration differences.".into());
         }
     }
 
-    for (domain, settings_table) in domains {
+    // Unapply every domain based on the snapshot.
+    for (domain, settings_table) in snap_domains {
         let effective_domain = if domain.starts_with("NSGlobalDomain") {
             "NSGlobalDomain".to_string()
         } else {
             format!("com.apple.{}", domain)
         };
         check_domain_exists(&effective_domain)?;
-
         for (key, _value) in settings_table {
             let (eff_domain, eff_key) = get_effective_domain_and_key(&domain, &key);
             if verbose {
                 println!("Unapplying: defaults delete {} \"{}\"", eff_domain, eff_key);
             }
-
             let output = Command::new("defaults")
                 .arg("delete")
                 .arg(&eff_domain)
                 .arg(&eff_key)
                 .output()?;
-
             if !output.status.success() {
                 eprintln!(
                     "{}[ERROR]{} Failed to unapply setting '{}' for {}.",
@@ -308,23 +504,25 @@ pub fn unapply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>>
             println!("Reverted {}", effective_domain);
         }
     }
+
+    // Optionally remove the snapshot after unapplying.
+    fs::remove_file(&snapshot_path)?;
+    if verbose {
+        println!(
+            "{}[SUCCESS]{} Snapshot removed from {:?}.",
+            GREEN, RESET, snapshot_path
+        );
+    }
+
     Ok(())
 }
 
-/// Deletes the configuration file if it exists.
+/// Deletes the configuration file.
+/// Before deletion, it checks whether the defaults are still applied (via defaults read)
+/// and asks if the user wants to unapply first.
 pub fn delete_config(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
     let config_path = get_config_path();
-    if config_path.exists() {
-        fs::remove_file(&config_path)?;
-        if verbose {
-            println!(
-                "{}[SUCCESS]{} Configuration file deleted from: {:?}",
-                GREEN, RESET, config_path
-            );
-        } else {
-            println!("🗑️ Config deleted from {:?}", config_path);
-        }
-    } else {
+    if !config_path.exists() {
         if verbose {
             println!(
                 "{}[SUCCESS]{} No configuration file found at: {:?}",
@@ -333,7 +531,63 @@ pub fn delete_config(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
         } else {
             println!("🍺 No config file to delete.");
         }
+        return Ok(());
     }
+
+    // Load current config and check domains.
+    let current_parsed = load_config(&config_path)?;
+    let current_domains = collect_domains(&current_parsed)?;
+    let mut applied_domains = Vec::new();
+    for (domain, _) in current_domains {
+        let effective_domain = if domain.starts_with("NSGlobalDomain") {
+            "NSGlobalDomain".to_string()
+        } else {
+            format!("com.apple.{}", domain)
+        };
+        // We try to read the domain; if it exists, assume settings are applied.
+        if Command::new("defaults")
+            .arg("read")
+            .arg(&effective_domain)
+            .output()
+            .map(|o| o.status.success())
+            .unwrap_or(false)
+        {
+            applied_domains.push(effective_domain);
+        }
+    }
+
+    if !applied_domains.is_empty() {
+        println!(
+            "The following domains appear to still be applied: {:?}",
+            applied_domains
+        );
+        print!("Would you like to unapply these settings before deleting the config file? [y/N]: ");
+        io::stdout().flush()?;
+        let mut input = String::new();
+        io::stdin().read_line(&mut input)?;
+        if input.trim().to_lowercase() == "y" {
+            // Call unapply using our snapshot.
+            // If no snapshot exists, unapply_defaults will refuse.
+            unapply_defaults(verbose)?;
+        }
+    }
+
+    fs::remove_file(&config_path)?;
+    if verbose {
+        println!(
+            "{}[SUCCESS]{} Configuration file deleted from: {:?}",
+            GREEN, RESET, config_path
+        );
+    } else {
+        println!("🗑️ Config deleted from {:?}", config_path);
+    }
+
+    // Also remove snapshot if present.
+    let snapshot_path = get_snapshot_path();
+    if snapshot_path.exists() {
+        fs::remove_file(&snapshot_path)?;
+    }
+
     Ok(())
 }
 
