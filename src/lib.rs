@@ -8,6 +8,7 @@ use std::process::Command;
 
 use toml::Value;
 
+// Color constants.
 pub const RED: &str = "\x1b[31m";
 pub const GREEN: &str = "\x1b[32m";
 pub const RESET: &str = "\x1b[0m";
@@ -268,13 +269,46 @@ fn collect_domains(
     Ok(domains)
 }
 
+/// Helper: Read the current value from defaults (if any) for a given effective domain and key.
+fn get_current_value(eff_domain: &str, eff_key: &str) -> Option<String> {
+    let output = Command::new("defaults")
+        .arg("read")
+        .arg(eff_domain)
+        .arg(eff_key)
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    let s = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if s.is_empty() {
+        None
+    } else {
+        Some(s)
+    }
+}
+
+/// Helper: Normalize the desired value as a string so that it can be compared to what defaults read returns.
+fn normalize_desired(value: &Value) -> String {
+    match value {
+        Value::Boolean(b) => {
+            if *b {
+                "1".to_string()
+            } else {
+                "0".to_string()
+            }
+        }
+        Value::Integer(i) => i.to_string(),
+        Value::Float(f) => f.to_string(),
+        Value::String(s) => s.clone(),
+        _ => "".to_string(),
+    }
+}
+
 /// Applies settings by comparing the current config against a snapshot (if one exists).
-/// If no snapshot exists, all settings from the config file are applied.
-/// If a snapshot exists, then:
-///   • New domains are applied.
-///   • Modified domains are re-applied (updated).
-///   • Removed domains (present in the snapshot but not in the current config) are unapplied.
-/// After applying changes, a new snapshot is stored.
+/// The snapshot is only used to know which domains/keys have been added, modified or removed.
+/// When applying each key, we check what defaults read returns, and if that already matches
+/// the desired value, we skip the write.
 pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
     let config_path = get_config_path();
 
@@ -312,15 +346,12 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
         HashMap::new()
     };
 
-    // For protection, always check each domain's existence using defaults read.
-    // Now decide what to do.
     if !snapshot_exists {
         if verbose {
             println!("No snapshot found – applying all settings.");
         }
         // Apply every domain in current_domains.
         for (domain, settings_table) in &current_domains {
-            // For NSGlobalDomain support.
             let effective_domain = if domain.starts_with("NSGlobalDomain") {
                 "NSGlobalDomain".to_string()
             } else {
@@ -329,11 +360,25 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
             check_domain_exists(&effective_domain)?;
             for (key, value) in settings_table {
                 let (eff_domain, eff_key) = get_effective_domain_and_key(&domain, key);
+                // Normalize desired value for comparison.
+                let desired = normalize_desired(value);
+                let current = get_current_value(&eff_domain, &eff_key);
+                if let Some(curr) = &current {
+                    if curr == &desired {
+                        if verbose {
+                            println!(
+                                "Skipping {}.{} (already set to {})",
+                                eff_domain, eff_key, desired
+                            );
+                        }
+                        continue;
+                    }
+                }
                 let (flag, value_str) = match value {
-                    Value::Boolean(b) => ("-bool", b.to_string()),
-                    Value::Integer(i) => ("-int", i.to_string()),
-                    Value::Float(f) => ("-float", f.to_string()),
-                    Value::String(s) => ("-string", s.clone()),
+                    Value::Boolean(_) => ("-bool", value.to_string()),
+                    Value::Integer(_) => ("-int", value.to_string()),
+                    Value::Float(_) => ("-float", value.to_string()),
+                    Value::String(_) => ("-string", value.as_str().unwrap().to_string()),
                     _ => {
                         return Err(format!(
                             "Unsupported type for key '{}' in domain '{}'",
@@ -373,6 +418,7 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
         }
+
         // Determine removed domains.
         for domain in snapshot_domains.keys() {
             if !current_domains.contains_key(domain) {
@@ -393,7 +439,7 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
             }
         }
 
-        // Apply new domains and update modified ones.
+        // Apply new and modified domains.
         for domain in new_domains.iter().chain(modified_domains.iter()) {
             let settings_table = current_domains.get(domain).unwrap();
             let effective_domain = if domain.starts_with("NSGlobalDomain") {
@@ -404,11 +450,24 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
             check_domain_exists(&effective_domain)?;
             for (key, value) in settings_table {
                 let (eff_domain, eff_key) = get_effective_domain_and_key(&domain, key);
+                let desired = normalize_desired(value);
+                let current = get_current_value(&eff_domain, &eff_key);
+                if let Some(curr) = &current {
+                    if curr == &desired {
+                        if verbose {
+                            println!(
+                                "Skipping {}.{} (already set to {})",
+                                eff_domain, eff_key, desired
+                            );
+                        }
+                        continue;
+                    }
+                }
                 let (flag, value_str) = match value {
-                    Value::Boolean(b) => ("-bool", b.to_string()),
-                    Value::Integer(i) => ("-int", i.to_string()),
-                    Value::Float(f) => ("-float", f.to_string()),
-                    Value::String(s) => ("-string", s.clone()),
+                    Value::Boolean(_) => ("-bool", value.to_string()),
+                    Value::Integer(_) => ("-int", value.to_string()),
+                    Value::Float(_) => ("-float", value.to_string()),
+                    Value::String(_) => ("-string", value.as_str().unwrap().to_string()),
                     _ => {
                         return Err(format!(
                             "Unsupported type for key '{}' in domain '{}'",
@@ -431,9 +490,9 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
                 println!("Updated {}", effective_domain);
             }
         }
+
         // Unapply domains that were removed from the config.
         for domain in removed_domains {
-            // Use the snapshot for the settings.
             let settings_table = snapshot_domains.get(&domain).unwrap();
             let effective_domain = if domain.starts_with("NSGlobalDomain") {
                 "NSGlobalDomain".to_string()
@@ -441,8 +500,24 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
                 format!("com.apple.{}", domain)
             };
             check_domain_exists(&effective_domain)?;
-            for (key, _value) in settings_table {
+            for (key, value) in settings_table {
                 let (eff_domain, eff_key) = get_effective_domain_and_key(&domain, key);
+                let desired = normalize_desired(value);
+                let current = get_current_value(&eff_domain, &eff_key);
+                if let Some(curr) = &current {
+                    if curr != &desired {
+                        println!(
+                            "{}[WARN]{} {}.{} has been changed from the snapshot ({} vs {}). Skipping removal.",
+                            RED, RESET, eff_domain, eff_key, desired, curr
+                        );
+                        continue;
+                    }
+                } else {
+                    if verbose {
+                        println!("Skipping {}.{} (already removed)", eff_domain, eff_key);
+                    }
+                    continue;
+                }
                 execute_defaults_delete(&eff_domain, &eff_key, "Unapplying (removed)", verbose)?;
             }
             if !verbose {
@@ -464,8 +539,6 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
 }
 
 /// Unapplies settings by using the stored snapshot for comparison.
-/// If no snapshot exists, an error is returned.
-/// If the current configuration differs from the snapshot, the user is warned and asked for confirmation.
 pub fn unapply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
     let snapshot_path = get_snapshot_path();
 
@@ -501,8 +574,26 @@ pub fn unapply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>>
             format!("com.apple.{}", domain)
         };
         check_domain_exists(&effective_domain)?;
-        for (key, _value) in settings_table {
+
+        for (key, value) in settings_table {
             let (eff_domain, eff_key) = get_effective_domain_and_key(&domain, &key);
+            let desired = normalize_desired(&value);
+            let current = get_current_value(&eff_domain, &eff_key);
+
+            if let Some(curr) = current {
+                if curr != desired {
+                    println!(
+                        "{}[WARN]{} {}.{} has been modified (expected {} but got {}). Skipping removal.",
+                        RED, RESET, eff_domain, eff_key, desired, curr
+                    );
+                    continue;
+                }
+            } else {
+                if verbose {
+                    println!("Skipping {}.{} (already removed)", eff_domain, eff_key);
+                }
+                continue;
+            }
             execute_defaults_delete(&eff_domain, &eff_key, "Unapplying", verbose)?;
         }
         if !verbose {
@@ -523,8 +614,6 @@ pub fn unapply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>>
 }
 
 /// Deletes the configuration file.
-/// Before deletion, it checks whether the defaults are still applied (via defaults read)
-/// and asks if the user wants to unapply first.
 pub fn delete_config(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
     let config_path = get_config_path();
     if !config_path.exists() {
