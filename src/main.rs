@@ -1,7 +1,7 @@
 // Imports.
 use clap::{Parser, Subcommand};
 use cutler::{
-    apply_defaults, delete_config, restart_system_services, unapply_defaults, GREEN, RED, RESET,
+    apply_defaults, delete_config, restart_system_services, unapply_defaults, RED, RESET,
 };
 
 /// Declarative macOS settings management at your fingertips, with speed.
@@ -37,22 +37,10 @@ fn main() {
 
     match result {
         Ok(_) => {
-            if cli.verbose {
-                println!(
-                    "{}[SUCCESS]{} Process completed successfully.",
-                    GREEN, RESET
-                );
-            } else {
-                println!("🍻 Done!");
-            }
-            // Restart system services only for Apply and Unapply.
-            match &cli.command {
-                Commands::Apply | Commands::Unapply => {
-                    if let Err(e) = restart_system_services(cli.verbose) {
-                        eprintln!("{}[ERROR]{} Failed to restart services: {}", RED, RESET, e);
-                    }
-                }
-                _ => {} // Do nothing for Delete
+            println!("🍻 Done!");
+
+            if let Err(e) = restart_system_services(cli.verbose) {
+                eprintln!("{}[ERROR]{} Failed to restart services: {}", RED, RESET, e);
             }
         }
         Err(e) => {
