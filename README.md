@@ -137,6 +137,12 @@ You can use `--verbose` to see more details about the behind-the-scenes command
 execution. More information about all of the commands can be found by running
 `cutler help`.
 
+## Notable Things
+
+When the `cutler apply` command is run, a snapshot file (`.cutler_snapshot`) will be created at your `$HOME` directory.
+It is used to keep track of the configuration state and can be used to revert to a previous state if needed. It is
+essential that this file is not manually overwritten or deleted, as it is crucial for maintaining the integrity of your configuration.
+
 ## Resources
 
 Finding the perfect set of defaults can be a bit of a hassle. Check out [the
