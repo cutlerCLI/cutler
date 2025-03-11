@@ -8,10 +8,34 @@ use std::process::Command;
 
 use toml::Value;
 
-// Color constants.
+/// Color constants.
 pub const RED: &str = "\x1b[31m";
 pub const GREEN: &str = "\x1b[32m";
+pub const YELLOW: &str = "\x1b[33m";
 pub const RESET: &str = "\x1b[0m";
+
+/// Log levels for printing messages.
+#[derive(PartialEq)]
+pub enum LogLevel {
+    Success,
+    Error,
+    Warning,
+    Info,
+}
+
+/// Central printing function.
+pub fn print_log(level: LogLevel, message: &str, is_verbose: bool) {
+    // Only print Info messages if verbose is on.
+    if level == LogLevel::Info && !is_verbose {
+        return;
+    }
+    match level {
+        LogLevel::Success => println!("{}[SUCCESS]{} {}", GREEN, RESET, message),
+        LogLevel::Error => eprintln!("{}[ERROR]{} {}", RED, RESET, message),
+        LogLevel::Warning => eprintln!("{}[WARN]{} {}", YELLOW, RESET, message),
+        LogLevel::Info => println!("{}", message),
+    }
+}
 
 /// Returns the path to the config file, respecting XDG_CONFIG_HOME if available.
 pub fn get_config_path() -> PathBuf {
@@ -73,11 +97,13 @@ linear = true
     "#;
     fs::write(path, example.trim_start())?;
     if verbose {
-        println!(
-            "{}[SUCCESS]{} Example config created at: {:?}",
-            GREEN, RESET, path
+        print_log(
+            LogLevel::Success,
+            &format!("Example config created at: {:?}", path),
+            verbose,
         );
     } else {
+        // For non-verbose, simply print a minimal message with an emoji.
         println!("🍺 Example config written to {:?}", path);
     }
     Ok(())
@@ -172,9 +198,13 @@ fn execute_defaults_write(
     verbose: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if verbose {
-        println!(
-            "{}: defaults write {} \"{}\" {} \"{}\"",
-            action, eff_domain, eff_key, flag, value_str
+        print_log(
+            LogLevel::Info,
+            &format!(
+                "{}: defaults write {} \"{}\" {} \"{}\"",
+                action, eff_domain, eff_key, flag, value_str
+            ),
+            verbose,
         );
     }
     let output = Command::new("defaults")
@@ -194,9 +224,10 @@ fn execute_defaults_write(
             eff_domain
         );
     } else if verbose {
-        println!(
-            "{}[SUCCESS]{} {} setting '{}' for {}.",
-            GREEN, RESET, action, eff_key, eff_domain
+        print_log(
+            LogLevel::Success,
+            &format!("{} setting '{}' for {}.", action, eff_key, eff_domain),
+            verbose,
         );
     }
     Ok(())
@@ -210,7 +241,11 @@ fn execute_defaults_delete(
     verbose: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if verbose {
-        println!("{}: defaults delete {} \"{}\"", action, eff_domain, eff_key);
+        print_log(
+            LogLevel::Info,
+            &format!("{}: defaults delete {} \"{}\"", action, eff_domain, eff_key),
+            verbose,
+        );
     }
     let output = Command::new("defaults")
         .arg("delete")
@@ -227,9 +262,10 @@ fn execute_defaults_delete(
             eff_domain
         );
     } else if verbose {
-        println!(
-            "{}[SUCCESS]{} {} setting '{}' for {}.",
-            GREEN, RESET, action, eff_key, eff_domain
+        print_log(
+            LogLevel::Success,
+            &format!("{} setting '{}' for {}.", action, eff_key, eff_domain),
+            verbose,
         );
     }
     Ok(())
@@ -312,7 +348,11 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
 
     if !config_path.exists() {
         if verbose {
-            println!("Config file not found at {:?}.", config_path);
+            print_log(
+                LogLevel::Info,
+                &format!("Config file not found at {:?}.", config_path),
+                verbose,
+            );
             print!("Would you like to create an example config file? [y/N]: ");
         } else {
             print!("No config found. Create example? [y/N]: ");
@@ -353,12 +393,11 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
 
     let snapshot_path = get_snapshot_path();
     fs::copy(&config_path, &snapshot_path)?;
-    if verbose {
-        println!(
-            "{}[SUCCESS]{} Snapshot updated at {:?}.",
-            GREEN, RESET, snapshot_path
-        );
-    }
+    print_log(
+        LogLevel::Success,
+        &format!("Snapshot updated at {:?}", snapshot_path),
+        verbose,
+    );
     Ok(())
 }
 
@@ -399,9 +438,13 @@ pub fn unapply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>>
             let desired = normalize_desired(&value);
             if let Some(curr) = get_current_value(&eff_domain, &eff_key) {
                 if curr != desired {
-                    eprintln!(
-                        "{}[WARN]{} {}.{} has been modified (expected {} but got {}). Skipping removal.",
-                        RED, RESET, eff_domain, eff_key, desired, curr
+                    print_log(
+                        LogLevel::Warning,
+                        &format!(
+                            "{}.{} has been modified (expected {} but got {}). Skipping removal.",
+                            eff_domain, eff_key, desired, curr
+                        ),
+                        true,
                     );
                     continue;
                 }
@@ -413,12 +456,11 @@ pub fn unapply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>>
     }
 
     fs::remove_file(&snapshot_path)?;
-    if verbose {
-        println!(
-            "{}[SUCCESS]{} Snapshot removed from {:?}.",
-            GREEN, RESET, snapshot_path
-        );
-    }
+    print_log(
+        LogLevel::Success,
+        &format!("Snapshot removed from {:?}", snapshot_path),
+        verbose,
+    );
     Ok(())
 }
 
@@ -426,14 +468,11 @@ pub fn unapply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>>
 pub fn delete_config(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
     let config_path = get_config_path();
     if !config_path.exists() {
-        if verbose {
-            println!(
-                "{}[SUCCESS]{} No configuration file found at: {:?}",
-                GREEN, RESET, config_path
-            );
-        } else {
-            println!("🍺 No config file to delete.");
-        }
+        print_log(
+            LogLevel::Success,
+            &format!("No configuration file found at: {:?}", config_path),
+            verbose,
+        );
         return Ok(());
     }
 
@@ -472,14 +511,11 @@ pub fn delete_config(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
     }
 
     fs::remove_file(&config_path)?;
-    if verbose {
-        println!(
-            "{}[SUCCESS]{} Configuration file deleted from: {:?}",
-            GREEN, RESET, config_path
-        );
-    } else {
-        println!("🗑️ Config deleted from {:?}", config_path);
-    }
+    print_log(
+        LogLevel::Success,
+        &format!("Configuration file deleted from: {:?}", config_path),
+        verbose,
+    );
 
     let snapshot_path = get_snapshot_path();
     if snapshot_path.exists() {
@@ -498,7 +534,11 @@ pub fn restart_system_services(verbose: bool) -> Result<(), Box<dyn std::error::
                 RED, RESET, service
             );
         } else if verbose {
-            println!("{}[SUCCESS]{} {} restarted.", GREEN, RESET, service);
+            print_log(
+                LogLevel::Success,
+                &format!("{} restarted.", service),
+                verbose,
+            );
         }
     }
     if !verbose {

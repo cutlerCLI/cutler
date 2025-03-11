@@ -1,7 +1,8 @@
 // Imports.
 use clap::{Parser, Subcommand};
 use cutler::{
-    apply_defaults, delete_config, restart_system_services, unapply_defaults, RED, RESET,
+    apply_defaults, delete_config, print_log, restart_system_services, unapply_defaults, LogLevel,
+    RED, RESET,
 };
 
 /// Declarative macOS settings management at your fingertips, with speed.
@@ -37,14 +38,13 @@ fn main() {
 
     match result {
         Ok(_) => {
-            println!("🍻 Done!");
-
+            print_log(LogLevel::Success, "Done!", true);
             if let Err(e) = restart_system_services(cli.verbose) {
                 eprintln!("{}[ERROR]{} Failed to restart services: {}", RED, RESET, e);
             }
         }
         Err(e) => {
-            eprintln!("{}[ERROR]{} {}", RED, RESET, e);
+            print_log(LogLevel::Error, &format!("{}", e), true);
             std::process::exit(1);
         }
     }
