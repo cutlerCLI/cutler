@@ -11,10 +11,10 @@ file="README.md"
 # Check if the input file exists
 if [ ! -f "$file" ]; then
     echo "File '$file' not found."
-  exit 1
+    exit 1
 fi
 
 # Use sed in-place to delete any lines starting with ">".
-sed -i '/^>/d' "$file"
+sed -i '' '/^>/d' "$file"
 
 echo "Processed '$file' and updated it."
