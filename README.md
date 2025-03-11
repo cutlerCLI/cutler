@@ -18,8 +18,9 @@ brew install hitblast/tap/cutler
 ## Table of Contents
 
 - [Overview](#overview)
-- [Installation Methods](installation-methods)
+- [Other Installation Methods](#other-installation-methods)
 - [Usage](#usage)
+- [Resources](#resources)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -36,7 +37,7 @@ way to apply or reverse settings on the go.
 
 Check out the [Usage](#usage) section for more details.
 
-## Installation Methods
+## Other Installation Methods
 
 In addition to using Homebrew (as shown above), you can also install `cutler`
 via the `cargo` package manager or [mise](https://mise.jdx.dev).
