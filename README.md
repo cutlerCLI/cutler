@@ -21,6 +21,7 @@ brew install hitblast/tap/cutler
 - [Other Installation Methods](#other-installation-methods)
 - [Usage](#usage)
 - [Resources](#resources)
+- [Notable Things](#notable-things)
 - [Contributing](#contributing)
 - [License](#license)
 
