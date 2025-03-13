@@ -1,4 +1,3 @@
-// Imports.
 use std::collections::HashMap;
 use std::env;
 use std::fs;
@@ -25,7 +24,6 @@ pub enum LogLevel {
 
 /// Central printing function.
 pub fn print_log(level: LogLevel, message: &str, is_verbose: bool) {
-    // Only print Info messages if verbose is on.
     if level == LogLevel::Info && !is_verbose {
         return;
     }
@@ -47,13 +45,11 @@ pub fn get_config_path() -> PathBuf {
             .join("cutler")
             .join("config.toml")
     } else {
-        // Fallback to a relative path if HOME is not set.
         PathBuf::from("config.toml")
     }
 }
 
 /// Returns the path for the snapshot file.
-/// The snapshot stores the last-applied configuration.
 pub fn get_snapshot_path() -> PathBuf {
     if let Some(home) = env::var_os("HOME") {
         PathBuf::from(home).join(".cutler_snapshot")
@@ -103,7 +99,6 @@ linear = true
             verbose,
         );
     } else {
-        // For non-verbose, simply print a minimal message with an emoji.
         println!("🍺 Example config written to {:?}", path);
     }
     Ok(())
@@ -131,10 +126,7 @@ fn flatten_domains(
     }
 
     if !flat_table.is_empty() {
-        let domain = match &prefix {
-            Some(s) => s.clone(),
-            None => String::new(),
-        };
+        let domain = prefix.clone().unwrap_or_default();
         dest.push((domain, flat_table));
     }
 
@@ -544,5 +536,60 @@ pub fn restart_system_services(verbose: bool) -> Result<(), Box<dyn std::error::
     if !verbose {
         println!("🍺 System services restarted.");
     }
+    Ok(())
+}
+
+/// Returns the status for each setting in the config file.
+pub fn status_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
+    let config_path = get_config_path();
+    if !config_path.exists() {
+        return Err(
+            "No config file found. Please run 'cutler apply' first, or create a config file."
+                .into(),
+        );
+    }
+
+    let parsed_config = load_config(&config_path)?;
+    let domains = collect_domains(&parsed_config)?;
+    let mut any_changed = false;
+
+    println!();
+    for (domain, settings_table) in domains {
+        for (key, value) in settings_table {
+            let (eff_domain, eff_key) = get_effective_domain_and_key(&domain, &key);
+            let desired = normalize_desired(&value);
+            let current =
+                get_current_value(&eff_domain, &eff_key).unwrap_or_else(|| "Not set".into());
+            if verbose {
+                let mut color = GREEN;
+
+                if current != desired {
+                    any_changed = true;
+                    color = RED;
+                }
+
+                println!(
+                    "{}{} {} -> {} (now {}){}",
+                    color, eff_domain, eff_key, desired, current, RESET
+                );
+            } else {
+                if current != desired {
+                    any_changed = true;
+
+                    println!(
+                        "{} {} -> should be {} (now {}{}{})",
+                        eff_domain, eff_key, desired, RED, current, RESET
+                    );
+                }
+            }
+        }
+    }
+
+    if !any_changed {
+        println!("\n🍺 Nothing to change.");
+    } else {
+        println!("\nRun `cutler apply` to reapply these changes from your config.")
+    }
+
     Ok(())
 }

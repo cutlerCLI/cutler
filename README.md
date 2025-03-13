@@ -121,7 +121,14 @@ cutler apply
 > After `cutler` updates the defaults, it restarts the relevant system services on your Mac so that the changes take effect.
 > Some services might even require a full reboot to get fully applied.
 
-To unapply the settings, run:
+Now, sometimes you might want to check the integrity of the applied settings - whether they're applied correctly or have been reverted/modified.
+In order to check, run:
+
+```bash
+cutler status
+```
+
+To unapply all modifications, run:
 
 ```bash
 cutler unapply
