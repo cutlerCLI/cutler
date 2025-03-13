@@ -40,8 +40,7 @@ Check out the [Usage](#usage) section for more details.
 
 ## Other Installation Methods
 
-In addition to using Homebrew (as shown above), you can also install `cutler`
-via the `cargo` package manager or [mise](https://mise.jdx.dev).
+In addition to using Homebrew (as shown above), there are a couple more methods to install cutler:
 
 - Using `cargo`:
 
