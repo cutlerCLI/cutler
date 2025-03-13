@@ -1,4 +1,4 @@
-<img src="https://github.com/hitblast/cutler/blob/v0.1.0/assets/logo.png" width="200px" align="right">
+<img src="https://github.com/hitblast/cutler/blob/main/assets/logo.png" width="200px" align="right">
 
 # <img src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/rust/rust.png" width="40px"> cutler
 
