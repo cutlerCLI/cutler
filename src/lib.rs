@@ -586,7 +586,7 @@ pub fn status_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> 
     }
 
     if !any_changed {
-        println!("\n🍺 Nothing to change.");
+        println!("🍺 Nothing to change.");
     } else {
         println!("\nRun `cutler apply` to reapply these changes from your config.")
     }
