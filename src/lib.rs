@@ -23,10 +23,7 @@ pub enum LogLevel {
 }
 
 /// Central printing function.
-pub fn print_log(level: LogLevel, message: &str, is_verbose: bool) {
-    if level == LogLevel::Info && !is_verbose {
-        return;
-    }
+pub fn print_log(level: LogLevel, message: &str) {
     match level {
         LogLevel::Success => println!("{}[SUCCESS]{} {}", GREEN, RESET, message),
         LogLevel::Error => eprintln!("{}[ERROR]{} {}", RED, RESET, message),
@@ -96,7 +93,6 @@ linear = true
         print_log(
             LogLevel::Success,
             &format!("Example config created at: {:?}", path),
-            verbose,
         );
     } else {
         println!("🍎 Example config written to {:?}", path);
@@ -196,7 +192,6 @@ fn execute_defaults_write(
                 "{}: defaults write {} \"{}\" {} \"{}\"",
                 action, eff_domain, eff_key, flag, value_str
             ),
-            verbose,
         );
     }
     let output = Command::new("defaults")
@@ -207,19 +202,19 @@ fn execute_defaults_write(
         .arg(value_str)
         .output()?;
     if !output.status.success() {
-        eprintln!(
-            "{}[ERROR]{} Failed to {} setting '{}' for {}.",
-            RED,
-            RESET,
-            action.to_lowercase(),
-            eff_key,
-            eff_domain
+        print_log(
+            LogLevel::Error,
+            &format!(
+                "Failed to {} setting '{}' for {}.",
+                action.to_lowercase(),
+                eff_key,
+                eff_domain
+            ),
         );
     } else if verbose {
         print_log(
             LogLevel::Success,
             &format!("{} setting '{}' for {}.", action, eff_key, eff_domain),
-            verbose,
         );
     }
     Ok(())
@@ -236,7 +231,6 @@ fn execute_defaults_delete(
         print_log(
             LogLevel::Info,
             &format!("{}: defaults delete {} \"{}\"", action, eff_domain, eff_key),
-            verbose,
         );
     }
     let output = Command::new("defaults")
@@ -245,19 +239,19 @@ fn execute_defaults_delete(
         .arg(eff_key)
         .output()?;
     if !output.status.success() {
-        eprintln!(
-            "{}[ERROR]{} Failed to {} setting '{}' for {}.",
-            RED,
-            RESET,
-            action.to_lowercase(),
-            eff_key,
-            eff_domain
+        print_log(
+            LogLevel::Error,
+            &format!(
+                "Failed to {} setting '{}' for {}.",
+                action.to_lowercase(),
+                eff_key,
+                eff_domain
+            ),
         );
     } else if verbose {
         print_log(
             LogLevel::Success,
             &format!("{} setting '{}' for {}.", action, eff_key, eff_domain),
-            verbose,
         );
     }
     Ok(())
@@ -341,16 +335,12 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
     let config_path = get_config_path();
 
     if !config_path.exists() {
-        if verbose {
-            print_log(
-                LogLevel::Info,
-                &format!("Config file not found at {:?}.", config_path),
-                verbose,
-            );
-            print!("Would you like to create an example config file? [y/N]: ");
-        } else {
-            print!("No config found. Create example? [y/N]: ");
-        }
+        print_log(
+            LogLevel::Info,
+            &format!("Config file not found at {:?}.", config_path),
+        );
+        print!("Would you like to create an example config file? [y/N]: ");
+        print!("No config found. Create example? [y/N]: ");
         io::stdout().flush()?;
 
         let mut input = String::new();
@@ -386,11 +376,13 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
 
     let snapshot_path = get_snapshot_path();
     fs::copy(&config_path, &snapshot_path)?;
-    print_log(
-        LogLevel::Success,
-        &format!("Snapshot updated at {:?}", snapshot_path),
-        verbose,
-    );
+
+    if verbose {
+        print_log(
+            LogLevel::Success,
+            &format!("Snapshot updated at {:?}", snapshot_path),
+        );
+    }
     Ok(())
 }
 
@@ -437,7 +429,6 @@ pub fn unapply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>>
                             "{}.{} has been modified (expected {} but got {}). Skipping removal.",
                             eff_domain, eff_key, desired, curr
                         ),
-                        true,
                     );
                     continue;
                 }
@@ -449,11 +440,13 @@ pub fn unapply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>>
     }
 
     fs::remove_file(&snapshot_path)?;
-    print_log(
-        LogLevel::Success,
-        &format!("Snapshot removed from {:?}", snapshot_path),
-        verbose,
-    );
+
+    if verbose {
+        print_log(
+            LogLevel::Success,
+            &format!("Snapshot removed from {:?}", snapshot_path),
+        );
+    }
     Ok(())
 }
 
@@ -461,12 +454,13 @@ pub fn unapply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>>
 pub fn delete_config(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
     let config_path = get_config_path();
     if !config_path.exists() {
-        print_log(
-            LogLevel::Success,
-            &format!("No configuration file found at: {:?}", config_path),
-            verbose,
-        );
-        return Ok(());
+        if verbose {
+            print_log(
+                LogLevel::Success,
+                &format!("No configuration file found at: {:?}", config_path),
+            );
+            return Ok(());
+        }
     }
 
     let current_parsed = load_config(&config_path)?;
@@ -507,11 +501,13 @@ pub fn delete_config(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
     }
 
     fs::remove_file(&config_path)?;
-    print_log(
-        LogLevel::Success,
-        &format!("Configuration file deleted from: {:?}", config_path),
-        verbose,
-    );
+
+    if verbose {
+        print_log(
+            LogLevel::Success,
+            &format!("Configuration file deleted from: {:?}", config_path),
+        );
+    }
 
     let snapshot_path = get_snapshot_path();
     if snapshot_path.exists() {
@@ -525,20 +521,16 @@ pub fn restart_system_services(verbose: bool) -> Result<(), Box<dyn std::error::
     for service in &["Finder", "Dock", "SystemUIServer"] {
         let output = Command::new("killall").arg(service).output()?;
         if !output.status.success() {
-            eprintln!(
-                "{}[ERROR]{} Failed to restart {}. Try restarting manually.",
-                RED, RESET, service
+            print_log(
+                LogLevel::Error,
+                &format!("Failed to restart {}, try restarting manually.", service),
             );
         } else if verbose {
-            print_log(
-                LogLevel::Success,
-                &format!("{} restarted.", service),
-                verbose,
-            );
+            print_log(LogLevel::Success, &format!("{} restarted.", service));
         }
     }
     if !verbose {
-        println!("🍎 System services restarted.");
+        println!("🍎 Done. System services restarted.");
     }
     Ok(())
 }

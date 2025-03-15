@@ -51,7 +51,7 @@ fn main() {
             }
         }
         Err(e) => {
-            print_log(LogLevel::Error, &format!("{}", e), cli.verbose);
+            print_log(LogLevel::Error, &format!("{}", e));
             std::process::exit(1);
         }
     }
