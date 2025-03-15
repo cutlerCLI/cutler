@@ -263,11 +263,8 @@ fn execute_defaults_delete(
     Ok(())
 }
 
-/// Checks whether a given domain exists using `defaults domains`.
+/// Checks whether a given domain exists using `defaults read`.
 pub fn check_domain_exists(full_domain: &str) -> Result<(), Box<dyn std::error::Error>> {
-    if full_domain == "NSGlobalDomain" {
-        return Ok(());
-    }
     let output = Command::new("defaults").arg("domains").output()?;
     if !output.status.success() {
         return Err("Failed to retrieve domains.".into());
@@ -355,8 +352,10 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
             print!("No config found. Create example? [y/N]: ");
         }
         io::stdout().flush()?;
+
         let mut input = String::new();
         io::stdin().read_line(&mut input)?;
+
         if input.trim().eq_ignore_ascii_case("y") {
             create_example_config(&config_path, verbose)?;
             return Ok(());
@@ -369,13 +368,10 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
     let current_domains = collect_domains(&current_parsed)?;
 
     for (domain, settings_table) in &current_domains {
-        // Determine the effective domain for existence check once per domain.
-        let effective_domain = if domain.starts_with("NSGlobalDomain") {
-            "NSGlobalDomain".to_string()
-        } else {
-            format!("com.apple.{}", domain)
-        };
-        check_domain_exists(&effective_domain)?;
+        if !domain.starts_with("NSGlobalDomain") {
+            check_domain_exists(&format!("com.apple.{}", domain))?;
+        }
+
         for (key, value) in settings_table {
             let (eff_domain, eff_key) = get_effective_domain_and_key(domain, key);
             let desired = normalize_desired(value);
@@ -396,6 +392,7 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
     );
     Ok(())
 }
+
 /// Unapplies settings by using the stored snapshot for comparison.
 pub fn unapply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
     let snapshot_path = get_snapshot_path();
@@ -414,9 +411,11 @@ pub fn unapply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>>
         println!("Warning: The snapshot (last applied) differs from the current configuration.");
         print!("Are you sure you want to unapply everything? [y/N]: ");
         io::stdout().flush()?;
+
         let mut input = String::new();
         io::stdin().read_line(&mut input)?;
-        if !input.trim().eq_ignore_ascii_case("y") {
+
+        if input.trim().to_lowercase() != "y" {
             return Err("Aborted unapply due to configuration differences.".into());
         }
     }
@@ -498,8 +497,10 @@ pub fn delete_config(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
         );
         print!("Would you like to unapply these settings before deleting the config file? [y/N]: ");
         io::stdout().flush()?;
+
         let mut input = String::new();
         io::stdin().read_line(&mut input)?;
+
         if input.trim().eq_ignore_ascii_case("y") {
             unapply_defaults(verbose)?;
         }
