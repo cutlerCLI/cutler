@@ -99,7 +99,7 @@ linear = true
             verbose,
         );
     } else {
-        println!("🍺 Example config written to {:?}", path);
+        println!("🍎 Example config written to {:?}", path);
     }
     Ok(())
 }
@@ -534,7 +534,7 @@ pub fn restart_system_services(verbose: bool) -> Result<(), Box<dyn std::error::
         }
     }
     if !verbose {
-        println!("🍺 System services restarted.");
+        println!("🍎 System services restarted.");
     }
     Ok(())
 }
@@ -586,7 +586,7 @@ pub fn status_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> 
     }
 
     if !any_changed {
-        println!("🍺 Nothing to change.");
+        println!("🍎 Nothing to change.");
     } else {
         println!("\nRun `cutler apply` to reapply these changes from your config.")
     }
