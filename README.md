@@ -18,7 +18,7 @@ brew install hitblast/tap/cutler
 ## Table of Contents
 
 - [Overview](#overview)
-- [Other Installation Methods](#other-installation-methods)
+- [Installation Methods](#installation-methods)
 - [Usage](#usage)
 - [Resources](#resources)
 - [Notable Things](#notable-things)
@@ -38,9 +38,9 @@ way to apply or reverse settings on the go.
 
 Check out the [Usage](#usage) section for more details.
 
-## Other Installation Methods
+## Installation Methods
 
-In addition to using Homebrew (as shown above), there are a couple more methods to install cutler:
+In addition to using Homebrew (as shown at start), there are a couple more methods to install cutler:
 
 - Using `cargo`:
 

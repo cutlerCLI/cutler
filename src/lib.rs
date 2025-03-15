@@ -422,12 +422,10 @@ pub fn unapply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>>
     }
 
     for (domain, settings_table) in snap_domains {
-        let effective_domain = if domain.starts_with("NSGlobalDomain") {
-            "NSGlobalDomain".to_string()
-        } else {
-            format!("com.apple.{}", domain)
-        };
-        check_domain_exists(&effective_domain)?;
+        if !domain.starts_with("NSGlobalDomain") {
+            check_domain_exists(&format!("com.apple.{}", domain))?;
+        }
+
         for (key, value) in settings_table {
             let (eff_domain, eff_key) = get_effective_domain_and_key(&domain, &key);
             let desired = normalize_desired(&value);
@@ -480,6 +478,7 @@ pub fn delete_config(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
         } else {
             format!("com.apple.{}", domain)
         };
+
         if Command::new("defaults")
             .arg("read")
             .arg(&effective_domain)
