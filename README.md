@@ -27,20 +27,20 @@ brew install hitblast/tap/cutler
 
 ## Overview
 
-Most of us, who use macOS, either configure it using the built-in System
-Settings app, or the `defaults` command-line tool. Both of these options are
-tedious and the latter requires manual tinkering with the settings inside a
-terminal. `cutler` is a project which solves just that!
+If you use macOS, you might be familiar with changing settings using the
+built-in System Settings app or the `defaults` command in the terminal. Both
+methods can be tedious—and the terminal option usually involves manual tweaks.
+That’s where `cutler` makes things simpler!
 
-`cutler` is a simple, command-line tool that lets you define your macOS system
-preferences in a TOML file. It wraps the `defaults` command, giving you an easy
-way to apply or reverse settings on the go.
+`cutler` is a straightforward command-line tool that lets you specify your macOS
+preferences in an easy-to-read TOML file. It wraps the `defaults` command so you
+can quickly apply or undo settings when needed.
 
 Check out the [Usage](#usage) section for more details.
 
 ## Installation Methods
 
-In addition to using Homebrew (as shown at start), there are a couple more methods to install cutler:
+Besides using Homebrew as shown above, you can install `cutler` in a couple of other ways:
 
 - Using `cargo`:
 
@@ -55,21 +55,21 @@ mise use -g cargo:cutler
 ```
 
 > [!TIP]
-> If you can’t find an installation method that works for you, try checking out the latest GitHub release.
-> Alternatively, you can opt for the periodic release workflows, which keep releases for 90 days.
+> If none of these installation methods work for you, try checking out the latest GitHub release.
+> You can also use the periodic release workflows, which have a retention period of 90 days.
 
 ## Usage
 
-`cutler` reads your configuration from a `config.toml` file, which can live in one of these locations:
+`cutler` looks for your configuration in a file named `config.toml`, which can be located in one of these spots:
 
 - `$XDG_CONFIG_HOME/cutler/config.toml` or,
 - `~/.config/cutler/config.toml`
 
-It even respects `$XDG_CONFIG_HOME` so you don't have to worry about path
-issues. Just drop your `config.toml` file in one of these spots and you're ready
-to go.
+It respects your `$XDG_CONFIG_HOME` setting, so you don't have to worry about
+path issues. Just place your `config.toml` file in one of these locations and
+you're set.
 
-Here’s what a basic TOML configuration looks like:
+Here’s a basic example of a TOML configuration:
 
 ```toml
 [dock]
@@ -79,16 +79,16 @@ tilesize = 46
 FlashDateSeparators = true
 ```
 
-For more details on the different `defaults` domains and values available for
-macOS, check out the [Resources](#resources) section. The TOML above effectively
-translates to these commands:
+For more details on the different `defaults` domains and available values on
+macOS, take a look at the [Resources](#resources) section. The TOML above
+translates into these commands:
 
 ```bash
 defaults write com.apple.dock "tilesize" -int "46"
 defaults write com.apple.menuextra.clock "FlashDateSeparators"
 ```
 
-You can also set options for `NSGlobalDomain` like this:
+You can also configure settings for `NSGlobalDomain` like this:
 
 ```toml
 [NSGlobalDomain]
@@ -98,7 +98,7 @@ ApplePressAndHoldEnabled = true
 linear = true
 ```
 
-`cutler` will translate the following TOML to:
+`cutler` converts the above TOML into:
 
 ```bash
 defaults write NSGlobalDomain "ApplePressAndHoldEnabled" -bool true
@@ -106,63 +106,66 @@ defaults write NSGlobalDomain com.apple.mouse.linear -bool true
 ```
 
 > [!WARNING]
-> Currently, `cutler` does not check domains/keys against `NSGlobalDomain`. While this is not a matter of concern, users should verify these values manually before applying.
+> Currently, `cutler` does not verify domains or keys under `NSGlobalDomain`. Please review these settings manually before applying any changes.
 
-Note that if you run `cutler apply` for the first time without a configuration
-file, it will generate a sample config for you. You can also take a look at
-[examples/cutler.toml](https://github.com/hitblast/cutler/blob/main/examples/cutler.toml)
-for a full example.
+If you run `cutler apply` for the first time without an existing configuration
+file, it will generate a sample config for you. You can also check out the
+complete example in
+[examples/cutler.toml](https://github.com/hitblast/cutler/blob/main/examples/cutler.toml).
 
-Once you’ve set up your file, apply your settings with:
+Once your configuration file is ready, apply your settings by running:
 
 ```bash
 cutler apply
 ```
 
 > [!NOTE]
-> After `cutler` updates the defaults, it restarts the relevant system services on your Mac so that the changes take effect.
-> Some services might even require a full reboot to get fully applied.
+> After `cutler` updates the defaults, it restarts the necessary system services on your Mac so that the changes take effect. Some services might even require a full reboot to fully apply the new settings.
 
-Now, sometimes you might want to check the integrity of the applied settings - whether they're applied correctly or have been reverted/modified.
-In order to check, run:
+Sometimes you may want to check that your settings have been correctly
+applied—or if they have been changed. To do that, run:
 
 ```bash
 cutler status
 ```
 
-To unapply all modifications, run:
+To revert all modifications, run:
 
 ```bash
 cutler unapply
 ```
 
-And if you want to completely remove your configuration file (note: this might
-make it harder to keep track of your settings), run:
+And if you decide to completely revert everything to factory defaults, run:
 
 ```bash
 cutler delete
 ```
 
-You can use `--verbose` to see more details about the behind-the-scenes command
-execution. More information about all of the commands can be found by running
-`cutler help`.
+You can add `--verbose` for more detail on what happens behind the scenes. For
+additional information about all available commands, run:
+
+```bash
+cutler help
+```
 
 ## Notable Things
 
-When the `cutler apply` command is run, a snapshot file (`.cutler_snapshot`) will be created at your `$HOME` directory.
-It is used to keep track of the configuration state and can be used to revert to a previous state if needed. It is
-essential that this file is not manually overwritten or deleted, as it is crucial for maintaining the integrity of your configuration.
+When you run `cutler apply`, a snapshot file named `.cutler_snapshot` is created
+in your home directory. This file records your configuration state and lets you
+revert to a previous setup if needed. It’s important not to overwrite or delete
+this file manually, as it is essential for maintaining the integrity of your
+configuration.
 
 ## Resources
 
-Finding the perfect set of defaults can be a bit of a hassle. Check out [the
-"macOS defaults" website](https://macos-defaults.com/) for a comprehensive list
-of settings.
+Finding the ideal set of macOS defaults can be challenging. Visit the [macOS
+defaults website](https://macos-defaults.com/) for a comprehensive list of
+available settings.
 
 ## Contributing
 
-This is a passion project of mine to simplify the repetitive task of setting up
-my MacBook. Pull requests are always welcome! Feel free to contribute by
+This is a personal project aimed at making the task of setting up a Mac more
+straightforward. Contributions are always welcome! Feel free to help out by
 [creating a pull request]() or [submitting an issue]().
 
 ## License
