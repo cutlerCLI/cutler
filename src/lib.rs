@@ -263,16 +263,21 @@ fn execute_defaults_delete(
     Ok(())
 }
 
-/// Checks whether a given domain exists using `defaults read`.
+/// Checks whether a given domain exists using `defaults domains`.
 pub fn check_domain_exists(full_domain: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let output = Command::new("defaults")
-        .arg("read")
-        .arg(full_domain)
-        .output()?;
-    if !output.status.success() {
-        return Err(format!("Domain '{}' does not exist. Aborting.", full_domain).into());
+    if full_domain == "NSGlobalDomain" {
+        return Ok(());
     }
-    Ok(())
+    let output = Command::new("defaults").arg("domains").output()?;
+    if !output.status.success() {
+        return Err("Failed to retrieve domains.".into());
+    }
+    let domains_str = String::from_utf8_lossy(&output.stdout);
+    if domains_str.split(',').any(|d| d.trim() == full_domain) {
+        Ok(())
+    } else {
+        Err(format!("Domain '{}' does not exist. Aborting.", full_domain).into())
+    }
 }
 
 /// Helper: Collect domains and their settings from a toml::Value.
@@ -352,7 +357,7 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
         io::stdout().flush()?;
         let mut input = String::new();
         io::stdin().read_line(&mut input)?;
-        if input.trim().to_lowercase() == "y" {
+        if input.trim().eq_ignore_ascii_case("y") {
             create_example_config(&config_path, verbose)?;
             return Ok(());
         } else {
@@ -364,6 +369,7 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
     let current_domains = collect_domains(&current_parsed)?;
 
     for (domain, settings_table) in &current_domains {
+        // Determine the effective domain for existence check once per domain.
         let effective_domain = if domain.starts_with("NSGlobalDomain") {
             "NSGlobalDomain".to_string()
         } else {
@@ -373,10 +379,8 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
         for (key, value) in settings_table {
             let (eff_domain, eff_key) = get_effective_domain_and_key(domain, key);
             let desired = normalize_desired(value);
-            if let Some(curr) = get_current_value(&eff_domain, &eff_key) {
-                if curr == desired {
-                    continue;
-                }
+            if get_current_value(&eff_domain, &eff_key).map_or(false, |curr| curr == desired) {
+                continue;
             }
             let (flag, value_str) = get_flag_and_value(value)?;
             execute_defaults_write(&eff_domain, &eff_key, flag, &value_str, "Applying", verbose)?;
@@ -392,7 +396,6 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
     );
     Ok(())
 }
-
 /// Unapplies settings by using the stored snapshot for comparison.
 pub fn unapply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
     let snapshot_path = get_snapshot_path();
@@ -413,7 +416,7 @@ pub fn unapply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>>
         io::stdout().flush()?;
         let mut input = String::new();
         io::stdin().read_line(&mut input)?;
-        if input.trim().to_lowercase() != "y" {
+        if !input.trim().eq_ignore_ascii_case("y") {
             return Err("Aborted unapply due to configuration differences.".into());
         }
     }
@@ -497,7 +500,7 @@ pub fn delete_config(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
         io::stdout().flush()?;
         let mut input = String::new();
         io::stdin().read_line(&mut input)?;
-        if input.trim().to_lowercase() == "y" {
+        if input.trim().eq_ignore_ascii_case("y") {
             unapply_defaults(verbose)?;
         }
     }

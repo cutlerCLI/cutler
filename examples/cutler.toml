@@ -1,4 +1,7 @@
-[menuextra.clock]   
+# Sample configuration
+# Ironically, this is identical to the configuration I use as well.
+
+[menuextra.clock]
 FlashDateSeparators = true
 DateFormat = "\"HH:mm:ss\""
 
@@ -23,4 +26,3 @@ expose-group-apps = true
 
 [NSGlobalDomain.com.apple.keyboard]
 fnState = false
-
