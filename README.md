@@ -105,6 +105,9 @@ defaults write NSGlobalDomain "ApplePressAndHoldEnabled" -bool true
 defaults write NSGlobalDomain com.apple.mouse.linear -bool true
 ```
 
+> [!WARNING]
+> Currently, `cutler` does not check domains/keys against `NSGlobalDomain`. While this is not a matter of concern, users should verify these values manually before applying.
+
 Note that if you run `cutler apply` for the first time without a configuration
 file, it will generate a sample config for you. You can also take a look at
 [examples/cutler.toml](https://github.com/hitblast/cutler/blob/main/examples/cutler.toml)
