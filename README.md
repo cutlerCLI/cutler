@@ -12,7 +12,7 @@ Declarative macOS settings management at your fingertips, with speed. <br>
 
 ## 🍺 Installation 
 
-Install the `cutler` CLI using [Homebrew](https://brew.sh) by simply running:
+Install cutler using [Homebrew](https://brew.sh) by simply running:
 
 ```bash
 brew install hitblast/tap/cutler
