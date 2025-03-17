@@ -10,7 +10,9 @@ Declarative macOS settings management at your fingertips, with speed. <br>
 
 </div>
 
-## 🍺 Homebrew Installation:
+## 🍺 Installation 
+
+Install the `cutler` CLI using [Homebrew](https://brew.sh) by simply running:
 
 ```bash
 brew install hitblast/tap/cutler
@@ -23,10 +25,10 @@ brew install hitblast/tap/cutler
 ## Table of Contents
 
 - [Overview](#overview)
-- [Installation Methods](#installation-methods)
+- [Installation Methods](#other-installation-methods)
 - [Usage](#usage)
 - [Resources](#resources)
-- [Notable Things](#notable-things)
+- [Notable things](#notable-things)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -45,7 +47,7 @@ Check out the [Usage](#usage) section for more details.
 
 ## Installation Methods
 
-Besides using Homebrew as shown above, you can install `cutler` in a couple of other ways:
+Besides using Homebrew as shown above, you can install the project in a couple of other ways:
 
 - Using `cargo`:
 
@@ -56,6 +58,7 @@ cargo install cutler
 - Using `mise`:
 
 ```bash
+# NOTE: This will compile the binary manually for your system.
 mise use -g cargo:cutler
 ```
 
@@ -111,7 +114,7 @@ defaults write NSGlobalDomain com.apple.mouse.linear -bool true
 ```
 
 > [!WARNING]
-> Currently, `cutler` does not verify domains or keys under `NSGlobalDomain`. Please review these settings manually before applying any changes.
+> Currently, `cutler` does not verify the integrity of domains or keys under `NSGlobalDomain`. Please review these settings manually before applying any changes.
 
 If you run `cutler apply` for the first time without an existing configuration
 file, it will generate a sample config for you. You can also check out the
