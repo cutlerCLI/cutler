@@ -28,7 +28,7 @@ pub fn print_log(level: LogLevel, message: &str) {
         LogLevel::Success => println!("{}[SUCCESS]{} {}", GREEN, RESET, message),
         LogLevel::Error => eprintln!("{}[ERROR]{} {}", RED, RESET, message),
         LogLevel::Warning => eprintln!("{}[WARN]{} {}", YELLOW, RESET, message),
-        LogLevel::Info => println!("{}", message),
+        LogLevel::Info => println!("[INFO] {}", message),
     }
 }
 
@@ -366,7 +366,12 @@ pub fn apply_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
             let (eff_domain, eff_key) = get_effective_domain_and_key(domain, key);
             let desired = normalize_desired(value);
             if get_current_value(&eff_domain, &eff_key).map_or(false, |curr| curr == desired) {
-                println!("Skipping unchanged setting: {} = {}", eff_key, desired);
+                if verbose {
+                    print_log(
+                        LogLevel::Info,
+                        &format!("Skipping unchanged setting: {} = {}", eff_key, desired)
+                    );
+                }
                 continue;
             }
             let (flag, value_str) = get_flag_and_value(value)?;
@@ -530,7 +535,7 @@ pub fn restart_system_services(verbose: bool) -> Result<(), Box<dyn std::error::
         }
     }
     if !verbose {
-        println!("🍎 Done. System services restarted.");
+        println!("\n🍎 Done. System services restarted.");
     }
     Ok(())
 }
