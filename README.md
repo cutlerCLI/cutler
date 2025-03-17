@@ -4,20 +4,21 @@
 
 # <img src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/rust/rust.png" width="40px"> cutler
 
-[![Release Builds](https://github.com/hitblast/cutler/actions/workflows/release.yml/badge.svg)](https://github.com/hitblast/cutler/actions/workflows/release.yml)
-
 Declarative macOS settings management at your fingertips, with speed. <br>
 
-```bash
-# Install via Homebrew.
-brew install hitblast/tap/cutler
-```
+[![Release Builds](https://github.com/hitblast/cutler/actions/workflows/release.yml/badge.svg)](https://github.com/hitblast/cutler/actions/workflows/release.yml)
 
 </div>
 
+## 🍺 Homebrew Installation:
+
+```bash
+brew install hitblast/tap/cutler
+```
+
 > [!IMPORTANT]
 > The prebuilt binaries are compiled and shipped from macOS 14 on arm64.
-> They’re designed to work on Macs with the same architecture.
+> Intel Macs will require a manual compilation of the project.
 
 ## Table of Contents
 
