@@ -1,9 +1,10 @@
 use clap::{Parser, Subcommand};
 use cutler::{
     commands::{
-        apply_defaults, delete_config, restart_system_services, status_defaults, unapply_defaults,
+        apply_defaults, config_delete, config_show, restart_system_services, status_defaults,
+        unapply_defaults,
     },
-    logging::{print_log, LogLevel, RED, RESET},
+    logging::{print_log, LogLevel},
 };
 
 /// Declarative macOS settings management at your fingertips, with speed.
@@ -28,33 +29,50 @@ enum Commands {
     Apply,
     /// Unapply (delete) defaults from the config file.
     Unapply,
-    /// Delete the configuration file.
-    Delete,
     /// Display current status comparing the config vs current defaults.
     Status,
+    /// Manage the configuration file.
+    Config {
+        #[command(subcommand)]
+        command: ConfigCommand,
+    },
+}
+
+#[derive(Subcommand)]
+enum ConfigCommand {
+    /// Display the contents of the configuration file.
+    Show,
+    /// Delete the configuration file.
+    Delete,
 }
 
 fn main() {
     let cli = Cli::parse();
 
-    // For commands that make modifications, pass both the verbose and dry_run flags.
     let result = match &cli.command {
         Commands::Apply => apply_defaults(cli.verbose, cli.dry_run),
         Commands::Unapply => unapply_defaults(cli.verbose, cli.dry_run),
-        Commands::Delete => delete_config(cli.verbose, cli.dry_run),
         Commands::Status => status_defaults(cli.verbose),
+        Commands::Config { command } => match command {
+            ConfigCommand::Show => config_show(cli.verbose, cli.dry_run),
+            ConfigCommand::Delete => config_delete(cli.verbose, cli.dry_run),
+        },
     };
 
     match result {
         Ok(_) => {
-            // Restart system services for commands that modify defaults
+            // For commands that modify defaults, restart system services.
             match &cli.command {
-                Commands::Apply | Commands::Unapply | Commands::Delete => {
+                Commands::Apply
+                | Commands::Unapply
+                | Commands::Config {
+                    command: ConfigCommand::Delete,
+                } => {
                     if let Err(e) = restart_system_services(cli.verbose, cli.dry_run) {
-                        eprintln!("{}[ERROR]{} Failed to restart services: {}", RED, RESET, e);
+                        eprintln!("🍎 Manual restart might be required: {}", e);
                     }
                 }
-                Commands::Status => {}
+                _ => {}
             }
         }
         Err(e) => {

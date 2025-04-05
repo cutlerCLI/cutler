@@ -158,88 +158,6 @@ pub fn unapply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std:
     Ok(())
 }
 
-/// Deletes the configuration file and offers to unapply settings if they are still active.
-pub fn delete_config(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::error::Error>> {
-    let config_path = get_config_path();
-    if !config_path.exists() {
-        if verbose {
-            print_log(
-                LogLevel::Success,
-                &format!("No configuration file found at: {:?}", config_path),
-            );
-        }
-        return Ok(());
-    }
-
-    let current_parsed = load_config(&config_path)?;
-    let current_domains = collect_domains(&current_parsed)?;
-    let mut applied_domains = Vec::new();
-    for (domain, _) in current_domains {
-        let effective_domain = if domain.starts_with("NSGlobalDomain") {
-            "NSGlobalDomain".to_string()
-        } else {
-            format!("com.apple.{}", domain)
-        };
-
-        if Command::new("defaults")
-            .arg("read")
-            .arg(&effective_domain)
-            .output()
-            .map(|o| o.status.success())
-            .unwrap_or(false)
-        {
-            applied_domains.push(effective_domain);
-        }
-    }
-
-    if !applied_domains.is_empty() {
-        println!(
-            "The following domains appear to still be applied: {:?}",
-            applied_domains
-        );
-        print!("Would you like to unapply these settings before deleting the config file? [y/N]: ");
-        io::stdout().flush()?;
-
-        let mut input = String::new();
-        io::stdin().read_line(&mut input)?;
-
-        if input.trim().eq_ignore_ascii_case("y") {
-            unapply_defaults(verbose, dry_run)?;
-        }
-    }
-
-    if dry_run {
-        print_log(
-            LogLevel::Info,
-            &format!(
-                "Dry-run: Would remove configuration file at {:?}",
-                config_path
-            ),
-        );
-    } else {
-        fs::remove_file(&config_path)?;
-        if verbose {
-            print_log(
-                LogLevel::Success,
-                &format!("Configuration file deleted from: {:?}", config_path),
-            );
-        }
-    }
-
-    let snapshot_path = get_snapshot_path();
-    if snapshot_path.exists() {
-        if dry_run {
-            print_log(
-                LogLevel::Info,
-                &format!("Dry-run: Would remove snapshot file at {:?}", snapshot_path),
-            );
-        } else {
-            fs::remove_file(&snapshot_path)?;
-        }
-    }
-    Ok(())
-}
-
 /// Kills (restarts) Finder, Dock, and SystemUIServer to refresh settings.
 pub fn restart_system_services(
     verbose: bool,
@@ -332,5 +250,110 @@ pub fn status_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> 
         println!("\nRun `cutler apply` to reapply these changes from your config.")
     }
 
+    Ok(())
+}
+
+/// Deletes the configuration file and offers to unapply settings if they are still active.
+pub fn config_delete(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::error::Error>> {
+    let config_path = get_config_path();
+    if !config_path.exists() {
+        if verbose {
+            print_log(
+                LogLevel::Success,
+                &format!("No configuration file found at: {:?}", config_path),
+            );
+        }
+        return Ok(());
+    }
+
+    let current_parsed = load_config(&config_path)?;
+    let current_domains = collect_domains(&current_parsed)?;
+    let mut applied_domains = Vec::new();
+    for (domain, _) in current_domains {
+        let effective_domain = if domain.starts_with("NSGlobalDomain") {
+            "NSGlobalDomain".to_string()
+        } else {
+            format!("com.apple.{}", domain)
+        };
+
+        if Command::new("defaults")
+            .arg("read")
+            .arg(&effective_domain)
+            .output()
+            .map(|o| o.status.success())
+            .unwrap_or(false)
+        {
+            applied_domains.push(effective_domain);
+        }
+    }
+
+    if !applied_domains.is_empty() {
+        println!(
+            "The following domains appear to still be applied: {:?}",
+            applied_domains
+        );
+        print!("Would you like to unapply these settings before deleting the config file? [y/N]: ");
+        io::stdout().flush()?;
+
+        let mut input = String::new();
+        io::stdin().read_line(&mut input)?;
+
+        if input.trim().eq_ignore_ascii_case("y") {
+            unapply_defaults(verbose, dry_run)?;
+        }
+    }
+
+    if dry_run {
+        print_log(
+            LogLevel::Info,
+            &format!(
+                "Dry-run: Would remove configuration file at {:?}",
+                config_path
+            ),
+        );
+    } else {
+        fs::remove_file(&config_path)?;
+        if verbose {
+            print_log(
+                LogLevel::Success,
+                &format!("Configuration file deleted from: {:?}", config_path),
+            );
+        }
+    }
+
+    let snapshot_path = get_snapshot_path();
+    if snapshot_path.exists() {
+        if dry_run {
+            print_log(
+                LogLevel::Info,
+                &format!("Dry-run: Would remove snapshot file at {:?}", snapshot_path),
+            );
+        } else {
+            fs::remove_file(&snapshot_path)?;
+        }
+    }
+    Ok(())
+}
+
+/// Displays the contents of the configuration file to the terminal.
+pub fn config_show(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::error::Error>> {
+    let config_path = crate::config::get_config_path();
+    if !config_path.exists() {
+        return Err("Configuration file does not exist.".into());
+    }
+
+    if dry_run {
+        print_log(
+            LogLevel::Info,
+            &format!("Dry-run: Would display config file at {:?}", config_path),
+        );
+        return Ok(());
+    }
+
+    let content = fs::read_to_string(&config_path)?;
+    println!("{}", content);
+    if verbose {
+        print_log(LogLevel::Info, "Displayed configuration file.");
+    }
     Ok(())
 }
