@@ -10,7 +10,7 @@ Declarative macOS settings management at your fingertips, with speed. <br>
 
 </div>
 
-## 🍺 Installation 
+## 🍺 Installation
 
 Install cutler using [Homebrew](https://brew.sh) by simply running:
 
@@ -143,10 +143,14 @@ To revert all modifications, run:
 cutler unapply
 ```
 
-And if you decide to completely revert everything to factory defaults, run:
+Now, when it comes to managing the configuration file itself, there is a `config` command which has two other subcommands:
 
 ```bash
-cutler delete
+# Shows the contents of the configuration file.
+cutler config show
+
+# Unapplies and deletes the configuration file.
+cutler config delete
 ```
 
 You can add `--verbose` for more detail on what happens behind the scenes. For
