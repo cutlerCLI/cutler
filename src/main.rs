@@ -14,6 +14,10 @@ struct Cli {
     #[arg(short, long, global = true)]
     verbose: bool,
 
+    /// Run in dry-run mode. Commands will be printed but not executed.
+    #[arg(long, global = true)]
+    dry_run: bool,
+
     #[command(subcommand)]
     command: Commands,
 }
@@ -33,19 +37,20 @@ enum Commands {
 fn main() {
     let cli = Cli::parse();
 
+    // For commands that make modifications, pass both the verbose and dry_run flags.
     let result = match &cli.command {
-        Commands::Apply => apply_defaults(cli.verbose),
-        Commands::Unapply => unapply_defaults(cli.verbose),
-        Commands::Delete => delete_config(cli.verbose),
+        Commands::Apply => apply_defaults(cli.verbose, cli.dry_run),
+        Commands::Unapply => unapply_defaults(cli.verbose, cli.dry_run),
+        Commands::Delete => delete_config(cli.verbose, cli.dry_run),
         Commands::Status => status_defaults(cli.verbose),
     };
 
     match result {
         Ok(_) => {
-            // Restart system services for commands that modify defaults.
+            // Restart system services for commands that modify defaults
             match &cli.command {
                 Commands::Apply | Commands::Unapply | Commands::Delete => {
-                    if let Err(e) = restart_system_services(cli.verbose) {
+                    if let Err(e) = restart_system_services(cli.verbose, cli.dry_run) {
                         eprintln!("{}[ERROR]{} Failed to restart services: {}", RED, RESET, e);
                     }
                 }
