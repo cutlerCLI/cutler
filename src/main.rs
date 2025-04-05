@@ -1,14 +1,16 @@
 use clap::{Parser, Subcommand};
 use cutler::{
-    apply_defaults, delete_config, print_log, restart_system_services, status_defaults,
-    unapply_defaults, LogLevel, RED, RESET,
+    commands::{
+        apply_defaults, delete_config, restart_system_services, status_defaults, unapply_defaults,
+    },
+    logging::{print_log, LogLevel, RED, RESET},
 };
 
 /// Declarative macOS settings management at your fingertips, with speed.
 #[derive(Parser)]
 #[command(name = "cutler", version, about)]
 struct Cli {
-    /// Increase output verbosity
+    /// Increase output verbosity.
     #[arg(short, long, global = true)]
     verbose: bool,
 
