@@ -10,7 +10,7 @@ Declarative macOS settings management at your fingertips, with speed. <br>
 
 </div>
 
-## 🍺 Installation 
+## 🍺 Installation
 
 Install cutler using [Homebrew](https://brew.sh) by simply running:
 
@@ -25,7 +25,7 @@ brew install hitblast/tap/cutler
 ## Table of Contents
 
 - [Overview](#overview)
-- [Installation Methods](#other-installation-methods)
+- [Other Installation Methods](#other-installation-methods)
 - [Usage](#usage)
 - [Resources](#resources)
 - [Notable things](#notable-things)
@@ -45,7 +45,7 @@ can quickly apply or undo settings when needed.
 
 Check out the [Usage](#usage) section for more details.
 
-## Installation Methods
+## Other Installation Methods
 
 Besides using Homebrew as shown above, you can install the project in a couple of other ways:
 
@@ -143,10 +143,14 @@ To revert all modifications, run:
 cutler unapply
 ```
 
-And if you decide to completely revert everything to factory defaults, run:
+Now, when it comes to managing the configuration file itself, there is a `config` command which has two other subcommands:
 
 ```bash
-cutler delete
+# Shows the contents of the configuration file.
+cutler config show
+
+# Unapplies and deletes the configuration file.
+cutler config delete
 ```
 
 You can add `--verbose` for more detail on what happens behind the scenes. For
@@ -174,7 +178,7 @@ available settings.
 
 This is a personal project aimed at making the task of setting up a Mac more
 straightforward. Contributions are always welcome! Feel free to help out by
-[creating a pull request]() or [submitting an issue]().
+[creating a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) or [submitting an issue](https://github.com/hitblast/cutler/issues).
 
 ## License
 
