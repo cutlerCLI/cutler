@@ -25,7 +25,7 @@ brew install hitblast/tap/cutler
 ## Table of Contents
 
 - [Overview](#overview)
-- [Installation Methods](#other-installation-methods)
+- [Other Installation Methods](#other-installation-methods)
 - [Usage](#usage)
 - [Resources](#resources)
 - [Notable things](#notable-things)
@@ -45,7 +45,7 @@ can quickly apply or undo settings when needed.
 
 Check out the [Usage](#usage) section for more details.
 
-## Installation Methods
+## Other Installation Methods
 
 Besides using Homebrew as shown above, you can install the project in a couple of other ways:
 
