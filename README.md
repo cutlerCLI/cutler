@@ -68,10 +68,12 @@ mise use -g cargo:cutler
 
 ## Usage
 
-`cutler` looks for your configuration in a file named `config.toml`, which can be located in one of these spots:
+`cutler` looks for your configuration in a file named `config.toml`, checking the following locations in order:
 
-- `$XDG_CONFIG_HOME/cutler/config.toml` or,
+- `$XDG_CONFIG_HOME/cutler/config.toml`
 - `~/.config/cutler/config.toml`
+- `~/.config/cutler.toml`
+- `config.toml` in the current directory (fallback)
 
 It respects your `$XDG_CONFIG_HOME` setting, so you don't have to worry about
 path issues. Just place your `config.toml` file in one of these locations and

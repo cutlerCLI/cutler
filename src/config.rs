@@ -8,18 +8,48 @@ use toml::Value;
 
 use crate::logging::{print_log, LogLevel};
 
-/// Returns the path to the configuration file, looking at XDG_CONFIG_HOME or HOME.
+/// Returns the path to the configuration file by checking several candidate locations.
+/// The order is:
+/// 1. $XDG_CONFIG_HOME/cutler/config.toml
+/// 2. $HOME/.config/cutler/config.toml
+/// 3. $HOME/.config/cutler.toml
+/// 4. "config.toml" in the current directory
 pub fn get_config_path() -> PathBuf {
+    let mut candidates = Vec::new();
+
+    // Candidate 1
     if let Some(xdg_config) = env::var_os("XDG_CONFIG_HOME") {
-        PathBuf::from(xdg_config).join("cutler").join("config.toml")
-    } else if let Some(home) = env::var_os("HOME") {
-        PathBuf::from(home)
+        let candidate = PathBuf::from(xdg_config).join("cutler").join("config.toml");
+        candidates.push(candidate);
+    }
+
+    // Candidate 2
+    if let Some(home) = env::var_os("HOME") {
+        let candidate = PathBuf::from(&home)
             .join(".config")
             .join("cutler")
-            .join("config.toml")
-    } else {
-        PathBuf::from("config.toml")
+            .join("config.toml");
+        candidates.push(candidate);
+
+        // Candidate 3
+        let candidate2 = PathBuf::from(home).join(".config").join("cutler.toml");
+        candidates.push(candidate2);
     }
+
+    // Candidate 4
+    candidates.push(PathBuf::from("config.toml"));
+
+    // Return the first candidate that exists.
+    // If none exists, return the first candidate (this may lead to a prompt to create an example config).
+    for candidate in &candidates {
+        if candidate.exists() {
+            return candidate.to_owned();
+        }
+    }
+    candidates
+        .first()
+        .cloned()
+        .unwrap_or_else(|| PathBuf::from("config.toml"))
 }
 
 /// Returns the path where the snapshot is stored.
