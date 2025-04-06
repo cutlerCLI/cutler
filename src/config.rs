@@ -3,6 +3,7 @@ use std::fs;
 use std::io::{self};
 use std::path::PathBuf;
 
+use anyhow::Context;
 use toml::Value;
 
 use crate::logging::{print_log, LogLevel};
@@ -63,14 +64,18 @@ ApplePressAndHoldEnabled = true
 [NSGlobalDomain.com.apple.mouse]
 linear = true
     "#;
-    fs::write(path, example.trim_start())?;
-    if verbose {
-        print_log(
-            LogLevel::Success,
-            &format!("Example config created at: {:?}", path),
-        );
-    } else {
-        println!("🍎 Example config written to {:?}", path);
+    if let Ok(_) = fs::write(path, example.trim_start())
+        .with_context(|| format!("Failed to write example config file at {:?}", path))
+    {
+        if verbose {
+            print_log(
+                LogLevel::Success,
+                &format!("Example config created at: {:?}", path),
+            );
+        } else {
+            println!("🍎 Example config written to {:?}", path);
+        }
     }
+
     Ok(())
 }
