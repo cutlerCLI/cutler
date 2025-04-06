@@ -178,7 +178,7 @@ available settings.
 
 This is a personal project aimed at making the task of setting up a Mac more
 straightforward. Contributions are always welcome! Feel free to help out by
-[creating a pull request]() or [submitting an issue]().
+[creating a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) or [submitting an issue](https://github.com/hitblast/cutler/issues).
 
 ## License
 
