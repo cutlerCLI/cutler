@@ -27,8 +27,11 @@ brew install hitblast/tap/cutler
 - [Overview](#overview)
 - [Other Installation Methods](#other-installation-methods)
 - [Usage](#usage)
+  - [Anatomy](#basic-anatomy)
+  - [Defaults and External Commands](#defaults-and-external-commands)
+  - [Applying Changes and Status Review](#applying-changes-and-status-review)
 - [Resources](#resources)
-- [Notable things](#notable-things)
+- [Notable Things](#notable-things)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -41,7 +44,9 @@ That’s where `cutler` makes things simpler!
 
 `cutler` is a straightforward command-line tool that lets you specify your macOS
 preferences in an easy-to-read TOML file. It wraps the `defaults` command so you
-can quickly apply or undo settings when needed.
+can quickly apply or undo settings when needed. In addition to managing macOS defaults,
+cutler now supports executing external commands and variable substitution – even falling back
+to system environment variables if desired.
 
 Check out the [Usage](#usage) section for more details.
 
@@ -68,16 +73,20 @@ mise use -g cargo:cutler
 
 ## Usage
 
-`cutler` looks for your configuration in a file named `config.toml`, which can be located in one of these spots:
+`cutler` looks for your configuration in a file named `config.toml`, checking the following locations in order:
 
-- `$XDG_CONFIG_HOME/cutler/config.toml` or,
+- `$XDG_CONFIG_HOME/cutler/config.toml`
 - `~/.config/cutler/config.toml`
+- `~/.config/cutler.toml`
+- `config.toml` in the current directory (fallback)
 
 It respects your `$XDG_CONFIG_HOME` setting, so you don't have to worry about
 path issues. Just place your `config.toml` file in one of these locations and
 you're set.
 
-Here’s a basic example of a TOML configuration:
+### Anatomy
+
+Here’s a basic example of a TOML configuration for macOS defaults:
 
 ```toml
 [dock]
@@ -116,28 +125,58 @@ defaults write NSGlobalDomain com.apple.mouse.linear -bool true
 > [!WARNING]
 > Currently, `cutler` does not verify the integrity of domains or keys under `NSGlobalDomain`. Please review these settings manually before applying any changes.
 
-If you run `cutler apply` for the first time without an existing configuration
-file, it will generate a sample config for you. You can also check out the
-complete example in
-[examples/cutler.toml](https://github.com/hitblast/cutler/blob/main/examples/cutler.toml).
+### Defaults and External Commands
 
-Once your configuration file is ready, apply your settings by running:
+Beyond managing macOS defaults, cutler now supports an `[external]` section that allows you to run any external command after applying the defaults. This is particularly useful when you want to trigger additional scripts or commands as part of your configuration. For example:
+
+```toml
+# Define reusable variables here:
+[external.variables]
+common_args = ["Hello", "World"]
+
+[external]
+  [[external.command]]
+  cmd = "echo"
+  # If you reference a variable (for example, $common_args) and it isn’t defined
+  # in the [external.variables] section, cutler will fall back and try to resolve it
+  # from the environment (e.g. $PATH).
+  args = ["$common_args", "$PATH"]
+  sudo = false
+```
+
+This roughly translates to:
+
+```bash
+echo Hello World /usr/local/bin:/usr/bin:...
+```
+
+If you don't want to run into additional giberish, the external commands only require the `cmd` field to run, so it can be as simple as:
+
+```toml
+[external]
+  [[external.command]]
+  cmd = "echo"
+```
+
+### Applying Changes and Status Review
+
+Once your configuration file is ready (including your defaults and external commands), apply your settings by running:
 
 ```bash
 cutler apply
 ```
 
-> [!NOTE]
-> After `cutler` updates the defaults, it restarts the necessary system services on your Mac so that the changes take effect. Some services might even require a full reboot to fully apply the new settings.
+After `cutler` updates the defaults, it will also:
+- Execute any external commands defined in the `[external]` section.
+- Restart necessary system services on your Mac so that the new settings take effect.
 
-Sometimes you may want to check that your settings have been correctly
-applied—or if they have been changed. To do that, run:
+To verify current settings against your configuration, run:
 
 ```bash
 cutler status
 ```
 
-To revert all modifications, run:
+To revert modifications, run:
 
 ```bash
 cutler unapply

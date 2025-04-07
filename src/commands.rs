@@ -85,6 +85,13 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
             );
         }
     }
+
+    if let Err(e) = crate::external::execute_external_commands(&current_parsed, verbose, dry_run) {
+        print_log(
+            LogLevel::Warning,
+            &format!("Failed to execute external commands: {}", e),
+        );
+    }
     Ok(())
 }
 

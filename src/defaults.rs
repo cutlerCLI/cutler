@@ -1,3 +1,4 @@
+use anyhow::{anyhow, Context};
 use std::process::Command;
 use toml::Value;
 
@@ -11,8 +12,11 @@ pub fn get_flag_and_value(
         Value::Boolean(b) => Ok(("-bool", if *b { "true".into() } else { "false".into() })),
         Value::Integer(_) => Ok(("-int", value.to_string())),
         Value::Float(_) => Ok(("-float", value.to_string())),
-        Value::String(_) => Ok(("-string", value.as_str().unwrap().to_string())),
-        _ => Err("Unsupported type encountered in configuration".into()),
+        Value::String(s) => {
+            // Using the value directly; no unwrap required.
+            Ok(("-string", s.clone()))
+        }
+        _ => Err(anyhow!("Unsupported type encountered in configuration: {:?}", value).into()),
     }
 }
 
@@ -121,15 +125,25 @@ pub fn execute_defaults_delete(
 
 /// Checks whether a given domain exists using the "defaults" command.
 pub fn check_domain_exists(full_domain: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let output = Command::new("defaults").arg("domains").output()?;
+    let output = anyhow::Context::context(
+        Command::new("defaults").arg("domains").output(),
+        "Failed to execute the 'defaults domains' command",
+    )?;
     if !output.status.success() {
-        return Err("Failed to retrieve domains.".into());
+        return Err(anyhow!("Failed to retrieve domains.").into());
     }
-    let domains_str = String::from_utf8_lossy(&output.stdout);
-    if domains_str.split(',').any(|d| d.trim() == full_domain) {
+    let domains_str = String::from_utf8(output.stdout)
+        .context("Output from 'defaults domains' was not valid UTF-8")?;
+    // Try both comma and whitespace splitting.
+    let domains: Vec<_> = domains_str
+        .split(|c: char| c == ',' || c.is_whitespace())
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty())
+        .collect();
+    if domains.iter().any(|&d| d == full_domain) {
         Ok(())
     } else {
-        Err(format!("Domain '{}' does not exist. Aborting.", full_domain).into())
+        Err(anyhow!("Domain '{}' does not exist. Aborting.", full_domain).into())
     }
 }
 
