@@ -70,6 +70,9 @@ pub fn collect_domains(
         .ok_or("Invalid config format: expected table at top level")?;
     let mut domains = std::collections::HashMap::new();
     for (key, value) in root_table {
+        if key == "external" {
+            continue;
+        }
         if let Value::Table(inner) = value {
             let mut flat: Vec<(String, toml::value::Table)> = Vec::new();
             flatten_domains(Some(key.clone()), inner, &mut flat);
