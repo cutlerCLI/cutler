@@ -2,7 +2,7 @@
 name = "cutler"
 version = "0.2.7"
 edition = "2021"
-description = "Declarative macOS settings management at your fingertips, with speed."
+description = "Powerful, declarative settings management for your Mac, with speed."
 license = "MIT"
 
 [dependencies]
