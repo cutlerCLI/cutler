@@ -1,4 +1,3 @@
-use anyhow::{anyhow, Context};
 use std::process::Command;
 use toml::Value;
 
@@ -16,7 +15,7 @@ pub fn get_flag_and_value(
             // Using the value directly; no unwrap required.
             Ok(("-string", s.clone()))
         }
-        _ => Err(anyhow!("Unsupported type encountered in configuration: {:?}", value).into()),
+        _ => Err(format!("Unsupported type encountered in configuration: {:?}", value).into()),
     }
 }
 
@@ -125,15 +124,15 @@ pub fn execute_defaults_delete(
 
 /// Checks whether a given domain exists using the "defaults" command.
 pub fn check_domain_exists(full_domain: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let output = anyhow::Context::context(
-        Command::new("defaults").arg("domains").output(),
-        "Failed to execute the 'defaults domains' command",
-    )?;
+    let output = Command::new("defaults")
+        .arg("domains")
+        .output()
+        .map_err(|e| format!("Failed to execute the 'defaults domains' command: {}", e))?;
     if !output.status.success() {
-        return Err(anyhow!("Failed to retrieve domains.").into());
+        return Err("Failed to retrieve domains.".into());
     }
     let domains_str = String::from_utf8(output.stdout)
-        .context("Output from 'defaults domains' was not valid UTF-8")?;
+        .map_err(|e| format!("Output from 'defaults domains' was not valid UTF-8: {}", e))?;
     // Try both comma and whitespace splitting.
     let domains: Vec<_> = domains_str
         .split(|c: char| c == ',' || c.is_whitespace())
@@ -143,7 +142,7 @@ pub fn check_domain_exists(full_domain: &str) -> Result<(), Box<dyn std::error::
     if domains.iter().any(|&d| d == full_domain) {
         Ok(())
     } else {
-        Err(anyhow!("Domain '{}' does not exist. Aborting.", full_domain).into())
+        Err(format!("Domain '{}' does not exist. Aborting.", full_domain).into())
     }
 }
 

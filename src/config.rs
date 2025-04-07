@@ -3,7 +3,6 @@ use std::fs;
 use std::io::{self};
 use std::path::PathBuf;
 
-use anyhow::Context;
 use toml::Value;
 
 use crate::logging::{print_log, LogLevel};
@@ -95,7 +94,7 @@ ApplePressAndHoldEnabled = true
 linear = true
     "#;
     if let Ok(_) = fs::write(path, example.trim_start())
-        .with_context(|| format!("Failed to write example config file at {:?}", path))
+        .map_err(|e| format!("Failed to write example config file at {:?}: {}", path, e))
     {
         if verbose {
             print_log(
