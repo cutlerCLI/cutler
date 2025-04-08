@@ -8,21 +8,15 @@ use toml::Value;
 use crate::logging::{print_log, LogLevel};
 
 /// Returns the path to the configuration file by checking several candidate locations.
-/// The order is:
-/// 1. $XDG_CONFIG_HOME/cutler/config.toml
-/// 2. $HOME/.config/cutler/config.toml
-/// 3. $HOME/.config/cutler.toml
-/// 4. "config.toml" in the current directory
 pub fn get_config_path() -> PathBuf {
     let mut candidates = Vec::new();
 
-    // Candidate 1
+    // Decide candidates in order.
     if let Some(xdg_config) = env::var_os("XDG_CONFIG_HOME") {
         let candidate = PathBuf::from(xdg_config).join("cutler").join("config.toml");
         candidates.push(candidate);
     }
 
-    // Candidate 2
     if let Some(home) = env::var_os("HOME") {
         let candidate = PathBuf::from(&home)
             .join(".config")
@@ -30,12 +24,10 @@ pub fn get_config_path() -> PathBuf {
             .join("config.toml");
         candidates.push(candidate);
 
-        // Candidate 3
         let candidate2 = PathBuf::from(home).join(".config").join("cutler.toml");
         candidates.push(candidate2);
     }
 
-    // Candidate 4
     candidates.push(PathBuf::from("config.toml"));
 
     // Return the first candidate that exists.
