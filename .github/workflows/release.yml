@@ -48,8 +48,8 @@ jobs:
 
       - name: Generate markdown for cargo
         run: |
-          chmod +x generate_md.sh
-          ./generate_md.sh
+          chmod +x scripts/generate_md.sh
+          ./scripts/generate_md.sh
 
       - name: Publish using cargo
         run: cargo publish --token ${{ secrets.CRATES_TOKEN }} --allow-dirty
