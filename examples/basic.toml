@@ -1,19 +1,8 @@
-# Sample configuration
-# Ironically, this is identical to the configuration I use as well.
-
-[menuextra.clock]
-FlashDateSeparators = true
-DateFormat = "\"HH:mm:ss\""
-
 [finder]
 AppleShowAllFiles = true
 CreateDesktop = false
 ShowPathbar = true
 FXRemoveOldTrashItems = true
-
-[AppleMultitouchTrackpad]
-FirstClickThreshold = 0
-TrackpadThreeFingerDrag = true
 
 [dock]
 tilesize = 46

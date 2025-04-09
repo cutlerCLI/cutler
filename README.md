@@ -213,6 +213,12 @@ Finding the ideal set of macOS defaults can be challenging. Visit the [macOS
 defaults website](https://macos-defaults.com/) for a comprehensive list of
 available settings.
 
+Sample configuration files are preincluded with this repository for you to have a look
+at and get hold of the tool quickly:
+
+- [examples/basic.toml](examples/basic.toml) (for minimal usage)
+- [examples/advanced.toml](examples/advanced.toml)
+
 ## Contributing
 
 This is a personal project aimed at making the task of setting up a Mac more
