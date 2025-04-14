@@ -1,8 +1,7 @@
 use lazy_static::lazy_static;
 use std::collections::HashSet;
 use std::process::Command;
-use std::sync::Mutex;
-use std::sync::Once;
+use std::sync::{Mutex, Once};
 use toml::Value;
 
 use crate::logging::{LogLevel, print_log};
