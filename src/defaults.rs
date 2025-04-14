@@ -134,7 +134,7 @@ pub fn execute_defaults_delete(
 
 /// Checks whether a given domain exists using the "defaults" command.
 pub fn check_domain_exists(full_domain: &str) -> Result<(), Box<dyn std::error::Error>> {
-    // Initialize cache if needed
+    // Attempt to initialize cache if needed
     INIT.call_once(|| {
         let output = match Command::new("defaults").arg("domains").output() {
             Ok(output) => output,
@@ -146,7 +146,7 @@ pub fn check_domain_exists(full_domain: &str) -> Result<(), Box<dyn std::error::
                         e
                     ),
                 );
-                return; // Cache remains None, indicating we should be careful with domain checks
+                return; // Cache remains null, indicating that the user should be careful with domain checks
             }
         };
 
