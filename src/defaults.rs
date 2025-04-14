@@ -136,11 +136,19 @@ pub fn execute_defaults_delete(
 pub fn check_domain_exists(full_domain: &str) -> Result<(), Box<dyn std::error::Error>> {
     // Initialize cache if needed
     INIT.call_once(|| {
-        let output = Command::new("defaults")
-            .arg("domains")
-            .output()
-            .map_err(|e| format!("Failed to execute the 'defaults domains' command: {}", e))
-            .unwrap_or_else(|_| std::process::Command::new("true").output().unwrap());
+        let output = match Command::new("defaults").arg("domains").output() {
+            Ok(output) => output,
+            Err(e) => {
+                print_log(
+                    LogLevel::Warning,
+                    &format!(
+                        "Failed to fetch domains: {}, some domain checks may fail",
+                        e
+                    ),
+                );
+                return; // Cache remains None, indicating we should be careful with domain checks
+            }
+        };
 
         if output.status.success() {
             let domains_str = String::from_utf8_lossy(&output.stdout);
@@ -161,9 +169,19 @@ pub fn check_domain_exists(full_domain: &str) -> Result<(), Box<dyn std::error::
         if domains.contains(full_domain) {
             return Ok(());
         }
+    } else {
+        // Cache initialization failed, fall back to a direct check
+        let direct_check = Command::new("defaults")
+            .arg("read")
+            .arg(full_domain)
+            .output();
+
+        if direct_check.is_ok() && direct_check.unwrap().status.success() {
+            return Ok(());
+        }
     }
 
-    // Fall back to direct check if not in cache
+    // Domain not found in cache or direct check
     Err(format!("Domain '{}' does not exist. Aborting.", full_domain).into())
 }
 
