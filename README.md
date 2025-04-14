@@ -45,8 +45,8 @@ That’s where `cutler` makes things simpler!
 `cutler` is a straightforward command-line tool that lets you specify your macOS
 preferences in an easy-to-read TOML file. It wraps the `defaults` command so you
 can quickly apply or undo settings when needed. In addition to managing macOS defaults,
-cutler now supports executing external commands and variable substitution – even falling back
-to system environment variables if desired.
+cutler now supports executing external commands so that you don't have to write another
+shell script to automate things.
 
 Check out the [Usage](#usage) section for more details.
 
