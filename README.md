@@ -84,9 +84,15 @@ It respects your `$XDG_CONFIG_HOME` setting, so you don't have to worry about
 path issues. Just place your `config.toml` file in one of these locations and
 you're set.
 
+To easily get started, simply type the following command to generate a prebuilt configuration:
+
+```bash
+cutler init
+```
+
 ### Anatomy
 
-Here’s a basic example of a TOML configuration for macOS defaults:
+Here’s a basic example of a TOML configuration for cutler:
 
 ```toml
 [dock]
