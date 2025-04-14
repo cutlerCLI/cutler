@@ -8,32 +8,27 @@ pub fn flatten_domains(
     dest: &mut Vec<(String, toml::value::Table)>,
 ) {
     let mut flat_table = toml::value::Table::new();
-    let mut nested_tables = toml::value::Table::new();
 
+    // Process all non-table values in one pass
     for (key, value) in table {
-        match value {
-            Value::Table(_) => {
-                nested_tables.insert(key.clone(), value.clone());
-            }
-            _ => {
-                flat_table.insert(key.clone(), value.clone());
-            }
-        }
-    }
-
-    if !flat_table.is_empty() {
-        let domain = prefix.clone().unwrap_or_default();
-        dest.push((domain, flat_table));
-    }
-
-    for (key, value) in nested_tables {
         if let Value::Table(inner) = value {
+            // Create new prefix for nested table
             let new_prefix = match &prefix {
                 Some(p) if !p.is_empty() => format!("{}.{}", p, key),
                 _ => key.clone(),
             };
-            flatten_domains(Some(new_prefix), &inner, dest);
+
+            // Process nested table recursively
+            flatten_domains(Some(new_prefix), inner, dest);
+        } else {
+            // Add non-table values to flat table
+            flat_table.insert(key.clone(), value.clone());
         }
+    }
+
+    // Only add if there are non-table values
+    if !flat_table.is_empty() {
+        dest.push((prefix.unwrap_or_default(), flat_table));
     }
 }
 
@@ -45,8 +40,7 @@ pub fn flatten_domains(
 pub fn get_effective_domain_and_key(domain: &str, key: &str) -> (String, String) {
     if domain == "NSGlobalDomain" {
         ("NSGlobalDomain".to_string(), key.to_string())
-    } else if domain.starts_with("NSGlobalDomain.") {
-        let remainder = domain.strip_prefix("NSGlobalDomain.").unwrap_or("");
+    } else if let Some(remainder) = domain.strip_prefix("NSGlobalDomain.") {
         if remainder.is_empty() {
             ("NSGlobalDomain".to_string(), key.to_string())
         } else {
@@ -68,18 +62,25 @@ pub fn collect_domains(
     let root_table = parsed
         .as_table()
         .ok_or("Invalid config format: expected table at top level")?;
+
     let mut domains = std::collections::HashMap::new();
+
     for (key, value) in root_table {
         if key == "external" {
             continue;
         }
+
         if let Value::Table(inner) = value {
-            let mut flat: Vec<(String, toml::value::Table)> = Vec::new();
+            // Pre-allocate with reasonable capacity to avoid resizes
+            let mut flat = Vec::with_capacity(inner.len() * 2);
             flatten_domains(Some(key.clone()), inner, &mut flat);
+
+            // Move items directly into the HashMap
             for (domain, table) in flat {
                 domains.insert(domain, table);
             }
         }
     }
+
     Ok(domains)
 }
