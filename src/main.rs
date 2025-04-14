@@ -1,8 +1,8 @@
 use clap::{Parser, Subcommand};
 use cutler::{
     commands::{
-        apply_defaults, config_delete, config_show, restart_system_services, status_defaults,
-        unapply_defaults,
+        apply_defaults, config_delete, config_show, init_config, restart_system_services,
+        status_defaults, unapply_defaults,
     },
     logging::{print_log, LogLevel},
 };
@@ -27,6 +27,11 @@ struct Cli {
 enum Commands {
     /// Apply defaults from the config file.
     Apply,
+    /// Initialize a new configuration file with sensible defaults.
+    Init {
+        #[arg(short, long)]
+        force: bool,
+    },
     /// Unapply (delete) defaults from the config file.
     Unapply,
     /// Display current status comparing the config vs current defaults.
@@ -51,6 +56,7 @@ fn main() {
 
     let result = match &cli.command {
         Commands::Apply => apply_defaults(cli.verbose, cli.dry_run),
+        Commands::Init { force } => init_config(cli.verbose, *force),
         Commands::Unapply => unapply_defaults(cli.verbose, cli.dry_run),
         Commands::Status => status_defaults(cli.verbose),
         Commands::Config { command } => match command {

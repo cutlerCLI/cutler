@@ -2,7 +2,7 @@ use std::fs;
 use std::io::{self, Write};
 use std::process::Command;
 
-use crate::config::{create_example_config, get_config_path, get_snapshot_path, load_config};
+use crate::config::{get_config_path, get_snapshot_path, load_config};
 use crate::defaults::{
     check_domain_exists, execute_defaults_delete, execute_defaults_write, get_current_value,
     get_flag_and_value, normalize_desired,
@@ -19,15 +19,29 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
             LogLevel::Info,
             &format!("Config file not found at {:?}.", config_path),
         );
-        print!("Would you like to create an example config file? [y/N]: ");
+        print!("Would you like to create a new configuration? [y/N]: ");
         io::stdout().flush()?;
 
         let mut input = String::new();
         io::stdin().read_line(&mut input)?;
 
         if input.trim().eq_ignore_ascii_case("y") {
-            create_example_config(&config_path, verbose)?;
-            return Ok(());
+            init_config(false, false)?;
+            // After creating the config, give the user a chance to edit it before applying
+            print_log(
+                LogLevel::Info,
+                "Configuration created. Please review and edit the file before applying.",
+            );
+            print!("Would you like to apply the new configuration now? [y/N]: ");
+            io::stdout().flush()?;
+
+            let mut apply_now = String::new();
+            io::stdin().read_line(&mut apply_now)?;
+
+            if !apply_now.trim().eq_ignore_ascii_case("y") {
+                return Ok(());
+            }
+            // If user wants to apply now, continue with the code below
         } else {
             return Err("No config file present. Exiting.".into());
         }
@@ -362,5 +376,115 @@ pub fn config_show(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::erro
     if verbose {
         print_log(LogLevel::Info, "Displayed configuration file.");
     }
+    Ok(())
+}
+
+/// Initializes a new cutler configuration file with sensible defaults.
+pub fn init_config(verbose: bool, force: bool) -> Result<(), Box<dyn std::error::Error>> {
+    let config_path = get_config_path();
+
+    // Check if config already exists
+    if config_path.exists() && !force {
+        print_log(
+            LogLevel::Warning,
+            &format!("Configuration file already exists at {:?}", config_path),
+        );
+        print!("Do you want to overwrite it? [y/N]: ");
+        io::stdout().flush()?;
+
+        let mut input = String::new();
+        io::stdin().read_line(&mut input)?;
+
+        if !input.trim().eq_ignore_ascii_case("y") {
+            return Err("Configuration initialization aborted.".into());
+        }
+    }
+
+    // Ensure parent directory exists
+    if let Some(parent) = config_path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+
+    // Create default configuration based on the advanced example
+    let default_config = r#"# Generated with cutler
+# See https://github.com/hitblast/cutler for more examples and documentation
+
+[menuextra.clock]
+FlashDateSeparators = true
+DateFormat = "\"HH:mm:ss\""
+Show24Hour = true
+ShowAMPM = false
+ShowDate = 2
+ShowDayOfWeek = false
+ShowSeconds = true
+
+[finder]
+AppleShowAllFiles = true
+CreateDesktop = false
+ShowPathbar = true
+FXRemoveOldTrashItems = true
+
+[AppleMultitouchTrackpad]
+FirstClickThreshold = 0
+TrackpadThreeFingerDrag = true
+
+[dock]
+tilesize = 50
+autohide = true
+magnification = false
+orientation = "right"
+mineffect = "suck"
+autohide-delay = 0
+autohide-time-modifier = 0.6
+expose-group-apps = true
+
+[NSGlobalDomain.com.apple.keyboard]
+fnState = false
+
+# Examples of external commands (commented out by default)
+# Uncomment and modify as needed
+
+# [external.variables]
+# hostname = "my-macbook"
+
+# [external]
+# [[external.command]]
+# cmd = "scutil"
+# args = ["--set", "ComputerName", "$hostname"]
+# sudo = true
+
+# [[external.command]]
+# cmd = "scutil"
+# args = ["--set", "HostName", "$hostname"]
+# sudo = true
+
+# [[external.command]]
+# cmd = "scutil"
+# args = ["--set", "LocalHostName", "$hostname"]
+# sudo = true
+"#;
+
+    // Write the configuration file
+    fs::write(&config_path, default_config).map_err(|e| {
+        format!(
+            "Failed to write configuration file at {:?}: {}",
+            config_path, e
+        )
+    })?;
+
+    if verbose {
+        print_log(
+            LogLevel::Success,
+            &format!("Configuration file created at: {:?}", config_path),
+        );
+        print_log(
+            LogLevel::Info,
+            "Review and edit this file to customize your Mac settings",
+        );
+    } else {
+        println!("🍎 New configuration created at {:?}", config_path);
+        println!("Review and customize this file, then run `cutler apply` to apply settings");
+    }
+
     Ok(())
 }
