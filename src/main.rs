@@ -4,7 +4,7 @@ use cutler::{
         apply_defaults, config_delete, config_show, init_config, restart_system_services,
         status_defaults, unapply_defaults,
     },
-    logging::{print_log, LogLevel},
+    logging::{LogLevel, print_log},
 };
 
 /// Declarative macOS settings management at your fingertips, with speed.

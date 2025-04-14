@@ -8,7 +8,7 @@ use crate::defaults::{
     get_flag_and_value, normalize_desired,
 };
 use crate::domains::{collect_domains, get_effective_domain_and_key};
-use crate::logging::{print_log, LogLevel};
+use crate::logging::{LogLevel, print_log};
 
 /// Applies settings from the configuration file.
 pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::error::Error>> {

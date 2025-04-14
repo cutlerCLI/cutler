@@ -5,7 +5,7 @@ use std::sync::Mutex;
 use std::sync::Once;
 use toml::Value;
 
-use crate::logging::{print_log, LogLevel};
+use crate::logging::{LogLevel, print_log};
 
 lazy_static! {
     static ref DOMAIN_CACHE: Mutex<Option<HashSet<String>>> = Mutex::new(None);
@@ -197,11 +197,7 @@ pub fn get_current_value(eff_domain: &str, eff_key: &str) -> Option<String> {
         return None;
     }
     let s = String::from_utf8_lossy(&output.stdout).trim().to_string();
-    if s.is_empty() {
-        None
-    } else {
-        Some(s)
-    }
+    if s.is_empty() { None } else { Some(s) }
 }
 
 /// Normalizes the desired value for comparison.

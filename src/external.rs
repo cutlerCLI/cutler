@@ -1,4 +1,4 @@
-use crate::logging::{print_log, LogLevel};
+use crate::logging::{LogLevel, print_log};
 use std::env;
 use std::process::Command;
 use toml::Value;
