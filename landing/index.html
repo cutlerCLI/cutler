@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>🍎 Cutler - Fast Mac Settings Management</title>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"
+        />
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                    Helvetica, Arial, sans-serif;
+                line-height: 1.6;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 2rem;
+                background-color: rgb(45, 42, 37);
+                color: rgb(242, 210, 156);
+                font-size: 0.95rem;
+            }
+
+            .logo-container {
+                text-align: center;
+                margin-bottom: 2rem;
+            }
+
+            .logo {
+                width: 180px;
+                border-radius: 20px;
+            }
+
+            h1 {
+                text-align: center;
+                font-size: 3rem;
+                margin-bottom: 0.2rem;
+                color: rgb(242, 210, 156);
+            }
+
+            .tagline {
+                text-align: center;
+                font-size: 1.2rem;
+                color: rgb(242, 210, 156);
+                margin-bottom: 2rem;
+            }
+
+            h2 {
+                font-size: 2.2rem;
+                border-bottom: 2px solid rgb(242, 210, 156);
+                padding-bottom: 0.5rem;
+                margin-top: 2.5rem;
+                color: rgb(242, 210, 156);
+                text-align: center;
+            }
+
+            code {
+                padding: 0.2rem 0.4rem;
+                border-radius: 3px;
+                font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo,
+                    monospace;
+            }
+
+            pre {
+                background: rgb(30, 28, 25);
+                padding: 1rem;
+                border-radius: 5px;
+                overflow-x: auto;
+                margin: 1em 0;
+            }
+
+            pre[class*="language-"] {
+                background: rgb(30, 28, 25);
+            }
+
+            code[class*="language-"] {
+                text-shadow: none;
+                color: rgb(242, 210, 156);
+            }
+
+            .token.comment,
+            .token.prolog,
+            .token.doctype,
+            .token.cdata {
+                color: #7c7c7c;
+            }
+
+            .token.punctuation {
+                color: #c5c8c6;
+            }
+
+            .token.property,
+            .token.keyword,
+            .token.tag {
+                color: #96cbfe;
+            }
+
+            .token.string {
+                color: #a8ff60;
+            }
+
+            .token.operator,
+            .token.entity,
+            .token.url {
+                color: #ededed;
+            }
+
+            .token.variable {
+                color: #c6c5fe;
+            }
+
+            .token.important {
+                color: #fd971f;
+            }
+
+            .button {
+                display: inline-block;
+                background-color: rgb(30, 28, 25);
+                color: rgb(242, 210, 156);
+                padding: 0.8rem 1.5rem;
+                border-radius: 5px;
+                text-decoration: none;
+                font-weight: bold;
+                margin-right: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .button:hover {
+                background-color: rgb(40, 38, 35);
+            }
+
+            .emoji {
+                font-size: 1.5em;
+                vertical-align: middle;
+                margin-right: 0.3em;
+            }
+
+            footer {
+                margin-top: 3rem;
+                text-align: center;
+                color: #cccccc;
+                font-size: 0.9rem;
+            }
+
+            .feature {
+                background: rgb(60, 56, 50);
+                padding: 1.5rem;
+                border-radius: 10px;
+                margin-bottom: 1.5rem;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            }
+
+            .feature h3 {
+                margin-top: 0;
+                color: rgb(242, 210, 156);
+            }
+
+            .warning {
+                background-color: rgba(180, 100, 50, 0.15);
+                border-left: 4px solid #b46432;
+                padding: 0.8rem 1rem;
+                margin: 1rem 0;
+                border-radius: 0 5px 5px 0;
+            }
+
+            .note {
+                background-color: rgba(80, 160, 80, 0.15);
+                border-left: 4px solid #4a9e4a;
+                padding: 0.8rem 1rem;
+                margin: 1rem 0;
+                border-radius: 0 5px 5px 0;
+            }
+
+            a {
+                color: rgb(192, 160, 106);
+                text-decoration: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="logo-container">
+            <img src="assets/logo.png" alt="Cutler Logo" class="logo" />
+        </div>
+
+        <h1>cutler</h1>
+        <p class="tagline">
+            <strong
+                >Powerful & declarative settings management for your Mac, with
+                speed.</strong
+            >
+        </p>
+        <div>
+            <p>
+                Cutler simplifies macOS configuration by letting you manage
+                system settings through a single TOML file instead of clicking
+                through System Settings or typing complex <code>defaults</code>
+                commands in the terminal.
+            </p>
+            <p>
+                Define your settings once, then easily apply, track, and revert
+                changes across your system—think of it as infrastructure-as-code
+                for your Mac.
+            </p>
+        </div>
+
+        <h2>Installation</h2>
+        <p>Just a single brew command and you're ready to go!</p>
+        <pre><code class="language-bash">brew install hitblast/tap/cutler</code></pre>
+
+        <div class="warning">
+            <strong>⚠️ Important:</strong> The prebuilt binaries are compiled
+            and shipped from macOS 14 on arm64. Intel Macs will require a manual
+            compilation of the project.
+        </div>
+
+        <div class="feature">
+            <h3><span class="emoji">🔄</span> Other installation methods</h3>
+            <p>Besides Homebrew, you can also install cutler using:</p>
+            <pre><code class="language-bash"># Using cargo
+cargo install cutler
+
+# Using mise
+mise use -g cargo:cutler</code></pre>
+        </div>
+
+        <div class="feature">
+            <h3><span class="emoji">🔨</span> Simple Configuration</h3>
+            <p>
+                Create a <code>config.toml</code> file within one of the
+                locations listed below and write your preferred settings
+                following the defaults syntax. Check out the
+                <a href="https://github.com/hitblast/cutler/tree/main/examples"
+                    >example configuration files</a
+                >
+                to get started quickly!
+            </p>
+            <pre><code class="language-bash">[dock]
+tilesize = 46
+
+[finder]
+AppleShowAllFiles = true
+CreateDesktop = false
+
+[NSGlobalDomain]
+ApplePressAndHoldEnabled = true</code></pre>
+        </div>
+
+        <div class="note">
+            <p>
+                <strong>Config file location:</strong> cutler looks for your
+                configuration in these locations (in order):
+            </p>
+            <ul>
+                <li><code>$XDG_CONFIG_HOME/cutler/config.toml</code></li>
+                <li><code>~/.config/cutler/config.toml</code></li>
+                <li><code>~/.config/cutler.toml</code></li>
+                <li><code>config.toml</code> (current directory)</li>
+            </ul>
+        </div>
+
+        <p></p>
+
+        <h2>Usage</h2>
+        <p>
+            Cutler makes it super simple to apply, check, and revert your
+            settings:
+        </p>
+
+        <div class="feature">
+            <h3>Apply your settings</h3>
+            <pre><code class="language-bash">cutler apply</code></pre>
+            <p>
+                This command applies all settings from your config file and
+                restarts necessary system services.
+            </p>
+        </div>
+
+        <div class="feature">
+            <h3>Check current status</h3>
+            <pre><code class="language-bash">cutler status</code></pre>
+            <p>Compares your configuration with current system settings.</p>
+        </div>
+
+        <div class="feature">
+            <h3>Revert changes</h3>
+            <pre><code class="language-bash">cutler unapply</code></pre>
+            <p>Removes all settings applied by Cutler.</p>
+        </div>
+
+        <div class="feature">
+            <h3>Manage configuration file</h3>
+            <pre><code class="language-bash"># Shows the contents of the configuration file
+cutler config show
+
+# Unapplies and deletes the configuration file
+cutler config delete</code></pre>
+        </div>
+
+        <div class="note">
+            <p>
+                <strong>Snapshot file:</strong> When you run
+                <code>cutler apply</code>, a snapshot file
+                <code>.cutler_snapshot</code> is created in your home directory.
+                This file records your configuration state and lets you revert
+                to a previous setup if needed. Do not delete this file manually!
+            </p>
+        </div>
+
+        <div class="note">
+            <p>
+                Add <code>--verbose</code> to any command for more detailed
+                output about what's happening behind the scenes.
+            </p>
+        </div>
+
+        <h2>Advanced Features</h2>
+        <p>Cutler also supports external commands:</p>
+
+        <pre><code class="language-bash">[external.variables]
+common_args = ["Hello", "World"]
+
+[external]
+[[external.command]]
+cmd = "echo"
+args = ["$common_args"]
+sudo = false</code></pre>
+
+        <div class="warning">
+            <p>
+                <strong>⚠️ Warning:</strong> Currently, cutler does not verify
+                the integrity of domains or keys under
+                <code>NSGlobalDomain</code>. Please review these settings
+                manually before applying any changes.
+            </p>
+        </div>
+
+        <div style="text-align: center; margin: 3rem 0">
+            <a href="https://github.com/hitblast/cutler" class="button"
+                ><span class="emoji">⭐</span> View Source on GitHub</a
+            >
+            <a href="https://macos-defaults.com/" class="button"
+                ><span class="emoji">📚</span> macOS Defaults Reference</a
+            >
+        </div>
+
+        <footer>
+            <p>
+                Open-sourced under the MIT License. Made with <3 by
+                <a href="https://github.com/hitblast">HitBlast</a>.
+            </p>
+            <p>
+                Looking for more examples? Check out the
+                <a href="https://github.com/hitblast/cutler/tree/main/examples"
+                    >example configs</a
+                >!
+            </p>
+            <p>
+                Need more help? Run <code>cutler help</code> for additional
+                information.
+            </p>
+        </footer>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    </body>
+</html>
