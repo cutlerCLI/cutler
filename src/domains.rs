@@ -34,9 +34,9 @@ pub fn flatten_domains(
 
 /// Given the flattened domain (from config) and a key, return the effective domain and key.
 ///
-/// • If the domain is not beginning with "NSGlobalDomain", returns ("com.apple.<domain>", key)
+/// • If the domain is not beginning with "NSGlobalDomain", returns ("com.apple.{domain}", key)
 /// • For an entry exactly equal to "NSGlobalDomain", returns ("NSGlobalDomain", key)
-/// • For an entry starting with "NSGlobalDomain.", returns ("NSGlobalDomain", "<rest-of-domain>.<key>")
+/// • For an entry starting with "NSGlobalDomain.", returns ("NSGlobalDomain", "{rest-of-domain}.{key}")
 pub fn get_effective_domain_and_key(domain: &str, key: &str) -> (String, String) {
     if domain == "NSGlobalDomain" {
         ("NSGlobalDomain".to_string(), key.to_string())
