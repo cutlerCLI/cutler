@@ -140,7 +140,12 @@ pub fn execute_external_commands(
                         if !output.status.success() {
                             print_log(
                                 LogLevel::Error,
-                                &format!("External command failed: {} {:?}", exec_cmd, exec_args),
+                                &format!(
+                                    "External command failed: {} {:?}: {}",
+                                    exec_cmd,
+                                    exec_args,
+                                    String::from_utf8_lossy(&output.stderr)
+                                ),
                             );
                         } else if verbose {
                             print_log(
