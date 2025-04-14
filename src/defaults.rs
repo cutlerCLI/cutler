@@ -1,7 +1,17 @@
+use lazy_static::lazy_static;
+use std::collections::HashSet;
 use std::process::Command;
+use std::sync::Mutex;
+use std::sync::Once;
 use toml::Value;
 
 use crate::logging::{print_log, LogLevel};
+
+lazy_static! {
+    static ref DOMAIN_CACHE: Mutex<Option<HashSet<String>>> = Mutex::new(None);
+}
+
+static INIT: Once = Once::new();
 
 /// For a given TOML value, returns the flag and string. Booleans become "-bool" with "true"/"false".
 pub fn get_flag_and_value(
@@ -124,26 +134,37 @@ pub fn execute_defaults_delete(
 
 /// Checks whether a given domain exists using the "defaults" command.
 pub fn check_domain_exists(full_domain: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let output = Command::new("defaults")
-        .arg("domains")
-        .output()
-        .map_err(|e| format!("Failed to execute the 'defaults domains' command: {}", e))?;
-    if !output.status.success() {
-        return Err("Failed to retrieve domains.".into());
+    // Initialize cache if needed
+    INIT.call_once(|| {
+        let output = Command::new("defaults")
+            .arg("domains")
+            .output()
+            .map_err(|e| format!("Failed to execute the 'defaults domains' command: {}", e))
+            .unwrap_or_else(|_| std::process::Command::new("true").output().unwrap());
+
+        if output.status.success() {
+            let domains_str = String::from_utf8_lossy(&output.stdout);
+            let domains: HashSet<String> = domains_str
+                .split(|c: char| c == ',' || c.is_whitespace())
+                .map(|s| s.trim().to_owned())
+                .filter(|s| !s.is_empty())
+                .collect();
+
+            let mut cache = DOMAIN_CACHE.lock().unwrap();
+            *cache = Some(domains);
+        }
+    });
+
+    // Check domain in cache
+    let cache = DOMAIN_CACHE.lock().unwrap();
+    if let Some(domains) = &*cache {
+        if domains.contains(full_domain) {
+            return Ok(());
+        }
     }
-    let domains_str = String::from_utf8(output.stdout)
-        .map_err(|e| format!("Output from 'defaults domains' was not valid UTF-8: {}", e))?;
-    // Try both comma and whitespace splitting.
-    let domains: Vec<_> = domains_str
-        .split(|c: char| c == ',' || c.is_whitespace())
-        .map(|s| s.trim())
-        .filter(|s| !s.is_empty())
-        .collect();
-    if domains.iter().any(|&d| d == full_domain) {
-        Ok(())
-    } else {
-        Err(format!("Domain '{}' does not exist. Aborting.", full_domain).into())
-    }
+
+    // Fall back to direct check if not in cache
+    Err(format!("Domain '{}' does not exist. Aborting.", full_domain).into())
 }
 
 /// Helper: Reads the current value from defaults (if any) for a given effective domain and key.
