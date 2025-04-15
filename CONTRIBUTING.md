@@ -17,7 +17,7 @@ The commonplace of contributing is to first clone the repository and install the
 The prerequisites are as follows:
 
 - [Rust](https://www.rust-lang.org/tools/install) (`cutler` is configured to use the 2024 edition of the language)
-- A Mac (preferably with [Apple Silicon](https://support.apple.com/en-us/HT211814)) for rapid development.
+- A Mac (preferably with [Apple Silicon](https://support.apple.com/en-us/HT211814)) for rapid development
 
 ### Cloning the repository
 
