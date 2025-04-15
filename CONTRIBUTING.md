@@ -7,6 +7,7 @@ This is the standard contribution/development guidelines for the project. You ma
 - [Getting Started](#getting-started)
 - [Project Hierarchy](#project-hierarchy)
 - [Code Formatting](#code-formatting)
+- [The Landing Page](#the-landing-page)
 - [Licensing](#licensing)
 
 ## Getting Started
@@ -87,6 +88,14 @@ Simply run the following command to format the code:
 cargo fmt
 ```
 
+## The Landing Page
+
+Since I like creating websites for most of my primary and hobby projects, I decided it'd be good to have one for this project as well!
+
+The page is hosted on GitHub Pages which you can find via [this link here](https://hitblast.github.io/cutler/). You can also see or contribute to [its source code](https://github.com/hitblast/cutler/tree/main/landing).
+
+It uses the GitHub Actions Runner-based deployment, for which you can find the workflow file here: [.github/workflows/deploy-to-pages.yml](https://github.com/hitblast/cutler/blob/main/.github/workflows/deploy-to-pages.yml).
+
 ## Licensing
 
-This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/hitblast/cutler/blob/main/LICENSE) file for details.
