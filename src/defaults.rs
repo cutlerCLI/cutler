@@ -1,16 +1,6 @@
-use lazy_static::lazy_static;
-use std::collections::HashSet;
-use std::process::Command;
-use std::sync::{Mutex, Once};
 use toml::Value;
 
 use crate::logging::{LogLevel, print_log};
-
-lazy_static! {
-    static ref DOMAIN_CACHE: Mutex<Option<HashSet<String>>> = Mutex::new(None);
-}
-
-static INIT: Once = Once::new();
 
 /// For a given TOML value, returns the flag and string. Booleans become "-bool" with "true"/"false".
 pub fn get_flag_and_value(
@@ -28,6 +18,62 @@ pub fn get_flag_and_value(
     }
 }
 
+/// Executes a defaults command with the given parameters and handles logging.
+fn execute_defaults_command(
+    command: &str,
+    eff_domain: &str,
+    eff_key: &str,
+    extra_args: Vec<&str>,
+    action: &str,
+    verbose: bool,
+    dry_run: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let mut cmd_display = format!("defaults {} {} \"{}\"", command, eff_domain, eff_key);
+    for arg in &extra_args {
+        cmd_display.push_str(&format!(" \"{}\"", arg));
+    }
+
+    if dry_run {
+        print_log(
+            LogLevel::Info,
+            &format!("Dry-run: Would execute: {}", cmd_display),
+        );
+        return Ok(());
+    }
+
+    if verbose {
+        print_log(LogLevel::Info, &format!("{}: {}", action, cmd_display));
+    }
+
+    let mut cmd = std::process::Command::new("defaults");
+    cmd.arg(command).arg(eff_domain).arg(eff_key);
+
+    for arg in extra_args {
+        cmd.arg(arg);
+    }
+
+    let output = cmd.output()?;
+
+    if !output.status.success() {
+        print_log(
+            LogLevel::Error,
+            &format!(
+                "Failed to {} setting '{}' for {}.",
+                action.to_lowercase(),
+                eff_key,
+                eff_domain
+            ),
+        );
+    } else if verbose {
+        print_log(
+            LogLevel::Success,
+            &format!("{} setting '{}' for {}.", action, eff_key, eff_domain),
+        );
+    }
+
+    Ok(())
+}
+
 /// Executes a "defaults write" command with the given parameters.
 pub fn execute_defaults_write(
     eff_domain: &str,
@@ -38,49 +84,15 @@ pub fn execute_defaults_write(
     verbose: bool,
     dry_run: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    if dry_run {
-        print_log(
-            LogLevel::Info,
-            &format!(
-                "Dry-run: Would execute: defaults write {} \"{}\" {} \"{}\"",
-                eff_domain, eff_key, flag, value_str
-            ),
-        );
-        return Ok(());
-    }
-    if verbose {
-        print_log(
-            LogLevel::Info,
-            &format!(
-                "{}: defaults write {} \"{}\" {} \"{}\"",
-                action, eff_domain, eff_key, flag, value_str
-            ),
-        );
-    }
-    let output = Command::new("defaults")
-        .arg("write")
-        .arg(eff_domain)
-        .arg(eff_key)
-        .arg(flag)
-        .arg(value_str)
-        .output()?;
-    if !output.status.success() {
-        print_log(
-            LogLevel::Error,
-            &format!(
-                "Failed to {} setting '{}' for {}.",
-                action.to_lowercase(),
-                eff_key,
-                eff_domain
-            ),
-        );
-    } else if verbose {
-        print_log(
-            LogLevel::Success,
-            &format!("{} setting '{}' for {}.", action, eff_key, eff_domain),
-        );
-    }
-    Ok(())
+    execute_defaults_command(
+        "write",
+        eff_domain,
+        eff_key,
+        vec![flag, value_str],
+        action,
+        verbose,
+        dry_run,
+    )
 }
 
 /// Executes a "defaults delete" command with the specified parameters.
@@ -91,112 +103,15 @@ pub fn execute_defaults_delete(
     verbose: bool,
     dry_run: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    if dry_run {
-        print_log(
-            LogLevel::Info,
-            &format!(
-                "Dry-run: Would execute: defaults delete {} \"{}\"",
-                eff_domain, eff_key
-            ),
-        );
-        return Ok(());
-    }
-    if verbose {
-        print_log(
-            LogLevel::Info,
-            &format!("{}: defaults delete {} \"{}\"", action, eff_domain, eff_key),
-        );
-    }
-    let output = Command::new("defaults")
-        .arg("delete")
-        .arg(eff_domain)
-        .arg(eff_key)
-        .output()?;
-    if !output.status.success() {
-        print_log(
-            LogLevel::Error,
-            &format!(
-                "Failed to {} setting '{}' for {}.",
-                action.to_lowercase(),
-                eff_key,
-                eff_domain
-            ),
-        );
-    } else if verbose {
-        print_log(
-            LogLevel::Success,
-            &format!("{} setting '{}' for {}.", action, eff_key, eff_domain),
-        );
-    }
-    Ok(())
-}
-
-/// Checks whether a given domain exists using the "defaults" command.
-pub fn check_domain_exists(full_domain: &str) -> Result<(), Box<dyn std::error::Error>> {
-    // Attempt to initialize cache if needed
-    INIT.call_once(|| {
-        let output = match Command::new("defaults").arg("domains").output() {
-            Ok(output) => output,
-            Err(e) => {
-                print_log(
-                    LogLevel::Warning,
-                    &format!(
-                        "Failed to fetch domains: {}, some domain checks may fail",
-                        e
-                    ),
-                );
-                return; // Cache remains null, indicating that the user should be careful with domain checks
-            }
-        };
-
-        if output.status.success() {
-            let domains_str = String::from_utf8_lossy(&output.stdout);
-            let domains: HashSet<String> = domains_str
-                .split(|c: char| c == ',' || c.is_whitespace())
-                .map(|s| s.trim().to_owned())
-                .filter(|s| !s.is_empty())
-                .collect();
-
-            let mut cache = DOMAIN_CACHE.lock().unwrap();
-            *cache = Some(domains);
-        }
-    });
-
-    // Check domain in cache
-    let cache = DOMAIN_CACHE.lock().unwrap();
-    if let Some(domains) = &*cache {
-        if domains.contains(full_domain) {
-            return Ok(());
-        }
-    } else {
-        // Cache initialization failed, fall back to a direct check
-        let direct_check = Command::new("defaults")
-            .arg("read")
-            .arg(full_domain)
-            .output();
-
-        if direct_check.is_ok() && direct_check.unwrap().status.success() {
-            return Ok(());
-        }
-    }
-
-    // Domain not found in cache or direct check
-    Err(format!("Domain '{}' does not exist. Aborting.", full_domain).into())
-}
-
-/// Helper: Reads the current value from defaults (if any) for a given effective domain and key.
-pub fn get_current_value(eff_domain: &str, eff_key: &str) -> Option<String> {
-    let output = Command::new("defaults")
-        .arg("read")
-        .arg(eff_domain)
-        .arg(eff_key)
-        .output()
-        .ok()?;
-    if !output.status.success() {
-        return None;
-    }
-    let s = String::from_utf8_lossy(&output.stdout).trim().to_string();
-    if s.is_empty() { None } else { Some(s) }
+    execute_defaults_command(
+        "delete",
+        eff_domain,
+        eff_key,
+        vec![],
+        action,
+        verbose,
+        dry_run,
+    )
 }
 
 /// Normalizes the desired value for comparison.

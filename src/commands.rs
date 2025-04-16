@@ -4,13 +4,26 @@ use std::process::Command;
 
 use crate::config::{get_config_path, get_snapshot_path, load_config};
 use crate::defaults::{
-    check_domain_exists, execute_defaults_delete, execute_defaults_write, get_current_value,
-    get_flag_and_value, normalize_desired,
+    execute_defaults_delete, execute_defaults_write, get_flag_and_value, normalize_desired,
 };
-use crate::domains::{collect_domains, get_effective_domain_and_key};
+use crate::domains::{
+    check_domain_exists, collect_domains, get_current_value, get_effective_domain,
+    get_effective_domain_and_key, needs_prefix,
+};
 use crate::logging::{LogLevel, print_log};
 
-/// Applies settings from the configuration file.
+/// Helper function to prompt user for confirmation
+fn confirm_action(prompt: &str) -> io::Result<bool> {
+    print!("{} [y/N]: ", prompt);
+    io::stdout().flush()?;
+
+    let mut input = String::new();
+    io::stdin().read_line(&mut input)?;
+
+    Ok(input.trim().eq_ignore_ascii_case("y"))
+}
+
+/// Applies settings from the configuration file
 pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::error::Error>> {
     let config_path = get_config_path();
 
@@ -19,29 +32,17 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
             LogLevel::Info,
             &format!("Config file not found at {:?}.", config_path),
         );
-        print!("Would you like to create a new configuration? [y/N]: ");
-        io::stdout().flush()?;
 
-        let mut input = String::new();
-        io::stdin().read_line(&mut input)?;
-
-        if input.trim().eq_ignore_ascii_case("y") {
+        if confirm_action("Would you like to create a new configuration?")? {
             init_config(false, false)?;
-            // After creating the config, give the user a chance to edit it before applying
             print_log(
                 LogLevel::Info,
                 "Configuration created. Please review and edit the file before applying.",
             );
-            print!("Would you like to apply the new configuration now? [y/N]: ");
-            io::stdout().flush()?;
 
-            let mut apply_now = String::new();
-            io::stdin().read_line(&mut apply_now)?;
-
-            if !apply_now.trim().eq_ignore_ascii_case("y") {
+            if !confirm_action("Would you like to apply the new configuration now?")? {
                 return Ok(());
             }
-            // If user wants to apply now, continue with the code below
         } else {
             return Err("No config file present. Exiting.".into());
         }
@@ -51,13 +52,15 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
     let current_domains = collect_domains(&current_parsed)?;
 
     for (domain, settings_table) in &current_domains {
-        if !domain.starts_with("NSGlobalDomain") {
+        if needs_prefix(domain) {
             check_domain_exists(&format!("com.apple.{}", domain))?;
         }
 
         for (key, value) in settings_table {
             let (eff_domain, eff_key) = get_effective_domain_and_key(domain, key);
             let desired = normalize_desired(value);
+
+            // Skip if value is already set correctly
             if get_current_value(&eff_domain, &eff_key).map_or(false, |curr| curr == desired) {
                 if verbose {
                     print_log(
@@ -67,6 +70,7 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
                 }
                 continue;
             }
+
             let (flag, value_str) = get_flag_and_value(value)?;
             execute_defaults_write(
                 &eff_domain,
@@ -109,7 +113,7 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
     Ok(())
 }
 
-/// Unapplies settings using the stored snapshot.
+/// Unapplies settings using the stored snapshot
 pub fn unapply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::error::Error>> {
     let snapshot_path = get_snapshot_path();
     if !snapshot_path.exists() {
@@ -124,28 +128,27 @@ pub fn unapply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std:
     let current_domains = collect_domains(&current_parsed)?;
 
     if snap_domains != current_domains {
-        println!("Warning: The snapshot (last applied) differs from the current configuration.");
-        print!("Are you sure you want to unapply everything? [y/N]: ");
-        io::stdout().flush()?;
+        print_log(
+            LogLevel::Warning,
+            "Warning: The snapshot (last applied) differs from the current configuration.",
+        );
 
-        let mut input = String::new();
-        io::stdin().read_line(&mut input)?;
-
-        if input.trim().to_lowercase() != "y" {
+        if !confirm_action("Are you sure you want to unapply everything?")? {
             return Err("Aborted unapply due to configuration differences.".into());
         }
     }
 
     for (domain, settings_table) in snap_domains {
-        if !domain.starts_with("NSGlobalDomain") {
+        if needs_prefix(&domain) {
             check_domain_exists(&format!("com.apple.{}", domain))?;
         }
 
         for (key, value) in settings_table {
             let (eff_domain, eff_key) = get_effective_domain_and_key(&domain, &key);
             let desired = normalize_desired(&value);
-            if let Some(curr) = get_current_value(&eff_domain, &eff_key) {
-                if curr != desired {
+
+            match get_current_value(&eff_domain, &eff_key) {
+                Some(curr) if curr != desired => {
                     print_log(
                         LogLevel::Warning,
                         &format!(
@@ -155,9 +158,10 @@ pub fn unapply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std:
                     );
                     continue;
                 }
-            } else {
-                continue;
+                None => continue,
+                _ => {}
             }
+
             execute_defaults_delete(&eff_domain, &eff_key, "Unapplying", verbose, dry_run)?;
         }
     }
@@ -179,12 +183,14 @@ pub fn unapply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std:
     Ok(())
 }
 
-/// Kills (restarts) Finder, Dock, and SystemUIServer to refresh settings.
+/// Kills (restarts) Finder, Dock, and SystemUIServer to refresh settings
 pub fn restart_system_services(
     verbose: bool,
     dry_run: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    for service in &["Finder", "Dock", "SystemUIServer"] {
+    const SERVICES: [&str; 3] = ["Finder", "Dock", "SystemUIServer"];
+
+    for &service in &SERVICES {
         if dry_run {
             if verbose {
                 print_log(
@@ -204,6 +210,7 @@ pub fn restart_system_services(
             }
         }
     }
+
     if !verbose && !dry_run {
         println!("\n🍎 Done. System services restarted.");
     } else if dry_run {
@@ -212,7 +219,7 @@ pub fn restart_system_services(
     Ok(())
 }
 
-/// Displays the current status comparing the config vs current defaults.
+/// Displays the current status comparing the config vs current defaults
 pub fn status_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
     let config_path = get_config_path();
     if !config_path.exists() {
@@ -233,12 +240,18 @@ pub fn status_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> 
             let desired = normalize_desired(&value);
             let current =
                 get_current_value(&eff_domain, &eff_key).unwrap_or_else(|| "Not set".into());
+
+            let is_changed = current != desired;
+            if is_changed {
+                any_changed = true;
+            }
+
             if verbose {
-                let mut color = crate::logging::GREEN;
-                if current != desired {
-                    any_changed = true;
-                    color = crate::logging::RED;
-                }
+                let color = if is_changed {
+                    crate::logging::RED
+                } else {
+                    crate::logging::GREEN
+                };
                 println!(
                     "{}{} {} -> {} (now {}){}",
                     color,
@@ -248,19 +261,16 @@ pub fn status_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> 
                     current,
                     crate::logging::RESET
                 );
-            } else {
-                if current != desired {
-                    any_changed = true;
-                    println!(
-                        "{} {} -> should be {} (now {}{}{})",
-                        eff_domain,
-                        eff_key,
-                        desired,
-                        crate::logging::RED,
-                        current,
-                        crate::logging::RESET
-                    );
-                }
+            } else if is_changed {
+                println!(
+                    "{} {} -> should be {} (now {}{}{})",
+                    eff_domain,
+                    eff_key,
+                    desired,
+                    crate::logging::RED,
+                    current,
+                    crate::logging::RESET
+                );
             }
         }
     }
@@ -274,7 +284,7 @@ pub fn status_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> 
     Ok(())
 }
 
-/// Deletes the configuration file and offers to unapply settings if they are still active.
+/// Deletes the configuration file and offers to unapply settings if they are still active
 pub fn config_delete(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::error::Error>> {
     let config_path = get_config_path();
     if !config_path.exists() {
@@ -290,12 +300,9 @@ pub fn config_delete(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::er
     let current_parsed = load_config(&config_path)?;
     let current_domains = collect_domains(&current_parsed)?;
     let mut applied_domains = Vec::new();
+
     for (domain, _) in current_domains {
-        let effective_domain = if domain.starts_with("NSGlobalDomain") {
-            "NSGlobalDomain".to_string()
-        } else {
-            format!("com.apple.{}", domain)
-        };
+        let effective_domain = get_effective_domain(&domain);
 
         if Command::new("defaults")
             .arg("read")
@@ -313,17 +320,14 @@ pub fn config_delete(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::er
             "The following domains appear to still be applied: {:?}",
             applied_domains
         );
-        print!("Would you like to unapply these settings before deleting the config file? [y/N]: ");
-        io::stdout().flush()?;
-
-        let mut input = String::new();
-        io::stdin().read_line(&mut input)?;
-
-        if input.trim().eq_ignore_ascii_case("y") {
+        if confirm_action(
+            "Would you like to unapply these settings before deleting the config file?",
+        )? {
             unapply_defaults(verbose, dry_run)?;
         }
     }
 
+    let snapshot_path = get_snapshot_path();
     if dry_run {
         print_log(
             LogLevel::Info,
@@ -332,6 +336,12 @@ pub fn config_delete(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::er
                 config_path
             ),
         );
+        if snapshot_path.exists() {
+            print_log(
+                LogLevel::Info,
+                &format!("Dry-run: Would remove snapshot file at {:?}", snapshot_path),
+            );
+        }
     } else {
         fs::remove_file(&config_path)?;
         if verbose {
@@ -340,16 +350,7 @@ pub fn config_delete(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::er
                 &format!("Configuration file deleted from: {:?}", config_path),
             );
         }
-    }
-
-    let snapshot_path = get_snapshot_path();
-    if snapshot_path.exists() {
-        if dry_run {
-            print_log(
-                LogLevel::Info,
-                &format!("Dry-run: Would remove snapshot file at {:?}", snapshot_path),
-            );
-        } else {
+        if snapshot_path.exists() {
             fs::remove_file(&snapshot_path)?;
         }
     }
@@ -358,7 +359,7 @@ pub fn config_delete(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::er
 
 /// Displays the contents of the configuration file to the terminal.
 pub fn config_show(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::error::Error>> {
-    let config_path = crate::config::get_config_path();
+    let config_path = get_config_path();
     if !config_path.exists() {
         return Err("Configuration file does not exist.".into());
     }
@@ -389,13 +390,7 @@ pub fn init_config(verbose: bool, force: bool) -> Result<(), Box<dyn std::error:
             LogLevel::Warning,
             &format!("Configuration file already exists at {:?}", config_path),
         );
-        print!("Do you want to overwrite it? [y/N]: ");
-        io::stdout().flush()?;
-
-        let mut input = String::new();
-        io::stdin().read_line(&mut input)?;
-
-        if !input.trim().eq_ignore_ascii_case("y") {
+        if !confirm_action("Do you want to overwrite it?")? {
             return Err("Configuration initialization aborted.".into());
         }
     }
