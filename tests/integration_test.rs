@@ -6,9 +6,9 @@ mod tests {
     use std::io::Write;
     use tempfile::TempDir;
 
-    // Integration test to verify the full workflow
-    // This is a simplified version and would require more mocking
-    // for a complete end-to-end test
+    // TODO: Config application process hasn't been included in the integration test yet because
+    // currently doing that would completely blow up my Mac's configuration.
+    // Need a more feasible approach.
 
     #[test]
     fn test_config_to_domains_workflow() {
