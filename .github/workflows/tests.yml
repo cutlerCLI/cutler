@@ -19,8 +19,23 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+
+      - name: Check tests and src folder changes
+        id: check_changes
+        run: |
+          CHANGED=$(git diff --name-only HEAD HEAD~1 | grep -E '^(tests/|src/)' || true)
+          if [ -z "$CHANGED" ]; then
+            echo "No changes in tests or src folders, skipping tests."
+            echo "changes_detected=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changes detected in tests or src folders."
+            echo "changes_detected=true" >> $GITHUB_OUTPUT
+          fi
 
       - name: Cache Rust dependencies
+        if: steps.check_changes.outputs.changes_detected == 'true'
         uses: actions/cache@v3
         with:
           path: |
@@ -32,6 +47,7 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Install Rust toolchain
+        if: steps.check_changes.outputs.changes_detected == 'true'
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -39,24 +55,28 @@ jobs:
           override: true
 
       - name: Build
+        if: steps.check_changes.outputs.changes_detected == 'true'
         uses: actions-rs/cargo@v1
         with:
           command: build
           args: --verbose
 
       - name: Run tests
+        if: steps.check_changes.outputs.changes_detected == 'true'
         uses: actions-rs/cargo@v1
         with:
           command: test
           args: --verbose
 
       - name: Check formatting
+        if: steps.check_changes.outputs.changes_detected == 'true'
         uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --all -- --check
 
       - name: Run clippy
+        if: steps.check_changes.outputs.changes_detected == 'true'
         uses: actions-rs/cargo@v1
         with:
           command: clippy
