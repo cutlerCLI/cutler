@@ -87,6 +87,12 @@ Simply run the following command to format the code:
 cargo fmt
 ```
 
+For catching syntactic errors, you can use the `cargo clippy` command:
+
+```
+cargo clippy -- -D warnings
+```
+
 ## Licensing
 
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/hitblast/cutler/blob/main/LICENSE) file for details.
