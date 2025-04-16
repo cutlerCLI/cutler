@@ -15,6 +15,10 @@ struct Cli {
     #[arg(short, long, global = true)]
     verbose: bool,
 
+    /// Do not restart system services after command execution.
+    #[arg(short, long, global = true)]
+    no_restart_services: bool,
+
     /// Run in dry-run mode. Commands will be printed but not executed.
     #[arg(long, global = true)]
     dry_run: bool,
@@ -74,8 +78,10 @@ fn main() {
                 | Commands::Config {
                     command: ConfigCommand::Delete,
                 } => {
-                    if let Err(e) = restart_system_services(cli.verbose, cli.dry_run) {
-                        eprintln!("🍎 Manual restart might be required: {}", e);
+                    if !cli.no_restart_services {
+                        if let Err(e) = restart_system_services(cli.verbose, cli.dry_run) {
+                            eprintln!("🍎 Manual restart might be required: {}", e);
+                        }
                     }
                 }
                 _ => {}
