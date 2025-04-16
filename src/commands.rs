@@ -61,7 +61,7 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
             let desired = normalize_desired(value);
 
             // Skip if value is already set correctly
-            if get_current_value(&eff_domain, &eff_key).map_or(false, |curr| curr == desired) {
+            if get_current_value(&eff_domain, &eff_key).as_ref() == Some(&desired) {
                 if verbose {
                     print_log(
                         LogLevel::Info,

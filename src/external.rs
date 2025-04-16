@@ -3,11 +3,7 @@ use std::env;
 use std::process::Command;
 use toml::Value;
 
-fn substitute_arg<'a>(
-    arg: &str,
-    variables: Option<&'a toml::value::Table>,
-    result: &mut Vec<String>,
-) {
+fn substitute_arg(arg: &str, variables: Option<&toml::value::Table>, result: &mut Vec<String>) {
     if !arg.starts_with('$') {
         // No substitution needed
         result.push(arg.to_owned());
