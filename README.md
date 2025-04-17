@@ -11,6 +11,9 @@ Powerful, declarative settings management for your Mac, with speed.
 
 </div>
 
+> [!WARNING]
+> Although cutler is solid enough for daily-driving now, expect breaking changes before the v1 release.
+
 > [!IMPORTANT]
 > The prebuilt binaries are compiled and shipped from macOS 14 on arm64.
 > Intel Macs will require a manual compilation of the project.

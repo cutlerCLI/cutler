@@ -2,15 +2,17 @@ use std::fs;
 use std::io::{self, Write};
 use std::process::Command;
 
-use crate::config::{get_config_path, get_snapshot_path, load_config};
+use crate::config::{get_config_path, load_config};
 use crate::defaults::{
-    execute_defaults_delete, execute_defaults_write, get_flag_and_value, normalize_desired,
+    execute_defaults_delete, execute_defaults_write, get_flag_and_value, get_flag_for_value,
+    normalize_desired,
 };
 use crate::domains::{
     check_domain_exists, collect_domains, get_current_value, get_effective_domain,
     get_effective_domain_and_key, needs_prefix,
 };
 use crate::logging::{LogLevel, print_log};
+use crate::snapshot::{ExternalCommandState, SettingState, Snapshot, get_snapshot_path};
 
 /// Helper function to prompt user for confirmation
 fn confirm_action(prompt: &str) -> io::Result<bool> {
@@ -51,6 +53,9 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
     let current_parsed = load_config(&config_path)?;
     let current_domains = collect_domains(&current_parsed)?;
 
+    // Create a new snapshot
+    let mut snapshot = Snapshot::new();
+
     for (domain, settings_table) in &current_domains {
         if needs_prefix(domain) {
             check_domain_exists(&format!("com.apple.{}", domain))?;
@@ -60,8 +65,11 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
             let (eff_domain, eff_key) = get_effective_domain_and_key(domain, key);
             let desired = normalize_desired(value);
 
+            // Capture the original value before changing it
+            let original_value = get_current_value(&eff_domain, &eff_key);
+
             // Skip if value is already set correctly
-            if get_current_value(&eff_domain, &eff_key).as_ref() == Some(&desired) {
+            if original_value.as_ref() == Some(&desired) {
                 if verbose {
                     print_log(
                         LogLevel::Info,
@@ -70,6 +78,14 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
                 }
                 continue;
             }
+
+            // Store in snapshot
+            snapshot.settings.push(SettingState {
+                domain: eff_domain.clone(),
+                key: eff_key.clone(),
+                original_value,
+                new_value: desired.clone(),
+            });
 
             let (flag, value_str) = get_flag_and_value(value)?;
             execute_defaults_write(
@@ -84,32 +100,68 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
         }
     }
 
-    // Copying the snapshot file
+    // Save the snapshot file first, before executing external commands
     let snapshot_path = get_snapshot_path();
     if dry_run {
         print_log(
             LogLevel::Info,
-            &format!(
-                "Dry-run: Would copy config file from {:?} to {:?}",
-                config_path, snapshot_path
-            ),
+            &format!("Dry-run: Would save snapshot to {:?}", snapshot_path),
         );
     } else {
-        fs::copy(&config_path, &snapshot_path)?;
+        // Store external commands in snapshot
+        // This helps cutler to skip external commands if applied multiple times
+        if let Some(ext_section) = current_parsed.get("external") {
+            if let Some(commands_array) = ext_section.get("command").and_then(|v| v.as_array()) {
+                for command_val in commands_array {
+                    if let Some(command_table) = command_val.as_table() {
+                        if let Some(cmd) = command_table.get("cmd").and_then(|v| v.as_str()) {
+                            let args: Vec<String> = if let Some(arg_val) = command_table.get("args")
+                            {
+                                if let Some(arr) = arg_val.as_array() {
+                                    arr.iter()
+                                        .filter_map(|a| a.as_str())
+                                        .map(|s| s.to_string())
+                                        .collect()
+                                } else {
+                                    Vec::new()
+                                }
+                            } else {
+                                Vec::new()
+                            };
+
+                            let sudo = command_table
+                                .get("sudo")
+                                .and_then(|v| v.as_bool())
+                                .unwrap_or(false);
+
+                            snapshot.external_commands.push(ExternalCommandState {
+                                cmd: cmd.to_string(),
+                                args,
+                                sudo,
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        snapshot.save_to_file(&snapshot_path)?;
         if verbose {
             print_log(
                 LogLevel::Success,
-                &format!("Snapshot updated at {:?}", snapshot_path),
+                &format!("Snapshot saved to {:?}", snapshot_path),
             );
         }
     }
 
+    // Execute external commands using existing function
     if let Err(e) = crate::external::execute_external_commands(&current_parsed, verbose, dry_run) {
         print_log(
             LogLevel::Warning,
             &format!("Failed to execute external commands: {}", e),
         );
     }
+
     Ok(())
 }
 
@@ -120,52 +172,71 @@ pub fn unapply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std:
         return Err("No snapshot found. Please apply settings first before unapplying.".into());
     }
 
-    let snap_parsed = load_config(&snapshot_path)?;
-    let snap_domains = collect_domains(&snap_parsed)?;
+    // Load the snapshot
+    let snapshot = Snapshot::load_from_file(&snapshot_path)?;
 
-    let config_path = get_config_path();
-    let current_parsed = load_config(&config_path)?;
-    let current_domains = collect_domains(&current_parsed)?;
+    // Unapply settings in reverse order (to handle dependencies correctly)
+    for setting in snapshot.settings.iter().rev() {
+        match &setting.original_value {
+            Some(orig_val) => {
+                // Restore to original value
+                let (flag, value_str) = get_flag_for_value(orig_val)?;
 
-    if snap_domains != current_domains {
-        print_log(
-            LogLevel::Warning,
-            "Warning: The snapshot (last applied) differs from the current configuration.",
-        );
+                execute_defaults_write(
+                    &setting.domain,
+                    &setting.key,
+                    flag,
+                    &value_str,
+                    "Restoring",
+                    verbose,
+                    dry_run,
+                )?;
 
-        if !confirm_action("Are you sure you want to unapply everything?")? {
-            return Err("Aborted unapply due to configuration differences.".into());
-        }
-    }
-
-    for (domain, settings_table) in snap_domains {
-        if needs_prefix(&domain) {
-            check_domain_exists(&format!("com.apple.{}", domain))?;
-        }
-
-        for (key, value) in settings_table {
-            let (eff_domain, eff_key) = get_effective_domain_and_key(&domain, &key);
-            let desired = normalize_desired(&value);
-
-            match get_current_value(&eff_domain, &eff_key) {
-                Some(curr) if curr != desired => {
+                if verbose {
                     print_log(
-                        LogLevel::Warning,
+                        LogLevel::Success,
                         &format!(
-                            "{}.{} has been modified (expected {} but got {}). Skipping removal.",
-                            eff_domain, eff_key, desired, curr
+                            "Restored {}.{} to original value: {}",
+                            setting.domain, setting.key, orig_val
                         ),
                     );
-                    continue;
                 }
-                None => continue,
-                _ => {}
             }
+            None => {
+                // Setting didn't exist before, so delete it
+                execute_defaults_delete(
+                    &setting.domain,
+                    &setting.key,
+                    "Removing",
+                    verbose,
+                    dry_run,
+                )?;
 
-            execute_defaults_delete(&eff_domain, &eff_key, "Unapplying", verbose, dry_run)?;
+                if verbose {
+                    print_log(
+                        LogLevel::Success,
+                        &format!(
+                            "Removed {}.{} (didn't exist before cutler)",
+                            setting.domain, setting.key
+                        ),
+                    );
+                }
+            }
         }
     }
 
+    // Note about external commands not being reverted
+    if !snapshot.external_commands.is_empty() {
+        print_log(
+            LogLevel::Warning,
+            &format!(
+                "{} external commands were executed but cannot be automatically reverted.",
+                snapshot.external_commands.len()
+            ),
+        );
+    }
+
+    // Remove the snapshot file
     if dry_run {
         print_log(
             LogLevel::Info,
@@ -180,6 +251,7 @@ pub fn unapply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std:
             );
         }
     }
+
     Ok(())
 }
 
@@ -224,16 +296,17 @@ pub fn status_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> 
     let config_path = get_config_path();
     if !config_path.exists() {
         return Err(
-            "No config file found. Please run 'cutler apply' first, or create a config file."
-                .into(),
+            "No config file found. Please run 'cutler init' first, or create a config file.".into(),
         );
     }
 
     let parsed_config = load_config(&config_path)?;
     let domains = collect_domains(&parsed_config)?;
-    let mut any_changed = false;
 
-    println!();
+    println!("\n{} Current Status:", crate::logging::BOLD);
+
+    let mut any_different = false;
+
     for (domain, settings_table) in domains {
         for (key, value) in settings_table {
             let (eff_domain, eff_key) = get_effective_domain_and_key(&domain, &key);
@@ -241,33 +314,26 @@ pub fn status_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> 
             let current =
                 get_current_value(&eff_domain, &eff_key).unwrap_or_else(|| "Not set".into());
 
-            let is_changed = current != desired;
-            if is_changed {
-                any_changed = true;
-            }
-
-            if verbose {
-                let color = if is_changed {
-                    crate::logging::RED
-                } else {
-                    crate::logging::GREEN
-                };
+            let is_different = current != desired;
+            if is_different {
+                any_different = true;
                 println!(
-                    "{}{} {} -> {} (now {}){}",
-                    color,
-                    eff_domain,
-                    eff_key,
-                    desired,
-                    current,
-                    crate::logging::RESET
-                );
-            } else if is_changed {
-                println!(
-                    "{} {} -> should be {} (now {}{}{})",
+                    "{}{}.{}: should be {} (currently {}{}{}){}",
+                    crate::logging::BOLD,
                     eff_domain,
                     eff_key,
                     desired,
                     crate::logging::RED,
+                    current,
+                    crate::logging::RESET,
+                    crate::logging::RESET
+                );
+            } else if verbose {
+                println!(
+                    "{}{}.{}: {} (matches desired value){}",
+                    crate::logging::GREEN,
+                    eff_domain,
+                    eff_key,
                     current,
                     crate::logging::RESET
                 );
@@ -275,10 +341,10 @@ pub fn status_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> 
         }
     }
 
-    if !any_changed {
-        println!("🍎 Nothing to change.");
+    if !any_different {
+        println!("🍎 All settings already match your configuration.");
     } else {
-        println!("\nRun `cutler apply` to reapply these changes from your config.")
+        println!("\nRun `cutler apply` to apply these changes from your config.");
     }
 
     Ok(())

@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use cutler::defaults::{get_flag_and_value, normalize_desired};
+    use cutler::defaults::{get_flag_and_value, get_flag_for_value, normalize_desired};
     use toml::Value;
 
     #[test]
@@ -28,6 +28,33 @@ mod tests {
         let (flag, value) = get_flag_and_value(&Value::String("test".to_string())).unwrap();
         assert_eq!(flag, "-string");
         assert_eq!(value, "test");
+    }
+
+    #[test]
+    fn test_get_flag_for_value() {
+        // Test boolean-like strings
+        let (flag, value) = get_flag_for_value("true").unwrap();
+        assert_eq!(flag, "-bool");
+        assert_eq!(value, "true");
+
+        let (flag, value) = get_flag_for_value("0").unwrap();
+        assert_eq!(flag, "-bool");
+        assert_eq!(value, "0");
+
+        // Test integer-like strings
+        let (flag, value) = get_flag_for_value("42").unwrap();
+        assert_eq!(flag, "-int");
+        assert_eq!(value, "42");
+
+        // Test float-like strings
+        let (flag, value) = get_flag_for_value("3.14").unwrap();
+        assert_eq!(flag, "-float");
+        assert_eq!(value, "3.14");
+
+        // Test regular strings
+        let (flag, value) = get_flag_for_value("test string").unwrap();
+        assert_eq!(flag, "-string");
+        assert_eq!(value, "test string");
     }
 
     #[test]

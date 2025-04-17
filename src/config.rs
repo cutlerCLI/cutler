@@ -40,15 +40,6 @@ pub fn get_config_path() -> PathBuf {
         .unwrap_or_else(|| PathBuf::from("config.toml"))
 }
 
-/// Returns the path where the snapshot is stored.
-pub fn get_snapshot_path() -> PathBuf {
-    if let Some(home) = env::var_os("HOME") {
-        PathBuf::from(home).join(".cutler_snapshot")
-    } else {
-        PathBuf::from(".cutler_snapshot")
-    }
-}
-
 /// Helper: Read and parse the configuration file at a given path.
 pub fn load_config(path: &PathBuf) -> Result<Value, Box<dyn std::error::Error>> {
     let content = fs::read_to_string(path)?;

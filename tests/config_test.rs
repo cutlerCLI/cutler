@@ -1,10 +1,9 @@
 #[cfg(test)]
 mod tests {
-    use cutler::config::{get_config_path, get_snapshot_path, load_config};
+    use cutler::config::{get_config_path, load_config};
     use std::env;
     use std::fs::{self, File};
     use std::io::Write;
-    use std::path::PathBuf;
     use tempfile::TempDir;
 
     // We need to test path resolution with environment variables
@@ -32,26 +31,6 @@ mod tests {
 
         // Clean up
         unsafe { env::remove_var("XDG_CONFIG_HOME") };
-    }
-
-    #[test]
-    fn test_get_snapshot_path() {
-        // Setup a temporary directory for testing
-        let temp_dir = TempDir::new().unwrap();
-        let temp_path = temp_dir.path();
-
-        // Set HOME to our temp directory
-        unsafe { env::set_var("HOME", temp_path.to_str().unwrap()) };
-
-        // Test that get_snapshot_path returns .cutler_snapshot in the home directory
-        let snapshot_path = get_snapshot_path();
-        assert_eq!(
-            snapshot_path,
-            PathBuf::from(temp_path).join(".cutler_snapshot")
-        );
-
-        // Clean up
-        unsafe { env::remove_var("HOME") };
     }
 
     #[test]

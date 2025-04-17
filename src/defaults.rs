@@ -18,6 +18,29 @@ pub fn get_flag_and_value(
     }
 }
 
+/// Determines the appropriate flag for a value when restoring from a snapshot
+pub fn get_flag_for_value(
+    value: &str,
+) -> Result<(&'static str, String), Box<dyn std::error::Error>> {
+    // bool
+    if value == "1" || value == "0" || value == "true" || value == "false" {
+        return Ok(("-bool", value.to_string()));
+    }
+
+    // integer
+    if value.parse::<i64>().is_ok() {
+        return Ok(("-int", value.to_string()));
+    }
+
+    // float
+    if value.parse::<f64>().is_ok() {
+        return Ok(("-float", value.to_string()));
+    }
+
+    // Default to string type
+    Ok(("-string", value.to_string()))
+}
+
 /// Executes a defaults command with the given parameters and handles logging.
 fn execute_defaults_command(
     command: &str,

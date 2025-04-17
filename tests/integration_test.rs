@@ -55,4 +55,71 @@ mod tests {
         let keyboard = domains.get("NSGlobalDomain.com.apple.keyboard").unwrap();
         assert_eq!(keyboard.get("fnState").unwrap().as_bool().unwrap(), false);
     }
+
+    #[test]
+    fn test_snapshot_integration() {
+        use cutler::defaults::get_flag_for_value;
+        use cutler::snapshot::{ExternalCommandState, SettingState, Snapshot};
+        use tempfile::TempDir;
+
+        // Create a sample snapshot
+        let mut snapshot = Snapshot::new();
+
+        // Add settings with different patterns
+        snapshot.settings.push(SettingState {
+            domain: "com.apple.dock".to_string(),
+            key: "tilesize".to_string(),
+            original_value: Some("36".to_string()),
+            new_value: "46".to_string(),
+        });
+
+        snapshot.settings.push(SettingState {
+            domain: "com.apple.finder".to_string(),
+            key: "ShowPathbar".to_string(),
+            original_value: None,
+            new_value: "1".to_string(),
+        });
+
+        // Add an external command
+        snapshot.external_commands.push(ExternalCommandState {
+            cmd: "echo".to_string(),
+            args: vec!["Hello".to_string()],
+            sudo: false,
+        });
+
+        // Create a temporary directory for the test
+        let temp_dir = TempDir::new().unwrap();
+        let snapshot_path = temp_dir.path().join(".cutler_snapshot");
+
+        // Save the snapshot
+        snapshot.save_to_file(&snapshot_path).unwrap();
+
+        // Simulate what happens during unapply:
+        // 1. Load the snapshot
+        let loaded_snapshot = Snapshot::load_from_file(&snapshot_path).unwrap();
+
+        // 2. For each setting, identify the flag and value for restoring the original value
+        for setting in loaded_snapshot.settings.iter() {
+            match &setting.original_value {
+                Some(orig_val) => {
+                    // This is what we'd do to restore the original value
+                    let (flag, value) = get_flag_for_value(orig_val).unwrap();
+
+                    // Verify the type detection works correctly
+                    if orig_val == "36" {
+                        assert_eq!(flag, "-int");
+                        assert_eq!(value, "36");
+                    }
+                }
+                None => {
+                    // For settings that didn't exist before, we'd just delete them
+                    // No assertions needed here as we're just simulating the process
+                }
+            }
+        }
+
+        // 3. Verify external commands are tracked correctly
+        assert_eq!(loaded_snapshot.external_commands.len(), 1);
+        assert_eq!(loaded_snapshot.external_commands[0].cmd, "echo");
+    }
 }
