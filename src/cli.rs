@@ -31,6 +31,12 @@ pub enum Commands {
     },
     /// Unapply (delete) defaults from the config file.
     Unapply,
+    /// Hard reset domains in the config file (dangerous, ignores snapshots)
+    Reset {
+        /// Skip confirmation prompt
+        #[arg(short, long)]
+        force: bool,
+    },
     /// Display current status comparing the config vs current defaults.
     Status,
     /// Manage the configuration file.

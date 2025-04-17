@@ -350,6 +350,87 @@ pub fn status_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> 
     Ok(())
 }
 
+/// Hard resets all domains from the config file without using the snapshot
+pub fn reset_defaults(
+    verbose: bool,
+    dry_run: bool,
+    force: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let config_path = get_config_path();
+    if !config_path.exists() {
+        return Err(
+            "No config file found. Please run 'cutler init' first, or create a config file.".into(),
+        );
+    }
+
+    print_log(
+        LogLevel::Warning,
+        "This command will DELETE all settings defined in your config file.",
+    );
+    print_log(
+        LogLevel::Warning,
+        "Settings will be reset to macOS defaults, not to their previous values.",
+    );
+
+    if !force && !confirm_action("Are you sure you want to continue?")? {
+        return Ok(());
+    }
+
+    let current_parsed = load_config(&config_path)?;
+    let current_domains = collect_domains(&current_parsed)?;
+
+    for (domain, settings_table) in &current_domains {
+        for (key, _) in settings_table {
+            let (eff_domain, eff_key) = get_effective_domain_and_key(domain, key);
+
+            // Check if the key exists before trying to delete it
+            let exists = get_current_value(&eff_domain, &eff_key).is_some();
+
+            if exists {
+                execute_defaults_delete(&eff_domain, &eff_key, "Resetting", verbose, dry_run)?;
+
+                if verbose {
+                    print_log(
+                        LogLevel::Success,
+                        &format!("Reset {}.{} to system default", eff_domain, eff_key),
+                    );
+                }
+            } else if verbose {
+                print_log(
+                    LogLevel::Info,
+                    &format!("Skipping {}.{} (not set)", eff_domain, eff_key),
+                );
+            }
+        }
+    }
+
+    // Also remove the snapshot file if it exists
+    let snapshot_path = get_snapshot_path();
+    if snapshot_path.exists() {
+        if dry_run {
+            print_log(
+                LogLevel::Info,
+                &format!("Dry-run: Would remove snapshot file at {:?}", snapshot_path),
+            );
+        } else {
+            if let Err(e) = fs::remove_file(&snapshot_path) {
+                print_log(
+                    LogLevel::Warning,
+                    &format!("Failed to remove snapshot file: {}", e),
+                );
+            } else if verbose {
+                print_log(
+                    LogLevel::Success,
+                    &format!("Removed snapshot file at {:?}", snapshot_path),
+                );
+            }
+        }
+    }
+
+    println!("\n🍎 Reset complete. All configured settings have been removed.");
+
+    Ok(())
+}
 /// Deletes the configuration file and offers to unapply settings if they are still active
 pub fn config_delete(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::error::Error>> {
     let config_path = get_config_path();
