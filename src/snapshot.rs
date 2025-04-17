@@ -59,7 +59,7 @@ impl Snapshot {
         match serde_json::from_str(&content) {
             Ok(snapshot) => Ok(snapshot),
             Err(_) => Err(format!(
-                "Failed to parse snapshot. Please delete the file using 'rm {}' and try again.",
+                "Failed to parse snapshot. Delete file using: \n\nrm {}\n\nDue to snapshot being invalid, cutler cannot unapply any applied changes.",
                 path.display()
             )
             .into()),
