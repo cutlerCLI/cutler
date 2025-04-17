@@ -207,17 +207,17 @@ cutler help
 
 ## Shell Completions
 
-Cutler supports shell completions for Bash and Zsh, making it easier to use the CLI.
+Cutler currently supports automatically generating shell completions for Bash and Zsh, making it easier to use the project for power users.
 
 ### Installing Shell Completions
 
 Generate completions with:
 
 ```bash
-# For Bash completions
+# For bash users
 cutler completion bash
 
-# For Zsh completions
+# For zsh users
 cutler completion zsh
 
 # Specify a different output directory:
@@ -227,14 +227,15 @@ cutler completion zsh --dir ~/.zfunc
 
 #### Bash Completion Setup
 
-For temporary use in the current session:
+Assuming you've generated the completion script using the command given above, you can source it like this for temporary use:
+
 ```bash
 source ./cutler.bash
 ```
 
 For permanent use, add to your `~/.bashrc`:
 ```bash
-source /path/to/cutler.bash
+source /path/to/cutler.bash > ~/.bashrc
 ```
 
 #### Zsh Completion Setup
@@ -244,12 +245,12 @@ source /path/to/cutler.bash
 mkdir -p ~/.zfunc
 ```
 
-2. Copy the completion file:
+2. Assuming you've already generated the configuration file from the command given above, you can copy the completion file:
 ```bash
 cp _cutler ~/.zfunc/
 ```
 
-3. Add to your `~/.zshrc`:
+3. Then, add to your `~/.zshrc`:
 ```bash
 fpath=(~/.zfunc $fpath)
 autoload -U compinit && compinit
