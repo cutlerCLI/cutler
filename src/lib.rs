@@ -1,4 +1,6 @@
+pub mod cli;
 pub mod commands;
+pub mod completions;
 pub mod config;
 pub mod defaults;
 pub mod domains;

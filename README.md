@@ -11,14 +11,6 @@ Powerful, declarative settings management for your Mac, with speed.
 
 </div>
 
-## 🍺 Installation
-
-Install cutler using [Homebrew](https://brew.sh) by simply running:
-
-```bash
-brew install hitblast/tap/cutler
-```
-
 > [!IMPORTANT]
 > The prebuilt binaries are compiled and shipped from macOS 14 on arm64.
 > Intel Macs will require a manual compilation of the project.
@@ -26,13 +18,10 @@ brew install hitblast/tap/cutler
 ## Table of Contents
 
 - [Overview](#overview)
-- [Other Installation Methods](#other-installation-methods)
+- [Installation](#installation)
 - [Usage](#usage)
-  - [Anatomy](#basic-anatomy)
-  - [Defaults and External Commands](#defaults-and-external-commands)
-  - [Applying Changes and Status Review](#applying-changes-and-status-review)
+- [Shell Completions](#shell-completions)
 - [Resources](#resources)
-- [Notable Things](#notable-things)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -51,7 +40,13 @@ shell script to automate things.
 
 Check out the [Usage](#usage) section for more details.
 
-## Other Installation Methods
+## Installation
+
+- Install cutler using 🍺 [Homebrew](https://brew.sh/):
+
+```bash
+brew install hitblast/tap/cutler
+```
 
 Besides using Homebrew as shown above, you can install the project in a couple of other ways:
 
@@ -174,8 +169,9 @@ cutler apply
 ```
 
 After `cutler` updates the defaults, it will also:
-- Execute any external commands defined in the `[external]` section.
-- Restart necessary system services on your Mac so that the new settings take effect.
+1. Execute any external commands defined in the `[external]` section.
+2. Restart necessary system services on your Mac so that the new settings take effect.
+3. Create a snapshot file named `.cutler_snapshot` in your home directory. This file records your configuration state and helps with reverting later on.
 
 To verify current settings against your configuration, run:
 
@@ -206,13 +202,60 @@ additional information about all available commands, run:
 cutler help
 ```
 
-## Notable Things
+## Shell Completions
 
-When you run `cutler apply`, a snapshot file named `.cutler_snapshot` is created
-in your home directory. This file records your configuration state and lets you
-revert to a previous setup if needed. It’s important not to overwrite or delete
-this file manually, as it is essential for maintaining the integrity of your
-configuration.
+Cutler supports shell completions for Bash and Zsh, making it easier to use the CLI.
+
+### Installing Shell Completions
+
+Generate completions with:
+
+```bash
+# For Bash completions
+cutler completion bash
+
+# For Zsh completions
+cutler completion zsh
+
+# Specify a different output directory:
+cutler completion bash --dir ~/.local/share/bash-completion/completions
+cutler completion zsh --dir ~/.zfunc
+```
+
+#### Bash Completion Setup
+
+For temporary use in the current session:
+```bash
+source ./cutler.bash
+```
+
+For permanent use, add to your `~/.bashrc`:
+```bash
+source /path/to/cutler.bash
+```
+
+#### Zsh Completion Setup
+
+1. Make sure you have a directory for custom completions:
+```bash
+mkdir -p ~/.zfunc
+```
+
+2. Copy the completion file:
+```bash
+cp _cutler ~/.zfunc/
+```
+
+3. Add to your `~/.zshrc`:
+```bash
+fpath=(~/.zfunc $fpath)
+autoload -U compinit && compinit
+```
+
+4. Restart your shell or run:
+```bash
+source ~/.zshrc
+```
 
 ## Resources
 

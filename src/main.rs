@@ -1,59 +1,14 @@
-use clap::{Parser, Subcommand};
+use clap::Parser;
 use cutler::{
+    cli::{Cli, Commands, ConfigCommand},
     commands::{
         apply_defaults, config_delete, config_show, init_config, restart_system_services,
         status_defaults, unapply_defaults,
     },
+    completions::generate_completion,
     logging::{LogLevel, print_log},
 };
-
-/// Declarative macOS settings management at your fingertips, with speed.
-#[derive(Parser)]
-#[command(name = "cutler", version, about)]
-struct Cli {
-    /// Increase output verbosity.
-    #[arg(short, long, global = true)]
-    verbose: bool,
-
-    /// Do not restart system services after command execution.
-    #[arg(short, long, global = true)]
-    no_restart_services: bool,
-
-    /// Run in dry-run mode. Commands will be printed but not executed.
-    #[arg(long, global = true)]
-    dry_run: bool,
-
-    #[command(subcommand)]
-    command: Commands,
-}
-
-#[derive(Subcommand)]
-enum Commands {
-    /// Apply defaults from the config file.
-    Apply,
-    /// Initialize a new configuration file with sensible defaults.
-    Init {
-        #[arg(short, long)]
-        force: bool,
-    },
-    /// Unapply (delete) defaults from the config file.
-    Unapply,
-    /// Display current status comparing the config vs current defaults.
-    Status,
-    /// Manage the configuration file.
-    Config {
-        #[command(subcommand)]
-        command: ConfigCommand,
-    },
-}
-
-#[derive(Subcommand)]
-enum ConfigCommand {
-    /// Display the contents of the configuration file.
-    Show,
-    /// Delete the configuration file.
-    Delete,
-}
+use std::path::Path;
 
 fn main() {
     let cli = Cli::parse();
@@ -67,6 +22,8 @@ fn main() {
             ConfigCommand::Show => config_show(cli.verbose, cli.dry_run),
             ConfigCommand::Delete => config_delete(cli.verbose, cli.dry_run),
         },
+        Commands::Completion { shell, dir } => generate_completion(*shell, Path::new(dir))
+            .map_err(|e| format!("Failed to generate completion: {}", e).into()),
     };
 
     match result {
