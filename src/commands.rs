@@ -412,18 +412,16 @@ pub fn reset_defaults(
                 LogLevel::Info,
                 &format!("Dry-run: Would remove snapshot file at {:?}", snapshot_path),
             );
-        } else {
-            if let Err(e) = fs::remove_file(&snapshot_path) {
-                print_log(
-                    LogLevel::Warning,
-                    &format!("Failed to remove snapshot file: {}", e),
-                );
-            } else if verbose {
-                print_log(
-                    LogLevel::Success,
-                    &format!("Removed snapshot file at {:?}", snapshot_path),
-                );
-            }
+        } else if let Err(e) = fs::remove_file(&snapshot_path) {
+            print_log(
+                LogLevel::Warning,
+                &format!("Failed to remove snapshot file: {}", e),
+            );
+        } else if verbose {
+            print_log(
+                LogLevel::Success,
+                &format!("Removed snapshot file at {:?}", snapshot_path),
+            );
         }
     }
 
