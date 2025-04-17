@@ -169,7 +169,7 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
 pub fn unapply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::error::Error>> {
     let snapshot_path = get_snapshot_path();
     if !snapshot_path.exists() {
-        return Err("No snapshot found. Please apply settings first before unapplying.".into());
+        return Err("No snapshot found. Please apply settings first before unapplying.\nAs a fallback, you can use 'cutler reset' to reset settings to defaults.".into());
     }
 
     // Load the snapshot
@@ -429,6 +429,7 @@ pub fn reset_defaults(
 
     Ok(())
 }
+
 /// Deletes the configuration file and offers to unapply settings if they are still active
 pub fn config_delete(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::error::Error>> {
     let config_path = get_config_path();
