@@ -19,51 +19,20 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 2
-
-      - name: Check tests and src folder changes
-        id: check_changes
-        run: |
-          CHANGED=$(git diff --name-only HEAD HEAD~1 | grep -E '^(tests/|src/)' || true)
-          if [ -z "$CHANGED" ]; then
-            echo "No changes in tests or src folders, skipping tests."
-            echo "changes_detected=false" >> $GITHUB_OUTPUT
-          else
-            echo "Changes detected in tests or src folders."
-            echo "changes_detected=true" >> $GITHUB_OUTPUT
-          fi
-
-      # - name: Cache Rust dependencies
-      #   if: steps.check_changes.outputs.changes_detected == 'true'
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: |
-      #       ~/.cargo/registry
-      #       ~/.cargo/git
-      #       target
-      #     key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-cargo-
 
       - name: Install Rust toolchain
-        if: steps.check_changes.outputs.changes_detected == 'true'
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           components: rustfmt, clippy
 
       - name: Build
-        if: steps.check_changes.outputs.changes_detected == 'true'
         run: cargo build --verbose
 
       - name: Run tests
-        if: steps.check_changes.outputs.changes_detected == 'true'
         run: cargo test --verbose
 
       - name: Check formatting
-        if: steps.check_changes.outputs.changes_detected == 'true'
         run: cargo fmt --all -- --check
 
       - name: Run clippy
-        if: steps.check_changes.outputs.changes_detected == 'true'
         run: cargo clippy -- -D warnings
