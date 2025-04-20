@@ -1,3 +1,4 @@
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::io::{self, Write};
 use std::process::Command;
@@ -53,9 +54,39 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
     let current_parsed = load_config(&config_path)?;
     let current_domains = collect_domains(&current_parsed)?;
 
-    // Create a new snapshot
-    let mut snapshot = Snapshot::new();
+    // Load existing snapshot if it exists
+    let snapshot_path = get_snapshot_path();
+    let mut snapshot = if snapshot_path.exists() {
+        match Snapshot::load_from_file(&snapshot_path) {
+            Ok(snap) => snap,
+            Err(e) => {
+                print_log(
+                    LogLevel::Warning,
+                    &format!(
+                        "Could not load existing snapshot: {}. Creating a new one.",
+                        e
+                    ),
+                );
+                Snapshot::new()
+            }
+        }
+    } else {
+        Snapshot::new()
+    };
 
+    // Create a HashMap for quicker lookups of existing settings in the snapshot
+    let mut existing_settings = HashMap::new();
+    for setting in &snapshot.settings {
+        existing_settings.insert(
+            (setting.domain.clone(), setting.key.clone()),
+            setting.clone(),
+        );
+    }
+
+    // Track which settings we've seen in this run (to identify removals)
+    let mut seen_settings = HashSet::new();
+
+    // Process each setting from the config
     for (domain, settings_table) in &current_domains {
         if needs_prefix(domain) {
             check_domain_exists(&format!("com.apple.{}", domain))?;
@@ -65,43 +96,107 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
             let (eff_domain, eff_key) = get_effective_domain_and_key(domain, key);
             let desired = normalize_desired(value);
 
-            // Capture the original value before changing it
-            let original_value = get_current_value(&eff_domain, &eff_key);
+            seen_settings.insert((eff_domain.clone(), eff_key.clone()));
 
-            // Skip if value is already set correctly
-            if original_value.as_ref() == Some(&desired) {
-                if verbose {
+            // Get current system value
+            let current_value = get_current_value(&eff_domain, &eff_key);
+
+            // Check if we already have this setting in our snapshot
+            let existing_entry = existing_settings.get(&(eff_domain.clone(), eff_key.clone()));
+
+            if let Some(existing) = existing_entry {
+                // Setting already in snapshot - check if config value changed
+                if existing.new_value != desired {
+                    if verbose {
+                        print_log(
+                            LogLevel::Info,
+                            &format!(
+                                "Value changed in config for {}.{}: {} -> {}",
+                                eff_domain, eff_key, existing.new_value, desired
+                            ),
+                        );
+                    }
+
+                    let (flag, value_str) = get_flag_and_value(value)?;
+                    execute_defaults_write(
+                        &eff_domain,
+                        &eff_key,
+                        flag,
+                        &value_str,
+                        "Updating",
+                        verbose,
+                        dry_run,
+                    )?;
+
+                    // Update snapshot with new desired value
+                    // Keep original_value from first application
+                    existing_settings.insert(
+                        (eff_domain.clone(), eff_key.clone()),
+                        SettingState {
+                            domain: eff_domain.clone(),
+                            key: eff_key.clone(),
+                            original_value: existing.original_value.clone(),
+                            new_value: desired,
+                        },
+                    );
+                } else if verbose {
                     print_log(
                         LogLevel::Info,
-                        &format!("Skipping unchanged setting: {} = {}", eff_key, desired),
+                        &format!("Skipping unchanged setting: {}.{}", eff_domain, eff_key),
                     );
                 }
-                continue;
+            } else {
+                // New setting not yet in snapshot
+                if current_value.as_ref() == Some(&desired) {
+                    if verbose {
+                        print_log(
+                            LogLevel::Info,
+                            &format!("Value already set correctly for {}.{}", eff_domain, eff_key),
+                        );
+                    }
+
+                    // Add to snapshot with current as both original and new
+                    existing_settings.insert(
+                        (eff_domain.clone(), eff_key.clone()),
+                        SettingState {
+                            domain: eff_domain.clone(),
+                            key: eff_key.clone(),
+                            original_value: current_value.clone(),
+                            new_value: desired.clone(),
+                        },
+                    );
+                } else {
+                    // Value needs to be set
+                    let (flag, value_str) = get_flag_and_value(value)?;
+                    execute_defaults_write(
+                        &eff_domain,
+                        &eff_key,
+                        flag,
+                        &value_str,
+                        "Applying",
+                        verbose,
+                        dry_run,
+                    )?;
+
+                    // Add to snapshot
+                    existing_settings.insert(
+                        (eff_domain.clone(), eff_key.clone()),
+                        SettingState {
+                            domain: eff_domain.clone(),
+                            key: eff_key.clone(),
+                            original_value: current_value,
+                            new_value: desired,
+                        },
+                    );
+                }
             }
-
-            // Store in snapshot
-            snapshot.settings.push(SettingState {
-                domain: eff_domain.clone(),
-                key: eff_key.clone(),
-                original_value,
-                new_value: desired.clone(),
-            });
-
-            let (flag, value_str) = get_flag_and_value(value)?;
-            execute_defaults_write(
-                &eff_domain,
-                &eff_key,
-                flag,
-                &value_str,
-                "Applying",
-                verbose,
-                dry_run,
-            )?;
         }
     }
 
-    // Save the snapshot file first, before executing external commands
-    let snapshot_path = get_snapshot_path();
+    // Rebuild the settings list from our updated HashMap
+    snapshot.settings = existing_settings.into_values().collect();
+
+    // External commands
     if dry_run {
         print_log(
             LogLevel::Info,
@@ -145,11 +240,16 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
             }
         }
 
+        // Save the snapshot file first, before executing external commands
         snapshot.save_to_file(&snapshot_path)?;
         if verbose {
             print_log(
                 LogLevel::Success,
-                &format!("Snapshot saved to {:?}", snapshot_path),
+                &format!(
+                    "Snapshot saved to {:?} with {} settings",
+                    snapshot_path,
+                    snapshot.settings.len()
+                ),
             );
         }
     }
@@ -229,10 +329,7 @@ pub fn unapply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std:
     if !snapshot.external_commands.is_empty() {
         print_log(
             LogLevel::Warning,
-            &format!(
-                "{} external commands were executed but cannot be automatically reverted.",
-                snapshot.external_commands.len()
-            ),
+            "External commands were executed previously. Make sure to revert them manually.",
         );
     }
 
