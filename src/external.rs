@@ -202,12 +202,15 @@ pub fn execute_external_commands(
             } else if verbose {
                 print_log(
                     LogLevel::Success,
-                    &format!(
-                        "Shell command executed: {}\nCommand output: {}",
-                        processed_command,
-                        String::from_utf8_lossy(&output.stdout)
-                    ),
+                    &format!("Shell command executed: {}", processed_command,),
                 );
+
+                if !output.stdout.is_empty() {
+                    print_log(
+                        LogLevel::CommandOutput,
+                        &format!("Output: \n{}", String::from_utf8_lossy(&output.stdout)),
+                    );
+                }
             }
         }
     }

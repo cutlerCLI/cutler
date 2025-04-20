@@ -132,7 +132,7 @@ defaults write NSGlobalDomain com.apple.mouse.linear -bool true
 
 ### Defaults and External Commands
 
-Beyond managing macOS defaults, cutler now supports an `[external]` section that allows you to run any external command after applying the defaults. This is particularly useful when you want to trigger additional scripts or commands as part of your configuration. For example:
+cutler also supports running external shell commands the moment it applies the defaults. You can define these as such:
 
 ```toml
 # Define reusable variables here:
@@ -155,12 +155,12 @@ This roughly translates to:
 echo Hello World /usr/local/bin:/usr/bin:...
 ```
 
-If you don't want to run into additional giberish, the external commands only require the `cmd` field to run, so it can be as simple as:
+If you don't prefer additional syntax, a command and its arguments can be defined with just one line too!
 
 ```toml
 [external]
   [[external.command]]
-  cmd = "echo"
+  cmd = "echo \"Hello World\""
 ```
 
 ### Applying Changes and Status Review
