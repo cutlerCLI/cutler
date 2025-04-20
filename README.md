@@ -30,16 +30,9 @@ Powerful, declarative settings management for your Mac, with speed.
 
 ## Overview
 
-If you use macOS, you might be familiar with changing settings using the
-built-in System Settings app or the `defaults` command in the terminal. Both
-methods can be tedious—and the terminal option usually involves manual tweaks.
-That’s where `cutler` makes things simpler!
+cutler simplifies macOS configuration by letting you manage system settings through a single TOML file instead of clicking through System Settings or typing complex defaults commands in the terminal.
 
-`cutler` is a straightforward command-line tool that lets you specify your macOS
-preferences in an easy-to-read TOML file. It wraps the `defaults` command so you
-can quickly apply or undo settings when needed. In addition to managing macOS defaults,
-cutler now supports executing external commands so that you don't have to write another
-shell script to automate things.
+Define your settings once, then easily apply, track, and revert changes across your system—think of it as infrastructure-as-code for your Mac.
 
 Check out the [Usage](#usage) section for more details.
 
@@ -128,11 +121,25 @@ defaults write NSGlobalDomain com.apple.mouse.linear -bool true
 ```
 
 > [!WARNING]
-> Currently, `cutler` does not verify the integrity of domains or keys under `NSGlobalDomain`. Please review these settings manually before applying any changes.
+> Currently, cutler does not verify the integrity of domains or keys under `NSGlobalDomain`. Please review these settings manually before applying any changes.
 
 ### Defaults and External Commands
 
-cutler also supports running external shell commands the moment it applies the defaults. You can define these as such:
+cutler also supports running external shell commands the moment it applies the defaults. You can define commands with simple syntax like this:
+
+```toml
+[external]
+  [[external.command]]
+  cmd = "echo \"Hello World\""
+```
+
+This translates to running:
+
+```bash
+echo "Hello World"
+```
+
+For more complex scenarios, you can use a more advanced structure with separate arguments and variables:
 
 ```toml
 # Define reusable variables here:
@@ -142,7 +149,7 @@ common_args = ["Hello", "World"]
 [external]
   [[external.command]]
   cmd = "echo"
-  # If you reference a variable (for example, $common_args) and it isn’t defined
+  # If you reference a variable (for example, $common_args) and it isn't defined
   # in the [external.variables] section, cutler will fall back and try to resolve it
   # from the environment (e.g. $PATH).
   args = ["$common_args", "$PATH"]
@@ -153,14 +160,6 @@ This roughly translates to:
 
 ```bash
 echo Hello World /usr/local/bin:/usr/bin:...
-```
-
-If you don't prefer additional syntax, a command and its arguments can be defined with just one line too!
-
-```toml
-[external]
-  [[external.command]]
-  cmd = "echo \"Hello World\""
 ```
 
 ### Applying Changes and Status Review
@@ -207,9 +206,9 @@ cutler help
 
 ## Shell Completions
 
-Cutler currently supports automatically generating shell completions for Bash and Zsh, making it easier to use the project for power users.
+cutler currently supports automatically generating shell completions for Bash and Zsh, making it easier to use the project for power users.
 
-### Installing Shell Completions
+#### Generation
 
 Generate completions with:
 
@@ -263,15 +262,11 @@ source ~/.zshrc
 
 ## Resources
 
-Finding the ideal set of macOS defaults can be challenging. Visit the [macOS
-defaults website](https://macos-defaults.com/) for a comprehensive list of
-available settings.
+Finding the ideal set of macOS defaults can be challenging. Visit this website to have a look at
+some useful ones fast: [macOS defaults website](https://macos-defaults.com/)
 
 Sample configuration files are preincluded with this repository for you to have a look
-at and get hold of the tool quickly:
-
-- [examples/basic.toml](examples/basic.toml) (for minimal usage)
-- [examples/advanced.toml](examples/advanced.toml)
+at and get hold of the tool quickly: [see examples](./examples)
 
 ## Contributing
 
