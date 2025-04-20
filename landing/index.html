@@ -229,7 +229,7 @@
             <img src="assets/logo.png" alt="cutler Logo" class="logo" />
         </div>
 
-        <h1>cutler<sup>v0.4.1</sup></h1>
+        <h1>cutler<sup>v0.4.2</sup></h1>
         <p class="tagline">
             <strong
                 >Powerful, declarative settings management for your Mac, with
@@ -266,34 +266,32 @@
         <p>Just a single brew command and you're ready to go!</p>
         <pre><code class="language-bash">brew install hitblast/tap/cutler</code></pre>
 
-        <div class="warning">
-            <strong>⚠️ Important:</strong> The prebuilt binaries are compiled
-            and shipped from macOS 14 on arm64. Intel Macs will require a manual
-            compilation of the project.
-        </div>
-
-        <div class="feature">
-            <h3><span class="emoji">📦</span> Other Installation Methods</h3>
-            <p>Besides Homebrew, you can also install cutler using:</p>
-            <pre><code class="language-bash"># Using cargo
+        <p>Or, use one of the following:</p>
+        <pre><code class="language-bash"># Using cargo
 cargo install cutler
 
 # Using mise
 mise use -g cargo:cutler</code></pre>
+
+        <div class="note">
+            <p>
+                <strong>⚠️ Important:</strong> The prebuilt binaries are
+                compiled and shipped from macOS 14 on arm64. Intel Macs will
+                require a manual compilation of the project.
+            </p>
         </div>
 
-        <div class="feature">
-            <h3><span class="emoji">🔨</span> Simple Configuration</h3>
-            <p>
-                Create a <code>config.toml</code> file within one of the
-                locations listed below and write your preferred settings
-                following the defaults syntax. Check out the
-                <a href="https://github.com/hitblast/cutler/tree/main/examples"
-                    >example configuration files</a
-                >
-                to get started quickly!
-            </p>
-            <pre><code class="language-bash">[dock]
+        <h2>Configuration</h2>
+        <p>
+            Create a <code>config.toml</code> file within one of the locations
+            listed below and write your preferred settings following the
+            defaults syntax. Check out the
+            <a href="https://github.com/hitblast/cutler/tree/main/examples"
+                >example configuration files</a
+            >
+            to get started quickly!
+        </p>
+        <pre><code class="language-bash">[dock]
 tilesize = 46
 
 [finder]
@@ -302,13 +300,12 @@ CreateDesktop = false
 
 [NSGlobalDomain]
 ApplePressAndHoldEnabled = true</code></pre>
-            <br />
-            <p>
-                Or, to setup a comprehensive example on your Mac automatically,
-                use this command:
-            </p>
-            <pre><code class="language-bash">cutler init</code></pre>
-        </div>
+
+        <p>
+            Or, to setup a comprehensive example on your Mac automatically, use
+            this command:
+        </p>
+        <pre><code class="language-bash">cutler init</code></pre>
 
         <div class="note">
             <p>
@@ -322,8 +319,6 @@ ApplePressAndHoldEnabled = true</code></pre>
                 <li><code>config.toml</code> (current directory)</li>
             </ul>
         </div>
-
-        <p></p>
 
         <h2>Usage</h2>
         <p>
@@ -353,6 +348,12 @@ ApplePressAndHoldEnabled = true</code></pre>
         </div>
 
         <div class="feature">
+            <h3>⚠️ Hard-reset settings</h3>
+            <pre><code class="language-bash">cutler reset --force</code></pre>
+            <p>Resets every setting written in the config to factory defaults. <br>NOTE: This should ONLY be used as a fallback option to <code>cutler unapply</code>.</p>
+        </div>
+
+        <div class="feature">
             <h3>Manage configuration file</h3>
             <pre><code class="language-bash"># Shows the contents of the configuration file
 cutler config show
@@ -379,25 +380,49 @@ cutler config delete</code></pre>
         </div>
 
         <h2>Advanced Features</h2>
-        <p>cutler also supports external commands:</p>
+        <p>
+            When you apply your defaults using cutler, you can also define
+            custom commands to be executed:
+        </p>
 
-        <pre><code class="language-bash">[external.variables]
+        <pre><code class="language-bash">[external]
+  [[external.command]]
+  cmd = "echo \"Hello World\""</code></pre>
+
+        <p>This translates to running:</p>
+        <pre><code class="language-bash">echo "Hello World"</code></pre>
+
+        <p>
+            For more complex scenarios, you can use a more advanced structure
+            with separate arguments and variables:
+        </p>
+        <pre><code class="language-bash"># Define reusable variables here:
+[external.variables]
 common_args = ["Hello", "World"]
 
 [external]
-[[external.command]]
-cmd = "echo"
-args = ["$common_args"]
-sudo = false</code></pre>
+  [[external.command]]
+  cmd = "echo"
+  # If you reference a variable (for example, $common_args) and it isn't defined
+  # in the [external.variables] section, cutler will fall back and try to resolve it
+  # from the environment (e.g. $PATH).
+  args = ["$common_args", "$PATH"]
+  sudo = false</code></pre>
 
-        <div class="warning">
-            <p>
-                <strong>⚠️ Warning:</strong> Currently, cutler does not verify
-                the integrity of domains or keys under
-                <code>NSGlobalDomain</code>. Please review these settings
-                manually before applying any changes.
-            </p>
-        </div>
+        <p>This roughly translates to:</p>
+        <pre><code class="language-bash">echo Hello World /usr/local/bin:/usr/bin:...</code></pre>
+
+        <h2>Some Personal Take</h2>
+        <p>
+            If you scroll around the
+            <a href="https://github.com/hitblast/cutler/releases"
+                >GitHub Releases</a
+            >
+            section, you will see more "personal takes" which are randomly
+            written notes of mine to share some open thoughts.<br></br> Anyways,
+             cutler is one of my favorite concurrent hobby projects right now. If
+            you'd like to support me, consider starring this project!
+        </p>
 
         <div style="text-align: center; margin: 3rem 0">
             <a href="https://github.com/hitblast/cutler" class="button"
