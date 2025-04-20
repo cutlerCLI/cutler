@@ -59,7 +59,7 @@
             .shields-stars {
                 margin-top: 15px;
             }
-            .shields-forks {
+            .shields-general {
                 margin-left: 10px;
             }
 
@@ -243,8 +243,13 @@
             />
             <img
                 alt="GitHub forks"
-                class="shields-forks"
+                class="shields-general"
                 src="https://img.shields.io/github/forks/hitblast/cutler"
+            />
+            <img
+                class="shields-general"
+                alt="Crates.io Total Downloads"
+                src="https://img.shields.io/crates/d/cutler?style=social&logo=Rust"
             />
         </p>
 
@@ -350,7 +355,11 @@ ApplePressAndHoldEnabled = true</code></pre>
         <div class="feature">
             <h3>⚠️ Hard-reset settings</h3>
             <pre><code class="language-bash">cutler reset --force</code></pre>
-            <p>Resets every setting written in the config to factory defaults. <br>NOTE: This should ONLY be used as a fallback option to <code>cutler unapply</code>.</p>
+            <p>
+                Resets every setting written in the config to factory defaults.
+                <br />NOTE: This should ONLY be used as a fallback option to
+                <code>cutler unapply</code>.
+            </p>
         </div>
 
         <div class="feature">
@@ -419,9 +428,10 @@ common_args = ["Hello", "World"]
                 >GitHub Releases</a
             >
             section, you will see more "personal takes" which are randomly
-            written notes of mine to share some open thoughts.<br></br> Anyways,
-             cutler is one of my favorite concurrent hobby projects right now. If
-            you'd like to support me, consider starring this project!
+            written notes of mine to share some open thoughts.<br /><br />
+            Anyways, cutler is one of my favorite concurrent hobby projects
+            right now. If you'd like to support me, consider starring this
+            project!
         </p>
 
         <div style="text-align: center; margin: 3rem 0">
