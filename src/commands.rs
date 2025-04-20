@@ -102,7 +102,8 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
             let current_value = get_current_value(&eff_domain, &eff_key);
 
             // Check if we already have this setting in our snapshot
-            let existing_entry = existing_settings.get(&(eff_domain.clone(), eff_key.clone()));
+            let key_pair = (eff_domain.clone(), eff_key.clone());
+            let existing_entry = existing_settings.get(&key_pair);
 
             if let Some(existing) = existing_entry {
                 // Setting already in snapshot - check if config value changed
@@ -131,7 +132,7 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
                     // Update snapshot with new desired value
                     // Keep original_value from first application
                     existing_settings.insert(
-                        (eff_domain.clone(), eff_key.clone()),
+                        key_pair,
                         SettingState {
                             domain: eff_domain.clone(),
                             key: eff_key.clone(),
@@ -157,7 +158,7 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
 
                     // Add to snapshot with current as both original and new
                     existing_settings.insert(
-                        (eff_domain.clone(), eff_key.clone()),
+                        key_pair,
                         SettingState {
                             domain: eff_domain.clone(),
                             key: eff_key.clone(),
@@ -180,7 +181,7 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
 
                     // Add to snapshot
                     existing_settings.insert(
-                        (eff_domain.clone(), eff_key.clone()),
+                        key_pair,
                         SettingState {
                             domain: eff_domain.clone(),
                             key: eff_key.clone(),
@@ -215,7 +216,7 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
                                 if let Some(arr) = arg_val.as_array() {
                                     arr.iter()
                                         .filter_map(|a| a.as_str())
-                                        .map(|s| s.to_string())
+                                        .map(String::from)
                                         .collect()
                                 } else {
                                     Vec::new()
