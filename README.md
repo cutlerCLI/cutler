@@ -210,8 +210,6 @@ cutler currently supports automatically generating shell completions for Bash an
 
 #### Generation
 
-Generate completions with:
-
 ```bash
 # For bash users
 cutler completion bash
