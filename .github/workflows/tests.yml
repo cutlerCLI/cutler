@@ -23,4 +23,3 @@ jobs:
 
       - name: Run test suite
         run: mise run testsuite
-
