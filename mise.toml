@@ -1,12 +1,12 @@
 [tools]
-rust = "latest"
+rust = { "version" = "latest", "components" = "rustfmt,clippy" }
 
 # Developer documentation generation
 
 [tasks.doc]
 run = [
     "cargo doc --locked --no-deps",
-    "mv target/doc/* dev-docs/"  # might throw an error if dev-docs is deleted
+    "mv target/doc/* dev-docs/",    # might throw an error if dev-docs is deleted
 ]
 
 # Test suite for cutler
@@ -48,5 +48,5 @@ depends = ['testsuite', 'build', 'cratesprep']
 run = """
 zip -j $FILE_NAME target/release/cutler
 cargo publish --token $CRATES_TOKEN --allow-dirty
-"""  # Since I don't release cutler by hand,
-     # The FILE_NAME and CRATES_TOKEN env vars are handed by GitHub Actions
+""" # Since I don't release cutler by hand,
+# The FILE_NAME and CRATES_TOKEN env vars are handed by GitHub Actions
