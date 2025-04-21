@@ -20,8 +20,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v2
-        with:
-          cache: false
 
       - name: Run test suite
         run: mise run testsuite
