@@ -5,8 +5,9 @@ rust = { "version" = "latest", "components" = "rustfmt,clippy" }
 
 [tasks.doc]
 run = [
+    "rm -rf landing/dev-docs && mkdir landing/dev-docs",
     "cargo doc --locked --no-deps",
-    "mv target/doc/* dev-docs/",    # might throw an error if dev-docs is deleted
+    "mv target/doc/* landing/dev-docs/",                 # might throw an error if dev-docs is deleted
 ]
 
 # Test suite for cutler
