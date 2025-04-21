@@ -24,7 +24,6 @@ fn main() {
             ConfigCommand::Delete => config_delete(cli.verbose, cli.dry_run),
         },
         Commands::Completion { shell, dir } => generate_completion(*shell, Path::new(dir))
-            .map_err(|e| format!("Failed to generate completion: {}", e).into()),
         Commands::CheckUpdate => check_for_updates(cli.verbose),
     };
 
