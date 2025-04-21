@@ -3,7 +3,6 @@ use clap_complete::{
     generate_to,
     shells::{Bash, Zsh},
 };
-use std::io;
 use std::path::Path;
 
 use crate::cli::{Cli, Shell};
