@@ -3,8 +3,7 @@ name: Deploy static content to Pages
 
 on:
   # Runs on pushes targeting the default branch
-  push:
-    branches: ["main"]
+  workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -34,33 +33,17 @@ jobs:
 
       - uses: jdx/mise-action@v2
 
-      - name: Check landing folder changes
-        id: check_changes
-        run: |
-          CHANGED=$(git diff --name-only HEAD HEAD~1 | grep '^landing/' || true)
-          if [ -z "$CHANGED" ]; then
-            echo "No changes in landing folder, skipping deployment."
-            echo "changes_detected=false" >> $GITHUB_OUTPUT
-          else
-            echo "Changes detected in landing folder."
-            echo "changes_detected=true" >> $GITHUB_OUTPUT
-          fi
-
       - name: Setup Pages
-        if: steps.check_changes.outputs.changes_detected == 'true'
         uses: actions/configure-pages@v5
 
       - name: Upload artifact
-        if: steps.check_changes.outputs.changes_detected == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: "landing"
 
       - name: Build the developer documentation
-        if: steps.check_changes.outputs.changes_detected == 'true'
         run: mise run doc
 
       - name: Deploy to GitHub Pages
-        if: steps.check_changes.outputs.changes_detected == 'true'
         id: deployment
         uses: actions/deploy-pages@v4
