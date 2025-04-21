@@ -24,8 +24,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            ~/.mise
-            ~/.local/share/mise
+            ~/.local/bin/mise
           key: ${{ runner.os }}-mise-${{ hashFiles('mise.toml') }}
           restore-keys: |
             ${{ runner.os }}-mise-
