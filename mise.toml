@@ -9,6 +9,26 @@ run = [
     "mv target/doc/* dev-docs/"  # might throw an error if dev-docs is deleted
 ]
 
+# Test suite for cutler
+
+[tasks.lint]
+run = "cargo clippy"
+
+[tasks.test]
+run = "cargo build && cargo test --verbose"
+
+[tasks.format]
+run = "cargo fmt --all -- --check"
+
+[tasks.testsuite]
+depends = ['lint', 'test', 'format']
+
+# Production release workflow
+# (it also depends on the success of the test suite)
+
+[tasks.build]
+run = "cargo build --release --verbose --locked"
+
 [tasks.cratesprep]
 run = """
 #!/bin/bash
@@ -23,27 +43,10 @@ fi
 sed -i '' '/^>/d' "$file"
 """
 
-# Test suite for cutler
-
-[tasks.lint]
-run = "cargo clippy"
-
-[tasks.test]
-run = "cargo test --verbose"
-
-[tasks.format]
-run = "cargo fmt --all -- --check"
-
-[tasks.testsuite]
-depends = ['lint', 'test', 'format']
-
-# Production release workflow
-# (it also depends on the success of the test suite)
-
 [tasks.release]
-depends = ['lint', 'test', 'format']
+depends = ['testsuite', 'build', 'cratesprep']
 run = """
-cargo build --release --verbose --locked
 zip -j $FILE_NAME target/release/cutler
-"""
-
+cargo publish --token $CRATES_TOKEN --allow-dirty
+"""  # Since I don't release cutler by hand,
+     # The FILE_NAME and CRATES_TOKEN env vars are handed by GitHub Actions
