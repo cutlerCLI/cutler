@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["get_config_path","load_config"]};

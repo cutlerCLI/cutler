@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["apply_defaults","check_for_updates","config_delete","config_show","init_config","reset_defaults","restart_system_services","status_defaults","unapply_defaults"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["get_snapshot_path"],"struct":["ExternalCommandState","SettingState","Snapshot"]};
