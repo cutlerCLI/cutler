@@ -32,17 +32,15 @@ jobs:
           fetch-depth: 5
 
       - uses: jdx/mise-action@v2
+      - uses: actions/configure-pages@v5
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+      - name: Build the developer documentation
+        run: mise run doc
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: "landing"
-
-      - name: Build the developer documentation
-        run: mise run doc
 
       - name: Deploy to GitHub Pages
         id: deployment
