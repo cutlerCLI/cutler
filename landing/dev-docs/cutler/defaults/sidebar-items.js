@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["execute_defaults_delete","execute_defaults_write","get_flag_and_value","get_flag_for_value","normalize_desired"]};

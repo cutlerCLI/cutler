@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["BOLD","GREEN","PINK","RED","RESET","YELLOW"],"enum":["LogLevel"],"fn":["print_log"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["check_domain_exists","collect_domains","flatten_domains","get_current_value","get_effective_domain","get_effective_domain_and_key","needs_prefix"]};

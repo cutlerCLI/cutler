@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["cli","commands","completions","config","defaults","domains","external","logging","snapshot"]};
