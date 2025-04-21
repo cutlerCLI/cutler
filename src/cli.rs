@@ -55,7 +55,7 @@ pub enum Commands {
         dir: String,
     },
     /// Check for version updates
-    CheckUpdate
+    CheckUpdate,
 }
 
 #[derive(Subcommand)]

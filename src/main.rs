@@ -2,10 +2,11 @@ use clap::Parser;
 use cutler::{
     cli::{Cli, Commands, ConfigCommand},
     commands::{
-        apply_defaults, check_for_updates, config_delete, config_show, init_config, reset_defaults, restart_system_services, status_defaults, unapply_defaults
+        apply_defaults, check_for_updates, config_delete, config_show, init_config, reset_defaults,
+        restart_system_services, status_defaults, unapply_defaults,
     },
     completions::generate_completion,
-    logging::{print_log, LogLevel},
+    logging::{LogLevel, print_log},
 };
 use std::path::Path;
 
