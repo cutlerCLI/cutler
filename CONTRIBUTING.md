@@ -58,7 +58,6 @@ This chain of commands can be used to fully test and build the final product.
 
 ```bash
 cargo fmt --all -- --check && cargo test --verbose && cargo clippy && cargo build
-cargo build
 
 # or, you can use the predefined testsuite:
 mise run testsuite
