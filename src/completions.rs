@@ -8,7 +8,10 @@ use std::path::Path;
 use crate::cli::{Cli, Shell};
 
 /// Generates completion script for the specified shell
-pub fn generate_completion(shell: Shell, output_dir: &Path) -> Result<(), Box<dyn std::error::Error>> {
+pub fn generate_completion(
+    shell: Shell,
+    output_dir: &Path,
+) -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Cli::command();
     let name = cmd.get_name().to_string();
 
