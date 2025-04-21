@@ -2,11 +2,10 @@ use clap::Parser;
 use cutler::{
     cli::{Cli, Commands, ConfigCommand},
     commands::{
-        apply_defaults, config_delete, config_show, init_config, reset_defaults,
-        restart_system_services, status_defaults, unapply_defaults,
+        apply_defaults, check_for_updates, config_delete, config_show, init_config, reset_defaults, restart_system_services, status_defaults, unapply_defaults
     },
     completions::generate_completion,
-    logging::{LogLevel, print_log},
+    logging::{print_log, LogLevel},
 };
 use std::path::Path;
 
@@ -25,6 +24,7 @@ fn main() {
         },
         Commands::Completion { shell, dir } => generate_completion(*shell, Path::new(dir))
             .map_err(|e| format!("Failed to generate completion: {}", e).into()),
+        Commands::CheckUpdate => check_for_updates(cli.verbose),
     };
 
     match result {

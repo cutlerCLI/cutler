@@ -54,6 +54,8 @@ pub enum Commands {
         #[arg(short, long, default_value = ".")]
         dir: String,
     },
+    /// Check for version updates
+    CheckUpdate
 }
 
 #[derive(Subcommand)]

@@ -1,3 +1,5 @@
+use semver::Version;
+use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::io::{self, Write};
@@ -12,7 +14,7 @@ use crate::domains::{
     check_domain_exists, collect_domains, get_current_value, get_effective_domain,
     get_effective_domain_and_key, needs_prefix,
 };
-use crate::logging::{LogLevel, print_log};
+use crate::logging::{BOLD, LogLevel, RESET, print_log};
 use crate::snapshot::{ExternalCommandState, SettingState, Snapshot, get_snapshot_path};
 
 /// Helper function to prompt user for confirmation
@@ -723,6 +725,82 @@ fnState = false
     } else {
         println!("🍎 New configuration created at {:?}", config_path);
         println!("Review and customize this file, then run `cutler apply` to apply settings");
+    }
+
+    Ok(())
+}
+
+/// Checks for updates to cutler by fetching the latest version from GitHub's Cargo.toml
+pub fn check_for_updates(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
+    let current_version = env!("CARGO_PKG_VERSION");
+
+    if verbose {
+        print_log(
+            LogLevel::Info,
+            &format!("Current version: {}", current_version),
+        );
+        print_log(LogLevel::Info, "Checking for updates...");
+    } else {
+        println!("Checking for updates...");
+    }
+
+    // URL for the Cargo.toml file in the GitHub repository
+    let cargo_url = "https://raw.githubusercontent.com/hitblast/cutler/main/Cargo.toml";
+    let response = ureq::get(cargo_url).call();
+
+    let response = match response {
+        Ok(r) => r,
+        Err(e) => return Err(format!("Failed to check for updates: {}", e).into()),
+    };
+
+    let cargo_toml: String = response.into_body().read_to_string()?;
+    let parsed: toml::Value = cargo_toml.parse()?;
+
+    // Extract the latest version from the Cargo.toml [package] section
+    let latest_version = parsed
+        .get("package")
+        .and_then(|p| p.get("version"))
+        .and_then(|v| v.as_str())
+        .ok_or("Invalid or missing version in remote Cargo.toml")?;
+
+    if verbose {
+        print_log(
+            LogLevel::Info,
+            &format!("Latest version: {}", latest_version),
+        );
+    }
+
+    // Parse versions for comparison
+    let current = Version::parse(current_version)?;
+    let latest = Version::parse(latest_version)?;
+
+    // Compare versions
+    match current.cmp(&latest) {
+        Ordering::Less => {
+            println!(
+                "\n{}Update available:{} {} → {}",
+                BOLD, RESET, current_version, latest_version
+            );
+
+            // Show update instructions
+            println!("\nTo update, run one of the following:");
+            println!("  brew upgrade hitblast/tap/cutler    # if installed with Homebrew");
+            println!("  cargo install cutler --force        # if installed with Cargo");
+            println!("\nOr download the latest release from:");
+            println!("  https://github.com/hitblast/cutler/releases");
+        }
+        Ordering::Equal => {
+            print_log(LogLevel::Success, "You are using the latest version.");
+        }
+        Ordering::Greater => {
+            print_log(
+                LogLevel::Info,
+                &format!(
+                    "You are using a development version ({}) ahead of the latest release ({}).",
+                    current_version, latest_version
+                ),
+            );
+        }
     }
 
     Ok(())
