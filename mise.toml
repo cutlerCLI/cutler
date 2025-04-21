@@ -1,0 +1,49 @@
+[tools]
+rust = "latest"
+
+# Developer documentation generation
+
+[tasks.doc]
+run = [
+    "cargo doc --locked --no-deps",
+    "mv target/doc/* dev-docs/"  # might throw an error if dev-docs is deleted
+]
+
+[tasks.cratesprep]
+run = """
+#!/bin/bash
+
+file="README.md"
+
+if [ ! -f "$file" ]; then
+    echo "File '$file' not found."
+    exit 1
+fi
+
+sed -i '' '/^>/d' "$file"
+"""
+
+# Test suite for cutler
+
+[tasks.lint]
+run = "cargo clippy"
+
+[tasks.test]
+run = "cargo test --verbose"
+
+[tasks.format]
+run = "cargo fmt --all -- --check"
+
+[tasks.testsuite]
+depends = ['lint', 'test', 'format']
+
+# Production release workflow
+# (it also depends on the success of the test suite)
+
+[tasks.release]
+depends = ['lint', 'test', 'format']
+run = """
+cargo build --release --verbose --locked
+zip -j $FILE_NAME target/release/cutler
+"""
+
