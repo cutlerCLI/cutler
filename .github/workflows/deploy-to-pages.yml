@@ -28,22 +28,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
         with:
-          fetch-depth: 5
-
-      - name: Cache mise
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.local/share/mise
-          key: ${{ runner.os }}-mise-${{ hashFiles('mise.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-mise-
-
-      - name: Install mise
-        run: |
-          curl https://mise.run | sh
-          mise install
+          cache: false
 
       - uses: actions/configure-pages@v5
 

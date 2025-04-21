@@ -19,20 +19,9 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
-
-      - name: Cache mise
-        uses: actions/cache@v3
+      - uses: jdx/mise-action@v2
         with:
-          path: |
-            ~/.local/mise/mise
-          key: ${{ runner.os }}-mise-${{ hashFiles('mise.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-mise-
-
-      - name: Install mise
-        run: |
-          curl https://mise.run | sh
-          mise install
+          cache: false
 
       - name: Run test suite
         run: mise run testsuite
