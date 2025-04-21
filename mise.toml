@@ -49,5 +49,4 @@ depends = ['testsuite', 'build', 'cratesprep']
 run = """
 zip -j $FILE_NAME target/release/cutler
 cargo publish --token $CRATES_TOKEN --allow-dirty
-""" # Since I don't release cutler by hand,
-# The FILE_NAME and CRATES_TOKEN env vars are handed by GitHub Actions
+""" # Since I don't release cutler by hand, the FILE_NAME and CRATES_TOKEN env vars are handed by GitHub Actions.
