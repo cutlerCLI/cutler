@@ -18,6 +18,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v2
+        with:
+          cache: false
 
       - name: Release
         run: mise run release
@@ -35,4 +37,3 @@ jobs:
           file: ${{ env.FILE_NAME }}
           tag: ${{ github.ref }}
           overwrite: true
-
