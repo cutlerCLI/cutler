@@ -23,7 +23,7 @@ fn main() {
             ConfigCommand::Show => config_show(cli.verbose, cli.dry_run),
             ConfigCommand::Delete => config_delete(cli.verbose, cli.dry_run),
         },
-        Commands::Completion { shell, dir } => generate_completion(*shell, Path::new(dir))
+        Commands::Completion { shell, dir } => generate_completion(*shell, Path::new(dir)),
         Commands::CheckUpdate => check_for_updates(cli.verbose),
     };
 
