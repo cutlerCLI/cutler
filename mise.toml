@@ -1,0 +1,53 @@
+[tools]
+rust = { "version" = "latest", "components" = "rustfmt,clippy" }
+
+# Developer documentation generation
+
+[tasks.doc]
+run = [
+    "rm -rf landing/dev-docs && mkdir landing/dev-docs",
+    "cargo doc --locked --no-deps",
+    "mv target/doc/* landing/dev-docs/",                 # might throw an error if dev-docs is deleted
+]
+
+# Test suite for cutler
+
+[tasks.lint]
+run = "cargo clippy"
+
+[tasks.test]
+run = "cargo build && cargo test --verbose"
+
+[tasks.format]
+run = "cargo fmt --all -- --check"
+
+[tasks.testsuite]
+depends = ['lint', 'test', 'format']
+
+# Production release workflow
+# (it also depends on the success of the test suite)
+
+[tasks.build]
+run = "cargo build --release --verbose --locked"
+
+[tasks.cratesprep]
+run = """
+#!/bin/bash
+
+file="README.md"
+
+if [ ! -f "$file" ]; then
+    echo "File '$file' not found."
+    exit 1
+fi
+
+sed -i '' '/^>/d' "$file"
+"""
+
+[tasks.release]
+depends = ['testsuite', 'build', 'cratesprep']
+run = """
+zip -j $FILE_NAME target/release/cutler
+cargo publish --token $CRATES_TOKEN --allow-dirty
+""" # Since I don't release cutler by hand,
+# The FILE_NAME and CRATES_TOKEN env vars are handed by GitHub Actions

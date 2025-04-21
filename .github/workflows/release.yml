@@ -9,20 +9,18 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build-unix:
+  release:
     runs-on: macos-14
+
     env:
       FILE_NAME: target/release/cutler-${{ github.event.release.name }}-darwin-arm64.zip
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
 
-      - name: Build
-        run: cargo build --release --verbose --locked
-
-      - name: Compress binary
-        run: zip -j ${{ env.FILE_NAME }} target/release/cutler
+      - name: Release
+        run: mise run release
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -38,18 +36,3 @@ jobs:
           tag: ${{ github.ref }}
           overwrite: true
 
-  publish:
-    needs: [build-unix]
-    runs-on: macos-14
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Generate markdown for cargo
-        run: |
-          chmod +x scripts/generate_md.sh
-          ./scripts/generate_md.sh
-
-      - name: Publish using cargo
-        run: cargo publish --token ${{ secrets.CRATES_TOKEN }} --allow-dirty

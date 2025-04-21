@@ -5,8 +5,12 @@ This is the standard contribution/development guidelines for the project. You ma
 ## Table of Contents
 
 - [Getting Started](#getting-started)
+  - [Cloning the repository](#cloning-the-repository)
+  - [Preparing the environment](#preparing-the-environment)
+- [Production Release Workflow](#production-release-workflow)
+  - [Testing](#testing)
+  - [Building](#building)
 - [Project Hierarchy](#project-hierarchy)
-- [Code Formatting](#code-formatting)
 - [Licensing](#licensing)
 
 ## Getting Started
@@ -16,6 +20,7 @@ The commonplace of contributing is to first clone the repository and install the
 The prerequisites are as follows:
 
 - [Rust](https://www.rust-lang.org/tools/install) (`cutler` is configured to use the 2024 edition of the language)
+- or, [mise (recommended)](https://mise.jdx.dev) for automatic tools management
 - A Mac (preferably with [Apple Silicon](https://support.apple.com/en-us/HT211814)) for rapid development
 
 ### Cloning the repository
@@ -32,27 +37,45 @@ git clone git@github.com:<your_username>/cutler.git
 
 Replace `<your_username>` with your GitHub username.
 
-Now, let's start setting up the development environment. Usually as `cutler` is a Rust project which *only* compiles on macOS, there is only a few things to do:
+### Preparing the environment
+
+Working on this project will require a few Rust components beforehand:
+
+- [clippy](https://github.com/rust-lang/rust-clippy)
+- [rustfmt](https://github.com/rust-lang/rustfmt)
+
+If you're using mise, prepare the environment by running:
 
 ```bash
-# Move into source directory and install the dependencies.
-cd cutler
-cargo build
+mise install
 ```
 
-### Building for production
+## Production Release Workflow
 
-The command I personally use for creating production builds for `cutler` is as follows:
+This chain of commands can be used to fully test and build the final product.
+
+#### Testing
+
+```bash
+cargo fmt --all -- --check && cargo test --verbose && cargo clippy && cargo build
+cargo build
+
+# or, you can use the predefined testsuite:
+mise run testsuite
+```
+
+#### Building
 
 ```bash
 cargo build --release --verbose --locked
-```
 
-Usually, this doesn't escape the CI/CD pipeline as I do not need to compile the project myself for most of the time, but anyhow, mentioning is better than ambiguity.
+# or, you can use the predefined build script:
+mise run build
+```
 
 ## Project Hierarchy
 
-When running `tree src` over the source tree, we can see a bunch of things:
+When running `tree src` over the source tree, we can see that there are a few important files:
 
 ```
 src
