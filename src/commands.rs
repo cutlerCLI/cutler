@@ -44,10 +44,7 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
                 LogLevel::Info,
                 "Configuration created. Please review and edit the file before applying.",
             );
-
-            if !confirm_action("Would you like to apply the new configuration now?")? {
-                return Ok(());
-            }
+            return Ok(());
         } else {
             return Err("No config file present. Exiting.".into());
         }
