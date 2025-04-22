@@ -2,8 +2,9 @@ use clap::Parser;
 use cutler::{
     cli::{Cli, Commands, ConfigCommand},
     commands::{
-        apply_defaults, check_for_updates, config_delete, config_show, init_config, reset_defaults,
-        restart_system_services, status_defaults, unapply_defaults,
+        apply_defaults, check_for_updates, config_delete, config_show,
+        execute_only_external_commands, init_config, reset_defaults, restart_system_services,
+        status_defaults, unapply_defaults,
     },
     completions::generate_completion,
     logging::{LogLevel, print_log},
@@ -15,6 +16,7 @@ fn main() {
 
     let result = match &cli.command {
         Commands::Apply => apply_defaults(cli.verbose, cli.dry_run),
+        Commands::Cmd => execute_only_external_commands(cli.verbose, cli.dry_run),
         Commands::Init { force } => init_config(cli.verbose, *force),
         Commands::Unapply => unapply_defaults(cli.verbose, cli.dry_run),
         Commands::Reset { force } => reset_defaults(cli.verbose, cli.dry_run, *force),

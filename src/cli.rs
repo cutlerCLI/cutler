@@ -22,39 +22,41 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
-    /// Apply defaults from the config file.
+    /// Apply defaults, and execute the external commands from the config file.
     Apply,
+    /// Run the external commands assigned in the config file.
+    Cmd,
     /// Initialize a new configuration file with sensible defaults.
     Init {
         #[arg(short, long)]
         force: bool,
     },
-    /// Unapply (delete) defaults from the config file.
+    /// Unapply the previously applied modifications(s).
     Unapply,
-    /// Hard reset domains in the config file (dangerous, ignores snapshots)
+    /// Hard reset domains written in the config file (dangerous).
     Reset {
         /// Skip confirmation prompt
         #[arg(short, long)]
         force: bool,
     },
-    /// Display current status comparing the config vs current defaults.
+    /// Display current status comparing the config and the system.
     Status,
     /// Manage the configuration file.
     Config {
         #[command(subcommand)]
         command: ConfigCommand,
     },
-    /// Generate shell completions
+    /// Generate shell completions.
     Completion {
-        /// Shell type to generate completions for (bash or zsh)
+        /// Shell type to generate completions for (bash or zsh).
         #[arg(value_enum)]
         shell: Shell,
 
-        /// Directory where to write the completion script
+        /// Directory where to write the completion script.
         #[arg(short, long, default_value = ".")]
         dir: String,
     },
-    /// Check for version updates
+    /// Check for version updates.
     CheckUpdate,
 }
 

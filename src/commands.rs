@@ -231,6 +231,101 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
     Ok(())
 }
 
+/// Executes only external commands from the configuration file
+pub fn execute_only_external_commands(
+    verbose: bool,
+    dry_run: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let config_path = get_config_path();
+
+    if !config_path.exists() {
+        print_log(
+            LogLevel::Info,
+            &format!("Config file not found at {:?}.", config_path),
+        );
+
+        if confirm_action("Would you like to create a new configuration?")? {
+            init_config(false, false)?;
+            print_log(
+                LogLevel::Info,
+                "Configuration created. Please review and edit the file before applying.",
+            );
+            return Ok(());
+        } else {
+            return Err("No config file present. Exiting.".into());
+        }
+    }
+
+    let current_parsed = load_config(&config_path)?;
+
+    // Load existing snapshot if it exists
+    let snapshot_path = get_snapshot_path();
+    let mut snapshot = if snapshot_path.exists() {
+        match Snapshot::load_from_file(&snapshot_path) {
+            Ok(snap) => snap,
+            Err(e) => {
+                print_log(
+                    LogLevel::Warning,
+                    &format!(
+                        "Could not load existing snapshot: {}. Creating a new one.",
+                        e
+                    ),
+                );
+                Snapshot::new()
+            }
+        }
+    } else {
+        Snapshot::new()
+    };
+
+    print_log(
+        LogLevel::Info,
+        "Executing only external commands from config (skipping defaults)",
+    );
+
+    // Store external commands in snapshot
+    snapshot.external_commands = crate::external::extract_external_commands(&current_parsed);
+
+    // Save the snapshot file before executing external commands
+    if dry_run {
+        print_log(
+            LogLevel::Info,
+            &format!(
+                "Dry-run: Would update snapshot at {:?} with external commands",
+                snapshot_path
+            ),
+        );
+    } else {
+        snapshot.save_to_file(&snapshot_path)?;
+        if verbose {
+            print_log(
+                LogLevel::Success,
+                &format!(
+                    "Snapshot updated at {:?} with external commands",
+                    snapshot_path
+                ),
+            );
+        }
+    }
+
+    // Execute only external commands
+    if let Err(e) = crate::external::execute_external_commands(&current_parsed, verbose, dry_run) {
+        print_log(
+            LogLevel::Warning,
+            &format!("Failed to execute external commands: {}", e),
+        );
+        return Err(e);
+    }
+
+    if !verbose && !dry_run {
+        println!("\n🍎 External commands executed successfully.");
+    } else if dry_run {
+        println!("\n🍎 Dry-run: External commands would have been executed.");
+    }
+
+    Ok(())
+}
+
 /// Unapplies settings using the stored snapshot
 pub fn unapply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::error::Error>> {
     let snapshot_path = get_snapshot_path();
@@ -566,7 +661,7 @@ pub fn config_delete(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::er
     Ok(())
 }
 
-/// Displays the contents of the configuration file to the terminal.
+/// Displays the contents of the configuration file to the terminal
 pub fn config_show(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::error::Error>> {
     let config_path = get_config_path();
     if !config_path.exists() {
@@ -589,7 +684,7 @@ pub fn config_show(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::erro
     Ok(())
 }
 
-/// Initializes a new cutler configuration file with sensible defaults.
+/// Initializes a new cutler configuration file with sensible defaults
 pub fn init_config(verbose: bool, force: bool) -> Result<(), Box<dyn std::error::Error>> {
     let config_path = get_config_path();
 
