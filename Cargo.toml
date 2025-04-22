@@ -1,6 +1,6 @@
 [package]
 name = "cutler"
-version = "0.4.5"
+version = "0.4.4"
 edition = "2024"
 description = "Powerful, declarative settings management for your Mac, with speed."
 license = "MIT"
