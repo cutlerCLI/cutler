@@ -15,7 +15,7 @@ use crate::domains::{
     get_effective_domain_and_key, needs_prefix,
 };
 use crate::logging::{BOLD, LogLevel, RESET, print_log};
-use crate::snapshot::{ExternalCommandState, SettingState, Snapshot, get_snapshot_path};
+use crate::snapshot::{SettingState, Snapshot, get_snapshot_path};
 
 /// Helper function to prompt user for confirmation
 fn confirm_action(prompt: &str) -> io::Result<bool> {
@@ -208,40 +208,7 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
     } else {
         // Store external commands in snapshot
         // This helps cutler to skip external commands if applied multiple times
-        if let Some(ext_section) = current_parsed.get("external") {
-            if let Some(commands_array) = ext_section.get("command").and_then(|v| v.as_array()) {
-                for command_val in commands_array {
-                    if let Some(command_table) = command_val.as_table() {
-                        if let Some(cmd) = command_table.get("cmd").and_then(|v| v.as_str()) {
-                            let args: Vec<String> = if let Some(arg_val) = command_table.get("args")
-                            {
-                                if let Some(arr) = arg_val.as_array() {
-                                    arr.iter()
-                                        .filter_map(|a| a.as_str())
-                                        .map(String::from)
-                                        .collect()
-                                } else {
-                                    Vec::new()
-                                }
-                            } else {
-                                Vec::new()
-                            };
-
-                            let sudo = command_table
-                                .get("sudo")
-                                .and_then(|v| v.as_bool())
-                                .unwrap_or(false);
-
-                            snapshot.external_commands.push(ExternalCommandState {
-                                cmd: cmd.to_string(),
-                                args,
-                                sudo,
-                            });
-                        }
-                    }
-                }
-            }
-        }
+        snapshot.external_commands = crate::external::extract_external_commands(&current_parsed);
 
         // Save the snapshot file first, before executing external commands
         snapshot.save_to_file(&snapshot_path)?;

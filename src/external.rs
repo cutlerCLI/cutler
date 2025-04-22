@@ -1,7 +1,49 @@
 use crate::logging::{LogLevel, print_log};
+use crate::snapshot::ExternalCommandState;
 use std::env;
 use std::process::{Command, Stdio};
 use toml::Value;
+
+/// Extracts external commands from the config into ExternalCommandState objects
+pub fn extract_external_commands(config: &Value) -> Vec<ExternalCommandState> {
+    let mut commands = Vec::new();
+
+    if let Some(ext_section) = config.get("external") {
+        if let Some(commands_array) = ext_section.get("command").and_then(|v| v.as_array()) {
+            for command_val in commands_array {
+                if let Some(command_table) = command_val.as_table() {
+                    if let Some(cmd) = command_table.get("cmd").and_then(|v| v.as_str()) {
+                        let args: Vec<String> = if let Some(arg_val) = command_table.get("args") {
+                            if let Some(arr) = arg_val.as_array() {
+                                arr.iter()
+                                    .filter_map(|a| a.as_str())
+                                    .map(String::from)
+                                    .collect()
+                            } else {
+                                Vec::new()
+                            }
+                        } else {
+                            Vec::new()
+                        };
+
+                        let sudo = command_table
+                            .get("sudo")
+                            .and_then(|v| v.as_bool())
+                            .unwrap_or(false);
+
+                        commands.push(ExternalCommandState {
+                            cmd: cmd.to_string(),
+                            args,
+                            sudo,
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    commands
+}
 
 /// Substitutes variables in a string from both custom variables and environment
 fn substitute_variables(text: &str, variables: Option<&toml::value::Table>) -> String {
