@@ -9,7 +9,6 @@ use cutler::{
     completions, helpers,
     logging::{LogLevel, print_log},
 };
-use std::path::Path;
 
 fn main() {
     let cli = Cli::parse();
@@ -25,9 +24,7 @@ fn main() {
             ConfigCommand::Show => config_show(cli.verbose, cli.dry_run),
             ConfigCommand::Delete => config_delete(cli.verbose, cli.dry_run),
         },
-        Commands::Completion { shell } => {
-            completions::generate_completion(*shell)
-        }
+        Commands::Completion { shell } => completions::generate_completion(*shell),
         Commands::CheckUpdate => check_for_updates(cli.verbose),
     };
 
