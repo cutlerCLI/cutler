@@ -13,7 +13,7 @@ jobs:
     runs-on: macos-14
 
     env:
-      FILE_NAME: target/release/cutler-${{ github.event.release.name }}-darwin-arm64.zip
+      FILE_NAME: cutler-${{ github.event.release.name }}-darwin-arm64.zip
       CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
 
     steps:
@@ -23,8 +23,7 @@ jobs:
           cache: false
 
       - name: Release
-        run: |
-          mise run release
+        run: mise run release
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
