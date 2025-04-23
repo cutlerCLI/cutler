@@ -5,5 +5,6 @@ pub mod config;
 pub mod defaults;
 pub mod domains;
 pub mod external;
+pub mod helpers;
 pub mod logging;
 pub mod snapshot;

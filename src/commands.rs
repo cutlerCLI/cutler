@@ -2,7 +2,6 @@ use semver::Version;
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::fs;
-use std::io::{self, Write};
 use std::process::Command;
 
 use crate::config::{get_config_path, load_config};
@@ -14,19 +13,9 @@ use crate::domains::{
     check_domain_exists, collect_domains, get_current_value, get_effective_domain,
     get_effective_domain_and_key, needs_prefix,
 };
+use crate::helpers;
 use crate::logging::{BOLD, LogLevel, RESET, print_log};
 use crate::snapshot::{SettingState, Snapshot, get_snapshot_path};
-
-/// Helper function to prompt user for confirmation
-fn confirm_action(prompt: &str) -> io::Result<bool> {
-    print!("{} [y/N]: ", prompt);
-    io::stdout().flush()?;
-
-    let mut input = String::new();
-    io::stdin().read_line(&mut input)?;
-
-    Ok(input.trim().eq_ignore_ascii_case("y"))
-}
 
 /// Applies settings from the configuration file
 pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::error::Error>> {
@@ -38,7 +27,7 @@ pub fn apply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::e
             &format!("Config file not found at {:?}.", config_path),
         );
 
-        if confirm_action("Would you like to create a new configuration?")? {
+        if helpers::confirm_action("Would you like to create a new configuration?")? {
             init_config(false, false)?;
             print_log(
                 LogLevel::Info,
@@ -244,7 +233,7 @@ pub fn execute_only_external_commands(
             &format!("Config file not found at {:?}.", config_path),
         );
 
-        if confirm_action("Would you like to create a new configuration?")? {
+        if helpers::confirm_action("Would you like to create a new configuration?")? {
             init_config(false, false)?;
             print_log(
                 LogLevel::Info,
@@ -413,42 +402,6 @@ pub fn unapply_defaults(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std:
     Ok(())
 }
 
-/// Kills (restarts) Finder, Dock, and SystemUIServer to refresh settings
-pub fn restart_system_services(
-    verbose: bool,
-    dry_run: bool,
-) -> Result<(), Box<dyn std::error::Error>> {
-    const SERVICES: [&str; 3] = ["Finder", "Dock", "SystemUIServer"];
-
-    for &service in &SERVICES {
-        if dry_run {
-            if verbose {
-                print_log(
-                    LogLevel::Info,
-                    &format!("Dry-run: Would restart {}", service),
-                );
-            }
-        } else {
-            let output = Command::new("killall").arg(service).output()?;
-            if !output.status.success() {
-                print_log(
-                    LogLevel::Error,
-                    &format!("Failed to restart {}, try restarting manually.", service),
-                );
-            } else if verbose {
-                print_log(LogLevel::Success, &format!("{} restarted.", service));
-            }
-        }
-    }
-
-    if !verbose && !dry_run {
-        println!("\n🍎 Done. System services restarted.");
-    } else if dry_run {
-        println!("\n🍎 Dry-run: System services would be restarted.");
-    }
-    Ok(())
-}
-
 /// Displays the current status comparing the config vs current defaults
 pub fn status_defaults(verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
     let config_path = get_config_path();
@@ -530,7 +483,7 @@ pub fn reset_defaults(
         "Settings will be reset to macOS defaults, not to their previous values.",
     );
 
-    if !force && !confirm_action("Are you sure you want to continue?")? {
+    if !force && !helpers::confirm_action("Are you sure you want to continue?")? {
         return Ok(());
     }
 
@@ -624,7 +577,7 @@ pub fn config_delete(verbose: bool, dry_run: bool) -> Result<(), Box<dyn std::er
             "The following domains appear to still be applied: {:?}",
             applied_domains
         );
-        if confirm_action(
+        if helpers::confirm_action(
             "Would you like to unapply these settings before deleting the config file?",
         )? {
             unapply_defaults(verbose, dry_run)?;
@@ -694,7 +647,7 @@ pub fn init_config(verbose: bool, force: bool) -> Result<(), Box<dyn std::error:
             LogLevel::Warning,
             &format!("Configuration file already exists at {:?}", config_path),
         );
-        if !confirm_action("Do you want to overwrite it?")? {
+        if !helpers::confirm_action("Do you want to overwrite it?")? {
             return Err("Configuration initialization aborted.".into());
         }
     }

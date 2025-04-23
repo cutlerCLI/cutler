@@ -3,10 +3,10 @@ use cutler::{
     cli::{Cli, Commands, ConfigCommand},
     commands::{
         apply_defaults, check_for_updates, config_delete, config_show,
-        execute_only_external_commands, init_config, reset_defaults, restart_system_services,
-        status_defaults, unapply_defaults,
+        execute_only_external_commands, init_config, reset_defaults, status_defaults,
+        unapply_defaults,
     },
-    completions::generate_completion,
+    completions, helpers,
     logging::{LogLevel, print_log},
 };
 use std::path::Path;
@@ -25,7 +25,9 @@ fn main() {
             ConfigCommand::Show => config_show(cli.verbose, cli.dry_run),
             ConfigCommand::Delete => config_delete(cli.verbose, cli.dry_run),
         },
-        Commands::Completion { shell, dir } => generate_completion(*shell, Path::new(dir)),
+        Commands::Completion { shell, dir } => {
+            completions::generate_completion(*shell, Path::new(dir))
+        }
         Commands::CheckUpdate => check_for_updates(cli.verbose),
     };
 
@@ -40,7 +42,7 @@ fn main() {
                     command: ConfigCommand::Delete,
                 } => {
                     if !cli.no_restart_services {
-                        if let Err(e) = restart_system_services(cli.verbose, cli.dry_run) {
+                        if let Err(e) = helpers::restart_system_services(cli.verbose, cli.dry_run) {
                             eprintln!("🍎 Manual restart might be required: {}", e);
                         }
                     }
