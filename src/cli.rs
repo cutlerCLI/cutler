@@ -51,10 +51,6 @@ pub enum Commands {
         /// Shell type to generate completions for (bash or zsh).
         #[arg(value_enum)]
         shell: Shell,
-
-        /// Directory where to write the completion script.
-        #[arg(short, long, default_value = ".")]
-        dir: String,
     },
     /// Check for version updates.
     CheckUpdate,
@@ -74,4 +70,10 @@ pub enum Shell {
     Bash,
     /// Generate completions for zsh
     Zsh,
+    /// Generate completions for fish
+    Fish,
+    /// Generate completions for elvish
+    Elvish,
+    /// Generate completions for powershell
+    PowerShell,
 }
