@@ -1,5 +1,4 @@
-# Complete example of most cutler pattern usage
-# Ironically, this is the configuration I use personally.
+# Complete example of most of cutler's pattern usage
 
 [menuextra.clock]
 FlashDateSeparators = true
@@ -41,24 +40,17 @@ hostname = "darkstar"
 
 [external]
 [[external.command]]
-cmd = "scutil"
-args = ["--set", "ComputerName", "$hostname"]
+cmd = "scutil --set ComputerName &hostname"
 sudo = true
 
 [[external.command]]
 cmd = "scutil"
-args = ["--set", "HostName", "$hostname"]
+args = ["--set", "HostName", "$hostname"] # separated args style
 sudo = true
 
 [[external.command]]
-cmd = "scutil"
-args = ["--set", "LocalHostName", "$hostname"]
+cmd = "scutil --set LocalHostName &hostname"
 sudo = true
 
 [[external.command]]
-cmd = "sh"
-args = [
-    "-c",
-    "sed -e 's/^#auth/auth/' /etc/pam.d/sudo_local.template | sudo tee /etc/pam.d/sudo_local",
-]
-sudo = false
+cmd = "sed -e 's/^#auth/auth/' /etc/pam.d/sudo_local.template | sudo tee /etc/pam.d/sudo_local"
