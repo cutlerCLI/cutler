@@ -18,11 +18,19 @@ pub enum LogLevel {
 
 /// Central logging function.
 pub fn print_log(level: LogLevel, message: &str) {
-    match level {
-        LogLevel::Success => println!("{}[SUCCESS]{} {}", GREEN, RESET, message),
-        LogLevel::Error => eprintln!("{}[ERROR]{} {}", RED, RESET, message),
-        LogLevel::Warning => eprintln!("{}[WARN]{} {}", YELLOW, RESET, message),
-        LogLevel::Info => println!("{}[INFO]{} {}", BOLD, RESET, message),
-        LogLevel::CommandOutput => println!("{}[CMD OUTPUT]{} {}", PINK, RESET, message),
+    let (prefix, color) = match level {
+        LogLevel::Success => ("SUCCESS", GREEN),
+        LogLevel::Error => ("ERROR", RED),
+        LogLevel::Warning => ("WARNING", YELLOW),
+        LogLevel::Info => ("INFO", BOLD),
+        LogLevel::CommandOutput => ("OUTPUT", PINK),
+    };
+
+    let formatted = format!("{}[{}]{} {}", color, prefix, RESET, message);
+
+    if level == LogLevel::Error || level == LogLevel::Warning {
+        eprintln!("{}", formatted);
+    } else {
+        println!("{}", formatted);
     }
 }
