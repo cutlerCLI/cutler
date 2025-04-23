@@ -23,7 +23,7 @@ pub fn print_log(level: LogLevel, message: &str) {
         LogLevel::Error => ("ERROR", RED),
         LogLevel::Warning => ("WARNING", YELLOW),
         LogLevel::Info => ("INFO", BOLD),
-        LogLevel::CommandOutput => ("OUTPUT", PINK),
+        LogLevel::CommandOutput => ("CMD OUT", PINK),
     };
 
     let formatted = format!("{}[{}]{} {}", color, prefix, RESET, message);
