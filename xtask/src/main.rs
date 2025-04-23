@@ -15,10 +15,9 @@ enum Commands {
     /// Generate manpage for cutler
     Manpage {
         /// Output directory for the manpage
-        #[arg(short, long, default_value = "man/man1")]
+        #[arg(short, long, default_value = "target/man")]
         dir: PathBuf,
     },
-    // You can add more development tasks here
 }
 
 fn main() -> Result<()> {
