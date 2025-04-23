@@ -23,7 +23,9 @@ jobs:
           cache: false
 
       - name: Release
-        run: mise run publish
+        run: |
+          mise set FILE_NAME=${{ env.FILE_NAME }}
+          mise run publish
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
