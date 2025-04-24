@@ -15,7 +15,7 @@ enum Commands {
     /// Generate manpage for cutler
     Manpage {
         /// Output directory for the manpage
-        #[arg(short, long, default_value = "target/man")]
+        #[arg(short, long, default_value = "man/man1")]
         dir: PathBuf,
     },
 }
