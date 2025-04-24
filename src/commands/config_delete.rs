@@ -9,9 +9,10 @@ use crate::{
         logging::{LogLevel, print_log},
     },
 };
+use anyhow::Result;
 
 /// Deletes the configuration file and offers to unapply settings if they are still active
-pub fn run(verbose: bool, dry_run: bool) -> anyhow::Result<()> {
+pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
     let config_path = get_config_path();
     if !config_path.exists() {
         if verbose {
