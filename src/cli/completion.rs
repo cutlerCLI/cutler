@@ -6,6 +6,7 @@ use clap_complete::{
 };
 use std::io;
 
+/// Generates a shell completion script given the shell type.
 pub fn generate_completion(shell: Shell) -> anyhow::Result<()> {
     let mut cmd = Args::command();
     let name = cmd.get_name().to_string();

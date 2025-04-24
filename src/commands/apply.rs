@@ -10,7 +10,6 @@ use crate::{
 use anyhow::Result;
 
 pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
-    // load or init config
     let config_path = crate::config::loader::get_config_path();
     if !config_path.exists() {
         print_log(
