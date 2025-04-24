@@ -206,56 +206,72 @@ cutler help
 
 ## Shell Completions
 
-cutler currently supports automatically generating shell completions for Bash and Zsh, making it easier to use the project for power users.
+Here is a small tour on how to setup shell-specific completion scripts for cutler.
 
-#### Generation
+> [!IMPORTANT]
+> If you have installed cutler using Homebrew, the shell completion will automatically be
+> installed. Just restart your shell after initial installation.
 
-```bash
-# For bash users
-cutler completion bash
+#### Bash completions setup
 
-# For zsh users
-cutler completion zsh
-
-# Specify a different output directory:
-cutler completion bash --dir ~/.local/share/bash-completion/completions
-cutler completion zsh --dir ~/.zfunc
-```
-
-#### Bash Completion Setup
-
-Assuming you've generated the completion script using the command given above, you can source it like this for temporary use:
+1. Make a directory to store Bash-specific completions:
 
 ```bash
-source ./cutler.bash
+mkdir ~/.bash-completion.d/
 ```
 
-For permanent use, add to your `~/.bashrc`:
+2. Generate the completion script using the following command and pipe the output to a new file:
+
 ```bash
-source /path/to/cutler.bash > ~/.bashrc
+cutler completion bash > cutler.bash
+mv cutler.bash ~/.bash-completion.d/
 ```
 
-#### Zsh Completion Setup
+3. Finally, source the completion script. The best way would be to simply add it to your `.bashrc` file:
+
+```bash
+source ~/.bash_completion.d/cutler.bash > ~/.bashrc
+```
+
+#### Zsh completions setup
 
 1. Make sure you have a directory for custom completions:
+
 ```bash
 mkdir -p ~/.zfunc
 ```
 
-2. Assuming you've already generated the configuration file from the command given above, you can copy the completion file:
+2. Then, generate the completion script and move it over:
+
 ```bash
-cp _cutler ~/.zfunc/
+cutler completion zsh > _cutler
+mv _cutler ~/.zfunc/
 ```
 
 3. Then, add to your `~/.zshrc`:
+
 ```bash
 fpath=(~/.zfunc $fpath)
 autoload -U compinit && compinit
 ```
 
 4. Restart your shell or run:
+
 ```bash
 source ~/.zshrc
+```
+
+#### Completions for other shells
+
+```bash
+# Fish
+cutler completion fish
+
+# Elvish
+cutler completion elvish
+
+# PowerShell
+cutler completion powershell
 ```
 
 ## Resources
