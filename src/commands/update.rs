@@ -62,8 +62,8 @@ pub fn run(verbose: bool) -> Result<()> {
                 latest_version
             );
             println!("\nTo update, run one of the following:");
-            println!("  brew upgrade hitblast/tap/cutler    # if installed via Homebrew");
-            println!("  cargo install cutler --force        # if installed via Cargo");
+            println!("  brew update && brew upgrade cutler     # if installed via Homebrew");
+            println!("  cargo install cutler --force           # if installed via Cargo");
             println!("\nOr download the latest release from:");
             println!("  https://github.com/hitblast/cutler/releases");
         }
