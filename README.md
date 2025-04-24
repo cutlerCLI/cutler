@@ -272,6 +272,8 @@ This is a personal project aimed at making the task of setting up a Mac more
 straightforward. Contributions are always welcome! Feel free to help out by
 [creating a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) or [submitting an issue](https://github.com/hitblast/cutler/issues).
 
+If you, as a developer, would like to dive into the nitty-gritty of contributing to cutler, view the [CONTRIBUTING.md](./CONTRIBUTING.md). I'm still writing it as the project progresses.
+
 ## License
 
 This project is licensed under the [MIT License](https://github.com/hitblast/cutler/blob/main/LICENSE).
