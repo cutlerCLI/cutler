@@ -1,6 +1,4 @@
-use std::env;
-use std::fs;
-use std::path::PathBuf;
+use std::{env, fs, path::PathBuf};
 
 use toml::Value;
 
@@ -8,7 +6,7 @@ use toml::Value;
 pub fn get_config_path() -> PathBuf {
     let mut candidates = Vec::new();
 
-    // Decide candidates in order.
+    // decide candidates in order
     if let Some(xdg_config) = env::var_os("XDG_CONFIG_HOME") {
         let candidate = PathBuf::from(xdg_config).join("cutler").join("config.toml");
         candidates.push(candidate);
@@ -27,8 +25,8 @@ pub fn get_config_path() -> PathBuf {
 
     candidates.push(PathBuf::from("config.toml"));
 
-    // Return the first candidate that exists.
-    // If none exists, return the first candidate (this may lead to a prompt to create an example config).
+    // return the first candidate that exists
+    // might lead to a prompt to create an example config
     for candidate in &candidates {
         if candidate.exists() {
             return candidate.to_owned();
@@ -41,7 +39,7 @@ pub fn get_config_path() -> PathBuf {
 }
 
 /// Helper: Read and parse the configuration file at a given path.
-pub fn load_config(path: &PathBuf) -> Result<Value, Box<dyn std::error::Error>> {
+pub fn load_config(path: &PathBuf) -> Result<Value, anyhow::Error> {
     let content = fs::read_to_string(path)?;
     let parsed: Value = content.parse::<Value>()?;
     Ok(parsed)

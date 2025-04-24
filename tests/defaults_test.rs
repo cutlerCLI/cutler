@@ -1,76 +1,66 @@
 #[cfg(test)]
 mod tests {
-    use cutler::defaults::{get_flag_and_value, get_flag_for_value, normalize_desired};
+    use cutler::defaults::{from_flag, normalize, to_flag};
     use toml::Value;
 
     #[test]
-    fn test_get_flag_and_value() {
-        // Test boolean values
-        let (flag, value) = get_flag_and_value(&Value::Boolean(true)).unwrap();
+    fn test_to_flag() {
+        // Boolean
+        let (flag, value) = to_flag(&Value::Boolean(true)).unwrap();
         assert_eq!(flag, "-bool");
         assert_eq!(value, "true");
-
-        let (flag, value) = get_flag_and_value(&Value::Boolean(false)).unwrap();
+        let (flag, value) = to_flag(&Value::Boolean(false)).unwrap();
         assert_eq!(flag, "-bool");
         assert_eq!(value, "false");
 
-        // Test integer values
-        let (flag, value) = get_flag_and_value(&Value::Integer(42)).unwrap();
+        // Integer
+        let (flag, value) = to_flag(&Value::Integer(42)).unwrap();
         assert_eq!(flag, "-int");
         assert_eq!(value, "42");
 
-        // Test float values
-        let (flag, value) = get_flag_and_value(&Value::Float(3.14)).unwrap();
+        // Float
+        let (flag, value) = to_flag(&Value::Float(3.14)).unwrap();
         assert_eq!(flag, "-float");
         assert_eq!(value, "3.14");
 
-        // Test string values
-        let (flag, value) = get_flag_and_value(&Value::String("test".to_string())).unwrap();
+        // String
+        let (flag, value) = to_flag(&Value::String("test".into())).unwrap();
         assert_eq!(flag, "-string");
         assert_eq!(value, "test");
     }
 
     #[test]
-    fn test_get_flag_for_value() {
-        // Test boolean-like strings
-        let (flag, value) = get_flag_for_value("true").unwrap();
+    fn test_from_flag() {
+        // Boolean‐like
+        let (flag, val) = from_flag("true").unwrap();
         assert_eq!(flag, "-bool");
-        assert_eq!(value, "true");
-
-        let (flag, value) = get_flag_for_value("0").unwrap();
+        assert_eq!(val, "true");
+        let (flag, val) = from_flag("0").unwrap();
         assert_eq!(flag, "-bool");
-        assert_eq!(value, "0");
+        assert_eq!(val, "0");
 
-        // Test integer-like strings
-        let (flag, value) = get_flag_for_value("42").unwrap();
+        // Integer‐like
+        let (flag, val) = from_flag("42").unwrap();
         assert_eq!(flag, "-int");
-        assert_eq!(value, "42");
+        assert_eq!(val, "42");
 
-        // Test float-like strings
-        let (flag, value) = get_flag_for_value("3.14").unwrap();
+        // Float‐like
+        let (flag, val) = from_flag("3.14").unwrap();
         assert_eq!(flag, "-float");
-        assert_eq!(value, "3.14");
+        assert_eq!(val, "3.14");
 
-        // Test regular strings
-        let (flag, value) = get_flag_for_value("test string").unwrap();
+        // Fallback string
+        let (flag, val) = from_flag("hello world").unwrap();
         assert_eq!(flag, "-string");
-        assert_eq!(value, "test string");
+        assert_eq!(val, "hello world");
     }
 
     #[test]
-    fn test_normalize_desired() {
-        // Test boolean normalization
-        assert_eq!(normalize_desired(&Value::Boolean(true)), "1");
-        assert_eq!(normalize_desired(&Value::Boolean(false)), "0");
-
-        // Test string normalization
-        assert_eq!(
-            normalize_desired(&Value::String("test".to_string())),
-            "test"
-        );
-
-        // Test number normalization
-        assert_eq!(normalize_desired(&Value::Integer(42)), "42");
-        assert_eq!(normalize_desired(&Value::Float(3.14)), "3.14");
+    fn test_normalize() {
+        assert_eq!(normalize(&Value::Boolean(true)), "1");
+        assert_eq!(normalize(&Value::Boolean(false)), "0");
+        assert_eq!(normalize(&Value::String("foo".into())), "foo");
+        assert_eq!(normalize(&Value::Integer(5)), "5");
+        assert_eq!(normalize(&Value::Float(2.5)), "2.5");
     }
 }

@@ -40,7 +40,7 @@ fn generate_manpage(dir: PathBuf) -> Result<()> {
     let file_path = dir.join("cutler.1");
     let mut file = File::create(&file_path).context("Failed to create manpage file")?;
 
-    let cmd = cutler::cli::Cli::command();
+    let cmd = cutler::cli::Args::command();
     Man::new(cmd)
         .render(&mut file)
         .context("Failed to render manpage")?;

@@ -10,7 +10,6 @@ This is the standard contribution/development guidelines for the project. You ma
 - [Production Release Workflow](#production-release-workflow)
   - [Testing](#testing)
   - [Building](#building)
-- [Project Hierarchy](#project-hierarchy)
 - [Licensing](#licensing)
 
 ## Getting Started
@@ -63,41 +62,32 @@ cargo fmt --all -- --check && cargo test --verbose && cargo clippy && cargo buil
 mise run testsuite
 ```
 
-#### Building
+#### Build Reproduction
+
+You can easily create a release build for cutler using the following command:
 
 ```bash
 cargo build --release --verbose --locked
-
-# or, you can use the predefined build script:
-mise run build
 ```
 
-## Project Hierarchy
+However, as a part of automating the entire build process for the project, I've also written some
+"tasks" which can be executed using `mise`:
 
-When running `tree src` over the source tree, we can see that there are a few important files:
-
-```
-src
-├── commands.rs
-├── config.rs
-├── defaults.rs
-├── domains.rs
-├── external.rs
-├── lib.rs
-├── logging.rs
-└── main.rs
+```bash
+mise run release
 ```
 
-Among this, a few essential files can be highlighted:
+This will produce a complete & compressed build zip for cutler, which is the exact same as the
+entire GitHub Actions release workflow. The name is set by the `FILE_NAME` environment variable
+which defaults to `cutler-dev-darwin-arm64.zip`.
 
-- `main.rs`: This houses the entry point of the application and ***should NOT contain any unnecessary business logic.***
-- `commands.rs`: The backend functions for each shell command cutler has is housed here, and collects with the rest of the application.
-- `config.rs`: The project relies heavily on configuration file management. So, logic related to creating the configuration file and validating it is kept here.
-- `domains.rs`: This file is used to wrap around the `defaults` CLI tool of macOS and provides a high-level interface to performing various I/O operations.
-- `external.rs`: cutler's external command-running functionality for multiple use-cases is implemented here.
-- `logging.rs`: Pretty-printing!!!
+The release task depends on the following other tasks to succeed at first:
 
-The `lib.rs` file in the source tree does not contain any logic, rather it is used to connect the various modules together.
+- `testsuite` - lint, tests, code formatting
+- `build` - production build task
+- `manpage` - automated manpage generation for attachment in zip
+
+Please view [mise.toml](./mise.toml) for an in-depth view of each task.
 
 ## Code Formatting
 
@@ -105,15 +95,13 @@ The `lib.rs` file in the source tree does not contain any logic, rather it is us
 
 Simply run the following command to format the code:
 
-```
-cargo fmt
+```bash
+cargo fmt --all
+
+# or
+mise run format  # only checks
 ```
 
-For catching syntactic errors, you can use the `cargo clippy` command:
-
-```
-cargo clippy -- -D warnings
-```
 
 ## Licensing
 

@@ -1,47 +1,34 @@
 #[cfg(test)]
 mod tests {
-    use cutler::external::execute_external_commands;
-    use toml::Value;
-    use toml::value::Table;
-
-    // This is a more complex test that would require mocking
-    // the process execution. In a real implementation, we might
-    // use a crate like mockall to mock the Command execution.
-    // For simplicity, I'll provide a basic structure:
+    use cutler::external::run_all;
+    use toml::{Value, value::Table};
 
     #[test]
-    fn test_execute_external_commands_dry_run() {
-        // Create a test TOML structure with external commands
-        let mut variables = Table::new();
-        variables.insert(
-            "hostname".to_string(),
-            Value::String("test-host".to_string()),
-        );
+    fn test_run_all_dry_run() {
+        let mut vars = Table::new();
+        vars.insert("hostname".into(), Value::String("test-host".into()));
 
-        let mut cmd1 = Table::new();
-        cmd1.insert("cmd".to_string(), Value::String("echo".to_string()));
-        cmd1.insert(
-            "args".to_string(),
+        let mut cmd = Table::new();
+        cmd.insert("cmd".into(), Value::String("echo".into()));
+        cmd.insert(
+            "args".into(),
             Value::Array(vec![
-                Value::String("Hello".to_string()),
-                Value::String("$hostname".to_string()),
+                Value::String("Hello".into()),
+                Value::String("$hostname".into()),
             ]),
         );
 
-        let mut external = Table::new();
-        external.insert("variables".to_string(), Value::Table(variables));
-        external.insert(
-            "command".to_string(),
-            Value::Array(vec![Value::Table(cmd1)]),
-        );
+        let mut ext = Table::new();
+        ext.insert("variables".into(), Value::Table(vars));
+        ext.insert("command".into(), Value::Array(vec![Value::Table(cmd)]));
 
-        let mut root = Table::new();
-        root.insert("external".to_string(), Value::Table(external));
+        let config = Value::Table({
+            let mut m = Table::new();
+            m.insert("external".into(), Value::Table(ext));
+            m
+        });
 
-        let config = Value::Table(root);
-
-        // Test in dry-run mode (should not execute anything)
-        let result = execute_external_commands(&config, true, true);
-        assert!(result.is_ok());
+        // Should succeed in dry‐run
+        assert!(run_all(&config, true, true).is_ok());
     }
 }

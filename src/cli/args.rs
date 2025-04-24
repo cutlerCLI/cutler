@@ -1,9 +1,9 @@
 use clap::{Parser, Subcommand, ValueEnum};
 
-/// Declarative macOS settings management at your fingertips, with speed.
+/// top‐level CLI args for cutler
 #[derive(Parser)]
 #[command(name = "cutler", version, about)]
-pub struct Cli {
+pub struct Args {
     /// Increase output verbosity.
     #[arg(short, long, global = true)]
     pub verbose: bool,
@@ -17,14 +17,14 @@ pub struct Cli {
     pub dry_run: bool,
 
     #[command(subcommand)]
-    pub command: Commands,
+    pub command: Command,
 }
 
 #[derive(Subcommand)]
-pub enum Commands {
+pub enum Command {
     /// Apply defaults, and execute the external commands from the config file.
     Apply,
-    /// Run the external commands assigned in the config file.
+    /// Run only the external commands assigned in the config file.
     Cmd,
     /// Initialize a new configuration file with sensible defaults.
     Init {
@@ -35,7 +35,7 @@ pub enum Commands {
     Unapply,
     /// Hard reset domains written in the config file (dangerous).
     Reset {
-        /// Skip confirmation prompt
+        /// Skip confirmation prompt.
         #[arg(short, long)]
         force: bool,
     },
@@ -44,11 +44,11 @@ pub enum Commands {
     /// Manage the configuration file.
     Config {
         #[command(subcommand)]
-        command: ConfigCommand,
+        command: ConfigSub,
     },
     /// Generate shell completions.
     Completion {
-        /// Shell type to generate completions for (bash or zsh).
+        /// Shell type to generate completions for.
         #[arg(value_enum)]
         shell: Shell,
     },
@@ -57,7 +57,7 @@ pub enum Commands {
 }
 
 #[derive(Subcommand)]
-pub enum ConfigCommand {
+pub enum ConfigSub {
     /// Display the contents of the configuration file.
     Show,
     /// Delete the configuration file.
@@ -66,14 +66,9 @@ pub enum ConfigCommand {
 
 #[derive(Copy, Clone, PartialEq, Eq, ValueEnum)]
 pub enum Shell {
-    /// Generate completions for bash
     Bash,
-    /// Generate completions for zsh
     Zsh,
-    /// Generate completions for fish
     Fish,
-    /// Generate completions for elvish
     Elvish,
-    /// Generate completions for powershell
     PowerShell,
 }
