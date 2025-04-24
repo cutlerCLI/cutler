@@ -1,0 +1,52 @@
+pub mod apply;
+pub mod cmd;
+pub mod config_delete;
+pub mod config_show;
+pub mod init;
+pub mod reset;
+pub mod status;
+pub mod unapply;
+pub mod update;
+
+use crate::cli::Command;
+use anyhow::Result;
+
+/// Entrypoint: dispatch to each sub‐module’s `run(...)`
+pub fn dispatch(command: &Command, verbose: bool, dry_run: bool, no_restart: bool) -> Result<()> {
+    let result = match command {
+        Command::Apply => apply::run(verbose, dry_run),
+        Command::Cmd => cmd::run(verbose, dry_run),
+        Command::Init { force } => init::run(verbose, *force),
+        Command::Unapply => unapply::run(verbose, dry_run),
+        Command::Reset { force } => reset::run(verbose, dry_run, *force),
+        Command::Status => status::run(verbose),
+        Command::Config { command } => match command {
+            crate::cli::ConfigSub::Show => config_show::run(verbose, dry_run),
+            crate::cli::ConfigSub::Delete => config_delete::run(verbose, dry_run),
+        },
+        Command::Completion { shell } => {
+            crate::cli::completion::generate_completion(*shell).map_err(|e| e.into())
+        }
+        Command::CheckUpdate => update::run(verbose),
+    };
+
+    // handle post‐hooks (restart services)
+    if let Ok(_) = &result {
+        use crate::util::io::restart_system_services;
+        match command {
+            Command::Apply
+            | Command::Unapply
+            | Command::Reset { .. }
+            | Command::Config {
+                command: crate::cli::ConfigSub::Delete,
+            } => {
+                if !no_restart {
+                    let _ = restart_system_services(verbose, dry_run);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    result
+}
