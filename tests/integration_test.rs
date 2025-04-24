@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use cutler::config::load_config;
-    use cutler::domains::collect_domains;
+    use cutler::domains::collect;
     use std::fs::File;
     use std::io::Write;
     use tempfile::TempDir;
@@ -36,7 +36,7 @@ mod tests {
         let config = load_config(&config_file).unwrap();
 
         // Collect domains
-        let domains = collect_domains(&config).unwrap();
+        let domains = collect(&config).unwrap();
 
         // Verify the collected domains
         assert_eq!(domains.len(), 3);
@@ -58,7 +58,7 @@ mod tests {
 
     #[test]
     fn test_snapshot_integration() {
-        use cutler::defaults::get_flag_for_value;
+        use cutler::defaults::from_flag;
         use cutler::snapshot::{ExternalCommandState, SettingState, Snapshot};
         use tempfile::TempDir;
 
@@ -81,7 +81,7 @@ mod tests {
         });
 
         // Add an external command
-        snapshot.external_commands.push(ExternalCommandState {
+        snapshot.external.push(ExternalCommandState {
             cmd: "echo".to_string(),
             args: vec!["Hello".to_string()],
             sudo: false,
@@ -92,18 +92,18 @@ mod tests {
         let snapshot_path = temp_dir.path().join(".cutler_snapshot");
 
         // Save the snapshot
-        snapshot.save_to_file(&snapshot_path).unwrap();
+        snapshot.save(&snapshot_path).unwrap();
 
         // Simulate what happens during unapply:
         // 1. Load the snapshot
-        let loaded_snapshot = Snapshot::load_from_file(&snapshot_path).unwrap();
+        let loaded_snapshot = Snapshot::load(&snapshot_path).unwrap();
 
         // 2. For each setting, identify the flag and value for restoring the original value
         for setting in loaded_snapshot.settings.iter() {
             match &setting.original_value {
                 Some(orig_val) => {
                     // This is what we'd do to restore the original value
-                    let (flag, value) = get_flag_for_value(orig_val).unwrap();
+                    let (flag, value) = from_flag(orig_val).unwrap();
 
                     // Verify the type detection works correctly
                     if orig_val == "36" {
@@ -119,7 +119,7 @@ mod tests {
         }
 
         // 3. Verify external commands are tracked correctly
-        assert_eq!(loaded_snapshot.external_commands.len(), 1);
-        assert_eq!(loaded_snapshot.external_commands[0].cmd, "echo");
+        assert_eq!(loaded_snapshot.external.len(), 1);
+        assert_eq!(loaded_snapshot.external[0].cmd, "echo");
     }
 }

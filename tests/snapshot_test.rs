@@ -31,7 +31,7 @@ mod tests {
         // Test creation
         let snapshot = Snapshot::new();
         assert_eq!(snapshot.settings.len(), 0);
-        assert_eq!(snapshot.external_commands.len(), 0);
+        assert_eq!(snapshot.external.len(), 0);
         assert_eq!(snapshot.version, env!("CARGO_PKG_VERSION"));
 
         // Test setting state
@@ -85,13 +85,13 @@ mod tests {
         });
 
         // Add multiple external commands
-        snapshot.external_commands.push(ExternalCommandState {
+        snapshot.external.push(ExternalCommandState {
             cmd: "echo".to_string(),
             args: vec!["Hello".to_string()],
             sudo: false,
         });
 
-        snapshot.external_commands.push(ExternalCommandState {
+        snapshot.external.push(ExternalCommandState {
             cmd: "hostname".to_string(),
             args: vec!["-s".to_string(), "macbook".to_string()],
             sudo: true,
@@ -102,7 +102,7 @@ mod tests {
         let snapshot_path = temp_dir.path().join("test_snapshot.json");
 
         // Save the snapshot
-        snapshot.save_to_file(&snapshot_path).unwrap();
+        snapshot.save(&snapshot_path).unwrap();
 
         // Verify file exists and has content
         assert!(snapshot_path.exists());
@@ -111,11 +111,11 @@ mod tests {
         assert!(content.contains("tilesize"));
 
         // Load the snapshot back
-        let loaded_snapshot = Snapshot::load_from_file(&snapshot_path).unwrap();
+        let loaded_snapshot = Snapshot::load(&snapshot_path).unwrap();
 
         // Verify contents match
         assert_eq!(loaded_snapshot.settings.len(), 3);
-        assert_eq!(loaded_snapshot.external_commands.len(), 2);
+        assert_eq!(loaded_snapshot.external.len(), 2);
 
         // Convert to HashMap for easier testing
         let settings_map: HashMap<_, _> = loaded_snapshot
@@ -149,12 +149,12 @@ mod tests {
         assert_eq!(global_setting.new_value, "1");
 
         // Check external commands
-        let echo_cmd = &loaded_snapshot.external_commands[0];
+        let echo_cmd = &loaded_snapshot.external[0];
         assert_eq!(echo_cmd.cmd, "echo");
         assert_eq!(echo_cmd.args, vec!["Hello".to_string()]);
         assert_eq!(echo_cmd.sudo, false);
 
-        let hostname_cmd = &loaded_snapshot.external_commands[1];
+        let hostname_cmd = &loaded_snapshot.external[1];
         assert_eq!(hostname_cmd.cmd, "hostname");
         assert_eq!(
             hostname_cmd.args,
@@ -166,7 +166,7 @@ mod tests {
     #[test]
     fn test_snapshot_error_handling() {
         // Test loading from non-existent file
-        let result = Snapshot::load_from_file(&PathBuf::from("/nonexistent/path"));
+        let result = Snapshot::load(&PathBuf::from("/nonexistent/path"));
         assert!(result.is_err());
 
         // Test loading from invalid JSON
@@ -174,13 +174,13 @@ mod tests {
         let invalid_path = temp_dir.path().join("invalid.json");
         fs::write(&invalid_path, "this is not valid json").unwrap();
 
-        let result = Snapshot::load_from_file(&invalid_path);
+        let result = Snapshot::load(&invalid_path);
         assert!(result.is_err());
 
         // Test writing to invalid path
         let snapshot = Snapshot::new();
         let invalid_dir = PathBuf::from("/nonexistent/directory/snapshot.json");
-        let result = snapshot.save_to_file(&invalid_dir);
+        let result = snapshot.save(&invalid_dir);
         assert!(result.is_err());
     }
 }
