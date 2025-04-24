@@ -261,7 +261,7 @@ autoload -U compinit && compinit
 source ~/.zshrc
 ```
 
-#### Completions for other shells
+#### For other shells
 
 ```bash
 # Fish
