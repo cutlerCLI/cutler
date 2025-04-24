@@ -9,7 +9,6 @@ use crate::{
     },
 };
 
-/// Initialize a new cutler configuration file with sensible defaults.
 pub fn run(verbose: bool, force: bool) -> Result<()> {
     let config_path = get_config_path();
 

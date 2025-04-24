@@ -6,7 +6,6 @@ use ureq;
 
 use crate::util::logging::{LogLevel, print_log};
 
-/// Checks for updates to cutler by fetching the latest version from GitHub's Cargo.toml
 pub fn run(verbose: bool) -> Result<()> {
     let current_version = env!("CARGO_PKG_VERSION");
 

@@ -35,7 +35,7 @@ pub enum Command {
     Unapply,
     /// Hard reset domains written in the config file (dangerous).
     Reset {
-        /// Skip confirmation prompt
+        /// Skip confirmation prompt.
         #[arg(short, long)]
         force: bool,
     },
@@ -48,7 +48,7 @@ pub enum Command {
     },
     /// Generate shell completions.
     Completion {
-        /// Shell type to generate completions for
+        /// Shell type to generate completions for.
         #[arg(value_enum)]
         shell: Shell,
     },

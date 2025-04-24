@@ -7,7 +7,6 @@ use crate::{
     util::logging::{LogLevel, print_log},
 };
 
-/// Unapply settings using the stored snapshot
 pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
     let snap_path = get_snapshot_path();
 

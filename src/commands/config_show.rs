@@ -6,7 +6,6 @@ use crate::{
     util::logging::{LogLevel, print_log},
 };
 
-/// Display the contents of the configuration file
 pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
     let config_path = get_config_path();
 
