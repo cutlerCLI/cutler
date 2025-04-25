@@ -1,5 +1,7 @@
 use crate::snapshot::state::ExternalCommandState;
 use crate::util::logging::{LogLevel, print_log};
+use anyhow::{Error, Result};
+use rayon::prelude::*;
 use std::env;
 use std::process::{Command, Stdio};
 use toml::Value;
@@ -40,15 +42,15 @@ pub fn extract(config: &Value) -> Vec<ExternalCommandState> {
 fn substitute(text: &str, vars: Option<&toml::value::Table>) -> String {
     let mut result = text.to_string();
     let mut var_positions = Vec::new();
-
-    // find all variable references
     let mut i = 0;
+
+    // find $… or ${…} spans
     while i < result.len() {
         if result[i..].starts_with('$') {
             let start = i;
             i += 1;
 
-            // handle ${var} format
+            // ${var}
             let is_braced = i < result.len() && result[i..].starts_with('{');
             if is_braced {
                 i += 1;
@@ -59,12 +61,13 @@ fn substitute(text: &str, vars: Option<&toml::value::Table>) -> String {
                     i += 1;
                 }
             } else {
-                // handle $var format - variable name can include alphanumeric and underscore
+                // $var
                 while i < result.len()
                     && result
                         .chars()
                         .nth(i)
-                        .is_some_and(|c| c.is_alphanumeric() || c == '_')
+                        .map(|c| c.is_alphanumeric() || c == '_')
+                        .unwrap_or(false)
                 {
                     i += 1;
                 }
@@ -76,7 +79,7 @@ fn substitute(text: &str, vars: Option<&toml::value::Table>) -> String {
         }
     }
 
-    // process variables from end to start to avoid position shifts
+    // replace from back to front
     for (start, end) in var_positions.into_iter().rev() {
         let var_ref = &result[start..end];
 
@@ -87,76 +90,73 @@ fn substitute(text: &str, vars: Option<&toml::value::Table>) -> String {
             &var_ref[1..]
         };
 
-        // try to find value in custom variables
-        let replacement = if let Some(vars_map) = vars {
-            if let Some(value) = vars_map.get(var_name) {
-                match value {
-                    Value::String(s) => Some(s.clone()),
-                    Value::Array(arr) => {
-                        let joined = arr
-                            .iter()
-                            .filter_map(|v| v.as_str())
-                            .collect::<Vec<_>>()
-                            .join(" ");
-                        Some(joined)
-                    }
-                    _ => Some(value.to_string()),
-                }
-            } else {
-                None
-            }
-        } else {
-            None
-        };
+        // first try custom vars
+        let replacement = vars
+            .and_then(|map| map.get(var_name))
+            .map(|v| match v {
+                Value::String(s) => s.clone(),
+                Value::Array(arr) => arr
+                    .iter()
+                    .filter_map(|x| x.as_str())
+                    .collect::<Vec<_>>()
+                    .join(" "),
+                other => other.to_string(),
+            })
+            // else try env
+            .or_else(|| env::var(var_name).ok())
+            // else keep literal
+            .unwrap_or_else(|| var_ref.to_string());
 
-        // if not found in custom variables, try environment
-        let final_replacement = match replacement {
-            Some(val) => val,
-            None => env::var(var_name).unwrap_or_else(|_| var_ref.to_string()),
-        };
-
-        // replace in the result string
-        result.replace_range(start..end, &final_replacement);
+        result.replace_range(start..end, &replacement);
     }
 
     result
 }
 
-/// Run all extracted external commands via `sh -c` (or `sudo sh -c`).
-pub fn run_all(config: &Value, verbose: bool, dry_run: bool) -> Result<(), anyhow::Error> {
+/// Run all extracted external commands via `sh -c` (or `sudo sh -c`) in parallel.
+pub fn run_all(config: &Value, verbose: bool, dry_run: bool) -> Result<()> {
     let ext = config.get("external").and_then(|v| v.as_table());
-    let vars = ext
+    let vars: Option<toml::value::Table> = ext
         .and_then(|t| t.get("variables"))
-        .and_then(|v| v.as_table());
+        .and_then(|v| v.as_table())
+        .cloned();
     let cmds = extract(config);
 
-    for state in cmds {
-        // build a single shell string
-        let mut line = state.cmd.clone();
-        for arg in &state.args {
-            let sub = substitute(arg, vars);
-            if sub.contains(' ') {
-                line.push_str(&format!(" \"{}\"", sub));
-            } else {
-                line.push_str(&format!(" {}", sub));
+    // run every command in parallel
+    let results: Vec<Result<(), Error>> = cmds
+        .into_par_iter()
+        .map(|state| {
+            // cmd str
+            let mut line = state.cmd.clone();
+            for arg in &state.args {
+                let sub = substitute(arg, vars.as_ref());
+                if sub.contains(' ') {
+                    line.push_str(&format!(" \"{}\"", sub));
+                } else {
+                    line.push_str(&format!(" {}", sub));
+                }
             }
-        }
-        let final_cmd = substitute(&line, vars);
-        let (bin, args) = if state.sudo {
-            ("sudo", vec!["sh", "-c", &final_cmd])
-        } else {
-            ("sh", vec!["-c", &final_cmd])
-        };
+            let final_cmd = substitute(&line, vars.as_ref());
 
-        if dry_run {
-            print_log(
-                LogLevel::Info,
-                &format!("Dry-run: would exec {} {}", bin, final_cmd),
-            );
-        } else {
+            // choose runner command
+            let (bin, args) = if state.sudo {
+                ("sudo", vec!["sh", "-c", &final_cmd])
+            } else {
+                ("sh", vec!["-c", &final_cmd])
+            };
+
+            if dry_run {
+                print_log(
+                    LogLevel::Info,
+                    &format!("Dry-run: would exec {} {}", bin, final_cmd),
+                );
+                return Ok(());
+            }
+
             if verbose {
                 print_log(LogLevel::Info, &format!("Exec {} {}", bin, final_cmd));
             }
+
             let out = Command::new(bin)
                 .args(&args)
                 .stdout(Stdio::piped())
@@ -172,13 +172,27 @@ pub fn run_all(config: &Value, verbose: bool, dry_run: bool) -> Result<(), anyho
                         String::from_utf8_lossy(&out.stderr)
                     ),
                 );
-            } else if verbose && !out.stdout.is_empty() {
-                print_log(
-                    LogLevel::CommandOutput,
-                    &format!("Out: {}", String::from_utf8_lossy(&out.stdout)),
-                );
+                Err(Error::msg("cmd failed"))
+            } else {
+                if verbose && !out.stdout.is_empty() {
+                    print_log(
+                        LogLevel::CommandOutput,
+                        &format!("Out: {}", String::from_utf8_lossy(&out.stdout)),
+                    );
+                }
+                Ok(())
             }
-        }
+        })
+        .collect();
+
+    // inspect all results here
+    let failures = results.into_iter().filter(|r| r.is_err()).count();
+    if failures > 0 {
+        print_log(
+            LogLevel::Warning,
+            &format!("{} external commands failed", failures),
+        );
     }
+
     Ok(())
 }
