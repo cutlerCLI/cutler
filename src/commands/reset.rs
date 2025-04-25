@@ -73,18 +73,16 @@ pub fn run(verbose: bool, dry_run: bool, force: bool) -> Result<()> {
                 LogLevel::Info,
                 &format!("Dry-run: Would remove snapshot at {:?}", snap_path),
             );
-        } else {
-            if let Err(e) = fs::remove_file(&snap_path) {
-                print_log(
-                    LogLevel::Warning,
-                    &format!("Failed to remove snapshot: {}", e),
-                );
-            } else if verbose {
-                print_log(
-                    LogLevel::Success,
-                    &format!("Removed snapshot at {:?}", snap_path),
-                );
-            }
+        } else if let Err(e) = fs::remove_file(&snap_path) {
+            print_log(
+                LogLevel::Warning,
+                &format!("Failed to remove snapshot: {}", e),
+            );
+        } else if verbose {
+            print_log(
+                LogLevel::Success,
+                &format!("Removed snapshot at {:?}", snap_path),
+            );
         }
     }
 

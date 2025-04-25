@@ -107,7 +107,7 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
     }
 
     let mut final_snap = Snapshot::new();
-    final_snap.settings = existing.into_iter().map(|(_, s)| s).collect();
+    final_snap.settings = existing.into_values().collect();
     final_snap.external = runner::extract(&toml);
 
     if !dry_run {

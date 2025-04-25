@@ -24,14 +24,12 @@ pub fn dispatch(command: &Command, verbose: bool, dry_run: bool, no_restart: boo
             crate::cli::ConfigSub::Show => config_show::run(verbose, dry_run),
             crate::cli::ConfigSub::Delete => config_delete::run(verbose, dry_run),
         },
-        Command::Completion { shell } => {
-            crate::cli::completion::generate_completion(*shell).map_err(|e| e.into())
-        }
+        Command::Completion { shell } => crate::cli::completion::generate_completion(*shell),
         Command::CheckUpdate => update::run(verbose),
     };
 
     // handle post‐hooks (restart services)
-    if let Ok(_) = &result {
+    if result.is_ok() {
         use crate::util::io::restart_system_services;
         match command {
             Command::Apply
