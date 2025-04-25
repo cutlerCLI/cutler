@@ -42,7 +42,7 @@ run = """
 #!/bin/bash
 mkdir -p release/bin release/man/man1
 cp target/release/cutler release/bin/
-cp target/man/cutler.1 release/man/man1/
+cp man/man1/cutler.1 release/man/man1/
 cp LICENSE release/
 cp README.md release/
 cd release && zip -r ../$FILE_NAME bin man README.md LICENSE
