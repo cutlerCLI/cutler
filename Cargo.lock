@@ -204,7 +204,6 @@ dependencies = [
  "clap",
  "clap_complete",
  "lazy_static",
- "once_cell",
  "rayon",
  "semver",
  "serde",
