@@ -19,7 +19,7 @@ pub fn dispatch(command: &Command, verbose: bool, dry_run: bool, no_restart: boo
         Command::Init { force } => init::run(verbose, *force),
         Command::Unapply => unapply::run(verbose, dry_run),
         Command::Reset { force } => reset::run(verbose, dry_run, *force),
-        Command::Status => status::run(verbose),
+        Command::Status { prompt } => status::run(*prompt, verbose),
         Command::Config { command } => match command {
             crate::cli::ConfigSub::Show => config_show::run(verbose, dry_run),
             crate::cli::ConfigSub::Delete => config_delete::run(verbose, dry_run),
