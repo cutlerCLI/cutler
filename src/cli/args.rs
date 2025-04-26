@@ -1,8 +1,10 @@
 use clap::{Parser, Subcommand, ValueEnum};
 
+use super::get_styles;
+
 /// top‐level CLI args for cutler
 #[derive(Parser)]
-#[command(name = "cutler", version, about)]
+#[command(name = "cutler", styles = get_styles(), version, about)]
 pub struct Args {
     /// Increase output verbosity.
     #[arg(short, long, global = true)]
