@@ -10,7 +10,7 @@ fn execute_defaults_command(
     verbose: bool,
     dry_run: bool,
 ) -> Result<(), anyhow::Error> {
-    let domain_lock = lock_for(eff_domain);
+    let domain_lock = lock_for(eff_domain, verbose);
     let _guard = domain_lock.lock().unwrap();
 
     let mut cmd_display = format!("defaults {} {} \"{}\"", command, eff_domain, eff_key);
