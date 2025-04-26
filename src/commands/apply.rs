@@ -78,22 +78,26 @@ pub fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
             let (eff_dom, eff_key) = collector::effective(&dom, &key);
             let desired = flags::normalize(&val);
 
-            // see if there's an existing entry
-            let old_entry = existing.remove(&(eff_dom.clone(), eff_key.clone()));
+            // read the current value from system
+            let current =
+                collector::read_current(&eff_dom, &eff_key).unwrap_or_else(|| String::new());
 
-            // did the value actually change?
-            let changed = old_entry
-                .as_ref()
-                .map(|e| e.new_value != desired)
-                .unwrap_or(true);
+            let changed = current != desired;
+
+            // grab the old snapshot entry if it exists
+            let old_entry = existing.get(&(eff_dom.clone(), eff_key.clone())).cloned();
 
             if changed {
+                existing.remove(&((eff_dom.clone(), eff_key.clone())));
+                let original = old_entry.as_ref().and_then(|e| e.original_value.clone());
+
                 // decide “Applying” vs “Updating”
                 let action = if old_entry.is_some() {
                     "Updating"
                 } else {
                     "Applying"
                 };
+
                 // turn TOML value into a -bool/-int/-string + stringified value
                 let (flag, val_str) = flags::to_flag(&val)?;
 
@@ -103,7 +107,7 @@ pub fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
                     flag: flag.to_owned(),
                     value: val_str,
                     action,
-                    original: old_entry.as_ref().and_then(|e| e.original_value.clone()),
+                    original,
                     new_value: desired.clone(),
                 });
             } else if verbose {
@@ -111,8 +115,6 @@ pub fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
                     LogLevel::Info,
                     &format!("Skipping unchanged {}.{}", eff_dom, eff_key),
                 );
-                // put it back
-                existing.insert((eff_dom.clone(), eff_key.clone()), old_entry.unwrap());
             }
         }
     }
