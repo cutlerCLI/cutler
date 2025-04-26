@@ -121,7 +121,6 @@ pub fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
 
     // now execute writes in parallel
     jobs.par_iter().for_each(|job| {
-        // each executor::write now has your domain‐locking built in
         let _ = executor::write(
             &job.domain,
             &job.key,
