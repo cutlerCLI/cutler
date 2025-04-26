@@ -60,11 +60,11 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
     // run undo in parallel
     undos.par_iter().for_each(|u| match u {
         Undo::Restore { domain, key, orig } => {
-            let (flag, val_str) = from_flag(&orig).unwrap();
-            let _ = executor::write(&domain, &key, flag, &val_str, "Restoring", verbose, dry_run);
+            let (flag, val_str) = from_flag(orig).unwrap();
+            let _ = executor::write(domain, key, flag, &val_str, "Restoring", verbose, dry_run);
         }
         Undo::Delete { domain, key } => {
-            let _ = executor::delete(&domain, &key, "Removing", verbose, dry_run);
+            let _ = executor::delete(domain, key, "Removing", verbose, dry_run);
         }
     });
 
