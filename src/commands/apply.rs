@@ -79,16 +79,15 @@ pub fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
             let desired = flags::normalize(&val);
 
             // read the current value from system
-            let current =
-                collector::read_current(&eff_dom, &eff_key).unwrap_or_else(|| String::new());
-
+            // then, check if changed
+            let current = collector::read_current(&eff_dom, &eff_key).unwrap_or_default();
             let changed = current != desired;
 
             // grab the old snapshot entry if it exists
             let old_entry = existing.get(&(eff_dom.clone(), eff_key.clone())).cloned();
 
             if changed {
-                existing.remove(&((eff_dom.clone(), eff_key.clone())));
+                existing.remove(&(eff_dom.clone(), eff_key.clone()));
                 let original = old_entry.as_ref().and_then(|e| e.original_value.clone());
 
                 // decide “Applying” vs “Updating”
