@@ -22,7 +22,7 @@ struct Job {
     new_value: String,
 }
 
-pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
+pub fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
     let config_path = crate::config::loader::get_config_path();
     if !config_path.exists() {
         print_log(
@@ -160,7 +160,9 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
     }
 
     // exec external commands
-    let _ = runner::run_all(&toml, verbose, dry_run);
+    if !no_exec {
+        let _ = runner::run_all(&toml, verbose, dry_run);
+    }
 
     Ok(())
 }

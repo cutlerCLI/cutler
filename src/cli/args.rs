@@ -22,12 +22,17 @@ pub struct Args {
 
 #[derive(Subcommand)]
 pub enum Command {
-    /// Apply defaults, and execute the external commands from the config file.
-    Apply,
-    /// Run only the external commands assigned in the config file.
-    Cmd,
-    /// Initialize a new configuration file with sensible defaults.
+    /// Apply the changes written in your config file.
+    Apply {
+        /// Skip executing external commands at the end.
+        #[arg(short, long)]
+        no_exec: bool
+    },
+    /// Run only the external commands written in the config file.
+    Exec,
+    /// Initialize a new config file with sensible defaults.
     Init {
+        /// Skip confirmation prompt.
         #[arg(short, long)]
         force: bool,
     },

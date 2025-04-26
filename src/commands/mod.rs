@@ -1,5 +1,5 @@
 pub mod apply;
-pub mod cmd;
+pub mod exec;
 pub mod config_delete;
 pub mod config_show;
 pub mod init;
@@ -14,8 +14,8 @@ use anyhow::Result;
 /// Entrypoint: dispatch to each sub‐module’s `run(...)`
 pub fn dispatch(command: &Command, verbose: bool, dry_run: bool, no_restart: bool) -> Result<()> {
     let result = match command {
-        Command::Apply => apply::run(verbose, dry_run),
-        Command::Cmd => cmd::run(verbose, dry_run),
+        Command::Apply { no_exec } => apply::run(*no_exec, verbose, dry_run),
+        Command::Exec => exec::run(verbose, dry_run),
         Command::Init { force } => init::run(verbose, *force),
         Command::Unapply => unapply::run(verbose, dry_run),
         Command::Reset { force } => reset::run(verbose, dry_run, *force),
@@ -32,7 +32,7 @@ pub fn dispatch(command: &Command, verbose: bool, dry_run: bool, no_restart: boo
     if result.is_ok() {
         use crate::util::io::restart_system_services;
         match command {
-            Command::Apply
+            Command::Apply { .. }
             | Command::Unapply
             | Command::Reset { .. }
             | Command::Config {
