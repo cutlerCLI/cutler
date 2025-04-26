@@ -41,7 +41,7 @@ pub fn run(prompt_mode: bool, verbose: bool) -> Result<()> {
         if diverges {
             print_log(
                 LogLevel::Warning,
-                "cutler: Your system diverges from configuration; run `cutler apply`",
+                "cutler: Your system has diverged from config; run `cutler apply`",
             );
         }
         return Ok(());
