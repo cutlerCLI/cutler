@@ -10,6 +10,7 @@ use crate::{
 use anyhow::Result;
 use rayon::prelude::*;
 
+/// Defines a job to be executed by the apply command.
 #[derive(Debug)]
 struct Job {
     domain: String,
@@ -44,9 +45,9 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
     let toml = load_config(&config_path)?;
     let domains = collector::collect(&toml)?;
 
-    // load old snapshot
+    // load old snapshot (if any), otherwise create a new instance
     let snap_path = crate::snapshot::state::get_snapshot_path();
-    let old_snap = if snap_path.exists() {
+    let snap = if snap_path.exists() {
         Snapshot::load(&snap_path).unwrap_or_else(|e| {
             print_log(
                 LogLevel::Warning,
@@ -59,7 +60,7 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
     };
 
     // turn old snapshot into a HashMap for quick lookup
-    let mut existing: std::collections::HashMap<_, _> = old_snap
+    let mut existing: std::collections::HashMap<_, _> = snap
         .settings
         .into_iter()
         .map(|s| ((s.domain.clone(), s.key.clone()), s))
@@ -93,7 +94,7 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
                 } else {
                     "Applying"
                 };
-                // turn your TOML value into a -bool/-int/-string + stringified value
+                // turn TOML value into a -bool/-int/-string + stringified value
                 let (flag, val_str) = flags::to_flag(&val)?;
 
                 jobs.push(Job {
@@ -158,7 +159,7 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
         print_log(LogLevel::Info, "Dry-run: would save snapshot");
     }
 
-    // finally execute your external commands
+    // exec external commands
     let _ = runner::run_all(&toml, verbose, dry_run);
 
     Ok(())

@@ -8,6 +8,7 @@ use crate::{
 };
 use rayon::prelude::*;
 
+/// Defines an undo operation to be executed by the unapply command.
 #[derive(Clone)]
 enum Undo {
     Restore {
