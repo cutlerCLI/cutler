@@ -47,7 +47,7 @@ pub enum Command {
     /// Display current status comparing the config and the system.
     Status {
         /// Prompt mode for only notifying if a change is detected. Best suited when terminal starts.
-        #[arg(long, hide=true)]
+        #[arg(long, hide = true)]
         prompt: bool,
     },
     /// Manage the configuration file.
