@@ -26,7 +26,7 @@ pub enum Command {
     Apply {
         /// Skip executing external commands at the end.
         #[arg(short, long)]
-        no_exec: bool
+        no_exec: bool,
     },
     /// Run only the external commands written in the config file.
     Exec,

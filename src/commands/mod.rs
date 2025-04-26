@@ -1,7 +1,7 @@
 pub mod apply;
-pub mod exec;
 pub mod config_delete;
 pub mod config_show;
+pub mod exec;
 pub mod init;
 pub mod reset;
 pub mod status;
