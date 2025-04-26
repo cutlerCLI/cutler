@@ -22,12 +22,17 @@ pub struct Args {
 
 #[derive(Subcommand)]
 pub enum Command {
-    /// Apply defaults, and execute the external commands from the config file.
-    Apply,
-    /// Run only the external commands assigned in the config file.
-    Cmd,
-    /// Initialize a new configuration file with sensible defaults.
+    /// Apply the changes written in your config file.
+    Apply {
+        /// Skip executing external commands at the end.
+        #[arg(long)]
+        no_exec: bool,
+    },
+    /// Run only the external commands written in the config file.
+    Exec,
+    /// Initialize a new config file with sensible defaults.
     Init {
+        /// Skip confirmation prompt.
         #[arg(short, long)]
         force: bool,
     },
@@ -40,7 +45,11 @@ pub enum Command {
         force: bool,
     },
     /// Display current status comparing the config and the system.
-    Status,
+    Status {
+        /// Prompt mode for only notifying if a change is detected. Best suited when terminal starts.
+        #[arg(long, hide = true)]
+        prompt: bool,
+    },
     /// Manage the configuration file.
     Config {
         #[command(subcommand)]

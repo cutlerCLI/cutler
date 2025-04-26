@@ -1,3 +1,4 @@
+use crate::defaults::lock_for;
 use crate::util::logging::{LogLevel, print_log};
 
 fn execute_defaults_command(
@@ -9,6 +10,9 @@ fn execute_defaults_command(
     verbose: bool,
     dry_run: bool,
 ) -> Result<(), anyhow::Error> {
+    let domain_lock = lock_for(eff_domain, verbose);
+    let _guard = domain_lock.lock().unwrap();
+
     let mut cmd_display = format!("defaults {} {} \"{}\"", command, eff_domain, eff_key);
     for arg in &extra_args {
         cmd_display.push_str(&format!(" \"{}\"", arg));
@@ -34,7 +38,6 @@ fn execute_defaults_command(
     }
 
     let output = cmd.output()?;
-
     if !output.status.success() {
         print_log(
             LogLevel::Error,

@@ -76,7 +76,7 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
         }
     }
 
-    // actually run external commands
+    // run external commands
     runner::run_all(&toml, verbose, dry_run)?;
 
     if !verbose && !dry_run {
