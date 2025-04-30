@@ -10,11 +10,6 @@ use toml::Value;
 pub fn extract(config: &Value) -> Vec<ExternalCommandState> {
     let mut cmds = Vec::new();
     if let Some(ext) = config.get("external") {
-        print_log(
-            LogLevel::Warning,
-            "External commands will have a restructuring in version v0.5.4.",
-        );
-
         if let Some(arr) = ext.get("command").and_then(|v| v.as_array()) {
             for cmd_val in arr {
                 if let Some(tbl) = cmd_val.as_table() {

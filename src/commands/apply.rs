@@ -161,6 +161,10 @@ pub fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
 
     // exec external commands
     if !no_exec {
+        print_log(
+            LogLevel::Warning,
+            "External commands will have a restructuring in version v0.5.5.",
+        );
         let _ = runner::run_all(&toml, verbose, dry_run);
     }
 
