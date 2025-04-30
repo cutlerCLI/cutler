@@ -84,9 +84,11 @@ pub fn needs_prefix(domain: &str) -> bool {
 fn domain_exists(full: &str) -> bool {
     let cache = DOMAIN_CACHE.lock().unwrap();
     if let Some(set) = &*cache {
-        return set.contains(full);
+        if set.contains(full) {
+            return true;
+        }
     }
-    // fallback: direct read
+    // direct read as fallback
     Command::new("defaults")
         .arg("read")
         .arg(full)
