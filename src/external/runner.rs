@@ -1,41 +1,36 @@
 use crate::snapshot::state::ExternalCommandState;
 use crate::util::logging::{LogLevel, print_log};
-use anyhow::{Error, Result};
+use anyhow::{Error, Result, anyhow};
 use rayon::prelude::*;
 use std::env;
 use std::process::{Command, Stdio};
 use toml::Value;
 
-/// Pull all `[[external.command]]` entries into state objects.
+// Pull all commands into state objects.
 pub fn extract(config: &Value) -> Vec<ExternalCommandState> {
-    let mut cmds = Vec::new();
-    if let Some(ext) = config.get("external") {
-        if let Some(arr) = ext.get("command").and_then(|v| v.as_array()) {
-            for cmd_val in arr {
-                if let Some(tbl) = cmd_val.as_table() {
-                    if let Some(cmd) = tbl.get("cmd").and_then(|v| v.as_str()) {
-                        let args = tbl
-                            .get("args")
-                            .and_then(|v| v.as_array())
-                            .map(|arr| {
-                                arr.iter()
-                                    .filter_map(|x| x.as_str())
-                                    .map(String::from)
-                                    .collect()
-                            })
-                            .unwrap_or_default();
-                        let sudo = tbl.get("sudo").and_then(|v| v.as_bool()).unwrap_or(false);
-                        cmds.push(ExternalCommandState {
-                            cmd: cmd.into(),
-                            args,
-                            sudo,
-                        });
-                    }
+    let vars = config.get("vars").and_then(Value::as_table).cloned();
+    let mut out = Vec::new();
+
+    if let Some(cmds) = config.get("commands").and_then(Value::as_table) {
+        for (_, tbl) in cmds {
+            if let Value::Table(tbl) = tbl {
+                // each command must have a "run = ..." block
+
+                if let Some(template) = tbl.get("run").and_then(Value::as_str) {
+                    // substitute to get possible varriables
+                    let final_line = substitute(template, vars.as_ref());
+                    let sudo = tbl.get("sudo").and_then(Value::as_bool).unwrap_or(false);
+
+                    out.push(ExternalCommandState {
+                        run: final_line,
+                        sudo,
+                    })
                 }
             }
         }
     }
-    cmds
+
+    out
 }
 
 /// Perform variable substitution (env + `[external.variables]`) in a text.
@@ -115,11 +110,7 @@ fn substitute(text: &str, vars: Option<&toml::value::Table>) -> String {
 
 /// Run all extracted external commands via `sh -c` (or `sudo sh -c`) in parallel.
 pub fn run_all(config: &Value, verbose: bool, dry_run: bool) -> Result<()> {
-    let ext = config.get("external").and_then(|v| v.as_table());
-    let vars: Option<toml::value::Table> = ext
-        .and_then(|t| t.get("variables"))
-        .and_then(|v| v.as_table())
-        .cloned();
+    let vars: Option<toml::value::Table> = config.get("vars").and_then(Value::as_table).cloned();
     let cmds = extract(config);
 
     // run every command in parallel
@@ -127,16 +118,7 @@ pub fn run_all(config: &Value, verbose: bool, dry_run: bool) -> Result<()> {
         .into_par_iter()
         .map(|state| {
             // cmd str
-            let mut line = state.cmd.clone();
-            for arg in &state.args {
-                let sub = substitute(arg, vars.as_ref());
-                if sub.contains(' ') {
-                    line.push_str(&format!(" \"{}\"", sub));
-                } else {
-                    line.push_str(&format!(" {}", sub));
-                }
-            }
-            let final_cmd = substitute(&line, vars.as_ref());
+            let final_cmd = substitute(&state.run, vars.as_ref());
 
             // choose runner command
             let (bin, args) = if state.sudo {
@@ -195,4 +177,70 @@ pub fn run_all(config: &Value, verbose: bool, dry_run: bool) -> Result<()> {
     }
 
     Ok(())
+}
+
+/// Run exactly one command entry, given its name.
+pub fn run_one(config: &Value, which: &str, verbose: bool, dry_run: bool) -> Result<()> {
+    let vars = config.get("vars").and_then(Value::as_table).cloned();
+
+    let cmd_table = config
+        .get("commands")
+        .and_then(Value::as_table)
+        .and_then(|m| m.get(which))
+        .and_then(Value::as_table)
+        .ok_or_else(|| anyhow!("no such command '{}'", which))?;
+
+    let template = cmd_table
+        .get("run")
+        .and_then(Value::as_str)
+        .ok_or_else(|| anyhow!("command '{}': missing `run` field", which))?;
+
+    let final_cmd = substitute(template, vars.as_ref());
+
+    let sudo = cmd_table
+        .get("sudo")
+        .and_then(Value::as_bool)
+        .unwrap_or(false);
+
+    // build the actual runner
+    let (bin, args) = if sudo {
+        ("sudo", vec!["sh", "-c", &final_cmd])
+    } else {
+        ("sh", vec!["-c", &final_cmd])
+    };
+
+    if dry_run {
+        print_log(
+            LogLevel::Info,
+            &format!("Dry-run: would exec {} {}", bin, final_cmd),
+        );
+        return Ok(());
+    }
+    if verbose {
+        print_log(LogLevel::Info, &format!("Exec {} {}", bin, final_cmd));
+    }
+
+    let output = Command::new(bin)
+        .args(&args)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .output()?;
+    if !output.status.success() {
+        print_log(
+            LogLevel::Error,
+            &format!(
+                "External command failed: {}",
+                String::from_utf8_lossy(&output.stderr)
+            ),
+        );
+        Err(Error::msg("cmd failed"))
+    } else {
+        if verbose && !output.stdout.is_empty() {
+            print_log(
+                LogLevel::CommandOutput,
+                &format!("Out: {}", String::from_utf8_lossy(&output.stdout)),
+            );
+        }
+        Ok(())
+    }
 }

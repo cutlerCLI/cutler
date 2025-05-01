@@ -15,7 +15,7 @@ use anyhow::Result;
 pub fn dispatch(command: &Command, verbose: bool, dry_run: bool, no_restart: bool) -> Result<()> {
     let result = match command {
         Command::Apply { no_exec } => apply::run(*no_exec, verbose, dry_run),
-        Command::Exec => exec::run(verbose, dry_run),
+        Command::Exec { name } => exec::run(name.clone(), verbose, dry_run),
         Command::Init { force } => init::run(verbose, *force),
         Command::Unapply => unapply::run(verbose, dry_run),
         Command::Reset { force } => reset::run(verbose, dry_run, *force),

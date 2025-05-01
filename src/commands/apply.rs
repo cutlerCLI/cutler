@@ -145,7 +145,7 @@ pub fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
             new_value: job.new_value,
         });
     }
-    new_snap.external = runner::extract(&toml);
+    new_snap.commands = runner::extract(&toml);
 
     if !dry_run {
         new_snap.save(&snap_path)?;

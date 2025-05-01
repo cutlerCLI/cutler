@@ -31,7 +31,11 @@ pub enum Command {
         no_exec: bool,
     },
     /// Run only the external commands written in the config file.
-    Exec,
+    Exec {
+        /// Provide a command name to execute if you only want to run it specifically.
+        #[arg(value_name = "NAME")]
+        name: Option<String>,
+    },
     /// Initialize a new config file with sensible defaults.
     Init {
         /// Skip confirmation prompt.
