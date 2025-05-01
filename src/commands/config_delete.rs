@@ -34,7 +34,7 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
         }
     }
 
-    // finally delete config + snapshot
+    // finally, delete config and snapshot
     if dry_run {
         print_log(
             LogLevel::Info,

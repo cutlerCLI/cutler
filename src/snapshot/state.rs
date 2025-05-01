@@ -37,7 +37,7 @@ impl Snapshot {
 
     pub fn save(&self, path: &PathBuf) -> Result<(), anyhow::Error> {
         if let Some(dir) = path.parent() {
-            std::fs::create_dir_all(dir)?;
+            fs::create_dir_all(dir)?;
         }
         let json = serde_json::to_string_pretty(self)?;
         fs::write(path, json)?;

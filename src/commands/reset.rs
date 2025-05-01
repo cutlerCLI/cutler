@@ -38,7 +38,7 @@ pub fn run(verbose: bool, dry_run: bool, force: bool) -> Result<()> {
         for (key, _) in table {
             let (eff_dom, eff_key) = effective(&domain, &key);
 
-            // Only delete if currently set
+            // Only delete it if currently set
             if read_current(&eff_dom, &eff_key).is_some() {
                 match defaults_delete(&eff_dom, &eff_key, "Resetting", verbose, dry_run) {
                     Ok(_) => {

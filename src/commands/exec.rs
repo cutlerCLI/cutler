@@ -35,19 +35,16 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
     // load or init snapshot
     let snap_path = crate::snapshot::state::get_snapshot_path();
     let mut snapshot = if snap_path.exists() {
-        match Snapshot::load(&snap_path) {
-            Ok(snap) => snap,
-            Err(e) => {
-                print_log(
-                    LogLevel::Warning,
-                    &format!(
-                        "Could not load existing snapshot: {}. Creating a new one.",
-                        e
-                    ),
-                );
-                Snapshot::new()
-            }
-        }
+        Snapshot::load(&snap_path).unwrap_or_else(|e| {
+            print_log(
+                LogLevel::Warning,
+                &format!(
+                    "Could not load existing snapshot: {}. Creating a new one.",
+                    e
+                ),
+            );
+            Snapshot::new()
+        })
     } else {
         Snapshot::new()
     };
@@ -57,10 +54,10 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
         "Executing only external commands (skipping defaults)",
     );
 
-    // record external commands into snapshot
+    // record external commands into the snapshot
     snapshot.external = runner::extract(&toml);
 
-    // save snapshot before executing
+    // save the snapshot before executing
     if dry_run {
         print_log(
             LogLevel::Info,

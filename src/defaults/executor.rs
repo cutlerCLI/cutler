@@ -11,7 +11,7 @@ fn execute_defaults_command(
     dry_run: bool,
 ) -> Result<(), anyhow::Error> {
     let domain_lock = lock_for(eff_domain, verbose);
-    let _guard = domain_lock.lock().unwrap();
+    let _guard = domain_lock.lock().expect("Failed to acquire lock");
 
     let mut cmd_display = format!("defaults {} {} \"{}\"", command, eff_domain, eff_key);
     for arg in &extra_args {

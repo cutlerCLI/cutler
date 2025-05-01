@@ -79,7 +79,7 @@ fn substitute(text: &str, vars: Option<&toml::value::Table>) -> String {
         }
     }
 
-    // replace from back to front
+    // replace it from back to front
     for (start, end) in var_positions.into_iter().rev() {
         let var_ref = &result[start..end];
 

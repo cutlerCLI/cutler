@@ -32,7 +32,7 @@ pub fn from_flag(value: &str) -> anyhow::Result<(&'static str, String)> {
         return Ok(("-float", value.to_string()));
     }
 
-    // Default to string type
+    // Default to the string type
     Ok(("-string", value.to_string()))
 }
 

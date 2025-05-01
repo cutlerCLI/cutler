@@ -75,7 +75,7 @@ pub fn effective(domain: &str, key: &str) -> (String, String) {
     }
 }
 
-/// Do we need to prefix “com.apple.” on this domain?
+/// do we need to prefix “com.apple.” on this domain?
 pub fn needs_prefix(domain: &str) -> bool {
     !domain.starts_with("NSGlobalDomain")
 }

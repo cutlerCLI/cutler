@@ -3,7 +3,7 @@ use std::process::Command;
 
 use crate::util::logging::{LogLevel, print_log};
 
-/// Ask “Y/N?”; returns true only if user types “y” or “Y”.
+/// Ask “Y/N?”; returns true only if the user types “y” or “Y”
 pub fn confirm_action(prompt: &str) -> io::Result<bool> {
     print!("{} [y/N]: ", prompt);
     io::stdout().flush()?;

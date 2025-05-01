@@ -37,7 +37,7 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
         .context(format!("Failed to load snapshot from {:?}", snap_path))?;
 
     // list which values to restore / delete
-    let undos: Vec<Undo> = snapshot
+    let undoes: Vec<Undo> = snapshot
         .settings
         .into_iter()
         .rev()
@@ -58,7 +58,7 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
         .collect();
 
     // run undo in parallel
-    undos.par_iter().for_each(|u| match u {
+    undoes.par_iter().for_each(|u| match u {
         Undo::Restore { domain, key, orig } => {
             let (flag, val_str) = from_flag(orig).unwrap();
             let _ = executor::write(domain, key, flag, &val_str, "Restoring", verbose, dry_run);

@@ -45,7 +45,7 @@ pub fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
     let toml = load_config(&config_path)?;
     let domains = collector::collect(&toml)?;
 
-    // load old snapshot (if any), otherwise create a new instance
+    // load the old snapshot (if any), otherwise create a new instance
     let snap_path = crate::snapshot::state::get_snapshot_path();
     let snap = if snap_path.exists() {
         Snapshot::load(&snap_path).unwrap_or_else(|e| {
@@ -59,7 +59,7 @@ pub fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
         Snapshot::new()
     };
 
-    // turn old snapshot into a HashMap for quick lookup
+    // turn the old snapshot into a HashMap for a quick lookup
     let mut existing: std::collections::HashMap<_, _> = snap
         .settings
         .into_iter()
@@ -78,7 +78,7 @@ pub fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
             let (eff_dom, eff_key) = collector::effective(&dom, &key);
             let desired = flags::normalize(&val);
 
-            // read the current value from system
+            // read the current value from the system
             // then, check if changed
             let current = collector::read_current(&eff_dom, &eff_key).unwrap_or_default();
             let changed = current != desired;
@@ -136,7 +136,7 @@ pub fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
         old_entry.new_value = old_entry.new_value.clone();
         new_snap.settings.push(old_entry);
     }
-    // now append all of the newly applied/updated settings
+    // now append all the newly applied/updated settings
     for job in jobs {
         new_snap.settings.push(SettingState {
             domain: job.domain,
