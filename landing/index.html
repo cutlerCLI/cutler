@@ -418,8 +418,7 @@ cutler config delete</code></pre>
             custom commands to be executed:
         </p>
 
-        <pre><code class="language-bash">[external]
-[commands.greet]
+        <pre><code class="language-bash">[commands.greet]
   cmd = "echo \"Hello World\""</code></pre>
 
         <p>This translates to running:</p>
@@ -431,12 +430,12 @@ cutler config delete</code></pre>
         </p>
         <pre><code class="language-bash"># Define reusable variables here:
 [vars]
-  common_args = ["Hello", "World"]
-  some_string = "Pancakes!"
+common_args = ["Hello", "World"]
+some_string = "Pancakes!"
 
 [commands.greet]
-  run = "echo $common_args"
-  sudo = false</code></pre>
+run = "echo $common_args"
+sudo = false</code></pre>
 
         <h2>Some Personal Take</h2>
         <hr />
