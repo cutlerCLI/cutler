@@ -1,6 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use cutler::snapshot::state::{ExternalCommandState, SettingState, Snapshot, get_snapshot_path};
+    use cutler::snapshot::state::{
+        ExternalCommandState, SettingState, Snapshot, get_snapshot_path,
+    };
     use std::collections::HashMap;
     use std::path::PathBuf;
     use std::{env, fs};
