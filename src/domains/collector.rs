@@ -46,7 +46,7 @@ pub fn collect(parsed: &Value) -> Result<HashMap<String, toml::value::Table>, an
     let mut out = HashMap::new();
 
     for (key, val) in root {
-        if key == "external" {
+        if key == "commands" || key == "vars" {
             continue;
         }
         if let Value::Table(inner) = val {
