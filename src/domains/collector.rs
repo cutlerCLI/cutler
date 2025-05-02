@@ -4,6 +4,8 @@ use std::process::Command;
 use std::sync::{Mutex, Once};
 use toml::Value;
 
+use crate::util::logging::{LogLevel, print_log};
+
 lazy_static! {
     // Cache of “defaults domains” returned by `defaults domains`
     static ref DOMAIN_CACHE: Mutex<Option<HashSet<String>>> = Mutex::new(None);
@@ -48,7 +50,13 @@ pub fn collect(parsed: &Value) -> Result<HashMap<String, toml::value::Table>, an
     for (key, val) in root {
         if key == "commands" || key == "vars" {
             continue;
+        } else if key == "external" {
+            print_log(
+                LogLevel::Warning,
+                "[external] has been deprecated in version v0.5.5 and won't be executed.\n\n Please visit https://hitblast.github.io/cutler for more information regarding the new way of declaring external commands.",
+            );
         }
+
         if let Value::Table(inner) = val {
             let mut flat = Vec::with_capacity(inner.len());
             flatten_domains(Some(key.clone()), inner, &mut flat);
