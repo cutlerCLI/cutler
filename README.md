@@ -20,7 +20,6 @@ Powerful, declarative settings management for your Mac, with speed.
 - [Key Features](#key-features)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Troubleshooting](#troubleshooting)
 - [Shell Completions](#shell-completions)
 - [Resources](#resources)
 - [Contributing](#contributing)
