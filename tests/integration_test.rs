@@ -81,7 +81,7 @@ mod tests {
         });
 
         // Add an external command
-        snapshot.commands.push(ExternalCommandState {
+        snapshot.external.push(ExternalCommandState {
             run: "echo \"Hello, World!\"".to_string(),
             sudo: false,
         });
@@ -118,7 +118,7 @@ mod tests {
         }
 
         // 3. Verify external commands are tracked correctly
-        assert_eq!(loaded_snapshot.commands.len(), 1);
-        assert_eq!(loaded_snapshot.commands[0].run, "echo \"Hello, World!\"");
+        assert_eq!(loaded_snapshot.external.len(), 1);
+        assert_eq!(loaded_snapshot.external[0].run, "echo \"Hello, World!\"");
     }
 }

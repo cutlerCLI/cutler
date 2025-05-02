@@ -55,7 +55,7 @@ pub fn run(which: Option<String>, verbose: bool, dry_run: bool) -> Result<()> {
     );
 
     // record external commands into the snapshot
-    snapshot.commands = runner::extract(&toml);
+    snapshot.external = runner::extract(&toml);
 
     // save the snapshot before executing
     if dry_run {

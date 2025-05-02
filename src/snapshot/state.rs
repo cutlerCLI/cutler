@@ -21,7 +21,7 @@ pub struct ExternalCommandState {
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Snapshot {
     pub settings: Vec<SettingState>,
-    pub commands: Vec<ExternalCommandState>,
+    pub external: Vec<ExternalCommandState>,
     pub version: String,
 }
 
@@ -29,7 +29,7 @@ impl Snapshot {
     pub fn new() -> Self {
         Snapshot {
             settings: Vec::new(),
-            commands: Vec::new(),
+            external: Vec::new(),
             version: env!("CARGO_PKG_VERSION").into(),
         }
     }

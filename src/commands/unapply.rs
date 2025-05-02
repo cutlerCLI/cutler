@@ -69,7 +69,7 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
     });
 
     // warn about external commands (not automatically reverted)
-    if !snapshot.commands.is_empty() {
+    if !snapshot.external.is_empty() {
         print_log(
             LogLevel::Warning,
             "External commands were executed previously; please revert them manually if needed.",

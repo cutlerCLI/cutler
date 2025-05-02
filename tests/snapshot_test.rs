@@ -31,7 +31,7 @@ mod tests {
         // Test creation
         let snapshot = Snapshot::new();
         assert_eq!(snapshot.settings.len(), 0);
-        assert_eq!(snapshot.commands.len(), 0);
+        assert_eq!(snapshot.external.len(), 0);
         assert_eq!(snapshot.version, env!("CARGO_PKG_VERSION"));
 
         // Test setting state
@@ -83,12 +83,12 @@ mod tests {
         });
 
         // Add multiple external commands
-        snapshot.commands.push(ExternalCommandState {
+        snapshot.external.push(ExternalCommandState {
             run: "echo Hello".to_string(),
             sudo: false,
         });
 
-        snapshot.commands.push(ExternalCommandState {
+        snapshot.external.push(ExternalCommandState {
             run: "hostname -s macbook".to_string(),
             sudo: true,
         });
@@ -111,7 +111,7 @@ mod tests {
 
         // Verify contents match
         assert_eq!(loaded_snapshot.settings.len(), 3);
-        assert_eq!(loaded_snapshot.commands.len(), 2);
+        assert_eq!(loaded_snapshot.external.len(), 2);
 
         // Convert to HashMap for easier testing
         let settings_map: HashMap<_, _> = loaded_snapshot
@@ -145,11 +145,11 @@ mod tests {
         assert_eq!(global_setting.new_value, "1");
 
         // Check external commands
-        let echo_cmd = &loaded_snapshot.commands[0];
+        let echo_cmd = &loaded_snapshot.external[0];
         assert_eq!(echo_cmd.run, "echo Hello");
         assert_eq!(echo_cmd.sudo, false);
 
-        let hostname_cmd = &loaded_snapshot.commands[1];
+        let hostname_cmd = &loaded_snapshot.external[1];
         assert_eq!(hostname_cmd.run, "hostname -s macbook");
         assert_eq!(hostname_cmd.sudo, true);
     }
