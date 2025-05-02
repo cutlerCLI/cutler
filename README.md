@@ -14,15 +14,13 @@ Powerful, declarative settings management for your Mac, with speed.
 > [!WARNING]
 > Although cutler is solid enough for daily-driving now, expect breaking changes before the v1 release.
 
-> [!IMPORTANT]
-> The prebuilt binaries are compiled and shipped from macOS 14 on arm64.
-> Intel Macs will require a manual compilation of the project.
-
 ## Table of Contents
 
 - [Overview](#overview)
+- [Key Features](#key-features)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Troubleshooting](#troubleshooting)
 - [Shell Completions](#shell-completions)
 - [Resources](#resources)
 - [Contributing](#contributing)
@@ -36,9 +34,16 @@ Define your settings once, then easily apply, track, and revert changes across y
 
 Check out the [Usage](#usage) section for more details.
 
+## Key Features
+
+- Manage the system `defaults` entries using just one TOML file.
+- Run external commands at will with ease.
+- Revert back modifications easily with the snapshot mechanism.
+- Made using [Rust](https://rust-lang.org/) for thread-safety and speed.
+
 ## Installation
 
-- Install cutler using 🍺 [Homebrew](https://brew.sh/):
+You can install cutler using 🍺 [Homebrew (recommended)](https://brew.sh/):
 
 ```bash
 brew install hitblast/tap/cutler
@@ -46,35 +51,25 @@ brew install hitblast/tap/cutler
 
 Besides using Homebrew as shown above, you can install the project in a couple of other ways:
 
-- Using `cargo`:
+1. Using `cargo`:
 
 ```bash
 cargo install cutler
 ```
 
-- Using `mise`:
+2. Using `mise`:
 
 ```bash
 # NOTE: This will compile the binary manually for your system.
 mise use -g cargo:cutler
 ```
 
-> [!TIP]
-> If none of these installation methods work for you, try checking out the latest GitHub release.
-> You can also use the periodic release workflows, which have a retention period of 90 days.
+You can also get the latest [prebuilt compressed binaries](https://github.com/hitblast/cutler/releases) if you would like to
+manually install the project.
+
+Once installed, you can install the necessary [shell completions](#shell-completions) for your shell instance if needed.
 
 ## Usage
-
-`cutler` looks for your configuration in a file named `config.toml`, checking the following locations in order:
-
-- `$XDG_CONFIG_HOME/cutler/config.toml`
-- `~/.config/cutler/config.toml`
-- `~/.config/cutler.toml`
-- `config.toml` in the current directory (fallback)
-
-It respects your `$XDG_CONFIG_HOME` setting, so you don't have to worry about
-path issues. Just place your `config.toml` file in one of these locations and
-you're set.
 
 To easily get started, simply type the following command to generate a prebuilt configuration:
 
@@ -82,7 +77,18 @@ To easily get started, simply type the following command to generate a prebuilt 
 cutler init
 ```
 
-### Anatomy
+By default, cutler stores your configuration in `~/.config/cutler/config.toml`. But,
+it can also have other values depending on your setup:
+
+- `$XDG_CONFIG_HOME/cutler/config.toml`
+- `~/.config/cutler/config.toml`
+- `~/.config/cutler.toml`
+- `config.toml` in the current directory (fallback)
+
+It respects your `$XDG_CONFIG_HOME` setting, so you don't have to worry about
+path issues. 
+
+### Basic Defaults Manipulation
 
 Here’s a basic example of a TOML configuration for cutler:
 
@@ -120,93 +126,83 @@ defaults write NSGlobalDomain "ApplePressAndHoldEnabled" -bool true
 defaults write NSGlobalDomain com.apple.mouse.linear -bool true
 ```
 
-> [!WARNING]
-> Currently, cutler does not verify the integrity of domains or keys under `NSGlobalDomain`. Please review these settings manually before applying any changes.
+### Applying Modifications
 
-### Defaults and External Commands
-
-cutler also supports running external shell commands the moment it applies the defaults. You can define commands with simple syntax like this:
-
-```toml
-[external]
-  [[external.command]]
-  cmd = "echo \"Hello World\""
-```
-
-This translates to running:
-
-```bash
-echo "Hello World"
-```
-
-For more complex scenarios, you can use a more advanced structure with separate arguments and variables:
-
-```toml
-# Define reusable variables here:
-[external.variables]
-common_args = ["Hello", "World"]
-
-[external]
-  [[external.command]]
-  cmd = "echo"
-  # If you reference a variable (for example, $common_args) and it isn't defined
-  # in the [external.variables] section, cutler will fall back and try to resolve it
-  # from the environment (e.g. $PATH).
-  args = ["$common_args", "$PATH"]
-  sudo = false
-```
-
-This roughly translates to:
-
-```bash
-echo Hello World /usr/local/bin:/usr/bin:...
-```
-
-### Applying Changes and Status Review
-
-Once your configuration file is ready (including your defaults and external commands), apply your settings by running:
+Once you've set your preferred configurations in place, just type this one simple command:
 
 ```bash
 cutler apply
 ```
 
-After `cutler` updates the defaults, it will also:
-1. Execute any external commands defined in the `[external]` section.
-2. Restart necessary system services on your Mac so that the new settings take effect.
-3. Create a snapshot file named `.cutler_snapshot` in your home directory. This file records your configuration state and helps with reverting later on.
+-and cutler will automatically apply and track all of it.
 
-To verify current settings against your configuration, run:
+To see what changes are being tracked, run:
 
 ```bash
 cutler status
 ```
 
-To revert modifications, run:
+To unapply every change cutler performed with `cutler apply`, run this:
 
 ```bash
 cutler unapply
 ```
 
-Now, when it comes to managing the configuration file itself, there is a `config` command which has two other subcommands:
+### Running External Commands
+
+cutler also supports running external shell commands the moment it applies the defaults.
+You can define commands with simple syntax like this:
+
+```toml
+[commands.greet]
+run = "echo Hello World"
+```
+
+This translates to running:
 
 ```bash
-# Shows the contents of the configuration file.
-cutler config show
+echo Hello World
+```
 
-# Unapplies and deletes the configuration file.
+You can also store variables in order to use them later in your custom commands:
+
+```toml
+[vars]
+hostname = "darkstar"
+
+[commands.hostname]
+run = "scutil set --LocalHostName $hostname"  # or ${hostname}
+sudo = true  # a more "annotated sudo"
+```
+
+By default, cutler will run all of your external commands with the `cutler apply` command if you do not pass in the
+`--no-exec` flag. But, if you'd like to *only* run the commands and not apply defaults, run:
+
+```bash
+cutler exec
+```
+
+You can also run a specific external command by attaching a name parameter:
+
+```bash
+cutler exec hostname  # this runs the hostname command
+```
+
+### Config Management
+
+Sometimes it might be handy to have a look at your current config file without having to open it. In such an event, run:
+
+```bash
+cutler config show
+```
+
+This will show all the bare-bones values that you have written. You can also delete the file if necessary:
+
+```bash
 cutler config delete
 ```
 
-You can add `--verbose` for more detail on what happens behind the scenes. For
-additional information about all available commands, run:
-
-```bash
-cutler help
-```
-
 ## Shell Completions
-
-Here is a small tour on how to setup shell-specific completion scripts for cutler.
 
 > [!IMPORTANT]
 > If you have installed cutler using Homebrew, the shell completion will automatically be
