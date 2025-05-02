@@ -9,7 +9,7 @@ use crate::{
 };
 use anyhow::Result;
 
-pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
+pub fn run(which: Option<String>, verbose: bool, dry_run: bool) -> Result<()> {
     let config_path = get_config_path();
     if !config_path.exists() {
         print_log(
@@ -73,8 +73,11 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
         }
     }
 
-    // run external commands
-    runner::run_all(&toml, verbose, dry_run)?;
+    if let Some(cmd_name) = which {
+        runner::run_one(&toml, &cmd_name, verbose, dry_run)?;
+    } else {
+        runner::run_all(&toml, verbose, dry_run)?;
+    }
 
     if !verbose && !dry_run {
         println!("\n🍎 External commands executed successfully.");

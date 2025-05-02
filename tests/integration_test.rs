@@ -59,7 +59,7 @@ mod tests {
     #[test]
     fn test_snapshot_integration() {
         use cutler::defaults::from_flag;
-        use cutler::snapshot::{ExternalCommandState, SettingState, Snapshot};
+        use cutler::snapshot::state::{ExternalCommandState, SettingState, Snapshot};
         use tempfile::TempDir;
 
         // Create a sample snapshot
@@ -82,8 +82,7 @@ mod tests {
 
         // Add an external command
         snapshot.external.push(ExternalCommandState {
-            cmd: "echo".to_string(),
-            args: vec!["Hello".to_string()],
+            run: "echo \"Hello, World!\"".to_string(),
             sudo: false,
         });
 
@@ -120,6 +119,6 @@ mod tests {
 
         // 3. Verify external commands are tracked correctly
         assert_eq!(loaded_snapshot.external.len(), 1);
-        assert_eq!(loaded_snapshot.external[0].cmd, "echo");
+        assert_eq!(loaded_snapshot.external[0].run, "echo \"Hello, World!\"");
     }
 }

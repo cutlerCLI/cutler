@@ -1,2 +1,2 @@
 pub mod state;
-pub use state::{ExternalCommandState, SettingState, Snapshot, get_snapshot_path};
+pub use state::{Snapshot, get_snapshot_path};

@@ -311,19 +311,9 @@ mise use -g cargo:cutler</code></pre>
             >
             to get started quickly!
         </p>
-        <pre><code class="language-bash">[dock]
-tilesize = 46
-
-[finder]
-AppleShowAllFiles = true
-CreateDesktop = false
-
-[NSGlobalDomain]
-ApplePressAndHoldEnabled = true</code></pre>
-
         <p>
-            Or, to setup a comprehensive example on your Mac automatically, use
-            this command:
+            In order to setup a comprehensive example on your Mac automatically,
+            use this command:
         </p>
         <pre><code class="language-bash">cutler init</code></pre>
 
@@ -410,7 +400,7 @@ cutler config delete</code></pre>
             </p>
         </div>
 
-        <h2>Advanced Features</h2>
+        <h2>Custom Commands</h2>
         <hr />
 
         <p>
@@ -418,9 +408,9 @@ cutler config delete</code></pre>
             custom commands to be executed:
         </p>
 
-        <pre><code class="language-bash">[external]
-  [[external.command]]
-  cmd = "echo \"Hello World\""</code></pre>
+        <pre><code class="language-bash"># A basic hello
+[commands.greet]
+cmd = "echo \"Hello World\""</code></pre>
 
         <p>This translates to running:</p>
         <pre><code class="language-bash">echo "Hello World"</code></pre>
@@ -430,20 +420,20 @@ cutler config delete</code></pre>
             with separate arguments and variables:
         </p>
         <pre><code class="language-bash"># Define reusable variables here:
-[external.variables]
+[vars]
 common_args = ["Hello", "World"]
+some_string = "Pancakes!"
 
-[external]
-  [[external.command]]
-  cmd = "echo"
-  # If you reference a variable (for example, $common_args) and it isn't defined
-  # in the [external.variables] section, cutler will fall back and try to resolve it
-  # from the environment (e.g. $PATH).
-  args = ["$common_args", "$PATH"]
-  sudo = false</code></pre>
+[commands.greet]
+run = "echo $common_args"
+sudo = false</code></pre>
 
-        <p>This roughly translates to:</p>
-        <pre><code class="language-bash">echo Hello World /usr/local/bin:/usr/bin:...</code></pre>
+        <p>If you want to run them:</p>
+        <pre><code class="language-bash"># combined execution
+cutler exec
+
+# or
+cutler exec greet</code></pre>
 
         <h2>Some Personal Take</h2>
         <hr />

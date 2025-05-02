@@ -1,6 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use cutler::snapshot::{ExternalCommandState, SettingState, Snapshot, get_snapshot_path};
+    use cutler::snapshot::state::{
+        ExternalCommandState, SettingState, Snapshot, get_snapshot_path,
+    };
     use std::collections::HashMap;
     use std::path::PathBuf;
     use std::{env, fs};
@@ -48,12 +50,10 @@ mod tests {
 
         // Test external command state
         let command = ExternalCommandState {
-            cmd: "echo".to_string(),
-            args: vec!["Hello".to_string(), "World".to_string()],
+            run: "echo Hello World".to_string(),
             sudo: false,
         };
-        assert_eq!(command.cmd, "echo");
-        assert_eq!(command.args, vec!["Hello".to_string(), "World".to_string()]);
+        assert_eq!(command.run, "echo Hello World");
         assert_eq!(command.sudo, false);
     }
 
@@ -86,14 +86,12 @@ mod tests {
 
         // Add multiple external commands
         snapshot.external.push(ExternalCommandState {
-            cmd: "echo".to_string(),
-            args: vec!["Hello".to_string()],
+            run: "echo Hello".to_string(),
             sudo: false,
         });
 
         snapshot.external.push(ExternalCommandState {
-            cmd: "hostname".to_string(),
-            args: vec!["-s".to_string(), "macbook".to_string()],
+            run: "hostname -s macbook".to_string(),
             sudo: true,
         });
 
@@ -150,16 +148,11 @@ mod tests {
 
         // Check external commands
         let echo_cmd = &loaded_snapshot.external[0];
-        assert_eq!(echo_cmd.cmd, "echo");
-        assert_eq!(echo_cmd.args, vec!["Hello".to_string()]);
+        assert_eq!(echo_cmd.run, "echo Hello");
         assert_eq!(echo_cmd.sudo, false);
 
         let hostname_cmd = &loaded_snapshot.external[1];
-        assert_eq!(hostname_cmd.cmd, "hostname");
-        assert_eq!(
-            hostname_cmd.args,
-            vec!["-s".to_string(), "macbook".to_string()]
-        );
+        assert_eq!(hostname_cmd.run, "hostname -s macbook");
         assert_eq!(hostname_cmd.sudo, true);
     }
 

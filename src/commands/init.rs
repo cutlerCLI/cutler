@@ -64,13 +64,11 @@ expose-group-apps    = true
 fnState = false
 
 # External commands (uncomment / customize as needed)
-# [external.variables]
+# [vars]
 # hostname = "my-macbook"
-
-# [external]
-# [[external.command]]
-# cmd  = "scutil"
-# args = ["--set", "ComputerName", "$hostname"]
+# 
+# [commands.hostname]
+# cmd  = "scutil --set ComputerName $hostname"
 # sudo = true
 "#;
 
