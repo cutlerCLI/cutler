@@ -311,19 +311,9 @@ mise use -g cargo:cutler</code></pre>
             >
             to get started quickly!
         </p>
-        <pre><code class="language-bash">[dock]
-tilesize = 46
-
-[finder]
-AppleShowAllFiles = true
-CreateDesktop = false
-
-[NSGlobalDomain]
-ApplePressAndHoldEnabled = true</code></pre>
-
         <p>
-            Or, to setup a comprehensive example on your Mac automatically, use
-            this command:
+            In order to setup a comprehensive example on your Mac automatically,
+            use this command:
         </p>
         <pre><code class="language-bash">cutler init</code></pre>
 
@@ -418,8 +408,9 @@ cutler config delete</code></pre>
             custom commands to be executed:
         </p>
 
-        <pre><code class="language-bash">[commands.greet]
-  cmd = "echo \"Hello World\""</code></pre>
+        <pre><code class="language-bash"># A basic hello
+[commands.greet]
+cmd = "echo \"Hello World\""</code></pre>
 
         <p>This translates to running:</p>
         <pre><code class="language-bash">echo "Hello World"</code></pre>
@@ -436,6 +427,13 @@ some_string = "Pancakes!"
 [commands.greet]
 run = "echo $common_args"
 sudo = false</code></pre>
+
+        <p>If you want to run them:</p>
+        <pre><code class="language-bash"># combined execution
+cutler exec
+
+# or
+cutler exec greet</code></pre>
 
         <h2>Some Personal Take</h2>
         <hr />
