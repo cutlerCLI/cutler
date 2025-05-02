@@ -410,7 +410,7 @@ cutler config delete</code></pre>
             </p>
         </div>
 
-        <h2>Advanced Features</h2>
+        <h2>Custom Commands</h2>
         <hr />
 
         <p>
@@ -430,20 +430,15 @@ cutler config delete</code></pre>
             with separate arguments and variables:
         </p>
         <pre><code class="language-bash"># Define reusable variables here:
-[external.variables]
-common_args = ["Hello", "World"]
+[vars]
+  common_args = ["Hello", "World"]
 
-[external]
-  [[external.command]]
-  cmd = "echo"
-  # If you reference a variable (for example, $common_args) and it isn't defined
-  # in the [external.variables] section, cutler will fall back and try to resolve it
-  # from the environment (e.g. $PATH).
-  args = ["$common_args", "$PATH"]
+[commands.greet]
+  run = "echo $common_args"
   sudo = false</code></pre>
 
         <p>This roughly translates to:</p>
-        <pre><code class="language-bash">echo Hello World /usr/local/bin:/usr/bin:...</code></pre>
+        <pre><code class="language-bash">echo Hello World</code></pre>
 
         <h2>Some Personal Take</h2>
         <hr />
