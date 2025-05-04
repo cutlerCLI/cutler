@@ -3,13 +3,19 @@ name = "cutler"
 version = "0.5.5"
 edition = "2024"
 description = "Powerful, declarative settings management for your Mac, with speed."
+homepage = "hitblast.github.io/cutler"
+repository = "https://github.com/hitblast/cutler"
+keywords = ["macos", "macos-automation", "cutler"]
+readme = "README.md"
 license = "MIT"
+build = "build.rs"
+categories = ["command-line-utilities"]
 
 [dependencies]
 toml = "0.8"
 clap = { version = "4", features = ["derive"] }
 lazy_static = "1.5.0"
-clap_complete = "4.5.47"
+clap_complete = "4.5.48"
 serde_json = "1.0.140"
 serde = { version = "1.0", features = ["derive"] }
 ureq = "3.0.11"
