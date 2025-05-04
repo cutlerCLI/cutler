@@ -49,10 +49,8 @@ fnState = false
 # External command execution
 # This includes setting the global hostname and configuring sudo authentication with Touch ID.
 
-[external]
-
 [vars]
-hostname = "epiphany"
+hostname = "darkstar"
 
 [commands.hostname]
 run = "scutil --set ComputerName $hostname && scutil --set HostName $hostname && scutil --set LocalHostName $hostname"
