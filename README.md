@@ -39,6 +39,7 @@ Check out the [Usage](#usage) section for more details.
 - Run external commands at will with ease.
 - Revert back modifications easily with the snapshot mechanism.
 - Made using [Rust](https://rust-lang.org/) for thread-safety and speed.
+- Tiny binary. **<= 3000 lines of pure code.**
 
 ## Installation
 
@@ -85,7 +86,7 @@ it can also have other values depending on your setup:
 - `config.toml` in the current directory (fallback)
 
 It respects your `$XDG_CONFIG_HOME` setting, so you don't have to worry about
-path issues. 
+path issues.
 
 ### Basic Defaults Manipulation
 

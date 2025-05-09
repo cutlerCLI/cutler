@@ -4,8 +4,10 @@ use crate::{
     domains::collector,
     external::runner,
     snapshot::state::{SettingState, Snapshot},
-    util::io::confirm_action,
-    util::logging::{LogLevel, print_log},
+    util::{
+        io::confirm_action,
+        logging::{LogLevel, print_log},
+    },
 };
 use anyhow::Result;
 use rayon::prelude::*;
