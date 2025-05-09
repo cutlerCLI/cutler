@@ -54,7 +54,7 @@ mod tests {
             sudo: false,
         };
         assert_eq!(command.run, "echo Hello World");
-        assert_eq!(command.sudo, false);
+        assert!(!command.sudo);
     }
 
     #[test]
@@ -149,11 +149,11 @@ mod tests {
         // Check external commands
         let echo_cmd = &loaded_snapshot.external[0];
         assert_eq!(echo_cmd.run, "echo Hello");
-        assert_eq!(echo_cmd.sudo, false);
+        assert!(!echo_cmd.sudo);
 
         let hostname_cmd = &loaded_snapshot.external[1];
         assert_eq!(hostname_cmd.run, "hostname -s macbook");
-        assert_eq!(hostname_cmd.sudo, true);
+        assert!(hostname_cmd.sudo);
     }
 
     #[test]
