@@ -47,8 +47,10 @@ pub fn collect(parsed: &Value) -> Result<HashMap<String, toml::value::Table>, an
         .ok_or_else(|| anyhow::anyhow!("Config is not a TOML table"))?;
     let mut out = HashMap::new();
 
+    const SKIPPED_TABLES: [&str; 3] = ["commands", "vars", "brew"];
+
     for (key, val) in root {
-        if key == "commands" || key == "vars" {
+        if SKIPPED_TABLES.contains(&key.as_str()) {
             continue;
         } else if key == "external" {
             print_log(
