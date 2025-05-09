@@ -14,14 +14,50 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
-    name: Test Suite
+  clippy:
+    name: Run clippy
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
-      - uses: jdx/mise-action@v2
-        with:
-          cache: false
 
-      - name: Run test suite
-        run: mise run testsuite
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: clippy, rustfmt
+
+      - name: Run Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+  tests:
+    name: Unit tests
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: clippy, rustfmt
+
+      - name: Run unit tests
+        run: cargo test --verbose
+
+  format:
+    name: Code formatting
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: clippy, rustfmt
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
