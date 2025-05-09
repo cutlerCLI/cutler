@@ -16,6 +16,7 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
             LogLevel::Error,
             "No config file found. Run `cutler init` to start.",
         );
+        return Ok(());
     }
 
     // ensure homebrew installation
@@ -32,7 +33,13 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
     const ENV_VAR: &str = "HOMEBREW_NO_INSTALL_UPGRADE";
 
     let old_value = env::var(ENV_VAR).ok();
-    unsafe { env::set_var(ENV_VAR, "1") }
+    unsafe {
+        env::set_var(ENV_VAR, "1");
+
+        if verbose {
+            print_log(LogLevel::Info, &format!("Setting {} to 1", ENV_VAR));
+        }
+    }
 
     // fetch currently installed items to skip those
     let installed_formulas = brew_list(&["list", "--formula"])?;
