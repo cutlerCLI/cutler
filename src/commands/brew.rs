@@ -110,8 +110,8 @@ fn backup(cfg_path: &std::path::Path, verbose: bool, dry_run: bool) -> Result<()
             LogLevel::Info,
             &format!(
                 "Pushed {} casks and {} formulae.",
-                formulas.len().to_string(),
-                casks.len().to_string(),
+                formulas.len(),
+                casks.len(),
             ),
         );
         print_log(LogLevel::Info, &format!("Writing backup to {:?}", cfg_path));

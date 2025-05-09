@@ -1,4 +1,5 @@
 pub mod apply;
+pub mod brew;
 pub mod config_delete;
 pub mod config_show;
 pub mod exec;
@@ -7,7 +8,6 @@ pub mod reset;
 pub mod status;
 pub mod unapply;
 pub mod update;
-pub mod brew;
 
 use crate::cli::Command;
 use anyhow::Result;
