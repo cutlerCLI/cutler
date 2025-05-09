@@ -23,6 +23,7 @@ Powerful, declarative settings management for your Mac, with speed.
 - [Shell Completions](#shell-completions)
 - [Resources](#resources)
 - [Contributing](#contributing)
+- [Acknowledgements](#acknowledgements)
 - [License](#license)
 
 ## Overview
@@ -285,6 +286,10 @@ straightforward. Contributions are always welcome! Feel free to help out by
 [creating a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) or [submitting an issue](https://github.com/hitblast/cutler/issues).
 
 If you, as a developer, would like to dive into the nitty-gritty of contributing to cutler, view the [CONTRIBUTING.md](./CONTRIBUTING.md). I'm still writing it as the project progresses.
+
+## Acknowledgements
+
+- Heartfelt thanks to @furtidev for helping me learn more about the optimization process of cutler.
 
 ## License
 
