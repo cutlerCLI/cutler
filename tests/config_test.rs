@@ -55,6 +55,6 @@ mod tests {
         // Verify the content
         let dock = config.get("dock").unwrap().as_table().unwrap();
         assert_eq!(dock.get("tilesize").unwrap().as_integer().unwrap(), 46);
-        assert_eq!(dock.get("autohide").unwrap().as_bool().unwrap(), true);
+        assert!(dock.get("autohide").unwrap().as_bool().unwrap());
     }
 }
