@@ -289,7 +289,7 @@ If you, as a developer, would like to dive into the nitty-gritty of contributing
 
 ## Acknowledgements
 
-- Heartfelt thanks to @furtidev for helping me learn more about the optimization process of cutler.
+- ^w^ Heartfelt thanks to [@furtidev](https://github.com/furtidev) for helping me learn more about the optimization process of cutler.
 
 ## License
 
