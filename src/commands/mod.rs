@@ -15,7 +15,7 @@ use crate::util::io::set_accept_all;
 use anyhow::Result;
 
 /// Entrypoint: dispatch to each sub‐module's `run(...)`
-pub fn dispatch(
+pub async fn dispatch(
     command: &Command,
     verbose: bool,
     dry_run: bool,
@@ -26,22 +26,22 @@ pub fn dispatch(
     set_accept_all(accept_all);
 
     let result = match command {
-        Command::Apply { no_exec } => apply::run(*no_exec, verbose, dry_run),
-        Command::Exec { name } => exec::run(name.clone(), verbose, dry_run),
-        Command::Init { force } => init::run(verbose, *force),
-        Command::Unapply => unapply::run(verbose, dry_run),
-        Command::Reset { force } => reset::run(verbose, dry_run, *force),
-        Command::Status { prompt } => status::run(*prompt, verbose),
+        Command::Apply { no_exec } => apply::run(*no_exec, verbose, dry_run).await,
+        Command::Exec { name } => exec::run(name.clone(), verbose, dry_run).await,
+        Command::Init { force } => init::run(verbose, *force).await,
+        Command::Unapply => unapply::run(verbose, dry_run).await,
+        Command::Reset { force } => reset::run(verbose, dry_run, *force).await,
+        Command::Status { prompt } => status::run(*prompt, verbose).await,
         Command::Config { command } => match command {
-            ConfigSub::Show => config_show::run(verbose, dry_run),
-            ConfigSub::Delete => config_delete::run(verbose, dry_run),
+            ConfigSub::Show => config_show::run(verbose, dry_run).await,
+            ConfigSub::Delete => config_delete::run(verbose, dry_run).await,
         },
-        Command::Completion { shell } => crate::cli::completion::generate_completion(*shell),
+        Command::Completion { shell } => crate::cli::completion::generate_completion(*shell).await,
         Command::Brew { command } => match command {
-            BrewSub::Backup => brew_backup::run(verbose, dry_run),
-            BrewSub::Install => brew_install::run(verbose, dry_run),
+            BrewSub::Backup => brew_backup::run(verbose, dry_run).await,
+            BrewSub::Install => brew_install::run(verbose, dry_run).await,
         },
-        Command::CheckUpdate => update::run(verbose),
+        Command::CheckUpdate => update::run(verbose).await,
     };
 
     // handle post‐hooks (restart services)
@@ -55,7 +55,7 @@ pub fn dispatch(
                 command: crate::cli::ConfigSub::Delete,
             } => {
                 if !no_restart {
-                    let _ = restart_system_services(verbose, dry_run);
+                    let _ = restart_system_services(verbose, dry_run).await;
                 }
             }
             _ => {}

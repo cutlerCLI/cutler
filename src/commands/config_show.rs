@@ -1,12 +1,12 @@
 use anyhow::{Result, bail};
-use std::fs;
+use tokio::fs;
 
 use crate::{
     config::loader::get_config_path,
     util::logging::{LogLevel, print_log},
 };
 
-pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
+pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
     let config_path = get_config_path();
 
     if !config_path.exists() {
@@ -23,7 +23,7 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
     }
 
     // read and print the file
-    let content = fs::read_to_string(&config_path)?;
+    let content = fs::read_to_string(&config_path).await?;
     println!("{}", content);
 
     if verbose {

@@ -1,5 +1,5 @@
 use anyhow::{Result, anyhow};
-use std::fs;
+use tokio::fs;
 
 use crate::{
     config::loader::get_config_path,
@@ -9,10 +9,11 @@ use crate::{
     },
 };
 
-pub fn run(verbose: bool, force: bool) -> Result<()> {
+pub async fn run(verbose: bool, force: bool) -> Result<()> {
     let config_path = get_config_path();
 
-    if config_path.exists() && !force {
+    let exists = fs::metadata(&config_path).await.is_ok();
+    if exists && !force {
         print_log(
             LogLevel::Warning,
             &format!("Configuration file already exists at {:?}", config_path),
@@ -24,7 +25,7 @@ pub fn run(verbose: bool, force: bool) -> Result<()> {
 
     // ensure parent directory exists
     if let Some(parent) = config_path.parent() {
-        fs::create_dir_all(parent)?;
+        fs::create_dir_all(parent).await?;
     }
 
     // default TOML template
@@ -73,6 +74,7 @@ fnState = false
 "#;
 
     fs::write(&config_path, default_cfg)
+        .await
         .map_err(|e| anyhow!("Failed to write configuration to {:?}: {}", config_path, e))?;
 
     if verbose {

@@ -10,7 +10,6 @@ use crate::{
     },
 };
 use anyhow::Result;
-use rayon::prelude::*;
 
 /// Defines a job to be executed by the apply command.
 #[derive(Debug)]
@@ -24,7 +23,7 @@ struct Job {
     new_value: String,
 }
 
-pub fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
+pub async fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
     let config_path = crate::config::loader::get_config_path();
     if !config_path.exists() {
         print_log(
@@ -32,7 +31,7 @@ pub fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
             &format!("Config not found at {:?}", config_path),
         );
         if confirm_action("Create new config?")? {
-            super::init::run(verbose, false)?;
+            super::init::run(verbose, false).await?;
             return Ok(());
         } else {
             anyhow::bail!("No config; aborting.");
@@ -40,7 +39,7 @@ pub fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
     }
 
     // parse + flatten domains
-    let toml = load_config(&config_path)?;
+    let toml = load_config(&config_path).await?;
     let domains = collector::collect(&toml)?;
 
     // load the old snapshot (if any), otherwise create a new instance
@@ -116,18 +115,24 @@ pub fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
         }
     }
 
-    // now execute writes in parallel
-    jobs.par_iter().for_each(|job| {
-        let _ = executor::write(
-            &job.domain,
-            &job.key,
-            &job.flag,
-            &job.value,
-            job.action,
-            verbose,
-            dry_run,
-        );
-    });
+    // now execute writes concurrently with Tokio tasks
+    let mut handles = Vec::with_capacity(jobs.len());
+    for job in jobs.iter() {
+        // clone for move into async task
+        let domain = job.domain.clone();
+        let key = job.key.clone();
+        let flag = job.flag.clone();
+        let value = job.value.clone();
+        let action = job.action;
+
+        handles.push(tokio::spawn(async move {
+            let _ = executor::write(&domain, &key, &flag, &value, action, verbose, dry_run).await;
+        }));
+    }
+    // await all write tasks
+    for handle in handles {
+        let _ = handle.await;
+    }
 
     let mut new_snap = Snapshot::new();
     for ((_, _), mut old_entry) in existing.into_iter() {
@@ -159,7 +164,7 @@ pub fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
 
     // exec external commands
     if !no_exec {
-        let _ = runner::run_all(&toml, verbose, dry_run);
+        let _ = runner::run_all(&toml, verbose, dry_run).await;
     }
 
     Ok(())

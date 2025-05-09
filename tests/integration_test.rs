@@ -10,8 +10,8 @@ mod tests {
     // currently doing that would completely blow up my Mac's configuration.
     // Need a more feasible approach.
 
-    #[test]
-    fn test_config_to_domains_workflow() {
+    #[tokio::test]
+    async fn test_config_to_domains_workflow() {
         // Create a temporary config file
         let temp_dir = TempDir::new().unwrap();
         let config_file = temp_dir.path().join("config.toml");
@@ -33,7 +33,7 @@ mod tests {
         file.write_all(config_content.as_bytes()).unwrap();
 
         // Load the config
-        let config = load_config(&config_file).unwrap();
+        let config = load_config(&config_file).await.unwrap();
 
         // Collect domains
         let domains = collect(&config).unwrap();

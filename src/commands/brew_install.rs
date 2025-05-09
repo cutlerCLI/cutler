@@ -1,4 +1,5 @@
-use std::{env, process::Command};
+use std::env;
+use tokio::process::Command;
 
 use crate::{
     brew::utils::{brew_list, ensure_brew},
@@ -6,9 +7,8 @@ use crate::{
     util::logging::{LogLevel, print_log},
 };
 use anyhow::{Context, Result};
-use rayon::{ThreadPoolBuilder, prelude::*};
 
-pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
+pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
     let cfg_path = &get_config_path();
 
     if !cfg_path.exists() {
@@ -22,7 +22,7 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
     // ensure homebrew installation
     ensure_brew(dry_run)?;
 
-    let config = load_config(cfg_path)?;
+    let config = load_config(cfg_path).await?;
     let brew_cfg = config
         .get("brew")
         .and_then(|i| i.as_table())
@@ -90,19 +90,16 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
             print_log(LogLevel::Info, &format!("Dry-run: {}", display));
         }
     } else {
-        // execute up to 5 installs in parallel
-        let pool = ThreadPoolBuilder::new().build()?;
-
-        pool.install(|| {
-            install_tasks.par_iter().for_each(|args| {
+        // execute installs concurrently
+        let mut handles = Vec::new();
+        for args in install_tasks {
+            handles.push(tokio::spawn(async move {
                 let display = format!("brew {}", args.join(" "));
-
                 if verbose {
                     print_log(LogLevel::Info, &display);
                 }
                 let arg_slices: Vec<&str> = args.iter().map(String::as_str).collect();
-
-                match Command::new("brew").args(&arg_slices).status() {
+                match Command::new("brew").args(&arg_slices).status().await {
                     Ok(status) if !status.success() => {
                         print_log(LogLevel::Error, &format!("Failed: {}", display));
                     }
@@ -114,8 +111,11 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
                     }
                     _ => {}
                 }
-            });
-        });
+            }));
+        }
+        for handle in handles {
+            let _ = handle.await;
+        }
     }
 
     // restore or unset the environment variable

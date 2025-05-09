@@ -1,4 +1,4 @@
-use std::fs;
+use tokio::fs;
 
 use crate::{
     commands::unapply,
@@ -11,7 +11,7 @@ use crate::{
 };
 use anyhow::Result;
 
-pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
+pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
     let config_path = get_config_path();
     if !config_path.exists() {
         if verbose {
@@ -30,7 +30,7 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
             Snapshot::load(&snapshot_path)?.settings.len()
         );
         if confirm_action("Unapply all previously applied defaults?")? {
-            unapply::run(verbose, dry_run)?;
+            unapply::run(verbose, dry_run).await?;
         }
     }
 
@@ -47,7 +47,7 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
             );
         }
     } else {
-        fs::remove_file(&config_path)?;
+        fs::remove_file(&config_path).await?;
         if verbose {
             print_log(
                 LogLevel::Success,
@@ -55,7 +55,7 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
             );
         }
         if snapshot_path.exists() {
-            fs::remove_file(&snapshot_path)?;
+            fs::remove_file(&snapshot_path).await?;
             if verbose {
                 print_log(
                     LogLevel::Success,

@@ -1,5 +1,5 @@
 use anyhow::{Result, bail};
-use std::fs;
+use tokio::fs;
 
 use crate::{
     config::loader::{get_config_path, load_config},
@@ -12,7 +12,7 @@ use crate::{
     },
 };
 
-pub fn run(verbose: bool, dry_run: bool, force: bool) -> Result<()> {
+pub async fn run(verbose: bool, dry_run: bool, force: bool) -> Result<()> {
     let config_path = get_config_path();
     if !config_path.exists() {
         bail!("No config file found. Please run `cutler init` first, or create a config file.");
@@ -31,7 +31,7 @@ pub fn run(verbose: bool, dry_run: bool, force: bool) -> Result<()> {
         return Ok(());
     }
 
-    let toml = load_config(&config_path)?;
+    let toml = load_config(&config_path).await?;
     let domains = collect(&toml)?;
 
     for (domain, table) in domains {
@@ -40,7 +40,7 @@ pub fn run(verbose: bool, dry_run: bool, force: bool) -> Result<()> {
 
             // Only delete it if currently set
             if read_current(&eff_dom, &eff_key).is_some() {
-                match defaults_delete(&eff_dom, &eff_key, "Resetting", verbose, dry_run) {
+                match defaults_delete(&eff_dom, &eff_key, "Resetting", verbose, dry_run).await {
                     Ok(_) => {
                         if verbose {
                             print_log(
@@ -73,7 +73,7 @@ pub fn run(verbose: bool, dry_run: bool, force: bool) -> Result<()> {
                 LogLevel::Info,
                 &format!("Dry-run: Would remove snapshot at {:?}", snap_path),
             );
-        } else if let Err(e) = fs::remove_file(&snap_path) {
+        } else if let Err(e) = fs::remove_file(&snap_path).await {
             print_log(
                 LogLevel::Warning,
                 &format!("Failed to remove snapshot: {}", e),

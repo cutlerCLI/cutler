@@ -1,4 +1,4 @@
-use std::fs;
+use tokio::fs;
 
 use anyhow::{Context, Result};
 use toml_edit::{Array, DocumentMut, Item, Table, Value};
@@ -9,7 +9,7 @@ use crate::{
     util::logging::{LogLevel, print_log},
 };
 
-pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
+pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
     let cfg_path = &get_config_path();
 
     // ensure brew install
@@ -30,7 +30,7 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
     }
 
     let mut doc = if cfg_path.exists() {
-        let text = fs::read_to_string(cfg_path)?;
+        let text = fs::read_to_string(cfg_path).await?;
         text.parse::<DocumentMut>()
             .context("Failed to parse config TOML")?
     } else {
@@ -66,7 +66,7 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
         print_log(LogLevel::Info, &format!("Writing backup to {:?}", cfg_path));
     }
 
-    fs::write(cfg_path, doc.to_string())?;
+    fs::write(cfg_path, doc.to_string()).await?;
 
     if verbose {
         print_log(

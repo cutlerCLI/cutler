@@ -1,7 +1,8 @@
 use crate::defaults::lock_for;
 use crate::util::logging::{LogLevel, print_log};
+use tokio::process::Command as TokioCommand;
 
-fn execute_defaults_command(
+async fn execute_defaults_command(
     command: &str,
     eff_domain: &str,
     eff_key: &str,
@@ -11,7 +12,7 @@ fn execute_defaults_command(
     dry_run: bool,
 ) -> Result<(), anyhow::Error> {
     let domain_lock = lock_for(eff_domain, verbose);
-    let _guard = domain_lock.lock().expect("Failed to acquire lock");
+    let _guard = domain_lock.lock();
 
     let mut cmd_display = format!("defaults {} {} \"{}\"", command, eff_domain, eff_key);
     for arg in &extra_args {
@@ -30,14 +31,14 @@ fn execute_defaults_command(
         print_log(LogLevel::Info, &format!("{}: {}", action, cmd_display));
     }
 
-    let mut cmd = std::process::Command::new("defaults");
+    let mut cmd = TokioCommand::new("defaults");
     cmd.arg(command).arg(eff_domain).arg(eff_key);
 
     for arg in extra_args {
         cmd.arg(arg);
     }
 
-    let output = cmd.output()?;
+    let output = cmd.output().await?;
     if !output.status.success() {
         print_log(
             LogLevel::Error,
@@ -58,7 +59,7 @@ fn execute_defaults_command(
     Ok(())
 }
 
-pub fn write(
+pub async fn write(
     domain: &str,
     key: &str,
     flag: &str,
@@ -75,17 +76,18 @@ pub fn write(
         action,
         verbose,
         dry_run,
-    )?;
+    )
+    .await?;
     Ok(())
 }
 
-pub fn delete(
+pub async fn delete(
     domain: &str,
     key: &str,
     action: &str,
     verbose: bool,
     dry_run: bool,
 ) -> Result<(), anyhow::Error> {
-    execute_defaults_command("delete", domain, key, vec![], action, verbose, dry_run)?;
+    execute_defaults_command("delete", domain, key, vec![], action, verbose, dry_run).await?;
     Ok(())
 }
