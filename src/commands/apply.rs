@@ -31,10 +31,6 @@ pub fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
         );
         if confirm_action("Create new config?")? {
             super::init::run(verbose, false)?;
-            print_log(
-                LogLevel::Info,
-                "Config created; edit it and then `cutler apply`.",
-            );
             return Ok(());
         } else {
             anyhow::bail!("No config; aborting.");

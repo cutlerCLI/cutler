@@ -1,7 +1,8 @@
-use std::io::{self, Write};
+use dialoguer::Confirm;
 use std::process::Command;
 
 use crate::util::logging::{LogLevel, print_log};
+use anyhow::Result;
 
 /// Global flag to automatically accept all prompts
 static mut ACCEPT_ALL: bool = false;
@@ -12,7 +13,7 @@ pub fn set_accept_all(value: bool) {
 }
 
 /// Ask "Y/N?"; returns true if accept_all is set or the user types "y" or "Y"
-pub fn confirm_action(prompt: &str) -> io::Result<bool> {
+pub fn confirm_action(prompt: &str) -> Result<bool> {
     unsafe {
         if ACCEPT_ALL {
             println!("{} [y/N]: y (auto-accepted)", prompt);
@@ -20,11 +21,8 @@ pub fn confirm_action(prompt: &str) -> io::Result<bool> {
         }
     }
 
-    print!("{} [y/N]: ", prompt);
-    io::stdout().flush()?;
-    let mut buf = String::new();
-    io::stdin().read_line(&mut buf)?;
-    Ok(matches!(buf.trim().to_lowercase().as_str(), "y"))
+    let result = Confirm::new().with_prompt(prompt).interact()?;
+    Ok(result)
 }
 
 /// Restart Finder, Dock, SystemUIServer so defaults take effect.
