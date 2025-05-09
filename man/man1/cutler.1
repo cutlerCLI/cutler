@@ -1,10 +1,10 @@
 .ie \n(.g .ds Aq \(aq
 .el .ds Aq '
-.TH cutler 1  "cutler 0.5.6" 
+.TH cutler 1  "cutler 0.6.0" 
 .SH NAME
 cutler \- Powerful, declarative settings management for your Mac, with speed.
 .SH SYNOPSIS
-\fBcutler\fR [\fB\-v\fR|\fB\-\-verbose\fR] [\fB\-n\fR|\fB\-\-no\-restart\-services\fR] [\fB\-\-dry\-run\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
+\fBcutler\fR [\fB\-v\fR|\fB\-\-verbose\fR] [\fB\-n\fR|\fB\-\-no\-restart\-services\fR] [\fB\-\-dry\-run\fR] [\fB\-y\fR|\fB\-\-accept\-all\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
 .SH DESCRIPTION
 Powerful, declarative settings management for your Mac, with speed.
 .SH OPTIONS
@@ -18,6 +18,9 @@ Do not restart system services after command execution
 \fB\-\-dry\-run\fR
 Run in dry\-run mode. Commands will be printed but not executed
 .TP
+\fB\-y\fR, \fB\-\-accept\-all\fR
+Accepts all interactive prompts
+.TP
 \fB\-h\fR, \fB\-\-help\fR
 Print help
 .TP
@@ -27,6 +30,9 @@ Print version
 .TP
 cutler\-apply(1)
 Apply the changes written in your config file
+.TP
+cutler\-brew(1)
+Homebrew backup\-and\-restore related commands
 .TP
 cutler\-exec(1)
 Run only the external commands written in the config file
@@ -55,4 +61,4 @@ Check for version updates
 cutler\-help(1)
 Print this message or the help of the given subcommand(s)
 .SH VERSION
-v0.5.6
+v0.6.0

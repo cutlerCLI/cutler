@@ -5,9 +5,8 @@ use crate::{
     util::logging::{BOLD, GREEN, LogLevel, RED, RESET, print_log},
 };
 use anyhow::{Result, bail};
-use rayon::prelude::*;
 
-pub fn run(prompt_mode: bool, verbose: bool) -> Result<()> {
+pub async fn run(prompt_mode: bool, verbose: bool) -> Result<()> {
     let config_path = get_config_path();
     if !config_path.exists() {
         if !prompt_mode {
@@ -17,7 +16,7 @@ pub fn run(prompt_mode: bool, verbose: bool) -> Result<()> {
         }
     }
 
-    let toml = load_config(&config_path)?;
+    let toml = load_config(&config_path).await?;
     let domains = collect(&toml)?;
 
     // flatten all settings into a list for parallel processing
@@ -32,7 +31,7 @@ pub fn run(prompt_mode: bool, verbose: bool) -> Result<()> {
 
     // prompt mode: bail out on first mismatch, otherwise stay silent
     if prompt_mode {
-        let diverges = entries.par_iter().any(|(domain, key, value)| {
+        let diverges = entries.iter().any(|(domain, key, value)| {
             let (eff_dom, eff_key) = effective(domain, key);
             let desired = normalize(value);
             let current = read_current(&eff_dom, &eff_key).unwrap_or_else(|| "Not set".into());
@@ -47,17 +46,15 @@ pub fn run(prompt_mode: bool, verbose: bool) -> Result<()> {
         return Ok(());
     }
 
-    // normal mode: collect results in parallel, then print in sequence
-    let outcomes: Vec<(String, String, String, String, bool)> = entries
-        .par_iter()
-        .map(|(domain, key, value)| {
-            let (eff_dom, eff_key) = effective(domain, key);
-            let desired = normalize(value);
-            let current = read_current(&eff_dom, &eff_key).unwrap_or_else(|| "Not set".into());
-            let is_diff = current != desired;
-            (eff_dom, eff_key, desired, current, is_diff)
-        })
-        .collect();
+    // normal mode: collect results sequentially
+    let mut outcomes = Vec::with_capacity(entries.len());
+    for (domain, key, value) in entries.iter() {
+        let (eff_dom, eff_key) = effective(domain, key);
+        let desired = normalize(value);
+        let current = read_current(&eff_dom, &eff_key).unwrap_or_else(|| "Not set".into());
+        let is_diff = current != desired;
+        outcomes.push((eff_dom, eff_key, desired, current, is_diff));
+    }
 
     let mut any_diff = false;
     for (eff_dom, eff_key, desired, current, is_diff) in outcomes {

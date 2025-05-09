@@ -19,9 +19,9 @@ mod tests {
         assert_eq!(value, "42");
 
         // Float
-        let (flag, value) = to_flag(&Value::Float(3.14)).unwrap();
+        let (flag, value) = to_flag(&Value::Float(std::f64::consts::PI)).unwrap();
         assert_eq!(flag, "-float");
-        assert_eq!(value, "3.14");
+        assert_eq!(value, std::f64::consts::PI.to_string());
 
         // String
         let (flag, value) = to_flag(&Value::String("test".into())).unwrap();

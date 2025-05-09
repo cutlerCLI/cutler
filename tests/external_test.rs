@@ -3,8 +3,8 @@ mod tests {
     use cutler::external::runner::{run_all, run_one};
     use toml::{Value, value::Table};
 
-    #[test]
-    fn test_run_all_dry_run() {
+    #[tokio::test]
+    async fn test_run_all_dry_run() {
         // Build a [vars] table
         let mut vars = Table::new();
         vars.insert("hostname".into(), Value::String("test-host".into()));
@@ -23,11 +23,15 @@ mod tests {
         let config = Value::Table(root);
 
         // Dry‑run should always succeed
-        assert!(run_all(&config, /*verbose=*/ true, /*dry_run=*/ true).is_ok());
+        assert!(
+            run_all(&config, /*verbose=*/ true, /*dry_run=*/ true)
+                .await
+                .is_ok()
+        );
     }
 
-    #[test]
-    fn test_run_one_dry_run() {
+    #[tokio::test]
+    async fn test_run_one_dry_run() {
         // Very similar setup
         let mut vars = Table::new();
         vars.insert("USER".into(), Value::String("me".into()));
@@ -50,6 +54,7 @@ mod tests {
             run_one(
                 &config, "whoami", /*verbose=*/ true, /*dry_run=*/ true
             )
+            .await
             .is_ok()
         );
     }

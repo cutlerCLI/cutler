@@ -1,12 +1,11 @@
 use anyhow::{Context, Result, bail};
-use std::fs;
+use tokio::fs;
 
 use crate::{
     defaults::{executor, from_flag},
     snapshot::state::{Snapshot, get_snapshot_path},
     util::logging::{LogLevel, print_log},
 };
-use rayon::prelude::*;
 
 /// Defines an undo operation to be executed by the unapply command.
 #[derive(Clone)]
@@ -22,7 +21,7 @@ enum Undo {
     },
 }
 
-pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
+pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
     let snap_path = get_snapshot_path();
 
     if !snap_path.exists() {
@@ -57,16 +56,33 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
         })
         .collect();
 
-    // run undo in parallel
-    undoes.par_iter().for_each(|u| match u {
-        Undo::Restore { domain, key, orig } => {
-            let (flag, val_str) = from_flag(orig).unwrap();
-            let _ = executor::write(domain, key, flag, &val_str, "Restoring", verbose, dry_run);
-        }
-        Undo::Delete { domain, key } => {
-            let _ = executor::delete(domain, key, "Removing", verbose, dry_run);
-        }
-    });
+    // run undo concurrently
+    let mut handles = Vec::new();
+    for u in undoes {
+        handles.push(tokio::spawn(async move {
+            match u {
+                Undo::Restore { domain, key, orig } => {
+                    let (flag, val_str) = from_flag(&orig).unwrap();
+                    let _ = executor::write(
+                        &domain,
+                        &key,
+                        flag,
+                        &val_str,
+                        "Restoring",
+                        verbose,
+                        dry_run,
+                    )
+                    .await;
+                }
+                Undo::Delete { domain, key } => {
+                    let _ = executor::delete(&domain, &key, "Removing", verbose, dry_run).await;
+                }
+            }
+        }));
+    }
+    for handle in handles {
+        let _ = handle.await;
+    }
 
     // warn about external commands (not automatically reverted)
     if !snapshot.external.is_empty() {
@@ -84,6 +100,7 @@ pub fn run(verbose: bool, dry_run: bool) -> Result<()> {
         );
     } else {
         fs::remove_file(&snap_path)
+            .await
             .context(format!("Failed to remove snapshot file at {:?}", snap_path))?;
         if verbose {
             print_log(

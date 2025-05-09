@@ -33,8 +33,8 @@ mod tests {
         unsafe { env::remove_var("XDG_CONFIG_HOME") };
     }
 
-    #[test]
-    fn test_load_config() {
+    #[tokio::test]
+    async fn test_load_config() {
         // Setup a temporary directory and config file
         let temp_dir = TempDir::new().unwrap();
         let config_file = temp_dir.path().join("config.toml");
@@ -50,11 +50,11 @@ mod tests {
         file.write_all(config_content.as_bytes()).unwrap();
 
         // Test loading the config
-        let config = load_config(&config_file).unwrap();
+        let config = load_config(&config_file).await.unwrap();
 
         // Verify the content
         let dock = config.get("dock").unwrap().as_table().unwrap();
         assert_eq!(dock.get("tilesize").unwrap().as_integer().unwrap(), 46);
-        assert_eq!(dock.get("autohide").unwrap().as_bool().unwrap(), true);
+        assert!(dock.get("autohide").unwrap().as_bool().unwrap());
     }
 }

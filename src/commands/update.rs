@@ -6,7 +6,7 @@ use ureq;
 
 use crate::util::logging::{LogLevel, print_log};
 
-pub fn run(verbose: bool) -> Result<()> {
+pub async fn run(verbose: bool) -> Result<()> {
     let current_version = env!("CARGO_PKG_VERSION");
 
     if verbose {
@@ -22,14 +22,16 @@ pub fn run(verbose: bool) -> Result<()> {
     // fetch remote Cargo.toml
     // URL: https://github.com/hitblast/cutler
     let url = "https://raw.githubusercontent.com/hitblast/cutler/main/Cargo.toml";
-    let response = ureq::get(url)
-        .call()
-        .map_err(|e| anyhow!("Failed to fetch remote Cargo.toml: {}", e))?;
-
-    let body = response
-        .into_body()
-        .read_to_string()
-        .context("Failed to read response body")?;
+    let body = tokio::task::spawn_blocking(move || {
+        let response = ureq::get(url)
+            .call()
+            .map_err(|e| anyhow!("Failed to fetch remote Cargo.toml: {}", e))?;
+        response
+            .into_body()
+            .read_to_string()
+            .context("Failed to read response body")
+    })
+    .await??;
 
     // parse it as TOML and extract `package.version`
     let toml_val: Value = body.parse().context("Failed to parse remote Cargo.toml")?;

@@ -1,9 +1,10 @@
 use crate::snapshot::state::ExternalCommandState;
 use crate::util::logging::{LogLevel, print_log};
 use anyhow::{Error, Result, anyhow};
-use rayon::prelude::*;
 use std::env;
-use std::process::{Command, Stdio};
+use std::process::Stdio;
+use tokio::process::Command;
+use tokio::task;
 use toml::Value;
 
 // Pull all commands into state objects.
@@ -109,42 +110,37 @@ fn substitute(text: &str, vars: Option<&toml::value::Table>) -> String {
 }
 
 /// Run all extracted external commands via `sh -c` (or `sudo sh -c`) in parallel.
-pub fn run_all(config: &Value, verbose: bool, dry_run: bool) -> Result<()> {
+pub async fn run_all(config: &Value, verbose: bool, dry_run: bool) -> Result<()> {
     let vars: Option<toml::value::Table> = config.get("vars").and_then(Value::as_table).cloned();
     let cmds = extract(config);
 
-    // run every command in parallel
-    let results: Vec<Result<(), Error>> = cmds
-        .into_par_iter()
-        .map(|state| {
-            // cmd str
+    // run every command concurrently
+    let mut handles = Vec::new();
+    for state in cmds {
+        let vars = vars.clone();
+        handles.push(task::spawn(async move {
             let final_cmd = substitute(&state.run, vars.as_ref());
-
-            // choose runner command
             let (bin, args) = if state.sudo {
                 ("sudo", vec!["sh", "-c", &final_cmd])
             } else {
                 ("sh", vec!["-c", &final_cmd])
             };
-
             if dry_run {
                 print_log(
                     LogLevel::Info,
                     &format!("Dry-run: would exec {} {}", bin, final_cmd),
                 );
-                return Ok(());
+                return Ok::<(), Error>(());
             }
-
             if verbose {
                 print_log(LogLevel::Info, &format!("Exec {} {}", bin, final_cmd));
             }
-
-            let out = Command::new(bin)
+            let child = Command::new(bin)
                 .args(&args)
                 .stdout(Stdio::piped())
                 .stderr(Stdio::piped())
-                .output()?;
-
+                .spawn()?;
+            let out = child.wait_with_output().await?;
             if !out.status.success() {
                 print_log(
                     LogLevel::Error,
@@ -154,21 +150,25 @@ pub fn run_all(config: &Value, verbose: bool, dry_run: bool) -> Result<()> {
                         String::from_utf8_lossy(&out.stderr)
                     ),
                 );
-                Err(Error::msg("cmd failed"))
-            } else {
-                if verbose && !out.stdout.is_empty() {
-                    print_log(
-                        LogLevel::CommandOutput,
-                        &format!("Out: {}", String::from_utf8_lossy(&out.stdout)),
-                    );
-                }
-                Ok(())
+                return Err(Error::msg("cmd failed"));
             }
-        })
-        .collect();
+            if verbose && !out.stdout.is_empty() {
+                print_log(
+                    LogLevel::CommandOutput,
+                    &format!("Out: {}", String::from_utf8_lossy(&out.stdout)),
+                );
+            }
+            Ok::<(), Error>(())
+        }));
+    }
+    let mut failures = 0;
+    for handle in handles {
+        if handle.await.unwrap().is_err() {
+            failures += 1;
+        }
+    }
 
-    // inspect all results here
-    let failures = results.into_iter().filter(|r| r.is_err()).count();
+    // inspect failures count
     if failures > 0 {
         print_log(
             LogLevel::Warning,
@@ -180,7 +180,7 @@ pub fn run_all(config: &Value, verbose: bool, dry_run: bool) -> Result<()> {
 }
 
 /// Run exactly one command entry, given its name.
-pub fn run_one(config: &Value, which: &str, verbose: bool, dry_run: bool) -> Result<()> {
+pub async fn run_one(config: &Value, which: &str, verbose: bool, dry_run: bool) -> Result<()> {
     let vars = config.get("vars").and_then(Value::as_table).cloned();
 
     let cmd_table = config
@@ -220,11 +220,12 @@ pub fn run_one(config: &Value, which: &str, verbose: bool, dry_run: bool) -> Res
         print_log(LogLevel::Info, &format!("Exec {} {}", bin, final_cmd));
     }
 
-    let output = Command::new(bin)
+    let child = Command::new(bin)
         .args(&args)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
-        .output()?;
+        .spawn()?;
+    let output = child.wait_with_output().await?;
     if !output.status.success() {
         print_log(
             LogLevel::Error,

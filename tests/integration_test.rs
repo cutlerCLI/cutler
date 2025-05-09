@@ -10,8 +10,8 @@ mod tests {
     // currently doing that would completely blow up my Mac's configuration.
     // Need a more feasible approach.
 
-    #[test]
-    fn test_config_to_domains_workflow() {
+    #[tokio::test]
+    async fn test_config_to_domains_workflow() {
         // Create a temporary config file
         let temp_dir = TempDir::new().unwrap();
         let config_file = temp_dir.path().join("config.toml");
@@ -33,7 +33,7 @@ mod tests {
         file.write_all(config_content.as_bytes()).unwrap();
 
         // Load the config
-        let config = load_config(&config_file).unwrap();
+        let config = load_config(&config_file).await.unwrap();
 
         // Collect domains
         let domains = collect(&config).unwrap();
@@ -47,13 +47,13 @@ mod tests {
         // Check specific settings
         let dock = domains.get("dock").unwrap();
         assert_eq!(dock.get("tilesize").unwrap().as_integer().unwrap(), 50);
-        assert_eq!(dock.get("autohide").unwrap().as_bool().unwrap(), true);
+        assert!(dock.get("autohide").unwrap().as_bool().unwrap());
 
         let finder = domains.get("finder").unwrap();
-        assert_eq!(finder.get("ShowPathbar").unwrap().as_bool().unwrap(), true);
+        assert!(finder.get("ShowPathbar").unwrap().as_bool().unwrap());
 
         let keyboard = domains.get("NSGlobalDomain.com.apple.keyboard").unwrap();
-        assert_eq!(keyboard.get("fnState").unwrap().as_bool().unwrap(), false);
+        assert!(!keyboard.get("fnState").unwrap().as_bool().unwrap());
     }
 
     #[test]

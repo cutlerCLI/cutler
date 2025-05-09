@@ -23,6 +23,7 @@ Powerful, declarative settings management for your Mac, with speed.
 - [Shell Completions](#shell-completions)
 - [Resources](#resources)
 - [Contributing](#contributing)
+- [Acknowledgements](#acknowledgements)
 - [License](#license)
 
 ## Overview
@@ -39,6 +40,7 @@ Check out the [Usage](#usage) section for more details.
 - Run external commands at will with ease.
 - Revert back modifications easily with the snapshot mechanism.
 - Made using [Rust](https://rust-lang.org/) for thread-safety and speed.
+- Tiny binary. **<= 3000 lines of pure code.**
 
 ## Installation
 
@@ -85,7 +87,7 @@ it can also have other values depending on your setup:
 - `config.toml` in the current directory (fallback)
 
 It respects your `$XDG_CONFIG_HOME` setting, so you don't have to worry about
-path issues. 
+path issues.
 
 ### Basic Defaults Manipulation
 
@@ -284,6 +286,10 @@ straightforward. Contributions are always welcome! Feel free to help out by
 [creating a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) or [submitting an issue](https://github.com/hitblast/cutler/issues).
 
 If you, as a developer, would like to dive into the nitty-gritty of contributing to cutler, view the [CONTRIBUTING.md](./CONTRIBUTING.md). I'm still writing it as the project progresses.
+
+## Acknowledgements
+
+- ^w^ Heartfelt thanks to [@furtidev](https://github.com/furtidev) for helping me learn more about the optimization process of cutler.
 
 ## License
 
