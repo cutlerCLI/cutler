@@ -24,6 +24,7 @@ jobs:
         with:
           profile: minimal
           toolchain: stable
+          cache: true
           override: true
           components: clippy, rustfmt
 
@@ -40,6 +41,7 @@ jobs:
         with:
           profile: minimal
           toolchain: stable
+          cache: true
           override: true
           components: clippy, rustfmt
 
@@ -56,6 +58,7 @@ jobs:
         with:
           profile: minimal
           toolchain: stable
+          cache: true
           override: true
           components: clippy, rustfmt
 
