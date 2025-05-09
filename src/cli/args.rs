@@ -18,6 +18,10 @@ pub struct Args {
     #[arg(long, global = true)]
     pub dry_run: bool,
 
+    /// Accepts all interactive prompts.
+    #[arg(short = 'y', long, global = true)]
+    pub accept_all: bool,
+
     #[command(subcommand)]
     pub command: Command,
 }
@@ -33,7 +37,7 @@ pub enum Command {
     /// Homebrew backup-and-restore related commands.
     Brew {
         #[command(subcommand)]
-        command: BrewCmd,
+        command: BrewSub,
     },
     /// Run only the external commands written in the config file.
     Exec {
@@ -94,7 +98,7 @@ pub enum Shell {
 }
 
 #[derive(Subcommand)]
-pub enum BrewCmd {
+pub enum BrewSub {
     /// Install Homebrew if not present, then install all formulae and casks from config.
     Install,
     /// Backup current formulae and casks into config file.

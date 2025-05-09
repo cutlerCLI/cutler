@@ -3,8 +3,23 @@ use std::process::Command;
 
 use crate::util::logging::{LogLevel, print_log};
 
-/// Ask “Y/N?”; returns true only if the user types “y” or “Y”
+/// Global flag to automatically accept all prompts
+static mut ACCEPT_ALL: bool = false;
+
+/// Set the global accept_all flag
+pub fn set_accept_all(value: bool) {
+    unsafe { ACCEPT_ALL = value }
+}
+
+/// Ask "Y/N?"; returns true if accept_all is set or the user types "y" or "Y"
 pub fn confirm_action(prompt: &str) -> io::Result<bool> {
+    unsafe {
+        if ACCEPT_ALL {
+            println!("{} [y/N]: y (auto-accepted)", prompt);
+            return Ok(true);
+        }
+    }
+
     print!("{} [y/N]: ", prompt);
     io::stdout().flush()?;
     let mut buf = String::new();

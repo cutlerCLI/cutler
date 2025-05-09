@@ -1,5 +1,6 @@
 pub mod apply;
-pub mod brew;
+pub mod brew_backup;
+pub mod brew_install;
 pub mod config_delete;
 pub mod config_show;
 pub mod exec;
@@ -9,11 +10,21 @@ pub mod status;
 pub mod unapply;
 pub mod update;
 
-use crate::cli::Command;
+use crate::cli::{BrewSub, Command, ConfigSub};
+use crate::util::io::set_accept_all;
 use anyhow::Result;
 
-/// Entrypoint: dispatch to each sub‐module’s `run(...)`
-pub fn dispatch(command: &Command, verbose: bool, dry_run: bool, no_restart: bool) -> Result<()> {
+/// Entrypoint: dispatch to each sub‐module's `run(...)`
+pub fn dispatch(
+    command: &Command,
+    verbose: bool,
+    dry_run: bool,
+    no_restart: bool,
+    accept_all: bool,
+) -> Result<()> {
+    // grant all confirm_action() prompts if needed
+    set_accept_all(accept_all);
+
     let result = match command {
         Command::Apply { no_exec } => apply::run(*no_exec, verbose, dry_run),
         Command::Exec { name } => exec::run(name.clone(), verbose, dry_run),
@@ -22,11 +33,14 @@ pub fn dispatch(command: &Command, verbose: bool, dry_run: bool, no_restart: boo
         Command::Reset { force } => reset::run(verbose, dry_run, *force),
         Command::Status { prompt } => status::run(*prompt, verbose),
         Command::Config { command } => match command {
-            crate::cli::ConfigSub::Show => config_show::run(verbose, dry_run),
-            crate::cli::ConfigSub::Delete => config_delete::run(verbose, dry_run),
+            ConfigSub::Show => config_show::run(verbose, dry_run),
+            ConfigSub::Delete => config_delete::run(verbose, dry_run),
         },
         Command::Completion { shell } => crate::cli::completion::generate_completion(*shell),
-        Command::Brew { command } => brew::run(command, verbose, dry_run),
+        Command::Brew { command } => match command {
+            BrewSub::Backup => brew_backup::run(verbose, dry_run),
+            BrewSub::Install => brew_install::run(verbose, dry_run),
+        },
         Command::CheckUpdate => update::run(verbose),
     };
 

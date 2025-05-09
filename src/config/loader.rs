@@ -1,4 +1,7 @@
-use std::{env, fs, path::PathBuf};
+use std::{
+    env, fs,
+    path::{Path, PathBuf},
+};
 
 use toml::Value;
 
@@ -39,7 +42,7 @@ pub fn get_config_path() -> PathBuf {
 }
 
 /// Helper: Read and parse the configuration file at a given path.
-pub fn load_config(path: &PathBuf) -> Result<Value, anyhow::Error> {
+pub fn load_config(path: &Path) -> Result<Value, anyhow::Error> {
     let content = fs::read_to_string(path)?;
     let parsed: Value = content.parse::<Value>()?;
     Ok(parsed)

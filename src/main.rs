@@ -10,6 +10,7 @@ fn main() {
         args.verbose,
         args.dry_run,
         args.no_restart_services,
+        args.accept_all,
     ) {
         eprintln!("❌ error: {}", err);
         std::process::exit(1);

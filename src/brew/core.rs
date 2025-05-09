@@ -3,7 +3,7 @@ use crate::util::logging::{LogLevel, print_log};
 use anyhow::{Context, Result};
 use rayon::ThreadPoolBuilder;
 use rayon::prelude::*;
-use std::{env, path::PathBuf};
+use std::{env, path::Path};
 use std::{fs, process::Command};
 use toml_edit::{Array, DocumentMut, Item, Table, Value};
 
@@ -49,7 +49,7 @@ fn brew_list(args: &[&str]) -> Result<Vec<String>> {
 }
 
 /// Backs up the list of the currently installed Homebrew formulae / casks into the user's config file.
-pub fn backup(cfg_path: &std::path::Path, verbose: bool, dry_run: bool) -> Result<()> {
+pub fn backup(cfg_path: &Path, verbose: bool, dry_run: bool) -> Result<()> {
     let formulas = brew_list(&["list", "--formula"])?;
     let casks = brew_list(&["list", "--cask"])?;
     if dry_run {
@@ -117,8 +117,8 @@ pub fn backup(cfg_path: &std::path::Path, verbose: bool, dry_run: bool) -> Resul
 }
 
 /// Receives a PathBuf to the user's current configuration and reads it to install Homebrew formulae / casks.
-pub fn install_from_config(cfg_path: PathBuf, verbose: bool, dry_run: bool) -> Result<()> {
-    let config = load_config(&cfg_path)?;
+pub fn install_from_config(cfg_path: &Path, verbose: bool, dry_run: bool) -> Result<()> {
+    let config = load_config(cfg_path)?;
     let brew_cfg = config
         .get("brew")
         .and_then(|i| i.as_table())
