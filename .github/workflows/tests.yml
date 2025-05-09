@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   clippy:
-    name: Run clippy
+    name: Test Suite
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
