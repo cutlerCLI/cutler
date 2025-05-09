@@ -30,6 +30,11 @@ pub enum Command {
         #[arg(long)]
         no_exec: bool,
     },
+    /// Homebrew backup-and-restore related commands.
+    Brew {
+        #[command(subcommand)]
+        command: BrewCmd,
+    },
     /// Run only the external commands written in the config file.
     Exec {
         /// Provide a command name to execute if you only want to run it specifically.
@@ -86,4 +91,12 @@ pub enum Shell {
     Fish,
     Elvish,
     PowerShell,
+}
+
+#[derive(Subcommand)]
+pub enum BrewCmd {
+    /// Install Homebrew if not present, then install all formulae and casks from config.
+    Install,
+    /// Backup current formulae and casks into config file.
+    Backup,
 }

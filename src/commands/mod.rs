@@ -7,6 +7,7 @@ pub mod reset;
 pub mod status;
 pub mod unapply;
 pub mod update;
+pub mod brew;
 
 use crate::cli::Command;
 use anyhow::Result;
@@ -25,6 +26,7 @@ pub fn dispatch(command: &Command, verbose: bool, dry_run: bool, no_restart: boo
             crate::cli::ConfigSub::Delete => config_delete::run(verbose, dry_run),
         },
         Command::Completion { shell } => crate::cli::completion::generate_completion(*shell),
+        Command::Brew { command } => brew::run(command, verbose, dry_run),
         Command::CheckUpdate => update::run(verbose),
     };
 

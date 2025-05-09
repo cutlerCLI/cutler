@@ -23,6 +23,7 @@ semver = "1.0.26"
 anyhow = "1.0.98"
 rayon = "1.10.0"
 anstyle = "1.0.10"
+toml_edit = "0.22"
 
 [dev-dependencies]
 tempfile = "3.19.1"
