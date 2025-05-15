@@ -169,6 +169,14 @@ cutler brew install
 
 This will install every formula/cask which is uninstalled.
 
+The structure of the `brew` table inside cutler's configuration is like such:
+
+```toml
+[brew]
+casks = [...]
+formulae = [...]
+```
+
 While running this command, cutler will also notify you about any extra software which is untracked by it. Then, you can run `cutler brew backup` again to sync.
 
 ### Going manual with external commands
