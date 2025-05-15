@@ -45,6 +45,62 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
     let installed_formulas = brew_list(&["list", "--formula"])?;
     let installed_casks = brew_list(&["list", "--cask"])?;
 
+    // warn about extra installed formulae not in config
+    let config_formulae = brew_cfg
+        .get("formulae")
+        .and_then(|v| v.as_array())
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|x| x.as_str())
+                .map(|s| s.to_string())
+                .collect::<Vec<String>>()
+        })
+        .unwrap_or_default();
+
+    let extra_formulae: Vec<_> = installed_formulas
+        .iter()
+        .filter(|f| !config_formulae.contains(f))
+        .collect();
+
+    if !extra_formulae.is_empty() {
+        print_log(
+            LogLevel::Warning,
+            &format!(
+                "Extra installed formulae not in config: {:?}",
+                extra_formulae
+            ),
+        );
+    }
+
+    // warn about extra installed casks not in config
+    let config_casks = brew_cfg
+        .get("casks")
+        .and_then(|v| v.as_array())
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|x| x.as_str())
+                .map(|s| s.to_string())
+                .collect::<Vec<String>>()
+        })
+        .unwrap_or_default();
+
+    let extra_casks: Vec<_> = installed_casks
+        .iter()
+        .filter(|c| !config_casks.contains(c))
+        .collect();
+    
+    if !extra_casks.is_empty() {
+        print_log(
+            LogLevel::Warning,
+            &format!("Extra installed casks not in config: {:?}", extra_casks),
+        );
+    }
+
+    // extra message
+    if !extra_formulae.is_empty() || !extra_casks.is_empty() {
+        println!("\nRun `cutler brew backup` to synchronize your config with the system");
+    }
+
     // collect all install tasks, skipping already installed
     let mut install_tasks: Vec<Vec<String>> = Vec::new();
     if let Some(arr) = brew_cfg.get("formulae").and_then(|v| v.as_array()) {
