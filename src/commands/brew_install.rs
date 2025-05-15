@@ -88,7 +88,7 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
         .iter()
         .filter(|c| !config_casks.contains(c))
         .collect();
-    
+
     if !extra_casks.is_empty() {
         print_log(
             LogLevel::Warning,
