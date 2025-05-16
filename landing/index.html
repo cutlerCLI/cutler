@@ -233,7 +233,7 @@
             <img src="assets/logo.png" alt="cutler Logo" class="logo" />
         </div>
 
-        <h1>cutler<sup>v0.5.6</sup></h1>
+        <h1>cutler<sup>v0.6.0 (Beta)</sup></h1>
         <p class="tagline">
             <strong
                 >Powerful, declarative settings management for your Mac, with
@@ -259,22 +259,18 @@
 
         <div>
             <p>
-                cutler simplifies macOS configuration by letting you manage
-                system settings through a single TOML file instead of clicking
-                through System Settings or typing complex <code>defaults</code>
-                commands in the terminal.
+                cutler aims to simplify your macOS setup experience into an
+                "almost" one-command procedure. Define your settings once, then
+                easily apply, track, and revert changes across your system—think
+                of it as infrastructure-as-code for your Mac.
             </p>
+            <p></p>
             <p>
-                Define your settings once, then easily apply, track, and revert
-                changes across your system—think of it as infrastructure-as-code
-                for your Mac.
-            </p>
-        </div>
-
-        <div class="warning">
-            <p>
-                <strong>⚠️ WARNING: </strong>Although cutler is solid enough for
-                daily-driving, expect breaking changes before the v1 release.
+                This website is just an overview of what cutler can do. In order
+                to get a comprehensive guide on what cutler can do, please read
+                <a href="https://github.com/hitblast/cutler/blob/main/README.md"
+                    >the official README</a
+                >.
             </p>
         </div>
 
@@ -303,25 +299,21 @@ mise use -g cargo:cutler</code></pre>
         <hr />
 
         <p>
-            Create a <code>config.toml</code> file within one of the locations
-            listed below and write your preferred settings following the
-            defaults syntax. Check out the
+            In order to setup a comprehensive example on your Mac automatically,
+            use this command:
+        </p>
+        <pre><code class="language-bash">cutler init</code></pre>
+        <p>
+            Or, create a <code>config.toml</code> file within one of the
+            locations listed below and write your preferred settings following
+            the defaults syntax. Check out the
             <a href="https://github.com/hitblast/cutler/tree/main/examples"
                 >example configuration files</a
             >
             to get started quickly!
         </p>
-        <p>
-            In order to setup a comprehensive example on your Mac automatically,
-            use this command:
-        </p>
-        <pre><code class="language-bash">cutler init</code></pre>
 
         <div class="note">
-            <p>
-                <strong>Config file location:</strong> cutler looks for your
-                configuration in these locations (in order):
-            </p>
             <ul>
                 <li><code>$XDG_CONFIG_HOME/cutler/config.toml</code></li>
                 <li><code>~/.config/cutler/config.toml</code></li>
@@ -330,13 +322,22 @@ mise use -g cargo:cutler</code></pre>
             </ul>
         </div>
 
-        <h2>Usage</h2>
+        <h2>Shell Completions</h2>
         <hr />
 
-        <p>
-            cutler makes it super simple to apply, check, and revert your
-            settings:
-        </p>
+        <p>Generate and install shell completion scripts for your shell:</p>
+        <pre><code class="language-bash"># Bash
+cutler completion bash > cutler.bash
+mv cutler.bash ~/.bash-completion.d/
+
+# Zsh
+cutler completion zsh > _cutler
+mv _cutler ~/.zfunc/
+
+# Other shells like powershell, elvish and fish are also available.</code></pre>
+
+        <h2>Commands Reference</h2>
+        <hr />
 
         <div class="feature">
             <h3>Apply your settings</h3>
@@ -400,12 +401,27 @@ cutler config delete</code></pre>
             </p>
         </div>
 
-        <h2>Custom Commands</h2>
+        <h2>Automate Homebrew</h2>
+        <hr />
+
+        <p>
+            cutler eliminates manually installing packages by hand and using
+            bundle files for storing their identifiers using just these two
+            commands:
+        </p>
+        <pre><code class="language-bash"># Backup installed casks and formulae
+# This will update the config file you previously prepared
+cutler brew backup
+
+# Now, to install from it:
+cutler brew install</code></pre>
+
+        <h2>External Commands</h2>
         <hr />
 
         <p>
             When you apply your defaults using cutler, you can also define
-            custom commands to be executed:
+            custom external commands to be executed in a post-hook fashion:
         </p>
 
         <pre><code class="language-bash"># A basic hello
@@ -446,7 +462,7 @@ cutler exec greet</code></pre>
             written notes of mine to share some open thoughts.<br /><br />
             Anyways, cutler is one of my favorite concurrent hobby projects
             right now. If you'd like to support me, consider starring this
-            project!
+            project! :3
         </p>
 
         <div style="text-align: center; margin: 3rem 0">

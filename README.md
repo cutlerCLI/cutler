@@ -28,19 +28,20 @@ Powerful, declarative settings management for your Mac, with speed.
 
 ## Overview
 
-cutler simplifies macOS configuration by letting you manage system settings through a single TOML file instead of clicking through System Settings or typing complex defaults commands in the terminal.
+cutler aims to simplify your macOS setup experience into an "almost" one-command procedure. Define your settings once, then easily apply, track, and revert changes across your system—think of it as infrastructure-as-code for your Mac.
 
-Define your settings once, then easily apply, track, and revert changes across your system—think of it as infrastructure-as-code for your Mac.
+> [!IMPORTANT]
+> This project is still under development. So, if you like it, consider starring! It's free, and it always supports the growth of such programming initiatives :3
 
 Check out the [Usage](#usage) section for more details.
 
 ## Key Features
 
-- Manage the system `defaults` entries using just one TOML file.
-- Run external commands at will with ease.
+- Manage the system preferences of your Mac with just a single TOML file (wraps `defaults`).
+- (WIP) Track installed packages with Homebrew without the slow bundle files.
+- Run external commands, both as hooks, or at your will.
 - Revert back modifications easily with the snapshot mechanism.
 - Made using [Rust](https://rust-lang.org/) for thread-safety and speed.
-- Tiny binary. **<= 3000 lines of pure code.**
 
 ## Installation
 
@@ -65,8 +66,7 @@ cargo install cutler
 mise use -g cargo:cutler
 ```
 
-You can also get the latest [prebuilt compressed binaries](https://github.com/hitblast/cutler/releases) if you would like to
-manually install the project.
+You can also get the latest [prebuilt compressed binaries](https://github.com/hitblast/cutler/releases) if you would like to manually install the project.
 
 Once installed, you can install the necessary [shell completions](#shell-completions) for your shell instance if needed.
 
@@ -78,8 +78,8 @@ To easily get started, simply type the following command to generate a prebuilt 
 cutler init
 ```
 
-By default, cutler stores your configuration in `~/.config/cutler/config.toml`. But,
-it can also have other values depending on your setup:
+By default, cutler stores your configuration in `~/.config/cutler/config.toml`.
+But, it can also have other values depending on your setup:
 
 - `$XDG_CONFIG_HOME/cutler/config.toml`
 - `~/.config/cutler/config.toml`
@@ -89,7 +89,7 @@ it can also have other values depending on your setup:
 It respects your `$XDG_CONFIG_HOME` setting, so you don't have to worry about
 path issues.
 
-### Basic Defaults Manipulation
+### Getting started with automating `defaults`
 
 Here’s a basic example of a TOML configuration for cutler:
 
@@ -101,9 +101,12 @@ tilesize = 46
 FlashDateSeparators = true
 ```
 
-For more details on the different `defaults` domains and available values on
-macOS, take a look at the [Resources](#resources) section. The TOML above
-translates into these commands:
+Now, if you do not know about `defaults`, it is a command-line tool that allows you to modify system settings on macOS. It is used to set preferences and configurations for various system components.
+
+cutler basically wraps around this CLI as a part of one of its core functionalities, and by doing so, you do not have
+to tediously write the commands by hand and then run them individually, or even use a shell script.
+
+The chunk above roughly translates to the following:
 
 ```bash
 defaults write com.apple.dock "tilesize" -int "46"
@@ -120,22 +123,21 @@ ApplePressAndHoldEnabled = true
 linear = true
 ```
 
-`cutler` converts the above TOML into:
+Which would be executed as:
 
 ```bash
 defaults write NSGlobalDomain "ApplePressAndHoldEnabled" -bool true
 defaults write NSGlobalDomain com.apple.mouse.linear -bool true
 ```
 
-### Applying Modifications
-
-Once you've set your preferred configurations in place, just type this one simple command:
+Once you've set your preferred configurations in place, just type this one, simple command:
 
 ```bash
 cutler apply
 ```
 
--and cutler will automatically apply and track all of it.
+In a moment, you'll see a few different system services restart as you apply the modifications you just
+wrote. This is cutler's way of applying and tracking everything from the config file, onto your system.
 
 To see what changes are being tracked, run:
 
@@ -143,16 +145,46 @@ To see what changes are being tracked, run:
 cutler status
 ```
 
-To unapply every change cutler performed with `cutler apply`, run this:
+Unapplying everything is also as easy. Simply go ahead and run:
 
 ```bash
 cutler unapply
 ```
 
-### Running External Commands
+### Automating Homebrew (WIP)
 
-cutler also supports running external shell commands the moment it applies the defaults.
-You can define commands with simple syntax like this:
+If you're a person who struggles to keep tabs on all the installed formulae or apps using [Homebrew](https://brew.sh), then cutler could be a great choice for you! Make sure your Homebrew installation is accessible from the `$PATH` variable, and then you can back up the necessary formula/cask names into the config file you previously wrote, using this command:
+
+```bash
+cutler brew backup
+```
+
+This eliminates the usage of the notorious `brew bundle` command which creates a separate `Bundlefile` for you to track. Why do so much when all you need is just one, central file?
+
+Now, when you want to install from the file, simply run:
+
+```bash
+cutler brew install
+```
+
+This will install every formula/cask which is uninstalled.
+
+The structure of the `brew` table inside cutler's configuration is like such:
+
+```toml
+[brew]
+casks = ["zed", "zulu@21", "android-studio"]
+formulae = ["rust", "python3"]
+```
+
+While running this command, cutler will also notify you about any extra software which is untracked by it. Then, you can run `cutler brew backup` again to sync.
+
+### Going manual with external commands
+
+cutler also supports running external shell commands the moment it applies the defaults. This is kind of like
+pre-commit git hooks where a command runs *before* you commit anything to your project.
+
+You can define external commands with simple syntax like this:
 
 ```toml
 [commands.greet]
@@ -189,7 +221,7 @@ You can also run a specific external command by attaching a name parameter:
 cutler exec hostname  # this runs the hostname command
 ```
 
-### Config Management
+### Wanna see the configuration?
 
 Sometimes it might be handy to have a look at your current config file without having to open it. In such an event, run:
 
@@ -204,6 +236,9 @@ cutler config delete
 ```
 
 ## Shell Completions
+
+cutler supports built-in shell completion for your ease of access for a variety of system shells, including
+`bash`, `zsh`, `powershell` etc. Below you will find instructions for each of them.
 
 > [!IMPORTANT]
 > If you have installed cutler using Homebrew, the shell completion will automatically be
@@ -274,16 +309,16 @@ cutler completion powershell
 ## Resources
 
 Finding the ideal set of macOS defaults can be challenging. Visit this website to have a look at
-some useful ones fast: [macOS defaults website](https://macos-defaults.com/)
+some useful ones fast:
+
+1. [macOS defaults website](https://macos-defaults.com/)
 
 Sample configuration files are preincluded with this repository for you to have a look
 at and get hold of the tool quickly: [see examples](./examples)
 
 ## Contributing
 
-This is a personal project aimed at making the task of setting up a Mac more
-straightforward. Contributions are always welcome! Feel free to help out by
-[creating a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) or [submitting an issue](https://github.com/hitblast/cutler/issues).
+This is a hobby project of mine which has slowly started to scale up to a full-time side project. You can always help out with new ideas or features by [creating a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) or [submitting an issue](https://github.com/hitblast/cutler/issues)!
 
 If you, as a developer, would like to dive into the nitty-gritty of contributing to cutler, view the [CONTRIBUTING.md](./CONTRIBUTING.md). I'm still writing it as the project progresses.
 
