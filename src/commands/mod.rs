@@ -38,7 +38,9 @@ pub async fn dispatch(
         },
         Command::Completion { shell } => crate::cli::completion::generate_completion(*shell).await,
         Command::Brew { command } => match command {
-            BrewSub::Backup => brew_backup::run(verbose, dry_run).await,
+            BrewSub::Backup { no_backup_deps } => {
+                brew_backup::run(*no_backup_deps, verbose, dry_run).await
+            }
             BrewSub::Install => brew_install::run(verbose, dry_run).await,
         },
         Command::CheckUpdate => update::run(verbose).await,

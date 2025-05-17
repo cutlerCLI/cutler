@@ -1,6 +1,7 @@
 use crate::util::io::confirm_action;
 use crate::util::logging::{LogLevel, print_log};
 use anyhow::Result;
+use std::env;
 use std::process::Command;
 
 /// Checks if Homebrew is installed on the machine (should be recognizable by $PATH).
@@ -57,4 +58,33 @@ pub fn brew_list(args: &[&str]) -> Result<Vec<String>> {
         .map(|l| l.trim().to_string())
         .filter(|l| !l.is_empty())
         .collect())
+}
+
+/// Checks if a formula is a dependency of other formulae.
+pub fn is_dependency(formula: &str) -> bool {
+    let output = Command::new("brew")
+        .args(["uses", "--installed", formula])
+        .output()
+        .unwrap();
+
+    !output.stdout.is_empty()
+}
+
+/// Disables Homebrew auto-update globally for the process, returning previous value.
+/// Call this before brew commands.
+pub fn disable_auto_update() -> Option<String> {
+    let prev = env::var("HOMEBREW_NO_AUTO_UPDATE").ok();
+    unsafe { env::set_var("HOMEBREW_NO_AUTO_UPDATE", "1") };
+    prev
+}
+
+/// Restores Homebrew auto-update to the given previous value.
+/// Call this after brew commands.
+pub fn restore_auto_update(prev: Option<String>) {
+    unsafe {
+        match prev {
+            Some(v) => env::set_var("HOMEBREW_NO_AUTO_UPDATE", v),
+            None => env::remove_var("HOMEBREW_NO_AUTO_UPDATE"),
+        }
+    }
 }

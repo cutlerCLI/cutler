@@ -1,8 +1,7 @@
-use std::env;
 use tokio::process::Command;
 
 use crate::{
-    brew::utils::{brew_list, ensure_brew},
+    brew::utils::{brew_list, disable_auto_update, ensure_brew, restore_auto_update},
     config::{get_config_path, load_config},
     util::logging::{LogLevel, print_log},
 };
@@ -19,6 +18,9 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
         return Ok(());
     }
 
+    // disable Homebrew auto-update
+    let prev = disable_auto_update();
+
     // ensure homebrew installation
     ensure_brew(dry_run)?;
 
@@ -27,19 +29,6 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
         .get("brew")
         .and_then(|i| i.as_table())
         .context("No [brew] table found in config")?;
-
-    // disables automatic upgrades since cutler shouldn't be used for that
-    // brew upgrade --greedy exists
-    const ENV_VAR: &str = "HOMEBREW_NO_INSTALL_UPGRADE";
-
-    let old_value = env::var(ENV_VAR).ok();
-    unsafe {
-        env::set_var(ENV_VAR, "1");
-
-        if verbose {
-            print_log(LogLevel::Info, &format!("Setting {} to 1", ENV_VAR));
-        }
-    }
 
     // fetch currently installed items to skip those
     let installed_formulas = brew_list(&["list", "--formula"])?;
@@ -174,21 +163,6 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
         }
     }
 
-    // restore or unset the environment variable
-    if let Some(prev) = old_value {
-        unsafe { env::set_var(ENV_VAR, prev.clone()) }
-        if verbose {
-            print_log(
-                LogLevel::Info,
-                &format!("Restored {} to previous value: {}", ENV_VAR, prev),
-            );
-        }
-    } else {
-        unsafe { env::remove_var(ENV_VAR) };
-        if verbose {
-            print_log(LogLevel::Info, &format!("Unset {}", ENV_VAR));
-        }
-    }
-
+    restore_auto_update(prev);
     Ok(())
 }

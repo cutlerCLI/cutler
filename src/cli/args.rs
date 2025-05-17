@@ -102,5 +102,9 @@ pub enum BrewSub {
     /// Install Homebrew if not present, then install all formulae and casks from config.
     Install,
     /// Backup current formulae and casks into config file.
-    Backup,
+    Backup {
+        /// Only backup the formulae/casks which are not a dependency of another formulae. This could help marginally clean up the config file.
+        #[arg(long)]
+        no_backup_deps: bool,
+    },
 }
