@@ -11,7 +11,7 @@ use crate::{
     util::logging::{LogLevel, print_log},
 };
 
-pub async fn run(no_backup_deps: bool, verbose: bool, dry_run: bool) -> Result<()> {
+pub async fn run(no_deps: bool, verbose: bool, dry_run: bool) -> Result<()> {
     let cfg_path = &get_config_path();
 
     // disable auto-update
@@ -48,7 +48,7 @@ pub async fn run(no_backup_deps: bool, verbose: bool, dry_run: bool) -> Result<(
     // build TOML arrays for formulae and casks
     let mut formula_arr = Array::new();
     for formula in &formulas {
-        if no_backup_deps {
+        if no_deps {
             if !is_dependency(formula) {
                 if verbose {
                     print_log(

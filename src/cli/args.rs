@@ -105,6 +105,6 @@ pub enum BrewSub {
     Backup {
         /// Only backup the formulae/casks which are not a dependency of another formulae. This could help marginally clean up the config file.
         #[arg(long)]
-        no_backup_deps: bool,
+        no_deps: bool,
     },
 }
