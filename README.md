@@ -159,7 +159,7 @@ If you're a person who struggles to keep tabs on all the installed formulae or a
 cutler brew backup
 
 # or, only backup the ones which are not a dependency:
-cutler brew backup --no-backup-deps
+cutler brew backup --no-deps
 ```
 
 This eliminates the usage of the notorious `brew bundle` command which creates a separate `Bundlefile` for you to track. Why do so much when all you need is just one, central file?
