@@ -19,7 +19,6 @@ The commonplace of contributing is to first clone the repository and install the
 The prerequisites are as follows:
 
 - [Rust](https://www.rust-lang.org/tools/install) (`cutler` is configured to use the 2024 edition of the language)
-- or, [mise (recommended)](https://mise.jdx.dev) for automatic tools management
 - A Mac (preferably with [Apple Silicon](https://support.apple.com/en-us/HT211814)) for rapid development
 
 ### Cloning the repository
@@ -43,12 +42,6 @@ Working on this project will require a few Rust components beforehand:
 - [clippy](https://github.com/rust-lang/rust-clippy)
 - [rustfmt](https://github.com/rust-lang/rustfmt)
 
-If you're using mise, prepare the environment by running:
-
-```bash
-mise install
-```
-
 ## Production Release Workflow
 
 This chain of commands can be used to fully test and build the final product.
@@ -57,9 +50,6 @@ This chain of commands can be used to fully test and build the final product.
 
 ```bash
 cargo fmt --all -- --check && cargo test --verbose && cargo clippy && cargo build
-
-# or, you can use the predefined testsuite:
-mise run testsuite
 ```
 
 #### Build Reproduction
@@ -70,24 +60,9 @@ You can easily create a release build for cutler using the following command:
 cargo build --release --verbose --locked
 ```
 
-However, as a part of automating the entire build process for the project, I've also written some
-"tasks" which can be executed using `mise`:
+The major part of the release automation is currently done with [GitHub Actions]() via the [following workflow](./.github/workflows/release.yml) so, you can have a look at it to view the entire pipeline.
 
-```bash
-mise run release
-```
-
-This will produce a complete & compressed build zip for cutler, which is the exact same as the
-entire GitHub Actions release workflow. The name is set by the `FILE_NAME` environment variable
-which defaults to `cutler-dev-darwin-arm64.zip`.
-
-The release task depends on the following other tasks to succeed at first:
-
-- `testsuite` - lint, tests, code formatting
-- `build` - production build task
-- `manpage` - automated manpage generation for attachment in zip
-
-Please view [mise.toml](./mise.toml) for an in-depth view of each task.
+The unit testing is done via [this workflow.](./.github/workflows/tests.yml)
 
 ## Code Formatting
 
@@ -97,9 +72,6 @@ Simply run the following command to format the code:
 
 ```bash
 cargo fmt --all
-
-# or
-mise run format  # only checks
 ```
 
 

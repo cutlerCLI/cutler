@@ -27,18 +27,17 @@ jobs:
           override: true
           components: clippy, rustfmt
 
-      - name: Set up cargo cache
+      - name: Cache Cargo registry and build
         uses: actions/cache@v4
-        continue-on-error: false
         with:
           path: |
-            ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-cargo-
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
       - name: Run Clippy
         run: cargo clippy --all-targets -- -D warnings
