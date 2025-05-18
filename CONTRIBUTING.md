@@ -5,12 +5,8 @@ This is the standard contribution/development guidelines for the project. You ma
 ## Table of Contents
 
 - [Getting Started](#getting-started)
-  - [Cloning the repository](#cloning-the-repository)
-  - [Preparing the environment](#preparing-the-environment)
 - [Production Release Workflow](#production-release-workflow)
-  - [Testing](#testing)
-  - [Building](#building)
-- [Licensing](#licensing)
+- [License](#licensing)
 
 ## Getting Started
 
@@ -46,13 +42,13 @@ Working on this project will require a few Rust components beforehand:
 
 This chain of commands can be used to fully test and build the final product.
 
-#### Testing
+### Testing
 
 ```bash
 cargo fmt --all -- --check && cargo test --verbose && cargo clippy && cargo build
 ```
 
-#### Build Reproduction
+### Build Reproduction
 
 You can easily create a release build for cutler using the following command:
 
@@ -63,6 +59,16 @@ cargo build --release --verbose --locked
 The major part of the release automation is currently done with [GitHub Actions]() via the [following workflow](./.github/workflows/release.yml) so, you can have a look at it to view the entire pipeline.
 
 The unit testing is done via [this workflow.](./.github/workflows/tests.yml)
+
+### Git Hooks
+
+I've written [hookman](https://github.com/hitblast/hookman) to automatically build the git hooks for the repository on demand. The hooks are conveniently placed in [hookman.toml](./hookman.toml) to be used by the program.
+
+Simply run this command to initialize:
+
+```bash
+hookman build
+```
 
 ## Code Formatting
 
@@ -75,6 +81,6 @@ cargo fmt --all
 ```
 
 
-## Licensing
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/hitblast/cutler/blob/main/LICENSE) file for details.
