@@ -31,12 +31,18 @@ pub async fn run(prompt_mode: bool, verbose: bool) -> Result<()> {
 
     // prompt mode: bail out on first mismatch, otherwise stay silent
     if prompt_mode {
-        let diverges = entries.iter().any(|(domain, key, value)| {
+        let mut diverges = false;
+        for (domain, key, value) in &entries {
             let (eff_dom, eff_key) = effective(domain, key);
             let desired = normalize(value);
-            let current = read_current(&eff_dom, &eff_key).unwrap_or_else(|| "Not set".into());
-            current != desired
-        });
+            let current = read_current(&eff_dom, &eff_key)
+                .await
+                .unwrap_or_else(|| "Not set".into());
+            if current != desired {
+                diverges = true;
+                break;
+            }
+        }
         if diverges {
             print_log(
                 LogLevel::Warning,
@@ -51,7 +57,9 @@ pub async fn run(prompt_mode: bool, verbose: bool) -> Result<()> {
     for (domain, key, value) in entries.iter() {
         let (eff_dom, eff_key) = effective(domain, key);
         let desired = normalize(value);
-        let current = read_current(&eff_dom, &eff_key).unwrap_or_else(|| "Not set".into());
+        let current = read_current(&eff_dom, &eff_key)
+            .await
+            .unwrap_or_else(|| "Not set".into());
         let is_diff = current != desired;
         outcomes.push((eff_dom, eff_key, desired, current, is_diff));
     }

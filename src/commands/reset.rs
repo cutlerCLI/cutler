@@ -39,7 +39,7 @@ pub async fn run(verbose: bool, dry_run: bool, force: bool) -> Result<()> {
             let (eff_dom, eff_key) = effective(&domain, &key);
 
             // Only delete it if currently set
-            if read_current(&eff_dom, &eff_key).is_some() {
+            if read_current(&eff_dom, &eff_key).await.is_some() {
                 match defaults_delete(&eff_dom, &eff_key, "Resetting", verbose, dry_run).await {
                     Ok(_) => {
                         if verbose {

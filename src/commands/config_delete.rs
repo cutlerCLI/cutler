@@ -27,7 +27,7 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
         println!(
             "Found a snapshot at {:?}. It contains {} settings.",
             snapshot_path,
-            Snapshot::load(&snapshot_path)?.settings.len()
+            Snapshot::load(&snapshot_path).await?.settings.len()
         );
         if confirm_action("Unapply all previously applied defaults?")? {
             unapply::run(verbose, dry_run).await?;

@@ -1,13 +1,12 @@
 use lazy_static::lazy_static;
 use std::collections::{HashMap, HashSet};
-use std::process::Command;
 use std::sync::{Mutex, Once};
+use tokio::process::Command;
 use toml::Value;
 
 use crate::util::logging::{LogLevel, print_log};
 
 lazy_static! {
-    // Cache of “defaults domains” returned by `defaults domains`
     static ref DOMAIN_CACHE: Mutex<Option<HashSet<String>>> = Mutex::new(None);
 }
 
@@ -91,11 +90,13 @@ pub fn needs_prefix(domain: &str) -> bool {
 }
 
 /// Check (and cache) whether a domain exists via `defaults domains`.
-fn domain_exists(full: &str) -> bool {
-    let cache = DOMAIN_CACHE.lock().unwrap();
-    if let Some(set) = &*cache {
-        if set.contains(full) {
-            return true;
+async fn domain_exists(full: &str) -> bool {
+    {
+        let cache = DOMAIN_CACHE.lock().unwrap();
+        if let Some(set) = &*cache {
+            if set.contains(full) {
+                return true;
+            }
         }
     }
     // direct read as fallback
@@ -103,26 +104,31 @@ fn domain_exists(full: &str) -> bool {
         .arg("read")
         .arg(full)
         .output()
+        .await
         .map(|o| o.status.success())
         .unwrap_or(false)
 }
 
 /// Public check—errors out if the domain is missing.
-pub fn check_exists(full_domain: &str) -> Result<(), anyhow::Error> {
+pub async fn check_exists(full_domain: &str) -> Result<(), anyhow::Error> {
     INIT.call_once(|| {
-        if let Ok(out) = Command::new("defaults").arg("domains").output() {
-            if out.status.success() {
-                let s = String::from_utf8_lossy(&out.stdout);
-                let set: HashSet<_> = s
-                    .split(|c: char| c == ',' || c.is_whitespace())
-                    .filter(|x| !x.is_empty())
-                    .map(|x| x.to_string())
-                    .collect();
-                *DOMAIN_CACHE.lock().unwrap() = Some(set);
+        // initialize domain cache asynchronously
+        tokio::spawn(async {
+            if let Ok(out) = Command::new("defaults").arg("domains").output().await {
+                if out.status.success() {
+                    let s = String::from_utf8_lossy(&out.stdout);
+                    let set: HashSet<_> = s
+                        .split(|c: char| c == ',' || c.is_whitespace())
+                        .filter(|x| !x.is_empty())
+                        .map(|x| x.to_string())
+                        .collect();
+                    *DOMAIN_CACHE.lock().unwrap() = Some(set);
+                }
             }
-        }
+        });
     });
-    if domain_exists(full_domain) {
+
+    if domain_exists(full_domain).await {
         Ok(())
     } else {
         Err(anyhow::anyhow!("Domain '{}' does not exist", full_domain))
@@ -130,13 +136,15 @@ pub fn check_exists(full_domain: &str) -> Result<(), anyhow::Error> {
 }
 
 /// Read the current value of a defaults key, if any.
-pub fn read_current(eff_domain: &str, eff_key: &str) -> Option<String> {
+pub async fn read_current(eff_domain: &str, eff_key: &str) -> Option<String> {
     let out = Command::new("defaults")
         .arg("read")
         .arg(eff_domain)
         .arg(eff_key)
         .output()
+        .await
         .ok()?;
+
     if !out.status.success() {
         return None;
     }

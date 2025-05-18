@@ -33,6 +33,7 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
 
     // load snapshot from disk
     let snapshot = Snapshot::load(&snap_path)
+        .await
         .context(format!("Failed to load snapshot from {:?}", snap_path))?;
 
     // list which values to restore / delete
