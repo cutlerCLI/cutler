@@ -47,8 +47,12 @@ pub async fn run(no_deps: bool, verbose: bool, dry_run: bool) -> Result<()> {
 
     // build TOML arrays for formulae and casks
     let mut formula_arr = Array::new();
-    for formula in &formulas {
-        if no_deps {
+    if no_deps {
+        print_log(
+            LogLevel::Info,
+            "Running `brew backup` with --no-deps might take some time...",
+        );
+        for formula in &formulas {
             if !is_dependency(formula).await {
                 if verbose {
                     print_log(
@@ -58,13 +62,16 @@ pub async fn run(no_deps: bool, verbose: bool, dry_run: bool) -> Result<()> {
                 }
                 formula_arr.push(formula.as_str());
             }
-        } else {
+        }
+    } else {
+        for formula in &formulas {
             if verbose {
                 print_log(LogLevel::Info, &format!("Pushing {}", formula));
             }
             formula_arr.push(formula.as_str());
         }
     }
+
     if verbose {
         print_log(
             LogLevel::Info,
