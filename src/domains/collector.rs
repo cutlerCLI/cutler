@@ -7,7 +7,6 @@ use toml::Value;
 use crate::util::logging::{LogLevel, print_log};
 
 lazy_static! {
-    // Cache of “defaults domains” returned by `defaults domains`
     static ref DOMAIN_CACHE: Mutex<Option<HashSet<String>>> = Mutex::new(None);
 }
 
