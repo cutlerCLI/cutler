@@ -12,7 +12,7 @@ use crate::{
 };
 
 pub async fn run(no_deps: bool, verbose: bool, dry_run: bool) -> Result<()> {
-    let cfg_path = &get_config_path();
+    let cfg_path = get_config_path();
 
     // disable auto-update
     let prev = disable_auto_update();
@@ -35,7 +35,7 @@ pub async fn run(no_deps: bool, verbose: bool, dry_run: bool) -> Result<()> {
     }
 
     let mut doc = if cfg_path.exists() {
-        let text = fs::read_to_string(cfg_path).await?;
+        let text = fs::read_to_string(&cfg_path).await?;
         text.parse::<DocumentMut>()
             .context("Failed to parse config TOML")?
     } else {
@@ -89,7 +89,7 @@ pub async fn run(no_deps: bool, verbose: bool, dry_run: bool) -> Result<()> {
     if verbose {
         print_log(LogLevel::Info, &format!("Writing backup to {:?}", cfg_path));
     }
-    fs::write(cfg_path, doc.to_string()).await?;
+    fs::write(&cfg_path, doc.to_string()).await?;
 
     // output message
     if verbose {

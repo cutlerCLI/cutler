@@ -8,7 +8,7 @@ use crate::{
 use anyhow::{Context, Result};
 
 pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
-    let cfg_path = &get_config_path();
+    let cfg_path = get_config_path();
 
     if !cfg_path.exists() {
         print_log(
@@ -24,7 +24,7 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
     // ensure homebrew installation
     ensure_brew(dry_run).await?;
 
-    let config = load_config(cfg_path).await?;
+    let config = load_config(&cfg_path).await?;
     let brew_cfg = config
         .get("brew")
         .and_then(|i| i.as_table())

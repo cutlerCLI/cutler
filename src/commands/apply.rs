@@ -1,5 +1,5 @@
 use crate::{
-    config::loader::load_config,
+    config::{get_config_path, loader::load_config},
     defaults::{executor, flags},
     domains::collector,
     external::runner,
@@ -24,7 +24,7 @@ struct Job {
 }
 
 pub async fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
-    let config_path = crate::config::loader::get_config_path();
+    let config_path = get_config_path();
     if !config_path.exists() {
         print_log(
             LogLevel::Info,
