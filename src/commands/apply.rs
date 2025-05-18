@@ -45,7 +45,7 @@ pub async fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
     // load the old snapshot (if any), otherwise create a new instance
     let snap_path = crate::snapshot::state::get_snapshot_path();
     let snap = if snap_path.exists() {
-        Snapshot::load(&snap_path).unwrap_or_else(|e| {
+        Snapshot::load(&snap_path).await.unwrap_or_else(|e| {
             print_log(
                 LogLevel::Warning,
                 &format!("Bad snapshot: {}; starting new", e),
@@ -151,7 +151,7 @@ pub async fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
     new_snap.external = runner::extract(&toml);
 
     if !dry_run {
-        new_snap.save(&snap_path)?;
+        new_snap.save(&snap_path).await?;
         if verbose {
             print_log(
                 LogLevel::Success,

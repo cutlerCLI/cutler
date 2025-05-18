@@ -56,8 +56,8 @@ mod tests {
         assert!(!keyboard.get("fnState").unwrap().as_bool().unwrap());
     }
 
-    #[test]
-    fn test_snapshot_integration() {
+    #[tokio::test]
+    async fn test_snapshot_integration() {
         use cutler::defaults::from_flag;
         use cutler::snapshot::state::{ExternalCommandState, SettingState, Snapshot};
         use tempfile::TempDir;
@@ -91,11 +91,11 @@ mod tests {
         let snapshot_path = temp_dir.path().join(".cutler_snapshot");
 
         // Save the snapshot
-        snapshot.save(&snapshot_path).unwrap();
+        snapshot.save(&snapshot_path).await.unwrap();
 
         // Simulate what happens during unapply:
         // 1. Load the snapshot
-        let loaded_snapshot = Snapshot::load(&snapshot_path).unwrap();
+        let loaded_snapshot = Snapshot::load(&snapshot_path).await.unwrap();
 
         // 2. For each setting, identify the flag and value for restoring the original value
         for setting in loaded_snapshot.settings.iter() {

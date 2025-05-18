@@ -57,8 +57,8 @@ mod tests {
         assert!(!command.sudo);
     }
 
-    #[test]
-    fn test_snapshot_serialization() {
+    #[tokio::test]
+    async fn test_snapshot_serialization() {
         // Create a comprehensive snapshot with test data
         let mut snapshot = Snapshot::new();
 
@@ -100,7 +100,7 @@ mod tests {
         let snapshot_path = temp_dir.path().join("test_snapshot.json");
 
         // Save the snapshot
-        snapshot.save(&snapshot_path).unwrap();
+        snapshot.save(&snapshot_path).await.unwrap();
 
         // Verify file exists and has content
         assert!(snapshot_path.exists());
@@ -109,7 +109,7 @@ mod tests {
         assert!(content.contains("tilesize"));
 
         // Load the snapshot back
-        let loaded_snapshot = Snapshot::load(&snapshot_path).unwrap();
+        let loaded_snapshot = Snapshot::load(&snapshot_path).await.unwrap();
 
         // Verify contents match
         assert_eq!(loaded_snapshot.settings.len(), 3);
@@ -156,10 +156,10 @@ mod tests {
         assert!(hostname_cmd.sudo);
     }
 
-    #[test]
-    fn test_snapshot_error_handling() {
+    #[tokio::test]
+    async fn test_snapshot_error_handling() {
         // Test loading from non-existent file
-        let result = Snapshot::load(&PathBuf::from("/nonexistent/path"));
+        let result = Snapshot::load(&PathBuf::from("/nonexistent/path")).await;
         assert!(result.is_err());
 
         // Test loading from invalid JSON
@@ -167,13 +167,13 @@ mod tests {
         let invalid_path = temp_dir.path().join("invalid.json");
         fs::write(&invalid_path, "this is not valid json").unwrap();
 
-        let result = Snapshot::load(&invalid_path);
+        let result = Snapshot::load(&invalid_path).await;
         assert!(result.is_err());
 
         // Test writing to invalid path
         let snapshot = Snapshot::new();
         let invalid_dir = PathBuf::from("/nonexistent/directory/snapshot.json");
-        let result = snapshot.save(&invalid_dir);
+        let result = snapshot.save(&invalid_dir).await;
         assert!(result.is_err());
     }
 }

@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
-use std::{env, fs, path::PathBuf};
+use std::{env, path::PathBuf};
+use tokio::fs;
 
 /// A single defaults‑setting change.
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -34,17 +35,17 @@ impl Snapshot {
         }
     }
 
-    pub fn save(&self, path: &PathBuf) -> Result<(), anyhow::Error> {
+    pub async fn save(&self, path: &PathBuf) -> Result<(), anyhow::Error> {
         if let Some(dir) = path.parent() {
-            fs::create_dir_all(dir)?;
+            fs::create_dir_all(dir).await?;
         }
         let json = serde_json::to_string_pretty(self)?;
-        fs::write(path, json)?;
+        fs::write(path, json).await?;
         Ok(())
     }
 
-    pub fn load(path: &PathBuf) -> Result<Self, anyhow::Error> {
-        let txt = fs::read_to_string(path)?;
+    pub async fn load(path: &PathBuf) -> Result<Self, anyhow::Error> {
+        let txt = fs::read_to_string(path).await?;
         let snap: Snapshot = serde_json::from_str(&txt)?;
         Ok(snap)
     }

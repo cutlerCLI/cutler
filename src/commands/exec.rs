@@ -8,7 +8,6 @@ use crate::{
     },
 };
 use anyhow::Result;
-use tokio::task;
 
 pub async fn run(which: Option<String>, verbose: bool, dry_run: bool) -> Result<()> {
     let config_path = get_config_path();
@@ -37,7 +36,7 @@ pub async fn run(which: Option<String>, verbose: bool, dry_run: bool) -> Result<
     // load or init snapshot
     let snap_path = crate::snapshot::state::get_snapshot_path();
     let mut snapshot = if snap_path.exists() {
-        Snapshot::load(&snap_path).unwrap_or_else(|e| {
+        Snapshot::load(&snap_path).await.unwrap_or_else(|e| {
             print_log(
                 LogLevel::Warning,
                 &format!(
@@ -66,10 +65,10 @@ pub async fn run(which: Option<String>, verbose: bool, dry_run: bool) -> Result<
             &format!("Dry-run: Would save snapshot to {:?}", snap_path),
         );
     } else {
-        // save snapshot off the async runtime
         let snap = snapshot;
         let path = snap_path.clone();
-        task::spawn_blocking(move || snap.save(&path)).await??;
+        snap.save(&path).await?;
+
         if verbose {
             print_log(
                 LogLevel::Success,
