@@ -24,6 +24,11 @@ struct Job {
 }
 
 pub async fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
+    print_log(
+        LogLevel::Info,
+        "The syntax for declaring defaults in config will have an update in the upcoming version v0.6.4. Check https://github.com/hitblast/cutler for more information",
+    );
+
     let config_path = crate::config::loader::get_config_path();
     if !config_path.exists() {
         print_log(

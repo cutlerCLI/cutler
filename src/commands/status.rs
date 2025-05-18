@@ -7,6 +7,11 @@ use crate::{
 use anyhow::{Result, bail};
 
 pub async fn run(prompt_mode: bool, verbose: bool) -> Result<()> {
+    print_log(
+        LogLevel::Info,
+        "The syntax for declaring defaults in config will have an update in the upcoming version v0.6.4. Check https://github.com/hitblast/cutler for more information",
+    );
+
     let config_path = get_config_path();
     if !config_path.exists() {
         if !prompt_mode {

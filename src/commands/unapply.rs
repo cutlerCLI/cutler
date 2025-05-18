@@ -22,6 +22,11 @@ enum Undo {
 }
 
 pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
+    print_log(
+        LogLevel::Info,
+        "The syntax for declaring defaults in config will have an update in the upcoming version v0.6.4. Check https://github.com/hitblast/cutler for more information",
+    );
+
     let snap_path = get_snapshot_path();
 
     if !snap_path.exists() {
