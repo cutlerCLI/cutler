@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 use tokio::sync::Mutex as TokioMutex;
-use std::sync::{Mutex, Arc};
 
 use crate::util::logging::{LogLevel, print_log};
 
