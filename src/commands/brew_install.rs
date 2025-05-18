@@ -22,7 +22,7 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
     let prev = disable_auto_update();
 
     // ensure homebrew installation
-    ensure_brew(dry_run)?;
+    ensure_brew(dry_run).await?;
 
     let config = load_config(cfg_path).await?;
     let brew_cfg = config
@@ -31,8 +31,8 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
         .context("No [brew] table found in config")?;
 
     // fetch currently installed items to skip those
-    let installed_formulas = brew_list(&["list", "--formula"])?;
-    let installed_casks = brew_list(&["list", "--cask"])?;
+    let installed_formulas = brew_list(&["list", "--formula"]).await?;
+    let installed_casks = brew_list(&["list", "--cask"]).await?;
 
     // warn about extra installed formulae not in config
     let config_formulae = brew_cfg

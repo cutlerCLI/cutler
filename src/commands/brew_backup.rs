@@ -18,10 +18,10 @@ pub async fn run(no_deps: bool, verbose: bool, dry_run: bool) -> Result<()> {
     let prev = disable_auto_update();
 
     // ensure brew install
-    ensure_brew(dry_run)?;
+    ensure_brew(dry_run).await?;
 
-    let formulas = brew_list(&["list", "--formula"])?;
-    let casks = brew_list(&["list", "--cask"])?;
+    let formulas = brew_list(&["list", "--formula"]).await?;
+    let casks = brew_list(&["list", "--cask"]).await?;
     if dry_run {
         print_log(
             LogLevel::Info,
@@ -49,7 +49,7 @@ pub async fn run(no_deps: bool, verbose: bool, dry_run: bool) -> Result<()> {
     let mut formula_arr = Array::new();
     for formula in &formulas {
         if no_deps {
-            if !is_dependency(formula) {
+            if !is_dependency(formula).await {
                 if verbose {
                     print_log(
                         LogLevel::Info,

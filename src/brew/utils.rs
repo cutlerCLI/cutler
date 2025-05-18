@@ -2,13 +2,14 @@ use crate::util::io::confirm_action;
 use crate::util::logging::{LogLevel, print_log};
 use anyhow::Result;
 use std::env;
-use std::process::Command;
+use tokio::process::Command;
 
 /// Checks if Homebrew is installed on the machine (should be recognizable by $PATH).
-pub fn ensure_brew(dry_run: bool) -> Result<()> {
+pub async fn ensure_brew(dry_run: bool) -> Result<()> {
     let is_installed = Command::new("brew")
         .arg("--version")
         .output()
+        .await
         .map(|o| o.status.success())
         .unwrap_or(false);
 
@@ -24,7 +25,7 @@ pub fn ensure_brew(dry_run: bool) -> Result<()> {
         print_log(LogLevel::Warning, "Homebrew is not installed.");
 
         if confirm_action("Install Homebrew now?")? {
-            install_homebrew()?
+            install_homebrew().await?
         } else {
             anyhow::bail!("Homebrew is required for brew operations, but was not found.");
         }
@@ -34,12 +35,12 @@ pub fn ensure_brew(dry_run: bool) -> Result<()> {
 }
 
 /// Installs Homebrew.
-fn install_homebrew() -> Result<(), anyhow::Error> {
+async fn install_homebrew() -> Result<(), anyhow::Error> {
     let script = "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)";
 
     print_log(LogLevel::Info, "Installing Homebrew...");
 
-    let status = Command::new("sh").arg("-c").arg(script).status()?;
+    let status = Command::new("sh").arg("-c").arg(script).status().await?;
     if !status.success() {
         anyhow::bail!("Failed to install Homebrew");
     }
@@ -47,8 +48,8 @@ fn install_homebrew() -> Result<(), anyhow::Error> {
 }
 
 /// Lists installed Homebrew formulae / casks.
-pub fn brew_list(args: &[&str]) -> Result<Vec<String>> {
-    let output = Command::new("brew").args(args).output()?;
+pub async fn brew_list(args: &[&str]) -> Result<Vec<String>> {
+    let output = Command::new("brew").args(args).output().await?;
     if !output.status.success() {
         return Ok(vec![]);
     }
@@ -61,10 +62,11 @@ pub fn brew_list(args: &[&str]) -> Result<Vec<String>> {
 }
 
 /// Checks if a formula is a dependency of other formulae.
-pub fn is_dependency(formula: &str) -> bool {
+pub async fn is_dependency(formula: &str) -> bool {
     let output = Command::new("brew")
         .args(["uses", "--installed", formula])
         .output()
+        .await
         .unwrap();
 
     !output.stdout.is_empty()

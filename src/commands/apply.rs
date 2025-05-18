@@ -68,7 +68,7 @@ pub async fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
     for (dom, table) in domains.into_iter() {
         // if we need to insert the com.apple prefix, check once
         if collector::needs_prefix(&dom) {
-            collector::check_exists(&format!("com.apple.{}", dom))?;
+            collector::check_exists(&format!("com.apple.{}", dom)).await?;
         }
 
         for (key, val) in table.into_iter() {
@@ -77,7 +77,9 @@ pub async fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
 
             // read the current value from the system
             // then, check if changed
-            let current = collector::read_current(&eff_dom, &eff_key).unwrap_or_default();
+            let current = collector::read_current(&eff_dom, &eff_key)
+                .await
+                .unwrap_or_default();
             let changed = current != desired;
 
             // grab the old snapshot entry if it exists

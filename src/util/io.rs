@@ -1,5 +1,5 @@
 use dialoguer::Confirm;
-use std::process::Command;
+use tokio::process::Command;
 
 use crate::util::logging::{LogLevel, print_log};
 use anyhow::Result;
@@ -34,7 +34,7 @@ pub async fn restart_system_services(verbose: bool, dry_run: bool) -> Result<(),
                 print_log(LogLevel::Info, &format!("Would restart {}", svc));
             }
         } else {
-            let out = Command::new("killall").arg(svc).output()?;
+            let out = Command::new("killall").arg(svc).output().await?;
             if !out.status.success() {
                 print_log(LogLevel::Error, &format!("Failed to restart {}", svc));
             } else if verbose {
