@@ -92,10 +92,12 @@ pub fn needs_prefix(domain: &str) -> bool {
 
 /// Check (and cache) whether a domain exists via `defaults domains`.
 async fn domain_exists(full: &str) -> bool {
-    let cache = DOMAIN_CACHE.lock().unwrap();
-    if let Some(set) = &*cache {
-        if set.contains(full) {
-            return true;
+    {
+        let cache = DOMAIN_CACHE.lock().unwrap();
+        if let Some(set) = &*cache {
+            if set.contains(full) {
+                return true;
+            }
         }
     }
     // direct read as fallback
