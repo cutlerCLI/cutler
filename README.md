@@ -20,7 +20,7 @@ Powerful, declarative settings management for your Mac, with speed.
 - [Key Features](#key-features)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Shell Completions](#shell-completions)
+- [Shell Integrations](#shell-integrations)
 - [Resources](#resources)
 - [Contributing](#contributing)
 - [Acknowledgements](#acknowledgements)
@@ -238,8 +238,24 @@ This will show all the bare-bones values that you have written. You can also del
 cutler config delete
 ```
 
-## Shell Completions
+## Shell Integrations
 
+### Status Prompt
+
+If you would like to be constantly notified by cutler about whether your system has moved from the configuration, you can put this command to run during your shell init:
+```bash
+cutler status --prompt
+```
+
+For example, if you would like to set cutler up for `bash`, run this command and restart your shell instance.
+```bash
+eval $(cutler status --prompt) > .bashrc
+```
+
+> [!NOTE]
+> The `--prompt` flag above is hidden by default when accessing from the help menu.
+
+### Completions
 cutler supports built-in shell completion for your ease of access for a variety of system shells, including
 `bash`, `zsh`, `powershell` etc. Below you will find instructions for each of them.
 
@@ -250,20 +266,17 @@ cutler supports built-in shell completion for your ease of access for a variety 
 #### Bash completions setup
 
 1. Make a directory to store Bash-specific completions:
-
 ```bash
 mkdir ~/.bash-completion.d/
 ```
 
 2. Generate the completion script using the following command and pipe the output to a new file:
-
 ```bash
 cutler completion bash > cutler.bash
 mv cutler.bash ~/.bash-completion.d/
 ```
 
 3. Finally, source the completion script. The best way would be to simply add it to your `.bashrc` file:
-
 ```bash
 source ~/.bash_completion.d/cutler.bash > ~/.bashrc
 ```
@@ -271,27 +284,23 @@ source ~/.bash_completion.d/cutler.bash > ~/.bashrc
 #### Zsh completions setup
 
 1. Make sure you have a directory for custom completions:
-
 ```bash
 mkdir -p ~/.zfunc
 ```
 
 2. Then, generate the completion script and move it over:
-
 ```bash
 cutler completion zsh > _cutler
 mv _cutler ~/.zfunc/
 ```
 
 3. Then, add to your `~/.zshrc`:
-
 ```bash
 fpath=(~/.zfunc $fpath)
 autoload -U compinit && compinit
 ```
 
 4. Restart your shell or run:
-
 ```bash
 source ~/.zshrc
 ```
