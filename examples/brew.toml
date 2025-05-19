@@ -1,0 +1,11 @@
+# TIP:
+# The `brew` table might not need creation at all if you are planning to backup your existing formula/cask names only.
+# Just run `cutler brew backup` to create it automatically in your configuration file.
+
+[brew]
+casks = [
+    "android-studio",
+    "zed",
+    "zulu@21",
+] # You can have both versioned and non-versioned formulae/casks at once.
+formulae = ["rust", "python3", "mise", "ruby", "cmatrix", "fastfetch"]
