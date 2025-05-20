@@ -14,9 +14,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  clippy:
-    name: Test Suite
-    runs-on: macos-14
+  tests:
+    runs-on: macos-latest
+
     steps:
       - uses: actions/checkout@v4
 
