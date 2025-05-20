@@ -73,7 +73,9 @@ autohide = true
 
 [set.NSGlobalDomain.com.apple.keyboard]
 fnState = false
-"#.parse().unwrap();
+"#
+        .parse()
+        .unwrap();
         let domains = collect(&parsed).unwrap();
         assert_eq!(domains.len(), 2);
         let dock = domains.get("dock").unwrap();
