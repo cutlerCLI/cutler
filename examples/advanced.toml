@@ -1,6 +1,6 @@
 # System settings
 
-[menuextra.clock]
+[set.menuextra.clock]
 FlashDateSeparators = true
 DateFormat = "\"h:mm:ss\""
 Show24Hour = false
@@ -9,7 +9,7 @@ ShowDate = 2
 ShowDayOfWeek = false
 ShowSeconds = true
 
-[finder]
+[set.finder]
 AppleShowAllFiles = true
 CreateDesktop = false
 ShowPathbar = true
@@ -18,11 +18,11 @@ FXRemoveOldTrashItems = true
 FXEnableExtensionChangeWarning = false
 FXDefaultSearchScope = "SCcf"
 
-[AppleMultitouchTrackpad]
+[set.AppleMultitouchTrackpad]
 FirstClickThreshold = 0
 TrackpadThreeFingerDrag = true
 
-[dock]
+[set.dock]
 tilesize = 50
 autohide = true
 static-only = true
@@ -34,16 +34,16 @@ autohide-delay = 0
 autohide-time-modifier = 0.6
 expose-group-apps = true
 
-[HIToolBox]
+[set.HIToolBox]
 AppleFnUsageType = 0
 
-[CloudSubscriptionFeatures.optIn]
+[set.CloudSubscriptionFeatures.optIn]
 545129924 = false
 
-[NSGlobalDomain]
+[set.NSGlobalDomain]
 NSDocumentSaveNewDocumentsToCloud = false
 
-[NSGlobalDomain.com.apple.keyboard]
+[set.NSGlobalDomain.com.apple.keyboard]
 fnState = false
 
 # External command execution
@@ -62,3 +62,10 @@ sudo = true
 
 [commands.wall]
 run = "osascript -e 'tell application \"System Events\" to tell every desktop to set picture to \"/System/Library/Desktop Pictures/Solid Colors/Black.png\" as POSIX file'"
+
+# Homebrew formulae/casks list
+# Please see: https://github.com/hitblast/cutler/blob/main/examples/brew.toml
+
+[brew]
+casks = []
+formulae = []

@@ -47,6 +47,10 @@ pub enum Command {
     },
     /// Initialize a new config file with sensible defaults.
     Init {
+        /// Initialize a basic config and not the full example.
+        #[arg(long)]
+        basic: bool,
+
         /// Skip confirmation prompt.
         #[arg(short, long)]
         force: bool,

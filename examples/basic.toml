@@ -1,10 +1,10 @@
-[finder]
+[set.finder]
 AppleShowAllFiles = true
 CreateDesktop = false
 ShowPathbar = true
 FXRemoveOldTrashItems = true
 
-[dock]
+[set.dock]
 tilesize = 46
 autohide = true
 orientation = "left"
@@ -13,5 +13,5 @@ autohide-delay = 0
 autohide-time-modifier = 0.6
 expose-group-apps = true
 
-[NSGlobalDomain.com.apple.keyboard]
+[set.NSGlobalDomain.com.apple.keyboard]
 fnState = false

@@ -38,15 +38,18 @@ fn flatten_domains(
     }
 }
 
-/// Collect all top‑level tables (except `[external]`), flatten them,
-/// and return a map domain → settings.
+/// Collect all tables in `[set]`, flatten them, and return a map domain → settings.
 pub fn collect(parsed: &Value) -> Result<HashMap<String, toml::value::Table>, anyhow::Error> {
     let root = parsed
         .as_table()
         .ok_or_else(|| anyhow::anyhow!("Config is not a TOML table"))?;
     let mut out = HashMap::new();
 
+    // DEPRECATED in v0.6.4: skipping tables
     const SKIPPED_TABLES: [&str; 3] = ["commands", "vars", "brew"];
+
+    // notified about deprecation
+    let mut notified_once = false;
 
     for (key, val) in root {
         if SKIPPED_TABLES.contains(&key.as_str()) {
@@ -54,11 +57,36 @@ pub fn collect(parsed: &Value) -> Result<HashMap<String, toml::value::Table>, an
         } else if key == "external" {
             print_log(
                 LogLevel::Warning,
-                "[external] has been deprecated in version v0.5.5 and won't be executed.\n\n Please visit https://hitblast.github.io/cutler for more information regarding the new way of declaring external commands.",
+                "[external] has been DEPRECATED in version v0.5.5 and won't be executed.\n\n Please visit https://hitblast.github.io/cutler for more information regarding the new way of declaring external commands.",
             );
         }
 
+        if key == "set" {
+            if let Value::Table(set_inner) = val {
+                for (domain_key, domain_val) in set_inner {
+                    if let Value::Table(inner) = domain_val {
+                        let mut flat = Vec::with_capacity(inner.len());
+                        flatten_domains(Some(domain_key.clone()), inner, &mut flat);
+                        for (domain, tbl) in flat {
+                            out.insert(domain, tbl);
+                        }
+                    }
+                }
+            }
+            continue;
+        }
+
+        // support legacy top-level reading for defaults
+        // DEPRECATED in v0.6.4
         if let Value::Table(inner) = val {
+            if !notified_once {
+                print_log(
+                    LogLevel::Info,
+                    "v0.6.4 introduces a new [set] table for setting defaults, and the older mechanism for directly putting defaults in tables is DEPRECATED and will be removed in a later release.\n\nLearn more: https://github.com/hitblast/cutler",
+                );
+                notified_once = true;
+            }
+
             let mut flat = Vec::with_capacity(inner.len());
             flatten_domains(Some(key.clone()), inner, &mut flat);
             for (domain, tbl) in flat {

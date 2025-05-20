@@ -30,8 +30,8 @@ pub async fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
             LogLevel::Info,
             &format!("Config not found at {:?}", config_path),
         );
-        if confirm_action("Create new config?")? {
-            super::init::run(verbose, false).await?;
+        if confirm_action("Create a new basic config?")? {
+            super::init::run(true, verbose, false).await?;
             return Ok(());
         } else {
             anyhow::bail!("No config; aborting.");

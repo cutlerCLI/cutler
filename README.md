@@ -94,10 +94,10 @@ path issues.
 Here’s a basic example of a TOML configuration for cutler:
 
 ```toml
-[dock]
+[set.dock]
 tilesize = 46
 
-[menuextra.clock]
+[set.menuextra.clock]
 FlashDateSeparators = true
 ```
 
@@ -116,10 +116,10 @@ defaults write com.apple.menuextra.clock "FlashDateSeparators"
 You can also configure settings for `NSGlobalDomain` like this:
 
 ```toml
-[NSGlobalDomain]
+[set.NSGlobalDomain]
 ApplePressAndHoldEnabled = true
 
-[NSGlobalDomain.com.apple.mouse]
+[set.NSGlobalDomain.com.apple.mouse]
 linear = true
 ```
 

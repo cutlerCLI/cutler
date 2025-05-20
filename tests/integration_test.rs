@@ -18,14 +18,14 @@ mod tests {
 
         // Write a sample configuration
         let config_content = r#"
-            [dock]
+            [set.dock]
             tilesize = 50
             autohide = true
 
-            [finder]
+            [set.finder]
             ShowPathbar = true
 
-            [NSGlobalDomain.com.apple.keyboard]
+            [set.NSGlobalDomain.com.apple.keyboard]
             fnState = false
         "#;
 

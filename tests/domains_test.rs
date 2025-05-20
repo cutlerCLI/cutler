@@ -5,12 +5,14 @@ mod tests {
 
     #[test]
     fn test_collect_domains_simple() {
-        // [domain]
+        // [set.domain]
         //   key1 = "value1"
         let mut table = Table::new();
         table.insert("key1".into(), Value::String("value1".into()));
+        let mut set_table = Table::new();
+        set_table.insert("domain".into(), Value::Table(table));
         let mut root = Table::new();
-        root.insert("domain".into(), Value::Table(table));
+        root.insert("set".into(), Value::Table(set_table));
         let parsed = Value::Table(root);
 
         let domains = collect(&parsed).unwrap();
@@ -21,14 +23,17 @@ mod tests {
 
     #[test]
     fn test_collect_domains_nested() {
-        // [root.nested]
+        // [set.root]
+        //   [set.root.nested]
         //   inner_key = "inner_value"
         let mut inner = Table::new();
         inner.insert("inner_key".into(), Value::String("inner_value".into()));
         let mut nested = Table::new();
         nested.insert("nested".into(), Value::Table(inner));
+        let mut set_table = Table::new();
+        set_table.insert("root".into(), Value::Table(nested));
         let mut root = Table::new();
-        root.insert("root".into(), Value::Table(nested));
+        root.insert("set".into(), Value::Table(set_table));
 
         let domains = collect(&Value::Table(root)).unwrap();
         assert_eq!(domains.len(), 1);
@@ -57,5 +62,24 @@ mod tests {
         assert!(needs_prefix("finder"));
         assert!(!needs_prefix("NSGlobalDomain"));
         assert!(!needs_prefix("NSGlobalDomain.x"));
+    }
+
+    #[test]
+    fn test_collect_domains_set() {
+        let parsed: Value = r#"
+[set.dock]
+tilesize = "50"
+autohide = true
+
+[set.NSGlobalDomain.com.apple.keyboard]
+fnState = false
+"#.parse().unwrap();
+        let domains = collect(&parsed).unwrap();
+        assert_eq!(domains.len(), 2);
+        let dock = domains.get("dock").unwrap();
+        assert_eq!(dock.get("tilesize").unwrap().as_str().unwrap(), "50");
+        assert!(dock.get("autohide").unwrap().as_bool().unwrap());
+        let kb = domains.get("NSGlobalDomain.com.apple.keyboard").unwrap();
+        assert!(!kb.get("fnState").unwrap().as_bool().unwrap());
     }
 }

@@ -9,7 +9,7 @@ use crate::{
     },
 };
 
-pub async fn run(verbose: bool, force: bool) -> Result<()> {
+pub async fn run(basic: bool, verbose: bool, force: bool) -> Result<()> {
     let config_path = get_config_path();
 
     let exists = fs::metadata(&config_path).await.is_ok();
@@ -25,53 +25,33 @@ pub async fn run(verbose: bool, force: bool) -> Result<()> {
 
     // ensure parent directory exists
     if let Some(parent) = config_path.parent() {
+        if verbose {
+            print_log(
+                LogLevel::Info,
+                &format!("Creating parent dir: {:?}", parent),
+            );
+        }
         fs::create_dir_all(parent).await?;
     }
 
     // default TOML template
-    let default_cfg = r#"# Generated with cutler
-# See https://github.com/hitblast/cutler for more examples
-
-[menuextra.clock]
-FlashDateSeparators = true
-DateFormat            = "\"HH:mm:ss\""
-Show24Hour            = true
-ShowAMPM              = false
-ShowDate              = 2
-ShowDayOfWeek         = false
-ShowSeconds           = true
-
-[finder]
-AppleShowAllFiles     = true
-CreateDesktop         = false
-ShowPathbar           = true
-FXRemoveOldTrashItems = true
-
-[AppleMultitouchTrackpad]
-FirstClickThreshold   = 0
-TrackpadThreeFingerDrag = true
-
-[dock]
-tilesize             = 50
-autohide             = true
-magnification        = false
-orientation          = "right"
-mineffect            = "suck"
-autohide-delay       = 0
-autohide-time-modifier = 0.6
-expose-group-apps    = true
-
-[NSGlobalDomain.com.apple.keyboard]
-fnState = false
-
-# External commands (uncomment / customize as needed)
-# [vars]
-# hostname = "my-macbook"
-# 
-# [commands.hostname]
-# cmd  = "scutil --set ComputerName $hostname"
-# sudo = true
-"#;
+    let default_cfg = match basic {
+        true => {
+            if verbose {
+                print_log(LogLevel::Info, "Choosing basic configuration...")
+            }
+            include_str!("../../examples/basic.toml")
+        }
+        _ => {
+            if verbose {
+                print_log(
+                    LogLevel::Info,
+                    "No `--basic` flag, defaulting to advanced configuration...",
+                )
+            }
+            include_str!("../../examples/advanced.toml")
+        }
+    };
 
     fs::write(&config_path, default_cfg)
         .await
@@ -82,13 +62,11 @@ fnState = false
             LogLevel::Success,
             &format!("Configuration file created at: {:?}", config_path),
         );
-        print_log(
-            LogLevel::Info,
-            "Review and edit this file to customize your Mac settings",
-        );
     } else {
-        println!("🍎 New configuration created at {:?}", config_path);
-        println!("Review and customize this file, then run `cutler apply` to apply settings");
+        println!(
+            "🍎 New configuration created at {:?}\nReview and customize this file before running cutler again.",
+            config_path
+        );
     }
 
     Ok(())

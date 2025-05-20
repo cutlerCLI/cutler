@@ -16,17 +16,11 @@ pub async fn run(which: Option<String>, verbose: bool, dry_run: bool) -> Result<
             LogLevel::Info,
             &format!("Config not found at {:?}", config_path),
         );
-        if confirm_action("Would you like to create a new configuration?")? {
-            // reuse init
-            super::init::run(verbose, false).await?;
-
-            print_log(
-                LogLevel::Info,
-                "Configuration created. Please review it before running external commands.",
-            );
+        if confirm_action("Create a new basic config?")? {
+            super::init::run(true, verbose, false).await?;
             return Ok(());
         } else {
-            anyhow::bail!("No config file present. Exiting.");
+            anyhow::bail!("No config; aborting.");
         }
     }
 
