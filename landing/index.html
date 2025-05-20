@@ -289,7 +289,7 @@ mise use -g cargo:cutler</code></pre>
 
         <div class="note">
             <p>
-                <strong>Architecture:</strong> The prebuilt binaries are
+                The prebuilt binaries are
                 compiled and shipped from macOS 14 on arm64. Intel Macs will
                 require a manual compilation of the project.
             </p>
@@ -322,10 +322,15 @@ mise use -g cargo:cutler</code></pre>
             </ul>
         </div>
 
-        <h2>Shell Completions</h2>
+        <h2 id="shell-integrations">Shell Integrations</h2>
         <hr />
 
-        <p>Generate and install shell completion scripts for your shell:</p>
+        <h4>Shell Prompt</h4>
+        <p>Always keep your system settings on track with the automatic shell prompt by
+        putting this command in your shell configuration:</p>
+        <pre><code class="language-bash">cutler status --prompt</code></pre>
+
+        <h4>Completion Scripts</h4>
         <pre><code class="language-bash"># Bash
 cutler completion bash > cutler.bash
 mv cutler.bash ~/.bash-completion.d/
@@ -336,12 +341,15 @@ mv _cutler ~/.zfunc/
 
 # Other shells like powershell, elvish and fish are also available.</code></pre>
 
-        <h2>Commands Reference</h2>
+        <h2>Commands Cookbook</h2>
         <hr />
 
         <div class="feature">
             <h3>Apply your settings</h3>
-            <pre><code class="language-bash">cutler apply</code></pre>
+            <pre><code class="language-bash">cutler apply
+
+# or, skip external commands (see reference below)
+cutler apply --no-exec</code></pre>
             <p>
                 This command applies all settings from your config file and
                 restarts necessary system services.
@@ -351,7 +359,8 @@ mv _cutler ~/.zfunc/
         <div class="feature">
             <h3>Check current status</h3>
             <pre><code class="language-bash">cutler status</code></pre>
-            <p>Compares your configuration with current system settings.</p>
+            <p>Compares your configuration with current system settings.<br>
+            See <a href="#shell-integrations">Shell Integrations</a> for another use case of this command in your terminal.</p>
         </div>
 
         <div class="feature">
@@ -361,10 +370,10 @@ mv _cutler ~/.zfunc/
         </div>
 
         <div class="feature">
-            <h3>⚠️ Hard-reset settings</h3>
+            <h3>⚠️ Hard-reset config defaults</h3>
             <pre><code class="language-bash">cutler reset --force</code></pre>
             <p>
-                Resets every setting written in the config to factory defaults.
+                Resets every defaults domain written in the config file to factory settings.
                 <br />NOTE: This should ONLY be used as a fallback option to
                 <code>cutler unapply</code>.
             </p>
@@ -386,7 +395,7 @@ cutler config delete</code></pre>
 
         <div class="note">
             <p>
-                <strong>Snapshot file:</strong> When you run
+                When you run
                 <code>cutler apply</code>, a snapshot file
                 <code>.cutler_snapshot</code> is created in your home directory.
                 This file records your configuration state and lets you revert
@@ -401,7 +410,7 @@ cutler config delete</code></pre>
             </p>
         </div>
 
-        <h2>Automate Homebrew</h2>
+        <h2>Manage Homebrew</h2>
         <hr />
 
         <p>
@@ -410,10 +419,14 @@ cutler config delete</code></pre>
             commands:
         </p>
         <pre><code class="language-bash"># Backup installed casks and formulae
-# This will update the config file you previously prepared
+# This will store all formula/cask names to cutler.toml
 cutler brew backup
 
-# Now, to install from it:
+# Optionally, you can add the --no-deps flag
+# This will only backup the formulae/casks which aren't a dependency.
+cutler brew backup --no-deps
+
+# Now, to install from your cutler.toml file:
 cutler brew install</code></pre>
 
         <h2>External Commands</h2>
@@ -484,14 +497,11 @@ cutler exec greet</code></pre>
                 been inspired by <a href="https://brew.sh">Homebrew</a>.
             </p>
             <p>
-                Looking for more examples? Check out the
-                <a href="https://github.com/hitblast/cutler/tree/main/examples"
-                    >example configs</a
-                >!
-            </p>
-            <p>
                 Need more help? Run <code>cutler help</code> for additional
                 information.
+            </p>
+            <p>
+                Website and project made & maintained by <a href="https://hitblast.github.io">HitBlast</a>.
             </p>
         </footer>
 
