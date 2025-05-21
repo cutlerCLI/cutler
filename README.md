@@ -66,9 +66,19 @@ cargo install cutler
 mise use -g cargo:cutler
 ```
 
-You can also get the latest [prebuilt compressed binaries](https://github.com/hitblast/cutler/releases) if you would like to manually install the project.
 
 Once installed, you can install the necessary [shell completions](#shell-completions) for your shell instance if needed.
+Installing via Homebrew doesn't require this step to be completed.
+
+### Manual Installation
+
+You can also get the latest [prebuilt compressed binaries](https://github.com/hitblast/cutler/releases) if you would like to manually install the project.
+
+Note than on devices running macOS, you'll have to remove the quarantine attribute from the binary:
+
+```bash
+xattr -d com.apple.quarantine bin/cutler  # inside extracted zip
+```
 
 ## Usage
 
