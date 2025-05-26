@@ -5,7 +5,7 @@ use toml_edit::{Array, DocumentMut, Item, Table, Value};
 
 use crate::{
     brew::utils::{
-        brew_list, disable_auto_update, ensure_brew, is_dependency, restore_auto_update,
+        brew_list, disable_auto_update, ensure_brew, restore_auto_update,
     },
     config::get_config_path,
     util::logging::{LogLevel, print_log},
@@ -22,6 +22,8 @@ pub async fn run(no_deps: bool, verbose: bool, dry_run: bool) -> Result<()> {
 
     let formulas = brew_list(&["list", "--formula"]).await?;
     let casks = brew_list(&["list", "--cask"]).await?;
+    let deps = brew_list(&["list", "--installed-as-dependency"]).await?;
+
     if dry_run {
         print_log(
             LogLevel::Info,
@@ -49,7 +51,7 @@ pub async fn run(no_deps: bool, verbose: bool, dry_run: bool) -> Result<()> {
     let mut formula_arr = Array::new();
     for formula in &formulas {
         if no_deps {
-            if !is_dependency(formula).await {
+            if !deps.contains(formula) {
                 if verbose {
                     print_log(
                         LogLevel::Info,

@@ -61,17 +61,6 @@ pub async fn brew_list(args: &[&str]) -> Result<Vec<String>> {
         .collect())
 }
 
-/// Checks if a formula is a dependency of other formulae.
-pub async fn is_dependency(formula: &str) -> bool {
-    let output = Command::new("brew")
-        .args(["uses", "--installed", formula])
-        .output()
-        .await
-        .unwrap();
-
-    !output.stdout.is_empty()
-}
-
 /// Disables Homebrew auto-update globally for the process, returning previous value.
 /// Call this before brew commands.
 pub fn disable_auto_update() -> Option<String> {
