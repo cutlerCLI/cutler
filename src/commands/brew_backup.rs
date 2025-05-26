@@ -4,9 +4,7 @@ use anyhow::{Context, Result};
 use toml_edit::{Array, DocumentMut, Item, Table, Value};
 
 use crate::{
-    brew::utils::{
-        brew_list, disable_auto_update, ensure_brew, restore_auto_update,
-    },
+    brew::utils::{brew_list, disable_auto_update, ensure_brew, restore_auto_update},
     config::get_config_path,
     util::logging::{LogLevel, print_log},
 };
