@@ -33,6 +33,10 @@ pub enum Command {
         /// Skip executing external commands at the end.
         #[arg(long)]
         no_exec: bool,
+
+        /// Invoke `cutler brew install` after applying defaults.
+        #[arg(long)]
+        with_brew: bool,
     },
     /// Homebrew backup-and-restore related commands.
     Brew {

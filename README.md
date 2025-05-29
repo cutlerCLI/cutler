@@ -72,7 +72,6 @@ cargo install cutler
 mise use -g cargo:cutler
 ```
 
-
 Once installed, you can install the necessary [shell completions](#shell-completions) for your shell instance if needed.
 Installing via Homebrew doesn't require this step to be completed.
 
@@ -186,6 +185,12 @@ Now, when you want to install from the file, simply run:
 cutler brew install
 ```
 
+You can also invoke the command's functionalty from within `cutler apply`:
+
+```bash
+cutler apply --with-brew
+```
+
 This will install every formula/cask which is uninstalled.
 
 The structure of the `brew` table inside cutler's configuration is like such:
@@ -201,7 +206,7 @@ While running this command, cutler will also notify you about any extra software
 ### Going manual with external commands
 
 cutler also supports running external shell commands the moment it applies the defaults. This is kind of like
-pre-commit git hooks where a command runs *before* you commit anything to your project.
+pre-commit git hooks where a command runs _before_ you commit anything to your project.
 
 You can define external commands with simple syntax like this:
 
@@ -228,7 +233,7 @@ sudo = true  # a more "annotated sudo"
 ```
 
 By default, cutler will run all of your external commands with the `cutler apply` command if you do not pass in the
-`--no-exec` flag. But, if you'd like to *only* run the commands and not apply defaults, run:
+`--no-exec` flag. But, if you'd like to _only_ run the commands and not apply defaults, run:
 
 ```bash
 cutler exec
@@ -259,11 +264,13 @@ cutler config delete
 ### Status Prompt
 
 If you would like to be constantly notified by cutler about whether your system has moved from the configuration, you can put this command to run during your shell init:
+
 ```bash
 cutler status --prompt
 ```
 
 For example, if you would like to set cutler up for `bash`, run this command and restart your shell instance.
+
 ```bash
 eval $(cutler status --prompt) > .bashrc
 ```
@@ -272,6 +279,7 @@ eval $(cutler status --prompt) > .bashrc
 > The `--prompt` flag above is hidden by default when accessing from the help menu.
 
 ### Completions
+
 cutler supports built-in shell completion for your ease of access for a variety of system shells, including
 `bash`, `zsh`, `powershell` etc. Below you will find instructions for each of them.
 
@@ -282,17 +290,20 @@ cutler supports built-in shell completion for your ease of access for a variety 
 #### Bash completions setup
 
 1. Make a directory to store Bash-specific completions:
+
 ```bash
 mkdir ~/.bash-completion.d/
 ```
 
 2. Generate the completion script using the following command and pipe the output to a new file:
+
 ```bash
 cutler completion bash > cutler.bash
 mv cutler.bash ~/.bash-completion.d/
 ```
 
 3. Finally, source the completion script. The best way would be to simply add it to your `.bashrc` file:
+
 ```bash
 source ~/.bash_completion.d/cutler.bash > ~/.bashrc
 ```
@@ -300,23 +311,27 @@ source ~/.bash_completion.d/cutler.bash > ~/.bashrc
 #### Zsh completions setup
 
 1. Make sure you have a directory for custom completions:
+
 ```bash
 mkdir -p ~/.zfunc
 ```
 
 2. Then, generate the completion script and move it over:
+
 ```bash
 cutler completion zsh > _cutler
 mv _cutler ~/.zfunc/
 ```
 
 3. Then, add to your `~/.zshrc`:
+
 ```bash
 fpath=(~/.zfunc $fpath)
 autoload -U compinit && compinit
 ```
 
 4. Restart your shell or run:
+
 ```bash
 source ~/.zshrc
 ```

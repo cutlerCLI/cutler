@@ -26,7 +26,9 @@ pub async fn dispatch(
     set_accept_all(accept_all);
 
     let result = match command {
-        Command::Apply { no_exec } => apply::run(*no_exec, verbose, dry_run).await,
+        Command::Apply { no_exec, with_brew } => {
+            apply::run(*no_exec, *with_brew, verbose, dry_run).await
+        }
         Command::Exec { name } => exec::run(name.clone(), verbose, dry_run).await,
         Command::Init { basic, force } => init::run(*basic, verbose, *force).await,
         Command::Unapply => unapply::run(verbose, dry_run).await,

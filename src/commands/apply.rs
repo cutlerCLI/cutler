@@ -23,7 +23,7 @@ struct Job {
     new_value: String,
 }
 
-pub async fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
+pub async fn run(no_exec: bool, with_brew: bool, verbose: bool, dry_run: bool) -> Result<()> {
     let config_path = get_config_path();
     if !config_path.exists() {
         print_log(
@@ -167,6 +167,11 @@ pub async fn run(no_exec: bool, verbose: bool, dry_run: bool) -> Result<()> {
     // exec external commands
     if !no_exec {
         let _ = runner::run_all(&toml, verbose, dry_run).await;
+    }
+
+    // run brew
+    if with_brew {
+        super::brew_install::run(verbose, dry_run).await?;
     }
 
     Ok(())
