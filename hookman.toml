@@ -1,2 +1,0 @@
-[hook.pre-commit]
-run = "cargo clippy && cargo fmt && cargo xtask manpage"

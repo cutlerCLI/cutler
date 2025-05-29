@@ -49,7 +49,7 @@ cargo fmt --all -- --check && cargo test --verbose && cargo clippy && cargo buil
 ```
 
 > [!NOTE]
-> The unit tests in the CI workflow are done using an **Apple Silicon M1 (3-core)** runner provided by GitHub Actions. See [this page] in GitHub's documentation for more information on all the runners. If the runners used in this project get outdated and don't get a bump, you may suggest one through [GitHub Issues](https://github.com/hitblast/cutler/issues/new).
+> The unit tests in the CI workflow are done using an **Apple Silicon M1 (3-core)** runner provided by GitHub Actions. See [this page](https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources) in GitHub's documentation for more information on all the runners. If the runners used in this project get outdated and don't get a bump, you may suggest one through [GitHub Issues](https://github.com/hitblast/cutler/issues/new).
 
 ### Build Reproduction
 
@@ -63,17 +63,7 @@ The major part of the release automation is currently done with [GitHub Actions]
 
 The unit testing is done via [this workflow.](./.github/workflows/tests.yml)
 
-### Git Hooks
-
-I've written [hookman](https://github.com/hitblast/hookman) to automatically build the git hooks for the repository on demand. The hooks are conveniently placed in [hookman.toml](./hookman.toml) to be used by the program.
-
-Simply run this command to initialize:
-
-```bash
-hookman build
-```
-
-## Code Formatting
+### Code Formatting
 
 `cutler` uses basic Rust formatting for code reliability and maintainability. This ensures that the codebase remains clean, readable, and consistent across different contributors.
 
