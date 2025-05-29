@@ -23,10 +23,10 @@ Once you have ensured the prerequisites, fork the repository [from here](https:/
 
 ```bash
 # https
-git clone https://github.com/<your_username>/cutler.git
+$ git clone https://github.com/<your_username>/cutler.git
 
 # ssh
-git clone git@github.com:<your_username>/cutler.git
+$ git clone git@github.com:<your_username>/cutler.git
 ```
 
 Replace `<your_username>` with your GitHub username.
@@ -45,7 +45,7 @@ This chain of commands can be used to fully test and build the final product.
 ### Testing
 
 ```bash
-cargo fmt --all -- --check && cargo test --verbose && cargo clippy && cargo build
+$ cargo fmt --all -- --check && cargo test --verbose && cargo clippy && cargo build
 ```
 
 > [!NOTE]
@@ -56,7 +56,7 @@ cargo fmt --all -- --check && cargo test --verbose && cargo clippy && cargo buil
 You can easily create a release build for cutler using the following command:
 
 ```bash
-cargo build --release --verbose --locked
+$ cargo build --release --verbose --locked
 ```
 
 The major part of the release automation is currently done with [GitHub Actions]() via the [following workflow](./.github/workflows/release.yml) so, you can have a look at it to view the entire pipeline.
@@ -70,9 +70,8 @@ The unit testing is done via [this workflow.](./.github/workflows/tests.yml)
 Simply run the following command to format the code:
 
 ```bash
-cargo fmt --all
+$ cargo fmt --all
 ```
-
 
 ## License
 

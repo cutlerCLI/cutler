@@ -48,7 +48,7 @@ Check out the [Usage](#usage) section for more details.
 You can install cutler by directly running this command in the terminal:
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/hitblast/cutler/main/install.sh)"
+$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/hitblast/cutler/main/install.sh)"
 ```
 
 Other installation methods are given below.
@@ -56,20 +56,20 @@ Other installation methods are given below.
 1. Using 🍺 `homebrew`:
 
 ```bash
-brew install hitblast/tap/cutler
+$ brew install hitblast/tap/cutler
 ```
 
 2. Using `cargo`:
 
 ```bash
-cargo install cutler
+$ cargo install cutler
 ```
 
 3. Using `mise`:
 
 ```bash
 # NOTE: This will compile the binary manually for your system.
-mise use -g cargo:cutler
+$ mise use -g cargo:cutler
 ```
 
 Once installed, you can install the necessary [shell completions](#shell-completions) for your shell instance if needed.
@@ -82,7 +82,7 @@ You can also get the latest [prebuilt compressed binaries](https://github.com/hi
 Note than on devices running macOS, you'll have to remove the quarantine attribute from the binary:
 
 ```bash
-xattr -d com.apple.quarantine bin/cutler  # inside extracted zip
+$ xattr -d com.apple.quarantine bin/cutler  # inside extracted zip
 ```
 
 ## Usage
@@ -90,7 +90,7 @@ xattr -d com.apple.quarantine bin/cutler  # inside extracted zip
 To easily get started, simply type the following command to generate a prebuilt configuration:
 
 ```bash
-cutler init
+$ cutler init
 ```
 
 By default, cutler stores your configuration in `~/.config/cutler/config.toml`.
@@ -124,8 +124,8 @@ to tediously write the commands by hand and then run them individually, or even 
 The chunk above roughly translates to the following:
 
 ```bash
-defaults write com.apple.dock "tilesize" -int "46"
-defaults write com.apple.menuextra.clock "FlashDateSeparators"
+$ defaults write com.apple.dock "tilesize" -int "46"
+$ defaults write com.apple.menuextra.clock "FlashDateSeparators"
 ```
 
 You can also configure settings for `NSGlobalDomain` like this:
@@ -141,14 +141,14 @@ linear = true
 Which would be executed as:
 
 ```bash
-defaults write NSGlobalDomain "ApplePressAndHoldEnabled" -bool true
-defaults write NSGlobalDomain com.apple.mouse.linear -bool true
+$ defaults write NSGlobalDomain "ApplePressAndHoldEnabled" -bool true
+$ defaults write NSGlobalDomain com.apple.mouse.linear -bool true
 ```
 
 Once you've set your preferred configurations in place, just type this one, simple command:
 
 ```bash
-cutler apply
+$ cutler apply
 ```
 
 In a moment, you'll see a few different system services restart as you apply the modifications you just
@@ -157,13 +157,13 @@ wrote. This is cutler's way of applying and tracking everything from the config 
 To see what changes are being tracked, run:
 
 ```bash
-cutler status
+$ cutler status
 ```
 
 Unapplying everything is also as easy. Simply go ahead and run:
 
 ```bash
-cutler unapply
+$ cutler unapply
 ```
 
 ### Manipulating Homebrew
@@ -171,10 +171,10 @@ cutler unapply
 If you're a person who struggles to keep tabs on all the installed formulae or apps using [Homebrew](https://brew.sh), then cutler could be a great choice for you! Make sure your Homebrew installation is accessible from the `$PATH` variable, and then you can back up the necessary formula/cask names into the config file you previously wrote, using this command:
 
 ```bash
-cutler brew backup
+$ cutler brew backup
 
 # or, only backup the ones which are not a dependency:
-cutler brew backup --no-deps
+$ cutler brew backup --no-deps
 ```
 
 This eliminates the usage of the notorious `brew bundle` command which creates a separate `Bundlefile` for you to track. Why do so much when all you need is just one, central file?
@@ -182,13 +182,13 @@ This eliminates the usage of the notorious `brew bundle` command which creates a
 Now, when you want to install from the file, simply run:
 
 ```bash
-cutler brew install
+$ cutler brew install
 ```
 
 You can also invoke the command's functionalty from within `cutler apply`:
 
 ```bash
-cutler apply --with-brew
+$ cutler apply --with-brew
 ```
 
 This will install every formula/cask which is uninstalled.
@@ -218,7 +218,7 @@ run = "echo Hello World"
 This translates to running:
 
 ```bash
-echo Hello World
+$ echo Hello World
 ```
 
 You can also store variables in order to use them later in your custom commands:
@@ -236,13 +236,13 @@ By default, cutler will run all of your external commands with the `cutler apply
 `--no-exec` flag. But, if you'd like to _only_ run the commands and not apply defaults, run:
 
 ```bash
-cutler exec
+$ cutler exec
 ```
 
 You can also run a specific external command by attaching a name parameter:
 
 ```bash
-cutler exec hostname  # this runs the hostname command
+$ cutler exec hostname  # this runs the hostname command
 ```
 
 ### Wanna see the configuration?
@@ -250,13 +250,13 @@ cutler exec hostname  # this runs the hostname command
 Sometimes it might be handy to have a look at your current config file without having to open it. In such an event, run:
 
 ```bash
-cutler config show
+$ cutler config show
 ```
 
 This will show all the bare-bones values that you have written. You can also delete the file if necessary:
 
 ```bash
-cutler config delete
+$ cutler config delete
 ```
 
 ## Shell Integrations
@@ -266,13 +266,13 @@ cutler config delete
 If you would like to be constantly notified by cutler about whether your system has moved from the configuration, you can put this command to run during your shell init:
 
 ```bash
-cutler status --prompt
+$ cutler status --prompt
 ```
 
 For example, if you would like to set cutler up for `bash`, run this command and restart your shell instance.
 
 ```bash
-eval $(cutler status --prompt) > .bashrc
+$ eval $(cutler status --prompt) > .bashrc
 ```
 
 > [!NOTE]
@@ -292,20 +292,20 @@ cutler supports built-in shell completion for your ease of access for a variety 
 1. Make a directory to store Bash-specific completions:
 
 ```bash
-mkdir ~/.bash-completion.d/
+$ mkdir ~/.bash-completion.d/
 ```
 
 2. Generate the completion script using the following command and pipe the output to a new file:
 
 ```bash
-cutler completion bash > cutler.bash
-mv cutler.bash ~/.bash-completion.d/
+$ cutler completion bash > cutler.bash
+$ mv cutler.bash ~/.bash-completion.d/
 ```
 
 3. Finally, source the completion script. The best way would be to simply add it to your `.bashrc` file:
 
 ```bash
-source ~/.bash_completion.d/cutler.bash > ~/.bashrc
+$ source ~/.bash_completion.d/cutler.bash > ~/.bashrc
 ```
 
 #### Zsh completions setup
@@ -313,40 +313,40 @@ source ~/.bash_completion.d/cutler.bash > ~/.bashrc
 1. Make sure you have a directory for custom completions:
 
 ```bash
-mkdir -p ~/.zfunc
+$ mkdir -p ~/.zfunc
 ```
 
 2. Then, generate the completion script and move it over:
 
 ```bash
-cutler completion zsh > _cutler
-mv _cutler ~/.zfunc/
+$ cutler completion zsh > _cutler
+$ mv _cutler ~/.zfunc/
 ```
 
 3. Then, add to your `~/.zshrc`:
 
 ```bash
-fpath=(~/.zfunc $fpath)
-autoload -U compinit && compinit
+$ fpath=(~/.zfunc $fpath)
+$ autoload -U compinit && compinit
 ```
 
 4. Restart your shell or run:
 
 ```bash
-source ~/.zshrc
+$ source ~/.zshrc
 ```
 
 #### For other shells
 
 ```bash
 # Fish
-cutler completion fish
+$ cutler completion fish
 
 # Elvish
-cutler completion elvish
+$ cutler completion elvish
 
 # PowerShell
-cutler completion powershell
+$ cutler completion powershell
 ```
 
 ## Resources
