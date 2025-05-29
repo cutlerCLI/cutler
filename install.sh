@@ -5,6 +5,7 @@ set -e
 REPO="hitblast/cutler"
 BINARY="cutler"
 INSTALL_DIR="/usr/local/bin"
+MAN_DIR="/usr/local/share/man/man1"
 OS="$(uname -s)"
 ARCH="$(uname -m)"
 
@@ -16,7 +17,7 @@ fi
 
 # For now, only arm64 is supported. Though, I plan to add support for x86 builds sometime soon.
 if [[ "$ARCH" == "x86_64" ]]; then
-  echo "❌ Looks like your macOS is running on x86. You may opt for compiling the program yourself. Learn more: https://github.com/hitblast/cutler"
+  echo "❌ Looks like your Mac is running on x86. You may opt for compiling the program yourself. Learn more: https://github.com/hitblast/cutler"
   exit 1
 fi
 
@@ -58,7 +59,18 @@ sudo mkdir -p "$INSTALL_DIR"
 sudo cp "$BIN_PATH" "$INSTALL_DIR/$BINARY"
 sudo chmod +x "$INSTALL_DIR/$BINARY"
 
+# Install manpage if present
+if [[ -f "man/man1/cutler.1" ]]; then
+  echo "📖 Installing manpage to $MAN_DIR (may require sudo)..."
+  sudo mkdir -p "$MAN_DIR"
+  sudo cp "man/man1/cutler.1" "$MAN_DIR/cutler.1"
+  sudo chmod 644 "$MAN_DIR/cutler.1"
+else
+  echo "⚠️  Manpage not found in the archive. Skipping manpage installation."
+fi
+
 echo "✅ cutler installed to $INSTALL_DIR/$BINARY"
+echo "✅ manpage installed to $MAN_DIR/cutler.1"
 
 # Check if it's on PATH
 if ! command -v cutler >/dev/null 2>&1; then
@@ -68,4 +80,4 @@ if ! command -v cutler >/dev/null 2>&1; then
 fi
 
 echo
-echo "🎉 Run 'cutler --help' to get started!"
+echo "🎉 Run 'cutler --help' or 'man cutler' to get started!"
