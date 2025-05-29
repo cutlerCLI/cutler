@@ -45,21 +45,27 @@ Check out the [Usage](#usage) section for more details.
 
 ## Installation
 
-You can install cutler using 🍺 [Homebrew (recommended)](https://brew.sh/):
+You can install cutler by directly running this command in the terminal:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/hitblast/cutler/main/install.sh)"
+```
+
+Other installation methods are given below.
+
+1. Using 🍺 `homebrew`:
 
 ```bash
 brew install hitblast/tap/cutler
 ```
 
-Besides using Homebrew as shown above, you can install the project in a couple of other ways:
-
-1. Using `cargo`:
+2. Using `cargo`:
 
 ```bash
 cargo install cutler
 ```
 
-2. Using `mise`:
+3. Using `mise`:
 
 ```bash
 # NOTE: This will compile the binary manually for your system.
