@@ -86,6 +86,8 @@ pub enum Command {
     },
     /// Check for version updates.
     CheckUpdate,
+    /// Updates cutler itself.
+    SelfUpdate,
 }
 
 #[derive(Subcommand)]

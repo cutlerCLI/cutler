@@ -5,7 +5,6 @@ set -e
 REPO="hitblast/cutler"
 BINARY="cutler"
 INSTALL_DIR="/usr/local/bin"
-MAN_DIR="/usr/local/share/man/man1"
 OS="$(uname -s)"
 ARCH="$(uname -m)"
 
@@ -15,9 +14,13 @@ if [[ "$OS" != "Darwin" ]]; then
   exit 1
 fi
 
-# For now, only arm64 is supported. Though, I plan to add support for x86 builds sometime soon.
+# Determine ARCH_PREFIX based on architecture
 if [[ "$ARCH" == "x86_64" ]]; then
-  echo "❌ Looks like your Mac is running on x86. You may opt for compiling the program yourself. Learn more: https://github.com/hitblast/cutler"
+  ARCH_PREFIX="x86_64"
+elif [[ "$ARCH" == "arm64" ]]; then
+  ARCH_PREFIX="arm64"
+else
+  echo "❌ Unsupported architecture: $ARCH"
   exit 1
 fi
 
@@ -29,16 +32,22 @@ if [[ -z "$LATEST_TAG" ]]; then
 fi
 
 # Compose asset name
-ASSET="cutler-$LATEST_TAG-darwin-arm64.zip"
+ASSET="cutler-$LATEST_TAG-darwin-$ARCH_PREFIX.zip"
 ASSET_URL="https://github.com/$REPO/releases/download/$LATEST_TAG/$ASSET"
 
 echo "⬇️  Downloading $ASSET_URL ..."
 TMPDIR=$(mktemp -d)
 cd "$TMPDIR"
-curl -fsSL -O "$ASSET_URL"
+if ! curl -fsSL -O "$ASSET_URL"; then
+  echo "❌ Failed to download $ASSET_URL"
+  exit 1
+fi
 
 echo "📦 Unzipping..."
-unzip -q "$ASSET"
+if ! unzip -q "$ASSET"; then
+  echo "❌ Failed to unzip $ASSET"
+  exit 1
+fi
 
 # Find the cutler binary inside the zip (usually in bin/)
 if [[ -f "bin/cutler" ]]; then
@@ -55,22 +64,20 @@ xattr -d com.apple.quarantine "$BIN_PATH" 2>/dev/null || true
 
 # Install to /usr/local/bin (may require sudo)
 echo "🔒 Installing to $INSTALL_DIR (may require sudo)..."
-sudo mkdir -p "$INSTALL_DIR"
-sudo cp "$BIN_PATH" "$INSTALL_DIR/$BINARY"
-sudo chmod +x "$INSTALL_DIR/$BINARY"
-
-# Install manpage if present
-if [[ -f "man/man1/cutler.1" ]]; then
-  echo "📖 Installing manpage to $MAN_DIR (may require sudo)..."
-  sudo mkdir -p "$MAN_DIR"
-  sudo cp "man/man1/cutler.1" "$MAN_DIR/cutler.1"
-  sudo chmod 644 "$MAN_DIR/cutler.1"
-else
-  echo "⚠️  Manpage not found in the archive. Skipping manpage installation."
+if ! sudo mkdir -p "$INSTALL_DIR"; then
+  echo "❌ Failed to create install directory $INSTALL_DIR"
+  exit 1
+fi
+if ! sudo cp "$BIN_PATH" "$INSTALL_DIR/$BINARY"; then
+  echo "❌ Failed to copy binary to $INSTALL_DIR"
+  exit 1
+fi
+if ! sudo chmod +x "$INSTALL_DIR/$BINARY"; then
+  echo "❌ Failed to set executable permissions on $INSTALL_DIR/$BINARY"
+  exit 1
 fi
 
 echo "✅ cutler installed to $INSTALL_DIR/$BINARY"
-echo "✅ manpage installed to $MAN_DIR/cutler.1"
 
 # Check if it's on PATH
 if ! command -v cutler >/dev/null 2>&1; then

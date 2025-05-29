@@ -48,6 +48,9 @@ This chain of commands can be used to fully test and build the final product.
 cargo fmt --all -- --check && cargo test --verbose && cargo clippy && cargo build
 ```
 
+> [!NOTE]
+> The unit tests in the CI workflow are done using an **Apple Silicon M1 (3-core)** runner provided by GitHub Actions. See [this page] in GitHub's documentation for more information on all the runners. If the runners used in this project get outdated and don't get a bump, you may suggest one through [GitHub Issues](https://github.com/hitblast/cutler/issues/new).
+
 ### Build Reproduction
 
 You can easily create a release build for cutler using the following command:

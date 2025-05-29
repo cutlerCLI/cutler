@@ -44,6 +44,9 @@ pub async fn dispatch(
             BrewSub::Install => brew_install::run(verbose, dry_run).await,
         },
         Command::CheckUpdate => update::run(verbose).await,
+        Command::SelfUpdate => tokio::task::spawn_blocking(|| update::run_self_update())
+            .await
+            .unwrap(),
     };
 
     // handle post‐hooks (restart services)
