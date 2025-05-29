@@ -28,7 +28,7 @@ if [[ -z "$LATEST_TAG" ]]; then
 fi
 
 # Compose asset name
-ASSET="cutler-${LATEST_TAG#v}-darwin-arm64.zip"
+ASSET="cutler-$LATEST_TAG-darwin-arm64.zip"
 ASSET_URL="https://github.com/$REPO/releases/download/$LATEST_TAG/$ASSET"
 
 echo "⬇️  Downloading $ASSET_URL ..."
