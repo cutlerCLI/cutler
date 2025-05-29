@@ -18,9 +18,6 @@ fi
 if [[ "$ARCH" == "x86_64" ]]; then
   echo "❌ Looks like your macOS is running on x86. You may opt for compiling the program yourself. Learn more: https://github.com/hitblast/cutler"
   exit 1
-else
-  echo "❌ Unsupported architecture: $ARCH"
-  exit 1
 fi
 
 # Find latest release tag
