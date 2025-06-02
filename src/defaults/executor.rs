@@ -20,10 +20,7 @@ async fn execute_defaults_command(
     }
 
     if dry_run {
-        print_log(
-            LogLevel::Dry,
-            &format!("Would execute: {}", cmd_display),
-        );
+        print_log(LogLevel::Dry, &format!("Would execute: {}", cmd_display));
         return Ok(());
     }
 

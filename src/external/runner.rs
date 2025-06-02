@@ -126,10 +126,7 @@ pub async fn run_all(config: &Value, verbose: bool, dry_run: bool) -> Result<()>
                 ("sh", vec!["-c", &final_cmd])
             };
             if dry_run {
-                print_log(
-                    LogLevel::Dry,
-                    &format!("Would exec {} {}", bin, final_cmd),
-                );
+                print_log(LogLevel::Dry, &format!("Would exec {} {}", bin, final_cmd));
                 return Ok::<(), Error>(());
             }
             if verbose {
@@ -210,10 +207,7 @@ pub async fn run_one(config: &Value, which: &str, verbose: bool, dry_run: bool) 
     };
 
     if dry_run {
-        print_log(
-            LogLevel::Dry,
-            &format!("Would exec {} {}", bin, final_cmd),
-        );
+        print_log(LogLevel::Dry, &format!("Would exec {} {}", bin, final_cmd));
         return Ok(());
     }
     if verbose {
