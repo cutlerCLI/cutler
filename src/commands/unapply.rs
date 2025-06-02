@@ -96,8 +96,8 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
     // delete the snapshot file
     if dry_run {
         print_log(
-            LogLevel::Info,
-            &format!("Dry-run: Would remove snapshot file at {:?}", snap_path),
+            LogLevel::Dry,
+            &format!("Would remove snapshot file at {:?}", snap_path),
         );
     } else {
         fs::remove_file(&snap_path)

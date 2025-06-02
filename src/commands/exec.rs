@@ -55,8 +55,8 @@ pub async fn run(which: Option<String>, verbose: bool, dry_run: bool) -> Result<
     // save the snapshot before executing
     if dry_run {
         print_log(
-            LogLevel::Info,
-            &format!("Dry-run: Would save snapshot to {:?}", snap_path),
+            LogLevel::Dry,
+            &format!("Would save snapshot to {:?}", snap_path),
         );
     } else {
         let snap = snapshot;

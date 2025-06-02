@@ -127,8 +127,8 @@ pub async fn run_all(config: &Value, verbose: bool, dry_run: bool) -> Result<()>
             };
             if dry_run {
                 print_log(
-                    LogLevel::Info,
-                    &format!("Dry-run: would exec {} {}", bin, final_cmd),
+                    LogLevel::Dry,
+                    &format!("Would exec {} {}", bin, final_cmd),
                 );
                 return Ok::<(), Error>(());
             }
@@ -211,8 +211,8 @@ pub async fn run_one(config: &Value, which: &str, verbose: bool, dry_run: bool) 
 
     if dry_run {
         print_log(
-            LogLevel::Info,
-            &format!("Dry-run: would exec {} {}", bin, final_cmd),
+            LogLevel::Dry,
+            &format!("Would exec {} {}", bin, final_cmd),
         );
         return Ok(());
     }

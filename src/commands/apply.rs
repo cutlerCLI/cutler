@@ -161,7 +161,7 @@ pub async fn run(no_exec: bool, with_brew: bool, verbose: bool, dry_run: bool) -
             );
         }
     } else {
-        print_log(LogLevel::Info, "Dry-run: would save snapshot");
+        print_log(LogLevel::Dry, "Would save snapshot");
     }
 
     // exec external commands

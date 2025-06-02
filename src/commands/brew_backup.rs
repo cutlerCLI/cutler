@@ -24,9 +24,9 @@ pub async fn run(no_deps: bool, verbose: bool, dry_run: bool) -> Result<()> {
 
     if dry_run {
         print_log(
-            LogLevel::Info,
+            LogLevel::Dry,
             &format!(
-                "Dry-run: would backup {} formulae and {} casks",
+                "Would backup {} formulae and {} casks",
                 formulas.len(),
                 casks.len()
             ),

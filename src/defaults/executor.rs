@@ -21,8 +21,8 @@ async fn execute_defaults_command(
 
     if dry_run {
         print_log(
-            LogLevel::Info,
-            &format!("Dry-run: Would execute: {}", cmd_display),
+            LogLevel::Dry,
+            &format!("Would execute: {}", cmd_display),
         );
         return Ok(());
     }

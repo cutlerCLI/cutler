@@ -132,7 +132,7 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
     if dry_run {
         for args in &install_tasks {
             let display = format!("brew {}", args.join(" "));
-            print_log(LogLevel::Info, &format!("Dry-run: {}", display));
+            print_log(LogLevel::Dry, &format!("{}", display));
         }
     } else {
         // execute installs concurrently

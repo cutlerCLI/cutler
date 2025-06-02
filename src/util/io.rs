@@ -31,7 +31,7 @@ pub async fn restart_system_services(verbose: bool, dry_run: bool) -> Result<(),
     for svc in SERVICES {
         if dry_run {
             if verbose {
-                print_log(LogLevel::Info, &format!("Would restart {}", svc));
+                print_log(LogLevel::Dry, &format!("Would restart {}", svc));
             }
         } else {
             let out = Command::new("killall").arg(svc).output().await?;
@@ -45,7 +45,7 @@ pub async fn restart_system_services(verbose: bool, dry_run: bool) -> Result<(),
     if !verbose && !dry_run {
         println!("\n🍎 Done. System services restarted.");
     } else if dry_run {
-        println!("\n🍎 Dry‑run: would restart services.");
+        print_log(LogLevel::Dry, "Would restart system services.");
     }
     Ok(())
 }

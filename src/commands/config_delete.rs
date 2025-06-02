@@ -37,13 +37,13 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
     // finally, delete config and snapshot
     if dry_run {
         print_log(
-            LogLevel::Info,
-            &format!("Dry‑run: Would delete {:?}", config_path),
+            LogLevel::Dry,
+            &format!("Would delete {:?}", config_path),
         );
         if snapshot_path.exists() {
             print_log(
-                LogLevel::Info,
-                &format!("Dry‑run: Would delete {:?}", snapshot_path),
+                LogLevel::Dry,
+                &format!("Would delete {:?}", snapshot_path),
             );
         }
     } else {

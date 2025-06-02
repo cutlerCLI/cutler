@@ -70,8 +70,8 @@ pub async fn run(verbose: bool, dry_run: bool, force: bool) -> Result<()> {
     if snap_path.exists() {
         if dry_run {
             print_log(
-                LogLevel::Info,
-                &format!("Dry-run: Would remove snapshot at {:?}", snap_path),
+                LogLevel::Dry,
+                &format!("Would remove snapshot at {:?}", snap_path),
             );
         } else if let Err(e) = fs::remove_file(&snap_path).await {
             print_log(

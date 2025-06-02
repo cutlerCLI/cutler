@@ -16,8 +16,8 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
     // handle dry‑run
     if dry_run {
         print_log(
-            LogLevel::Info,
-            &format!("Dry‑run: Would display config at {:?}", config_path),
+            LogLevel::Dry,
+            &format!("Would display config at {:?}", config_path),
         );
         return Ok(());
     }

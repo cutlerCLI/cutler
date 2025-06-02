@@ -27,8 +27,8 @@ pub async fn run(basic: bool, verbose: bool, dry_run: bool, force: bool) -> Resu
     if let Some(parent) = config_path.parent() {
         if dry_run {
             print_log(
-                LogLevel::Info,
-                &format!("Dry-run: Would create directory: {:?}", parent),
+                LogLevel::Dry,
+                &format!("Would create directory: {:?}", parent),
             );
         } else {
             if verbose {
@@ -62,12 +62,12 @@ pub async fn run(basic: bool, verbose: bool, dry_run: bool, force: bool) -> Resu
 
     if dry_run {
         print_log(
-            LogLevel::Info,
-            &format!("Dry-run: Would write configuration to {:?}", config_path),
+            LogLevel::Dry,
+            &format!("Would write configuration to {:?}", config_path),
         );
         print_log(
-            LogLevel::Info,
-            &format!("Dry-run: Configuration content:\n{}", default_cfg),
+            LogLevel::Dry,
+            &format!("Configuration content:\n{}", default_cfg),
         );
     } else {
         fs::write(&config_path, default_cfg)
