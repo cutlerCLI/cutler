@@ -8,7 +8,7 @@ use ureq;
 
 use crate::util::logging::{LogLevel, print_log};
 
-pub async fn run(verbose: bool) -> Result<()> {
+pub async fn run_check_update(verbose: bool) -> Result<()> {
     let current_version = env!("CARGO_PKG_VERSION");
 
     if verbose {

@@ -9,7 +9,7 @@ use crate::{
     },
 };
 
-pub async fn run(basic: bool, verbose: bool, force: bool) -> Result<()> {
+pub async fn run(basic: bool, verbose: bool, dry_run: bool, force: bool) -> Result<()> {
     let config_path = get_config_path();
 
     let exists = fs::metadata(&config_path).await.is_ok();
@@ -25,13 +25,20 @@ pub async fn run(basic: bool, verbose: bool, force: bool) -> Result<()> {
 
     // ensure parent directory exists
     if let Some(parent) = config_path.parent() {
-        if verbose {
+        if dry_run {
             print_log(
                 LogLevel::Info,
-                &format!("Creating parent dir: {:?}", parent),
+                &format!("Dry-run: Would create directory: {:?}", parent),
             );
+        } else {
+            if verbose {
+                print_log(
+                    LogLevel::Info,
+                    &format!("Creating parent dir: {:?}", parent),
+                );
+            }
+            fs::create_dir_all(parent).await?;
         }
-        fs::create_dir_all(parent).await?;
     }
 
     // default TOML template
@@ -53,20 +60,31 @@ pub async fn run(basic: bool, verbose: bool, force: bool) -> Result<()> {
         }
     };
 
-    fs::write(&config_path, default_cfg)
-        .await
-        .map_err(|e| anyhow!("Failed to write configuration to {:?}: {}", config_path, e))?;
-
-    if verbose {
+    if dry_run {
         print_log(
-            LogLevel::Success,
-            &format!("Configuration file created at: {:?}", config_path),
+            LogLevel::Info,
+            &format!("Dry-run: Would write configuration to {:?}", config_path),
+        );
+        print_log(
+            LogLevel::Info,
+            &format!("Dry-run: Configuration content:\n{}", default_cfg),
         );
     } else {
-        println!(
-            "🍎 New configuration created at {:?}\nReview and customize this file before running cutler again.",
-            config_path
-        );
+        fs::write(&config_path, default_cfg)
+            .await
+            .map_err(|e| anyhow!("Failed to write configuration to {:?}: {}", config_path, e))?;
+
+        if verbose {
+            print_log(
+                LogLevel::Success,
+                &format!("Configuration file created at: {:?}", config_path),
+            );
+        } else {
+            println!(
+                "🍎 New configuration created at {:?}\nReview and customize this file before running cutler again.",
+                config_path
+            );
+        }
     }
 
     Ok(())

@@ -31,7 +31,7 @@ pub async fn run(no_exec: bool, with_brew: bool, verbose: bool, dry_run: bool) -
             &format!("Config not found at {:?}", config_path),
         );
         if confirm_action("Create a new basic config?")? {
-            super::init::run(true, verbose, false).await?;
+            super::init::run(true, verbose, dry_run, false).await?;
             return Ok(());
         } else {
             anyhow::bail!("No config; aborting.");

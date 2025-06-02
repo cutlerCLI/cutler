@@ -30,7 +30,7 @@ pub async fn dispatch(
             apply::run(*no_exec, *with_brew, verbose, dry_run).await
         }
         Command::Exec { name } => exec::run(name.clone(), verbose, dry_run).await,
-        Command::Init { basic, force } => init::run(*basic, verbose, *force).await,
+        Command::Init { basic, force } => init::run(*basic, verbose, dry_run, *force).await,
         Command::Unapply => unapply::run(verbose, dry_run).await,
         Command::Reset { force } => reset::run(verbose, dry_run, *force).await,
         Command::Status { prompt } => status::run(*prompt, verbose).await,
@@ -43,7 +43,7 @@ pub async fn dispatch(
             BrewSub::Backup { no_deps } => brew_backup::run(*no_deps, verbose, dry_run).await,
             BrewSub::Install => brew_install::run(verbose, dry_run).await,
         },
-        Command::CheckUpdate => update::run(verbose).await,
+        Command::CheckUpdate => update::run_check_update(verbose).await,
         Command::SelfUpdate => tokio::task::spawn_blocking(update::run_self_update)
             .await
             .unwrap(),

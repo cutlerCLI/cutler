@@ -17,7 +17,7 @@ pub async fn run(which: Option<String>, verbose: bool, dry_run: bool) -> Result<
             &format!("Config not found at {:?}", config_path),
         );
         if confirm_action("Create a new basic config?")? {
-            super::init::run(true, verbose, false).await?;
+            super::init::run(true, verbose, dry_run, false).await?;
             return Ok(());
         } else {
             anyhow::bail!("No config; aborting.");
