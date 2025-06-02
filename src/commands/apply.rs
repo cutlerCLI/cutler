@@ -1,13 +1,10 @@
 use crate::{
-    config::{get_config_path, loader::load_config},
+    config::loader::load_config,
     defaults::{executor, flags},
     domains::collector,
     external::runner,
     snapshot::state::{SettingState, Snapshot},
-    util::{
-        io::confirm_action,
-        logging::{LogLevel, print_log},
-    },
+    util::logging::{LogLevel, print_log},
 };
 use anyhow::Result;
 
@@ -24,19 +21,12 @@ struct Job {
 }
 
 pub async fn run(no_exec: bool, with_brew: bool, verbose: bool, dry_run: bool) -> Result<()> {
-    let config_path = get_config_path();
-    if !config_path.exists() {
-        print_log(
-            LogLevel::Info,
-            &format!("Config not found at {:?}", config_path),
-        );
-        if confirm_action("Create a new basic config?")? {
-            super::init::run(true, verbose, dry_run, false).await?;
-            return Ok(());
-        } else {
-            anyhow::bail!("No config; aborting.");
-        }
-    }
+    let config_path_opt =
+        crate::util::config::ensure_config_exists_or_init(verbose, dry_run, true).await?;
+    let config_path = match config_path_opt {
+        Some(path) => path,
+        None => anyhow::bail!("Aborted."),
+    };
 
     // parse + flatten domains
     let toml = load_config(&config_path).await?;
