@@ -27,7 +27,7 @@ pub fn confirm_action(prompt: &str) -> Result<bool> {
 
 /// Restart Finder, Dock, SystemUIServer so defaults take effect.
 pub async fn restart_system_services(verbose: bool, dry_run: bool) -> Result<(), anyhow::Error> {
-    const SERVICES: &[&str] = &["Finder", "Dock", "SystemUIServer"];
+    const SERVICES: &[&str] = &["cfprefsd", "Finder", "Dock", "SystemUIServer"];
     for svc in SERVICES {
         if dry_run {
             if verbose {
