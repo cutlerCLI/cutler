@@ -1,11 +1,64 @@
 use tokio::process::Command;
 
 use crate::{
-    brew::utils::{brew_list, disable_auto_update, ensure_brew, restore_auto_update},
+    brew::utils::{
+        brew_list, brew_list_taps, disable_auto_update, ensure_brew, restore_auto_update,
+    },
     config::{get_config_path, load_config},
     util::logging::{LogLevel, print_log},
 };
 use anyhow::{Context, Result};
+
+async fn fetch_all(formulae: &[String], casks: &[String], verbose: bool) {
+    let mut handles = Vec::new();
+
+    for name in formulae {
+        let name = name.clone();
+        handles.push(tokio::spawn(async move {
+            let mut cmd = Command::new("brew");
+            cmd.arg("fetch").arg(&name);
+            if verbose {
+                print_log(LogLevel::Info, &format!("Fetching formula: {}", name));
+            }
+            let _ = cmd.status().await;
+        }));
+    }
+    for name in casks {
+        let name = name.clone();
+        handles.push(tokio::spawn(async move {
+            let mut cmd = Command::new("brew");
+            cmd.arg("fetch").arg("--cask").arg(&name);
+            if verbose {
+                print_log(LogLevel::Info, &format!("Fetching cask: {}", name));
+            }
+            let _ = cmd.status().await;
+        }));
+    }
+    for handle in handles {
+        let _ = handle.await;
+    }
+}
+
+async fn install_sequentially(install_tasks: Vec<Vec<String>>) -> anyhow::Result<()> {
+    for args in install_tasks {
+        let display = format!("brew {}", args.join(" "));
+        print_log(LogLevel::Info, &format!("Installing: {}", display));
+        let arg_slices: Vec<&str> = args.iter().map(String::as_str).collect();
+
+        let status = Command::new("brew")
+            .args(&arg_slices)
+            .stdout(std::process::Stdio::inherit())
+            .stderr(std::process::Stdio::inherit())
+            .stdin(std::process::Stdio::inherit())
+            .status()
+            .await?;
+
+        if !status.success() {
+            print_log(LogLevel::Error, &format!("Failed: {}", display));
+        }
+    }
+    Ok(())
+}
 
 pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
     let cfg_path = get_config_path();
@@ -18,7 +71,7 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
         return Ok(());
     }
 
-    // disable Homebrew auto-update
+    // disable homebrew auto-update
     let prev = disable_auto_update();
 
     // ensure homebrew installation
@@ -29,6 +82,43 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
         .get("brew")
         .and_then(|i| i.as_table())
         .context("No [brew] table found in config")?;
+
+    // tap all taps listed in the config before fetching/installing, but only if not already tapped
+    if let Some(taps_val) = brew_cfg.get("taps").and_then(|v| v.as_array()) {
+        let taps: Vec<String> = taps_val
+            .iter()
+            .filter_map(|x| x.as_str())
+            .map(|s| s.to_string())
+            .collect();
+
+        // get currently tapped taps
+        let tapped_now = brew_list_taps().await.unwrap_or_default();
+        for tap in taps {
+            if tapped_now.contains(&tap) {
+                if verbose {
+                    print_log(LogLevel::Info, &format!("Already tapped: {}", tap));
+                }
+                continue;
+            }
+
+            if dry_run {
+                print_log(LogLevel::Dry, &format!("Would tap {}", tap));
+            } else {
+                print_log(LogLevel::Info, &format!("Tapping: {}", tap));
+                let status = Command::new("brew")
+                    .arg("tap")
+                    .arg(&tap)
+                    .stdout(std::process::Stdio::inherit())
+                    .stderr(std::process::Stdio::inherit())
+                    .stdin(std::process::Stdio::inherit())
+                    .status()
+                    .await?;
+                if !status.success() {
+                    print_log(LogLevel::Error, &format!("Failed to tap: {}", tap));
+                }
+            }
+        }
+    }
 
     // fetch currently installed items to skip those
     let installed_formulas = brew_list(&["list", "--formula"]).await?;
@@ -92,6 +182,9 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
 
     // collect all install tasks, skipping already installed
     let mut install_tasks: Vec<Vec<String>> = Vec::new();
+    let mut to_fetch_formulae: Vec<String> = Vec::new();
+    let mut to_fetch_casks: Vec<String> = Vec::new();
+
     if let Some(arr) = brew_cfg.get("formulae").and_then(|v| v.as_array()) {
         for v in arr {
             if let Some(name) = v.as_str() {
@@ -104,6 +197,7 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
                     }
                 } else {
                     install_tasks.push(vec!["install".to_string(), name.to_string()]);
+                    to_fetch_formulae.push(name.to_string());
                 }
             }
         }
@@ -124,6 +218,7 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
                         "--cask".to_string(),
                         name.to_string(),
                     ]);
+                    to_fetch_casks.push(name.to_string());
                 }
             }
         }
@@ -135,32 +230,14 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
             print_log(LogLevel::Dry, &display);
         }
     } else {
-        // execute installs concurrently
-        let mut handles = Vec::new();
-        for args in install_tasks {
-            handles.push(tokio::spawn(async move {
-                let display = format!("brew {}", args.join(" "));
-                if verbose {
-                    print_log(LogLevel::Info, &display);
-                }
-                let arg_slices: Vec<&str> = args.iter().map(String::as_str).collect();
-                match Command::new("brew").args(&arg_slices).status().await {
-                    Ok(status) if !status.success() => {
-                        print_log(LogLevel::Error, &format!("Failed: {}", display));
-                    }
-                    Err(e) => {
-                        print_log(
-                            LogLevel::Error,
-                            &format!("Error running brew {}: {}", display, e),
-                        );
-                    }
-                    _ => {}
-                }
-            }));
+        // pre-download everything in parallel
+        if !to_fetch_formulae.is_empty() || !to_fetch_casks.is_empty() {
+            print_log(LogLevel::Info, "Pre-downloading all formulae and casks...");
+            fetch_all(&to_fetch_formulae, &to_fetch_casks, verbose).await;
         }
-        for handle in handles {
-            let _ = handle.await;
-        }
+
+        // sequentially install
+        install_sequentially(install_tasks).await?;
     }
 
     restore_auto_update(prev);

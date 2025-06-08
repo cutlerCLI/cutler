@@ -34,6 +34,20 @@ pub async fn ensure_brew(dry_run: bool) -> Result<()> {
     Ok(())
 }
 
+/// Lists all currently tapped Homebrew taps.
+pub async fn brew_list_taps() -> Result<Vec<String>> {
+    let output = Command::new("brew").arg("tap").output().await?;
+    if !output.status.success() {
+        return Ok(vec![]);
+    }
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    Ok(stdout
+        .lines()
+        .map(|l| l.trim().to_string())
+        .filter(|l| !l.is_empty())
+        .collect())
+}
+
 /// Installs Homebrew.
 async fn install_homebrew() -> Result<(), anyhow::Error> {
     let script = "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)";

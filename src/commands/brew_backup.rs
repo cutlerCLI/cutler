@@ -4,7 +4,9 @@ use anyhow::{Context, Result};
 use toml_edit::{Array, DocumentMut, Item, Table, Value};
 
 use crate::{
-    brew::utils::{brew_list, disable_auto_update, ensure_brew, restore_auto_update},
+    brew::utils::{
+        brew_list, brew_list_taps, disable_auto_update, ensure_brew, restore_auto_update,
+    },
     config::get_config_path,
     util::logging::{LogLevel, print_log},
 };
@@ -21,6 +23,9 @@ pub async fn run(no_deps: bool, verbose: bool, dry_run: bool) -> Result<()> {
     let formulas = brew_list(&["list", "--formula"]).await?;
     let casks = brew_list(&["list", "--cask"]).await?;
     let deps = brew_list(&["list", "--installed-as-dependency"]).await?;
+
+    // fetch taps using the shared utility
+    let taps = brew_list_taps().await?;
 
     if dry_run {
         print_log(
@@ -84,6 +89,19 @@ pub async fn run(no_deps: bool, verbose: bool, dry_run: bool) -> Result<()> {
         print_log(LogLevel::Info, &format!("Pushed {} casks.", cask_arr.len()));
     }
     brew_tbl["casks"] = Item::Value(Value::Array(cask_arr));
+
+    // backup taps
+    let mut taps_arr = Array::new();
+    for tap in &taps {
+        if verbose {
+            print_log(LogLevel::Info, &format!("Pushed {} as a tap.", tap));
+        }
+        taps_arr.push(tap.as_str());
+    }
+    if verbose {
+        print_log(LogLevel::Info, &format!("Pushed {} taps.", taps_arr.len()));
+    }
+    brew_tbl["taps"] = Item::Value(Value::Array(taps_arr));
 
     // give length of both lists in verbose, and let the user know about config location
     if verbose {
