@@ -197,6 +197,7 @@ The structure of the `brew` table inside cutler's configuration is like such:
 
 ```toml
 [brew]
+taps = ["hitblast/tap"]
 casks = ["zed", "zulu@21", "android-studio"]
 formulae = ["rust", "python3"]
 ```
