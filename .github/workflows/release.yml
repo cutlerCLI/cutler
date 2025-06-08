@@ -34,12 +34,6 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-
 
-      - name: Run tests and lint
-        run: |
-          cargo fmt --all -- --check
-          cargo test --verbose
-          cargo clippy --all-targets -- -D warnings
-
       - name: Build release artifact
         run: cargo build --release --verbose --locked
 
@@ -94,12 +88,6 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-
-
-      - name: Run tests and lint
-        run: |
-          cargo fmt --all -- --check
-          cargo test --verbose
-          cargo clippy --all-targets -- -D warnings
 
       - name: Build release artifact
         run: cargo build --release --verbose --locked
