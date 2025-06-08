@@ -19,6 +19,8 @@ async fn fetch_all(formulae: &[String], casks: &[String], verbose: bool) {
             cmd.arg("fetch").arg(&name);
             if verbose {
                 print_log(LogLevel::Info, &format!("Fetching formula: {}", name));
+            } else {
+                cmd.arg("--quiet");
             }
             let _ = cmd.status().await;
         }));
@@ -30,6 +32,8 @@ async fn fetch_all(formulae: &[String], casks: &[String], verbose: bool) {
             cmd.arg("fetch").arg("--cask").arg(&name);
             if verbose {
                 print_log(LogLevel::Info, &format!("Fetching cask: {}", name));
+            } else {
+                cmd.arg("--quiet");
             }
             let _ = cmd.status().await;
         }));
