@@ -3,5 +3,4 @@ run = """
 cargo clippy --all-targets -- -D warnings
 cargo test --verbose
 cargo fmt --all -- --check
-cargo xtask manpage
 """
