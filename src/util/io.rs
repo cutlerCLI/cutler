@@ -1,24 +1,20 @@
 use dialoguer::Confirm;
 use tokio::process::Command;
 
-use crate::util::logging::{LogLevel, print_log};
+use crate::{
+    commands::GlobalArgs,
+    util::{
+        globals::should_accept_interactive,
+        logging::{LogLevel, print_log},
+    },
+};
 use anyhow::Result;
 
-/// Global flag to automatically accept all prompts
-static mut ACCEPT_ALL: bool = false;
-
-/// Set the global accept_all flag
-pub fn set_accept_all(value: bool) {
-    unsafe { ACCEPT_ALL = value }
-}
-
-/// Ask "Y/N?"; returns true if accept_all is set or the user types "y" or "Y"
+/// Ask "Y/N?"; returns true if accept_interactive is set or the user types "y" or "Y"
 pub fn confirm_action(prompt: &str) -> Result<bool> {
-    unsafe {
-        if ACCEPT_ALL {
-            println!("{} [y/N]: y (auto-accepted)", prompt);
-            return Ok(true);
-        }
+    if should_accept_interactive() {
+        println!("{} [y/N]: y (auto-accepted)", prompt);
+        return Ok(true);
     }
 
     let result = Confirm::new().with_prompt(prompt).interact()?;
@@ -26,12 +22,14 @@ pub fn confirm_action(prompt: &str) -> Result<bool> {
 }
 
 /// Restart Finder, Dock, SystemUIServer so defaults take effect.
-pub async fn restart_system_services(
-    verbose: bool,
-    dry_run: bool,
-    quiet: bool,
-) -> Result<(), anyhow::Error> {
+pub async fn restart_system_services(g: &GlobalArgs) -> Result<(), anyhow::Error> {
+    let verbose = g.verbose;
+    let dry_run = g.dry_run;
+    let quiet = g.quiet;
+
+    // services to restart
     const SERVICES: &[&str] = &["cfprefsd", "Finder", "Dock", "SystemUIServer"];
+
     for svc in SERVICES {
         if dry_run {
             if verbose && !quiet {

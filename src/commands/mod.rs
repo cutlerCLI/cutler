@@ -1,3 +1,6 @@
+use anyhow::Result;
+use async_trait::async_trait;
+
 pub mod apply;
 pub mod brew_backup;
 pub mod brew_install;
@@ -10,65 +13,31 @@ pub mod status;
 pub mod unapply;
 pub mod update;
 
-use crate::cli::{BrewSub, Command, ConfigSub};
-use crate::util::io::set_accept_all;
-use anyhow::Result;
+// Re-export command structs for CLI usage
+pub use apply::ApplyCmd;
+pub use brew_backup::BrewBackupCmd;
+pub use brew_install::BrewInstallCmd;
+pub use config_delete::ConfigDeleteCmd;
+pub use config_show::ConfigShowCmd;
+pub use exec::ExecCmd;
+pub use init::InitCmd;
+pub use reset::ResetCmd;
+pub use status::StatusCmd;
+pub use unapply::UnapplyCmd;
+pub use update::{CheckUpdateCmd, SelfUpdateCmd};
 
-/// Entrypoint: dispatch to each sub‐module's `run(...)`
-pub async fn dispatch(
-    command: &Command,
-    verbose: bool,
-    dry_run: bool,
-    no_restart: bool,
-    accept_all: bool,
-    quiet: bool,
-) -> Result<()> {
-    // grant all confirm_action() prompts if needed
-    set_accept_all(accept_all);
+/// Struct holding all global CLI flags to be passed to commands
+#[derive(Debug, Clone, Copy)]
+pub struct GlobalArgs {
+    pub verbose: bool,
+    pub dry_run: bool,
+    pub quiet: bool,
+    pub no_restart_services: bool,
+    pub accept_interactive: bool,
+}
 
-    let result = match command {
-        Command::Apply { no_exec, with_brew } => {
-            apply::run(*no_exec, *with_brew, verbose, dry_run, quiet).await
-        }
-        Command::Exec { name } => exec::run(name.clone(), verbose, dry_run, quiet).await,
-        Command::Init { basic, force } => init::run(*basic, verbose, dry_run, *force, quiet).await,
-        Command::Unapply => unapply::run(verbose, dry_run).await,
-        Command::Reset { force } => reset::run(verbose, dry_run, *force, quiet).await,
-        Command::Status { prompt } => status::run(*prompt, verbose, quiet).await,
-        Command::Config { command } => match command {
-            ConfigSub::Show => config_show::run(verbose, dry_run, quiet).await,
-            ConfigSub::Delete => config_delete::run(verbose, dry_run).await,
-        },
-        Command::Completion { shell } => crate::cli::completion::generate_completion(*shell).await,
-        Command::Brew { command } => match command {
-            BrewSub::Backup { no_deps } => {
-                brew_backup::run(*no_deps, verbose, dry_run, quiet).await
-            }
-            BrewSub::Install => brew_install::run(verbose, dry_run, quiet).await,
-        },
-        Command::CheckUpdate => update::run_check_update(verbose, quiet).await,
-        Command::SelfUpdate => tokio::task::spawn_blocking(update::run_self_update)
-            .await
-            .unwrap(),
-    };
-
-    // handle post‐hooks (restart services)
-    if result.is_ok() {
-        use crate::util::io::restart_system_services;
-        match command {
-            Command::Apply { .. }
-            | Command::Unapply
-            | Command::Reset { .. }
-            | Command::Config {
-                command: crate::cli::ConfigSub::Delete,
-            } => {
-                if !no_restart {
-                    let _ = restart_system_services(verbose, dry_run, quiet).await;
-                }
-            }
-            _ => {}
-        }
-    }
-
-    result
+/// Trait for all runnable commands.
+#[async_trait]
+pub trait Runnable {
+    async fn run(&self, globals: &GlobalArgs) -> Result<()>;
 }

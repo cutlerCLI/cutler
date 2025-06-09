@@ -1,3 +1,5 @@
+use crate::util::globals::should_be_quiet;
+
 /// ANSI color codes
 pub const RED: &str = "\x1b[31m";
 pub const GREEN: &str = "\x1b[32m";
@@ -7,8 +9,7 @@ pub const ORANGE: &str = "\x1b[38;5;208m";
 pub const RESET: &str = "\x1b[0m";
 pub const BOLD: &str = "\x1b[1m";
 
-use std::sync::atomic::{AtomicBool, Ordering};
-
+/// Logging level based on what action cutler is performing.
 #[derive(PartialEq)]
 pub enum LogLevel {
     Success,
@@ -19,21 +20,10 @@ pub enum LogLevel {
     Dry,
 }
 
-// Global quiet flag
-static QUIET: AtomicBool = AtomicBool::new(false);
-
-pub fn set_quiet(value: bool) {
-    QUIET.store(value, Ordering::SeqCst);
-}
-
-pub fn get_quiet() -> bool {
-    QUIET.load(Ordering::SeqCst)
-}
-
 /// Central logger.
 /// It is important that most, if not all, prints in cutler go through this function.
 pub fn print_log(level: LogLevel, msg: &str) {
-    if get_quiet() && level != LogLevel::Error && level != LogLevel::Warning {
+    if should_be_quiet() && level != LogLevel::Error && level != LogLevel::Warning {
         return;
     }
 
