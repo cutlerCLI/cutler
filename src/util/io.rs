@@ -26,25 +26,29 @@ pub fn confirm_action(prompt: &str) -> Result<bool> {
 }
 
 /// Restart Finder, Dock, SystemUIServer so defaults take effect.
-pub async fn restart_system_services(verbose: bool, dry_run: bool) -> Result<(), anyhow::Error> {
+pub async fn restart_system_services(
+    verbose: bool,
+    dry_run: bool,
+    quiet: bool,
+) -> Result<(), anyhow::Error> {
     const SERVICES: &[&str] = &["cfprefsd", "Finder", "Dock", "SystemUIServer"];
     for svc in SERVICES {
         if dry_run {
-            if verbose {
+            if verbose && !quiet {
                 print_log(LogLevel::Dry, &format!("Would restart {}", svc));
             }
         } else {
             let out = Command::new("killall").arg(svc).output().await?;
             if !out.status.success() {
                 print_log(LogLevel::Error, &format!("Failed to restart {}", svc));
-            } else if verbose {
+            } else if verbose && !quiet {
                 print_log(LogLevel::Success, &format!("{} restarted", svc));
             }
         }
     }
-    if !verbose && !dry_run {
+    if !verbose && !dry_run && !quiet {
         println!("\n🍎 Done. System services restarted.");
-    } else if dry_run {
+    } else if dry_run && !quiet {
         print_log(LogLevel::Dry, "Would restart system services.");
     }
     Ok(())

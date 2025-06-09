@@ -12,20 +12,22 @@ use crate::{
     },
 };
 
-pub async fn run(verbose: bool, dry_run: bool, force: bool) -> Result<()> {
+pub async fn run(verbose: bool, dry_run: bool, force: bool, quiet: bool) -> Result<()> {
     let config_path = get_config_path();
     if !config_path.exists() {
         bail!("No config file found. Please run `cutler init` first, or create a config file.");
     }
 
-    print_log(
-        LogLevel::Warning,
-        "This will DELETE all settings defined in your config file.",
-    );
-    print_log(
-        LogLevel::Warning,
-        "Settings will be reset to macOS defaults, not to their previous values.",
-    );
+    if !quiet {
+        print_log(
+            LogLevel::Warning,
+            "This will DELETE all settings defined in your config file.",
+        );
+        print_log(
+            LogLevel::Warning,
+            "Settings will be reset to macOS defaults, not to their previous values.",
+        );
+    }
 
     if !force && !confirm_action("Are you sure you want to continue?")? {
         return Ok(());
@@ -42,7 +44,7 @@ pub async fn run(verbose: bool, dry_run: bool, force: bool) -> Result<()> {
             if read_current(&eff_dom, &eff_key).await.is_some() {
                 match defaults_delete(&eff_dom, &eff_key, "Resetting", verbose, dry_run).await {
                     Ok(_) => {
-                        if verbose {
+                        if verbose && !quiet {
                             print_log(
                                 LogLevel::Success,
                                 &format!("Reset {}.{} to system default", eff_dom, eff_key),
@@ -56,7 +58,7 @@ pub async fn run(verbose: bool, dry_run: bool, force: bool) -> Result<()> {
                         );
                     }
                 }
-            } else if verbose {
+            } else if verbose && !quiet {
                 print_log(
                     LogLevel::Info,
                     &format!("Skipping {}.{} (not set)", eff_dom, eff_key),
@@ -69,16 +71,18 @@ pub async fn run(verbose: bool, dry_run: bool, force: bool) -> Result<()> {
     let snap_path = get_snapshot_path();
     if snap_path.exists() {
         if dry_run {
-            print_log(
-                LogLevel::Dry,
-                &format!("Would remove snapshot at {:?}", snap_path),
-            );
+            if !quiet {
+                print_log(
+                    LogLevel::Dry,
+                    &format!("Would remove snapshot at {:?}", snap_path),
+                );
+            }
         } else if let Err(e) = fs::remove_file(&snap_path).await {
             print_log(
                 LogLevel::Warning,
                 &format!("Failed to remove snapshot: {}", e),
             );
-        } else if verbose {
+        } else if verbose && !quiet {
             print_log(
                 LogLevel::Success,
                 &format!("Removed snapshot at {:?}", snap_path),
@@ -86,6 +90,8 @@ pub async fn run(verbose: bool, dry_run: bool, force: bool) -> Result<()> {
         }
     }
 
-    println!("\n🍎 Reset complete. All configured settings have been removed.");
+    if !quiet {
+        println!("\n🍎 Reset complete. All configured settings have been removed.");
+    }
     Ok(())
 }

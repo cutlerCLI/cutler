@@ -10,6 +10,10 @@ pub struct Args {
     #[arg(short, long, global = true)]
     pub verbose: bool,
 
+    /// Suppress all output except errors and warnings.
+    #[arg(long, global = true)]
+    pub quiet: bool,
+
     /// Do not restart system services after command execution.
     #[arg(short, long, global = true)]
     pub no_restart_services: bool,

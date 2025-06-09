@@ -6,7 +6,7 @@ use crate::{
     util::logging::{LogLevel, print_log},
 };
 
-pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
+pub async fn run(verbose: bool, dry_run: bool, quiet: bool) -> Result<()> {
     let config_path = get_config_path();
 
     if !config_path.exists() {
@@ -15,18 +15,22 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
 
     // handle dry‑run
     if dry_run {
-        print_log(
-            LogLevel::Dry,
-            &format!("Would display config at {:?}", config_path),
-        );
+        if !quiet {
+            print_log(
+                LogLevel::Dry,
+                &format!("Would display config at {:?}", config_path),
+            );
+        }
         return Ok(());
     }
 
     // read and print the file
     let content = fs::read_to_string(&config_path).await?;
-    println!("{}", content);
+    if !quiet {
+        println!("{}", content);
+    }
 
-    if verbose {
+    if verbose && !quiet {
         print_log(LogLevel::Info, "Displayed configuration file.");
     }
 

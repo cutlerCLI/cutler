@@ -11,7 +11,7 @@ use crate::{
     util::logging::{LogLevel, print_log},
 };
 
-pub async fn run(no_deps: bool, verbose: bool, dry_run: bool) -> Result<()> {
+pub async fn run(no_deps: bool, verbose: bool, dry_run: bool, quiet: bool) -> Result<()> {
     let cfg_path = get_config_path();
 
     // disable auto-update
@@ -28,14 +28,16 @@ pub async fn run(no_deps: bool, verbose: bool, dry_run: bool) -> Result<()> {
     let taps = brew_list_taps().await?;
 
     if dry_run {
-        print_log(
-            LogLevel::Dry,
-            &format!(
-                "Would backup {} formulae and {} casks",
-                formulas.len(),
-                casks.len()
-            ),
-        );
+        if !quiet {
+            print_log(
+                LogLevel::Dry,
+                &format!(
+                    "Would backup {} formulae and {} casks",
+                    formulas.len(),
+                    casks.len()
+                ),
+            );
+        }
         return Ok(());
     }
 
@@ -55,7 +57,7 @@ pub async fn run(no_deps: bool, verbose: bool, dry_run: bool) -> Result<()> {
     for formula in &formulas {
         if no_deps {
             if !deps.contains(formula) {
-                if verbose {
+                if verbose && !quiet {
                     print_log(
                         LogLevel::Info,
                         &format!("Pushing {} as a manually installed formula.", formula),
@@ -64,13 +66,13 @@ pub async fn run(no_deps: bool, verbose: bool, dry_run: bool) -> Result<()> {
                 formula_arr.push(formula.as_str());
             }
         } else {
-            if verbose {
+            if verbose && !quiet {
                 print_log(LogLevel::Info, &format!("Pushing {}", formula));
             }
             formula_arr.push(formula.as_str());
         }
     }
-    if verbose {
+    if verbose && !quiet {
         print_log(
             LogLevel::Info,
             &format!("Pushed {} formulae.", formula_arr.len()),
@@ -80,12 +82,12 @@ pub async fn run(no_deps: bool, verbose: bool, dry_run: bool) -> Result<()> {
 
     let mut cask_arr = Array::new();
     for cask in &casks {
-        if verbose {
+        if verbose && !quiet {
             print_log(LogLevel::Info, &format!("Pushed {} as a cask.", cask));
         }
         cask_arr.push(cask.as_str());
     }
-    if verbose {
+    if verbose && !quiet {
         print_log(LogLevel::Info, &format!("Pushed {} casks.", cask_arr.len()));
     }
     brew_tbl["casks"] = Item::Value(Value::Array(cask_arr));
@@ -93,29 +95,29 @@ pub async fn run(no_deps: bool, verbose: bool, dry_run: bool) -> Result<()> {
     // backup taps
     let mut taps_arr = Array::new();
     for tap in &taps {
-        if verbose {
+        if verbose && !quiet {
             print_log(LogLevel::Info, &format!("Pushed {} as a tap.", tap));
         }
         taps_arr.push(tap.as_str());
     }
-    if verbose {
+    if verbose && !quiet {
         print_log(LogLevel::Info, &format!("Pushed {} taps.", taps_arr.len()));
     }
     brew_tbl["taps"] = Item::Value(Value::Array(taps_arr));
 
     // give length of both lists in verbose, and let the user know about config location
-    if verbose {
+    if verbose && !quiet {
         print_log(LogLevel::Info, &format!("Writing backup to {:?}", cfg_path));
     }
     fs::write(&cfg_path, doc.to_string()).await?;
 
     // output message
-    if verbose {
+    if verbose && !quiet {
         print_log(
             LogLevel::Success,
             &format!("Backup saved to {:?}", cfg_path),
         );
-    } else {
+    } else if !quiet {
         println!(
             "\n🍎 Done! You can find the backup in your config file location {:?}",
             cfg_path

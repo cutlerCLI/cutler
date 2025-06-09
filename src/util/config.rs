@@ -10,6 +10,7 @@ pub async fn ensure_config_exists_or_init(
     verbose: bool,
     dry_run: bool,
     force_basic: bool,
+    quiet: bool,
 ) -> Result<Option<PathBuf>> {
     let config_path = get_config_path();
     if config_path.exists() {
@@ -20,7 +21,7 @@ pub async fn ensure_config_exists_or_init(
         &format!("Config not found at {:?}", config_path),
     );
     if confirm_action("Create a new basic config?")? {
-        crate::commands::init::run(force_basic, verbose, dry_run, false).await?;
+        crate::commands::init::run(force_basic, verbose, dry_run, false, quiet).await?;
         Ok(Some(config_path))
     } else {
         print_log(LogLevel::Warning, "No config; aborting.");

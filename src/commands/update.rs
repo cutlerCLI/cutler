@@ -3,12 +3,11 @@ use self_update::backends::github::Update;
 use self_update::cargo_crate_version;
 use semver::Version;
 use std::cmp::Ordering;
-use toml::Value;
 use ureq;
 
 use crate::util::logging::{LogLevel, print_log};
 
-pub async fn run_check_update(verbose: bool) -> Result<()> {
+pub async fn run_check_update(verbose: bool, quiet: bool) -> Result<()> {
     let current_version = env!("CARGO_PKG_VERSION");
 
     if verbose {
@@ -16,33 +15,36 @@ pub async fn run_check_update(verbose: bool) -> Result<()> {
             LogLevel::Info,
             &format!("Current version: {}", current_version),
         );
-        print_log(LogLevel::Info, "Checking for updates...");
-    } else {
+    }
+    if !quiet {
         println!("Checking for updates...");
     }
 
-    // fetch remote Cargo.toml
-    // URL: https://github.com/hitblast/cutler
-    let url = "https://raw.githubusercontent.com/hitblast/cutler/main/Cargo.toml";
-    let body = tokio::task::spawn_blocking(move || {
+    // Fetch latest release tag from GitHub API
+    let url = "https://api.github.com/repos/hitblast/cutler/releases/latest";
+    let latest_version: String = tokio::task::spawn_blocking(move || {
         let response = ureq::get(url)
+            .header("Accept", "application/vnd.github.v3+json")
+            .header("User-Agent", "cutler-update-check") // ureq requires a User-Agent for GitHub API
             .call()
-            .map_err(|e| anyhow!("Failed to fetch remote Cargo.toml: {}", e))?;
-        response
+            .map_err(|e| anyhow!("Failed to fetch latest GitHub release: {}", e))?;
+
+        let body_reader = response
             .into_body()
             .read_to_string()
-            .context("Failed to read response body")
+            .map_err(|e| anyhow!("Failed to read GitHub API response body: {}", e))?;
+
+        let json: serde_json::Value = serde_json::from_str(&body_reader)
+            .map_err(|e| anyhow!("Failed to parse GitHub API response: {}", e))?;
+
+        // try "tag_name" first, fallback to "name"
+        json.get("tag_name")
+            .and_then(|v| v.as_str())
+            .or_else(|| json.get("name").and_then(|v| v.as_str()))
+            .map(|s| s.trim_start_matches('v').to_string())
+            .ok_or_else(|| anyhow!("Could not find latest version tag in GitHub API response"))
     })
     .await??;
-
-    // parse it as TOML and extract `package.version`
-    let toml_val: Value = body.parse().context("Failed to parse remote Cargo.toml")?;
-
-    let latest_version = toml_val
-        .get("package")
-        .and_then(|p| p.get("version"))
-        .and_then(|v| v.as_str())
-        .ok_or_else(|| anyhow!("Missing or invalid version in remote Cargo.toml"))?;
 
     if verbose {
         print_log(
@@ -53,36 +55,42 @@ pub async fn run_check_update(verbose: bool) -> Result<()> {
 
     // let the comparison begin!
     let current = Version::parse(current_version).context("Could not parse current version")?;
-    let latest = Version::parse(latest_version).context("Could not parse latest version")?;
+    let latest = Version::parse(&latest_version).context("Could not parse latest version")?;
 
     match current.cmp(&latest) {
         Ordering::Less => {
-            // update available
-            println!(
-                "\n{}Update available:{} {} → {}",
-                crate::util::logging::BOLD,
-                crate::util::logging::RESET,
-                current_version,
-                latest_version
-            );
-            println!("\nTo update, run one of the following:\n");
-            println!("  brew update && brew upgrade cutler     # if installed via Homebrew");
-            println!("  cargo install cutler --force           # if installed via Cargo");
-            println!("  cutler self-update                     # if installed manually");
-            println!("\nOr download the latest release from:");
-            println!("  https://github.com/hitblast/cutler/releases");
+            if !quiet {
+                println!(
+                    "\n{}Update available:{} {} → {}",
+                    crate::util::logging::BOLD,
+                    crate::util::logging::RESET,
+                    current_version,
+                    latest_version
+                );
+                println!("\nTo update, run one of the following:\n");
+                println!("  brew update && brew upgrade cutler     # if installed via homebrew");
+                println!("  cargo install cutler --force           # if installed via cargo");
+                println!("  mise up cutler                         # if installed via mise");
+                println!("  cutler self-update                     # for manual installs");
+                println!("\nOr download the latest release from:");
+                println!("  https://github.com/hitblast/cutler/releases");
+            }
         }
         Ordering::Equal => {
-            print_log(LogLevel::Success, "You are using the latest version.");
+            if !quiet {
+                print_log(LogLevel::Success, "You are using the latest version.");
+            }
         }
         Ordering::Greater => {
-            print_log(
-                LogLevel::Info,
-                &format!(
-                    "You are on a development version ({}) ahead of latest release ({}).",
-                    current_version, latest_version
-                ),
-            );
+            if !quiet {
+                print_log(
+                    LogLevel::Info,
+                    &format!(
+                        "You are on a development version ({}) ahead of latest release ({}).",
+                        current_version, latest_version
+                    ),
+                );
+            }
         }
     }
 

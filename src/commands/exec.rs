@@ -6,9 +6,9 @@ use crate::{
 };
 use anyhow::Result;
 
-pub async fn run(which: Option<String>, verbose: bool, dry_run: bool) -> Result<()> {
+pub async fn run(which: Option<String>, verbose: bool, dry_run: bool, quiet: bool) -> Result<()> {
     let config_path_opt =
-        crate::util::config::ensure_config_exists_or_init(verbose, dry_run, true).await?;
+        crate::util::config::ensure_config_exists_or_init(verbose, dry_run, true, quiet).await?;
     let config_path = match config_path_opt {
         Some(path) => path,
         None => anyhow::bail!("Aborted."),
@@ -44,10 +44,12 @@ pub async fn run(which: Option<String>, verbose: bool, dry_run: bool) -> Result<
 
     // save the snapshot before executing
     if dry_run {
-        print_log(
-            LogLevel::Dry,
-            &format!("Would save snapshot to {:?}", snap_path),
-        );
+        if !quiet {
+            print_log(
+                LogLevel::Dry,
+                &format!("Would save snapshot to {:?}", snap_path),
+            );
+        }
     } else {
         let snap = snapshot;
         let path = snap_path.clone();
@@ -67,7 +69,7 @@ pub async fn run(which: Option<String>, verbose: bool, dry_run: bool) -> Result<
         runner::run_all(&toml, verbose, dry_run).await?;
     }
 
-    if !verbose && !dry_run {
+    if !verbose && !dry_run && !quiet {
         println!("\n🍎 External commands executed successfully.");
     }
 

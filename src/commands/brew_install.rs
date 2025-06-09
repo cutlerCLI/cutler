@@ -64,14 +64,16 @@ async fn install_sequentially(install_tasks: Vec<Vec<String>>) -> anyhow::Result
     Ok(())
 }
 
-pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
+pub async fn run(verbose: bool, dry_run: bool, quiet: bool) -> Result<()> {
     let cfg_path = get_config_path();
 
     if !cfg_path.exists() {
-        print_log(
-            LogLevel::Error,
-            "No config file found. Run `cutler init` to start.",
-        );
+        if !quiet {
+            print_log(
+                LogLevel::Error,
+                "No config file found. Run `cutler init` to start.",
+            );
+        }
         return Ok(());
     }
 
@@ -99,16 +101,20 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
         let tapped_now = brew_list_taps().await.unwrap_or_default();
         for tap in taps {
             if tapped_now.contains(&tap) {
-                if verbose {
+                if verbose && !quiet {
                     print_log(LogLevel::Info, &format!("Already tapped: {}", tap));
                 }
                 continue;
             }
 
             if dry_run {
-                print_log(LogLevel::Dry, &format!("Would tap {}", tap));
+                if !quiet {
+                    print_log(LogLevel::Dry, &format!("Would tap {}", tap));
+                }
             } else {
-                print_log(LogLevel::Info, &format!("Tapping: {}", tap));
+                if !quiet {
+                    print_log(LogLevel::Info, &format!("Tapping: {}", tap));
+                }
                 let status = Command::new("brew")
                     .arg("tap")
                     .arg(&tap)
@@ -117,7 +123,7 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
                     .stdin(std::process::Stdio::inherit())
                     .status()
                     .await?;
-                if !status.success() {
+                if !status.success() && !quiet {
                     print_log(LogLevel::Error, &format!("Failed to tap: {}", tap));
                 }
             }
@@ -145,7 +151,7 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
         .filter(|f| !config_formulae.contains(f))
         .collect();
 
-    if !extra_formulae.is_empty() {
+    if !extra_formulae.is_empty() && !quiet {
         print_log(
             LogLevel::Warning,
             &format!(
@@ -172,7 +178,7 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
         .filter(|c| !config_casks.contains(c))
         .collect();
 
-    if !extra_casks.is_empty() {
+    if !extra_casks.is_empty() && !quiet {
         print_log(
             LogLevel::Warning,
             &format!("Extra installed casks not in config: {:?}", extra_casks),
@@ -180,7 +186,7 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
     }
 
     // extra message
-    if !extra_formulae.is_empty() || !extra_casks.is_empty() {
+    if (!extra_formulae.is_empty() || !extra_casks.is_empty()) && !quiet {
         println!("\nRun `cutler brew backup` to synchronize your config with the system");
     }
 
@@ -193,7 +199,7 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
         for v in arr {
             if let Some(name) = v.as_str() {
                 if installed_formulas.contains(&name.to_string()) {
-                    if verbose {
+                    if verbose && !quiet {
                         print_log(
                             LogLevel::Info,
                             &format!("Skipping already installed formula: {}", name),
@@ -210,7 +216,7 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
         for v in arr {
             if let Some(name) = v.as_str() {
                 if installed_casks.contains(&name.to_string()) {
-                    if verbose {
+                    if verbose && !quiet {
                         print_log(
                             LogLevel::Info,
                             &format!("Skipping already installed cask: {}", name),
@@ -231,14 +237,16 @@ pub async fn run(verbose: bool, dry_run: bool) -> Result<()> {
     if dry_run {
         for args in &install_tasks {
             let display = format!("brew {}", args.join(" "));
-            print_log(LogLevel::Dry, &display);
+            if !quiet {
+                print_log(LogLevel::Dry, &display);
+            }
         }
     } else {
         // pre-download everything in parallel
-        if !to_fetch_formulae.is_empty() || !to_fetch_casks.is_empty() {
+        if (!to_fetch_formulae.is_empty() || !to_fetch_casks.is_empty()) && !quiet {
             print_log(LogLevel::Info, "Pre-downloading all formulae and casks...");
-            fetch_all(&to_fetch_formulae, &to_fetch_casks, verbose).await;
         }
+        fetch_all(&to_fetch_formulae, &to_fetch_casks, verbose && !quiet).await;
 
         // sequentially install
         install_sequentially(install_tasks).await?;

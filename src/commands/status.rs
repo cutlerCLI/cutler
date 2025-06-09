@@ -6,7 +6,7 @@ use crate::{
 };
 use anyhow::{Result, bail};
 
-pub async fn run(prompt_mode: bool, verbose: bool) -> Result<()> {
+pub async fn run(prompt_mode: bool, verbose: bool, quiet: bool) -> Result<()> {
     let config_path = get_config_path();
     if !config_path.exists() {
         if !prompt_mode {
@@ -43,7 +43,7 @@ pub async fn run(prompt_mode: bool, verbose: bool) -> Result<()> {
                 break;
             }
         }
-        if diverges {
+        if diverges && !quiet {
             print_log(
                 LogLevel::Warning,
                 "cutler: Your system has diverged from config; run `cutler apply`",
@@ -68,11 +68,13 @@ pub async fn run(prompt_mode: bool, verbose: bool) -> Result<()> {
     for (eff_dom, eff_key, desired, current, is_diff) in outcomes {
         if is_diff {
             any_diff = true;
-            println!(
-                "{}{}.{}: should be {} (currently {}{}{}){}",
-                BOLD, eff_dom, eff_key, desired, RED, current, RESET, RESET,
-            );
-        } else if verbose {
+            if !quiet {
+                println!(
+                    "{}{}.{}: should be {} (currently {}{}{}){}",
+                    BOLD, eff_dom, eff_key, desired, RED, current, RESET, RESET,
+                );
+            }
+        } else if verbose && !quiet {
             println!(
                 "{}{}.{}: {} (matches desired){}",
                 GREEN, eff_dom, eff_key, current, RESET
@@ -80,10 +82,12 @@ pub async fn run(prompt_mode: bool, verbose: bool) -> Result<()> {
         }
     }
 
-    if !any_diff {
-        println!("\n🍎 All settings already match your configuration.");
-    } else {
-        println!("\nRun `cutler apply` to apply these changes from your config.");
+    if !quiet {
+        if !any_diff {
+            println!("\n🍎 All settings already match your configuration.");
+        } else {
+            println!("\nRun `cutler apply` to apply these changes from your config.");
+        }
     }
 
     Ok(())

@@ -6,12 +6,16 @@ use cutler::commands::dispatch;
 async fn main() {
     let args = Args::parse();
 
+    // Set quiet flag globally
+    cutler::util::logging::set_quiet(args.quiet);
+
     if let Err(err) = dispatch(
         &args.command,
         args.verbose,
         args.dry_run,
         args.no_restart_services,
         args.accept_all,
+        args.quiet,
     )
     .await
     {

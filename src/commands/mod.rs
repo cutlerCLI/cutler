@@ -21,29 +21,32 @@ pub async fn dispatch(
     dry_run: bool,
     no_restart: bool,
     accept_all: bool,
+    quiet: bool,
 ) -> Result<()> {
     // grant all confirm_action() prompts if needed
     set_accept_all(accept_all);
 
     let result = match command {
         Command::Apply { no_exec, with_brew } => {
-            apply::run(*no_exec, *with_brew, verbose, dry_run).await
+            apply::run(*no_exec, *with_brew, verbose, dry_run, quiet).await
         }
-        Command::Exec { name } => exec::run(name.clone(), verbose, dry_run).await,
-        Command::Init { basic, force } => init::run(*basic, verbose, dry_run, *force).await,
+        Command::Exec { name } => exec::run(name.clone(), verbose, dry_run, quiet).await,
+        Command::Init { basic, force } => init::run(*basic, verbose, dry_run, *force, quiet).await,
         Command::Unapply => unapply::run(verbose, dry_run).await,
-        Command::Reset { force } => reset::run(verbose, dry_run, *force).await,
-        Command::Status { prompt } => status::run(*prompt, verbose).await,
+        Command::Reset { force } => reset::run(verbose, dry_run, *force, quiet).await,
+        Command::Status { prompt } => status::run(*prompt, verbose, quiet).await,
         Command::Config { command } => match command {
-            ConfigSub::Show => config_show::run(verbose, dry_run).await,
+            ConfigSub::Show => config_show::run(verbose, dry_run, quiet).await,
             ConfigSub::Delete => config_delete::run(verbose, dry_run).await,
         },
         Command::Completion { shell } => crate::cli::completion::generate_completion(*shell).await,
         Command::Brew { command } => match command {
-            BrewSub::Backup { no_deps } => brew_backup::run(*no_deps, verbose, dry_run).await,
-            BrewSub::Install => brew_install::run(verbose, dry_run).await,
+            BrewSub::Backup { no_deps } => {
+                brew_backup::run(*no_deps, verbose, dry_run, quiet).await
+            }
+            BrewSub::Install => brew_install::run(verbose, dry_run, quiet).await,
         },
-        Command::CheckUpdate => update::run_check_update(verbose).await,
+        Command::CheckUpdate => update::run_check_update(verbose, quiet).await,
         Command::SelfUpdate => tokio::task::spawn_blocking(update::run_self_update)
             .await
             .unwrap(),
@@ -60,7 +63,7 @@ pub async fn dispatch(
                 command: crate::cli::ConfigSub::Delete,
             } => {
                 if !no_restart {
-                    let _ = restart_system_services(verbose, dry_run).await;
+                    let _ = restart_system_services(verbose, dry_run, quiet).await;
                 }
             }
             _ => {}

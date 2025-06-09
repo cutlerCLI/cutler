@@ -20,9 +20,15 @@ struct Job {
     new_value: String,
 }
 
-pub async fn run(no_exec: bool, with_brew: bool, verbose: bool, dry_run: bool) -> Result<()> {
+pub async fn run(
+    no_exec: bool,
+    with_brew: bool,
+    verbose: bool,
+    dry_run: bool,
+    quiet: bool,
+) -> Result<()> {
     let config_path_opt =
-        crate::util::config::ensure_config_exists_or_init(verbose, dry_run, true).await?;
+        crate::util::config::ensure_config_exists_or_init(verbose, dry_run, true, quiet).await?;
     let config_path = match config_path_opt {
         Some(path) => path,
         None => anyhow::bail!("Aborted."),
@@ -161,7 +167,7 @@ pub async fn run(no_exec: bool, with_brew: bool, verbose: bool, dry_run: bool) -
 
     // run brew
     if with_brew {
-        super::brew_install::run(verbose, dry_run).await?;
+        super::brew_install::run(verbose, dry_run, quiet).await?;
     }
 
     Ok(())

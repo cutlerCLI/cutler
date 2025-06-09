@@ -9,7 +9,13 @@ use crate::{
     },
 };
 
-pub async fn run(basic: bool, verbose: bool, dry_run: bool, force: bool) -> Result<()> {
+pub async fn run(
+    basic: bool,
+    verbose: bool,
+    dry_run: bool,
+    force: bool,
+    quiet: bool,
+) -> Result<()> {
     let config_path = get_config_path();
 
     let exists = fs::metadata(&config_path).await.is_ok();
@@ -79,7 +85,7 @@ pub async fn run(basic: bool, verbose: bool, dry_run: bool, force: bool) -> Resu
                 LogLevel::Success,
                 &format!("Configuration file created at: {:?}", config_path),
             );
-        } else {
+        } else if !quiet {
             println!(
                 "🍎 New configuration created at {:?}\nReview and customize this file before running cutler again.",
                 config_path
