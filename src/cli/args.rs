@@ -1,13 +1,11 @@
 use super::get_styles;
 use clap::{Parser, Subcommand, ValueEnum};
 
-// Import new command structs
 use crate::commands::{
     ApplyCmd, BrewBackupCmd, BrewInstallCmd, CheckUpdateCmd, ConfigDeleteCmd, ConfigShowCmd,
     ExecCmd, InitCmd, ResetCmd, SelfUpdateCmd, StatusCmd, UnapplyCmd,
 };
 
-/// top‐level CLI args for cutler
 #[derive(Parser)]
 #[command(name = "cutler", styles = get_styles(), version, about)]
 pub struct Args {

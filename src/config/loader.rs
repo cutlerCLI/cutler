@@ -3,6 +3,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use anyhow::Context;
 use toml::Value;
 
 /// Returns the path to the configuration file by checking several candidate locations.
@@ -43,7 +44,14 @@ pub fn get_config_path() -> PathBuf {
 
 /// Helper: Read and parse the configuration file at a given path.
 pub async fn load_config(path: &Path) -> Result<Value, anyhow::Error> {
-    let content = tokio::fs::read_to_string(path).await?;
-    let parsed: Value = content.parse::<Value>()?;
+    let content = tokio::fs::read_to_string(path)
+        .await
+        .with_context(|| format!("Failed to read config file at {:?}", path))?;
+    let parsed: Value = content.parse::<Value>().with_context(|| {
+        format!(
+            "Failed to parse TOML at {:?}. Please check for syntax errors or invalid structure.",
+            path
+        )
+    })?;
     Ok(parsed)
 }

@@ -22,6 +22,18 @@ pub struct ApplyCmd {
     pub with_brew: bool,
 }
 
+// Represents an apply command job.
+#[derive(Debug)]
+struct Job {
+    domain: String,
+    key: String,
+    flag: String,
+    value: String,
+    action: &'static str,
+    original: Option<String>,
+    new_value: String,
+}
+
 #[async_trait]
 impl Runnable for ApplyCmd {
     async fn run(&self, g: &GlobalArgs) -> Result<()> {
@@ -58,17 +70,6 @@ impl Runnable for ApplyCmd {
             .into_iter()
             .map(|s| ((s.domain.clone(), s.key.clone()), s))
             .collect();
-
-        #[derive(Debug)]
-        struct Job {
-            domain: String,
-            key: String,
-            flag: String,
-            value: String,
-            action: &'static str,
-            original: Option<String>,
-            new_value: String,
-        }
 
         let mut jobs: Vec<Job> = Vec::new();
 
