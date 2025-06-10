@@ -1,13 +1,9 @@
-use lazy_static::lazy_static;
 use std::collections::{HashMap, HashSet};
-use std::sync::{Mutex, Once};
+use std::sync::{Mutex, Once, LazyLock};
 use tokio::process::Command;
 use toml::Value;
 
-lazy_static! {
-    static ref DOMAIN_CACHE: Mutex<Option<HashSet<String>>> = Mutex::new(None);
-}
-
+static DOMAIN_CACHE: LazyLock<Mutex<Option<HashSet<String>>>> = LazyLock::new(|| Mutex::new(None));
 static INIT: Once = Once::new();
 
 /// Recursively flatten nested TOML tables into (domain, settings‑table) pairs.
