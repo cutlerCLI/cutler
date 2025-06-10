@@ -16,7 +16,6 @@ pub fn extract(config: &Value) -> Vec<ExternalCommandState> {
         for (_, tbl) in cmds {
             if let Value::Table(tbl) = tbl {
                 // each command must have a "run = ..." block
-
                 if let Some(template) = tbl.get("run").and_then(Value::as_str) {
                     // substitute to get possible varriables
                     let final_line = substitute(template, vars.as_ref());

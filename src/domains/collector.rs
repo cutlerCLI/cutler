@@ -4,8 +4,6 @@ use std::sync::{Mutex, Once};
 use tokio::process::Command;
 use toml::Value;
 
-use crate::util::logging::{LogLevel, print_log};
-
 lazy_static! {
     static ref DOMAIN_CACHE: Mutex<Option<HashSet<String>>> = Mutex::new(None);
 }
@@ -45,22 +43,7 @@ pub fn collect(parsed: &Value) -> Result<HashMap<String, toml::value::Table>, an
         .ok_or_else(|| anyhow::anyhow!("Config is not a TOML table"))?;
     let mut out = HashMap::new();
 
-    // DEPRECATED in v0.6.4: skipping tables
-    const SKIPPED_TABLES: [&str; 3] = ["commands", "vars", "brew"];
-
-    // notified about deprecation
-    let mut notified_once = false;
-
     for (key, val) in root {
-        if SKIPPED_TABLES.contains(&key.as_str()) {
-            continue;
-        } else if key == "external" {
-            print_log(
-                LogLevel::Warning,
-                "[external] has been DEPRECATED in version v0.5.5 and won't be executed.\n\n Please visit https://hitblast.github.io/cutler for more information regarding the new way of declaring external commands.",
-            );
-        }
-
         if key == "set" {
             if let Value::Table(set_inner) = val {
                 for (domain_key, domain_val) in set_inner {
@@ -74,24 +57,6 @@ pub fn collect(parsed: &Value) -> Result<HashMap<String, toml::value::Table>, an
                 }
             }
             continue;
-        }
-
-        // support legacy top-level reading for defaults
-        // DEPRECATED in v0.6.4
-        if let Value::Table(inner) = val {
-            if !notified_once {
-                print_log(
-                    LogLevel::Info,
-                    "v0.6.4 introduces a new [set] table for setting defaults, and the older mechanism for directly putting defaults in tables is DEPRECATED and will be removed in a later release.\n\nLearn more: https://github.com/hitblast/cutler",
-                );
-                notified_once = true;
-            }
-
-            let mut flat = Vec::with_capacity(inner.len());
-            flatten_domains(Some(key.clone()), inner, &mut flat);
-            for (domain, tbl) in flat {
-                out.insert(domain, tbl);
-            }
         }
     }
     Ok(out)
@@ -117,7 +82,7 @@ pub fn needs_prefix(domain: &str) -> bool {
     !domain.starts_with("NSGlobalDomain")
 }
 
-/// Check (and cache) whether a domain exists via `defaults domains`.
+/// Check whether a domain exists.
 async fn domain_exists(full: &str) -> bool {
     {
         let cache = DOMAIN_CACHE.lock().unwrap();
@@ -137,10 +102,10 @@ async fn domain_exists(full: &str) -> bool {
         .unwrap_or(false)
 }
 
+/// Extension of domain_exists() which also sets the cache.
 /// Public check—errors out if the domain is missing.
 pub async fn check_exists(full_domain: &str) -> Result<(), anyhow::Error> {
     INIT.call_once(|| {
-        // initialize domain cache asynchronously
         tokio::spawn(async {
             if let Ok(out) = Command::new("defaults").arg("domains").output().await {
                 if out.status.success() {
