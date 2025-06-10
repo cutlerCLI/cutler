@@ -1,5 +1,5 @@
-use crate::cli::{Args, Shell};
-use clap::CommandFactory;
+use crate::cli::Args;
+use clap::{CommandFactory, ValueEnum};
 use clap_complete::{
     generate,
     shells::{Bash, Elvish, Fish, PowerShell, Zsh},
@@ -24,4 +24,14 @@ pub async fn generate_completion(shell: Shell) -> anyhow::Result<()> {
     })
     .await??;
     Ok(())
+}
+
+/// Represents the shell types to generate completions for.
+#[derive(Copy, Clone, PartialEq, Eq, ValueEnum, Debug)]
+pub enum Shell {
+    Bash,
+    Zsh,
+    Fish,
+    Elvish,
+    PowerShell,
 }

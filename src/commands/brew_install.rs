@@ -5,7 +5,7 @@ use tokio::process::Command;
 
 use crate::{
     brew::utils::{
-        brew_list, brew_list_taps, disable_auto_update, ensure_brew, restore_auto_update,
+        BrewDiff, compare_brew_state, disable_auto_update, ensure_brew, restore_auto_update,
     },
     commands::{GlobalArgs, Runnable},
     config::{get_config_path, load_config},
@@ -45,31 +45,67 @@ impl Runnable for BrewInstallCmd {
             .and_then(|i| i.as_table())
             .context("No [brew] table found in config")?;
 
-        // tap all taps listed in the config before fetching/installing, but only if not already tapped
-        if let Some(taps_val) = brew_cfg.get("taps").and_then(|v| v.as_array()) {
-            let taps: Vec<String> = taps_val
-                .iter()
-                .filter_map(|x| x.as_str())
-                .map(|s| s.to_string())
-                .collect();
-
-            // get currently tapped taps
-            let tapped_now = brew_list_taps().await.unwrap_or_default();
-            for tap in taps {
-                if tapped_now.contains(&tap) {
-                    if verbose {
-                        print_log(LogLevel::Info, &format!("Already tapped: {}", tap));
-                    }
-                    continue;
+        // check the current brew state, including taps, formulae, and casks
+        let brew_diff = match compare_brew_state(brew_cfg).await {
+            Ok(diff) => {
+                if !diff.extra_formulae.is_empty() {
+                    print_log(
+                        LogLevel::Warning,
+                        &format!(
+                            "Extra installed formulae not in config: {:?}",
+                            diff.extra_formulae
+                        ),
+                    );
                 }
+                if !diff.extra_casks.is_empty() {
+                    print_log(
+                        LogLevel::Warning,
+                        &format!(
+                            "Extra installed casks not in config: {:?}",
+                            diff.extra_casks
+                        ),
+                    );
+                }
+                if !diff.extra_taps.is_empty() {
+                    print_log(
+                        LogLevel::Warning,
+                        &format!("Extra taps not in config: {:?}", diff.extra_taps),
+                    );
+                }
+                if !diff.extra_formulae.is_empty() || !diff.extra_casks.is_empty() {
+                    println!(
+                        "\nRun `cutler brew backup` to synchronize your config with the system."
+                    );
+                }
+                diff
+            }
+            Err(e) => {
+                print_log(
+                    LogLevel::Warning,
+                    &format!("Could not check Homebrew status: {e}"),
+                );
+                // If we cannot compare the state, treat as if nothing is missing.
+                BrewDiff {
+                    missing_formulae: vec![],
+                    extra_formulae: vec![],
+                    missing_casks: vec![],
+                    extra_casks: vec![],
+                    missing_taps: vec![],
+                    extra_taps: vec![],
+                }
+            }
+        };
 
+        // tap only the missing taps reported by BrewDiff
+        if !brew_diff.missing_taps.is_empty() {
+            for tap in brew_diff.missing_taps.iter() {
                 if dry_run {
                     print_log(LogLevel::Dry, &format!("Would tap {}", tap));
                 } else {
                     print_log(LogLevel::Info, &format!("Tapping: {}", tap));
                     let status = Command::new("brew")
                         .arg("tap")
-                        .arg(&tap)
+                        .arg(tap)
                         .stdout(std::process::Stdio::inherit())
                         .stderr(std::process::Stdio::inherit())
                         .stdin(std::process::Stdio::inherit())
@@ -82,108 +118,22 @@ impl Runnable for BrewInstallCmd {
             }
         }
 
-        // fetch currently installed items to skip those
-        let installed_formulas = brew_list(&["list", "--formula"]).await?;
-        let installed_casks = brew_list(&["list", "--cask"]).await?;
-
-        // warn about extra installed formulae not in config
-        let config_formulae = brew_cfg
-            .get("formulae")
-            .and_then(|v| v.as_array())
-            .map(|arr| {
-                arr.iter()
-                    .filter_map(|x| x.as_str())
-                    .map(|s| s.to_string())
-                    .collect::<Vec<String>>()
-            })
-            .unwrap_or_default();
-
-        let extra_formulae: Vec<_> = installed_formulas
-            .iter()
-            .filter(|f| !config_formulae.contains(f))
-            .collect();
-
-        if !extra_formulae.is_empty() {
-            print_log(
-                LogLevel::Warning,
-                &format!(
-                    "Extra installed formulae not in config: {:?}",
-                    extra_formulae
-                ),
-            );
-        }
-
-        // warn about extra installed casks not in config
-        let config_casks = brew_cfg
-            .get("casks")
-            .and_then(|v| v.as_array())
-            .map(|arr| {
-                arr.iter()
-                    .filter_map(|x| x.as_str())
-                    .map(|s| s.to_string())
-                    .collect::<Vec<String>>()
-            })
-            .unwrap_or_default();
-
-        let extra_casks: Vec<_> = installed_casks
-            .iter()
-            .filter(|c| !config_casks.contains(c))
-            .collect();
-
-        if !extra_casks.is_empty() {
-            print_log(
-                LogLevel::Warning,
-                &format!("Extra installed casks not in config: {:?}", extra_casks),
-            );
-        }
-
-        // extra message
-        if !extra_formulae.is_empty() || !extra_casks.is_empty() {
-            println!("\nRun `cutler brew backup` to synchronize your config with the system");
-        }
-
-        // collect all install tasks, skipping already installed
+        // collect install tasks only for missing formulae and casks
         let mut install_tasks: Vec<Vec<String>> = Vec::new();
         let mut to_fetch_formulae: Vec<String> = Vec::new();
         let mut to_fetch_casks: Vec<String> = Vec::new();
 
-        if let Some(arr) = brew_cfg.get("formulae").and_then(|v| v.as_array()) {
-            for v in arr {
-                if let Some(name) = v.as_str() {
-                    if installed_formulas.contains(&name.to_string()) {
-                        if verbose {
-                            print_log(
-                                LogLevel::Info,
-                                &format!("Skipping already installed formula: {}", name),
-                            );
-                        }
-                    } else {
-                        install_tasks.push(vec!["install".to_string(), name.to_string()]);
-                        to_fetch_formulae.push(name.to_string());
-                    }
-                }
-            }
+        for name in brew_diff.missing_formulae.iter() {
+            install_tasks.push(vec!["install".to_string(), name.to_string()]);
+            to_fetch_formulae.push(name.to_string());
         }
-        if let Some(arr) = brew_cfg.get("casks").and_then(|v| v.as_array()) {
-            for v in arr {
-                if let Some(name) = v.as_str() {
-                    if installed_casks.contains(&name.to_string()) {
-                        if verbose {
-                            print_log(
-                                LogLevel::Info,
-                                &format!("Skipping already installed cask: {}", name),
-                            );
-                        }
-                    } else {
-                        install_tasks.push(vec![
-                            "install".to_string(),
-                            "--cask".to_string(),
-                            name.to_string(),
-                        ]);
-                        to_fetch_casks.push(name.to_string());
-                    }
-                }
-            }
+        for name in brew_diff.missing_casks.iter() {
+            install_tasks.push(vec![
+                "install".to_string(),
+                "--cask".to_string(),
+                name.to_string(),
+            ]);
+            to_fetch_casks.push(name.to_string());
         }
 
         if dry_run {

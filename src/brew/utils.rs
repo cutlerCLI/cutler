@@ -93,3 +93,100 @@ pub fn restore_auto_update(prev: Option<String>) {
         }
     }
 }
+
+/// Struct representing the diff between config and installed Homebrew state.
+#[derive(Debug, Default)]
+pub struct BrewDiff {
+    pub missing_formulae: Vec<String>,
+    pub extra_formulae: Vec<String>,
+    pub missing_casks: Vec<String>,
+    pub extra_casks: Vec<String>,
+    pub missing_taps: Vec<String>,
+    pub extra_taps: Vec<String>,
+}
+
+/// Compare the [brew] config table with the actual Homebrew state.
+/// Returns a BrewDiff struct with missing/extra formulae, casks, and taps.
+/// `brew_cfg` should be a reference to the [brew] table as toml::value::Table.
+pub async fn compare_brew_state(brew_cfg: &toml::value::Table) -> Result<BrewDiff> {
+    let config_formulae: Vec<String> = brew_cfg
+        .get("formulae")
+        .and_then(|v| v.as_array())
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|x| x.as_str())
+                .map(|s| s.to_string())
+                .collect()
+        })
+        .unwrap_or_default();
+
+    let config_casks: Vec<String> = brew_cfg
+        .get("casks")
+        .and_then(|v| v.as_array())
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|x| x.as_str())
+                .map(|s| s.to_string())
+                .collect()
+        })
+        .unwrap_or_default();
+
+    let config_taps: Vec<String> = brew_cfg
+        .get("taps")
+        .and_then(|v| v.as_array())
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|x| x.as_str())
+                .map(|s| s.to_string())
+                .collect()
+        })
+        .unwrap_or_default();
+
+    // fetch installed state
+    let installed_formulae = brew_list(&["list", "--formula"]).await?;
+    let installed_casks = brew_list(&["list", "--cask"]).await?;
+    let installed_taps = brew_list_taps().await?;
+
+    // compute missing/extra
+    let missing_formulae: Vec<String> = config_formulae
+        .iter()
+        .filter(|f| !installed_formulae.contains(f))
+        .cloned()
+        .collect();
+    let extra_formulae: Vec<String> = installed_formulae
+        .iter()
+        .filter(|f| !config_formulae.contains(f))
+        .cloned()
+        .collect();
+
+    let missing_casks: Vec<String> = config_casks
+        .iter()
+        .filter(|c| !installed_casks.contains(c))
+        .cloned()
+        .collect();
+    let extra_casks: Vec<String> = installed_casks
+        .iter()
+        .filter(|c| !config_casks.contains(c))
+        .cloned()
+        .collect();
+
+    let missing_taps: Vec<String> = config_taps
+        .iter()
+        .filter(|t| !installed_taps.contains(t))
+        .cloned()
+        .collect();
+    let extra_taps: Vec<String> = installed_taps
+        .iter()
+        .filter(|t| !config_taps.contains(t))
+        .cloned()
+        .collect();
+
+    Ok(BrewDiff {
+        missing_formulae,
+        extra_formulae,
+        missing_casks,
+        extra_casks,
+        missing_taps,
+        extra_taps,
+    })
+}

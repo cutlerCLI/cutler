@@ -4,6 +4,7 @@ use cutler::cli::completion::generate_completion;
 use cutler::cli::{Args, Command};
 use cutler::commands::{GlobalArgs, Runnable};
 use cutler::util::globals::{set_accept_interactive, set_quiet};
+use cutler::util::logging::{LogLevel, print_log};
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() {
@@ -44,7 +45,7 @@ async fn main() {
     };
 
     if let Err(err) = result {
-        eprintln!("❌ error: {}", err);
+        print_log(LogLevel::Error, &err.to_string());
         std::process::exit(1);
     }
 }

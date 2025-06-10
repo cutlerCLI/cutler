@@ -1,9 +1,12 @@
 use super::get_styles;
-use clap::{Parser, Subcommand, ValueEnum};
+use clap::{Parser, Subcommand};
 
-use crate::commands::{
-    ApplyCmd, BrewBackupCmd, BrewInstallCmd, CheckUpdateCmd, ConfigDeleteCmd, ConfigShowCmd,
-    ExecCmd, InitCmd, ResetCmd, SelfUpdateCmd, StatusCmd, UnapplyCmd,
+use crate::{
+    cli::completion::Shell,
+    commands::{
+        ApplyCmd, BrewBackupCmd, BrewInstallCmd, CheckUpdateCmd, ConfigDeleteCmd, ConfigShowCmd,
+        ExecCmd, InitCmd, ResetCmd, SelfUpdateCmd, StatusCmd, UnapplyCmd,
+    },
 };
 
 #[derive(Parser)]
@@ -83,14 +86,4 @@ pub enum ConfigSubcmd {
     Show(ConfigShowCmd),
     /// Delete the configuration file.
     Delete(ConfigDeleteCmd),
-}
-
-// Shell enum and other value enums remain unchanged
-#[derive(Copy, Clone, PartialEq, Eq, ValueEnum, Debug)]
-pub enum Shell {
-    Bash,
-    Zsh,
-    Fish,
-    Elvish,
-    PowerShell,
 }

@@ -22,7 +22,7 @@ pub struct ApplyCmd {
     pub with_brew: bool,
 }
 
-// Represents an apply command job.
+/// Represents an apply command job.
 #[derive(Debug)]
 struct Job {
     domain: String,
@@ -64,7 +64,7 @@ impl Runnable for ApplyCmd {
             Snapshot::new()
         };
 
-        // turn the old snapshot into a HashMap for a quick lookup
+        // turn the old snapshot into a hashmap for a quick lookup
         let mut existing: std::collections::HashMap<_, _> = snap
             .settings
             .into_iter()
@@ -97,14 +97,14 @@ impl Runnable for ApplyCmd {
                     existing.remove(&(eff_dom.clone(), eff_key.clone()));
                     let original = old_entry.as_ref().and_then(|e| e.original_value.clone());
 
-                    // decide “Applying” vs “Updating”
+                    // decide “applying” vs “updating”
                     let action = if old_entry.is_some() {
                         "Updating"
                     } else {
                         "Applying"
                     };
 
-                    // turn TOML value into a -bool/-int/-string + stringified value
+                    // turn toml value into a -bool/-int/-string + stringified value
                     let (flag, val_str) = flags::to_flag(&val)?;
 
                     jobs.push(Job {
@@ -125,7 +125,7 @@ impl Runnable for ApplyCmd {
             }
         }
 
-        // now execute writes concurrently with Tokio tasks
+        // now execute writes concurrently with tokio tasks
         let mut handles = Vec::with_capacity(jobs.len());
         for job in jobs.iter() {
             // clone for move into async task
