@@ -31,14 +31,14 @@ Powerful, declarative settings management for your Mac, with speed.
 
 cutler aims to simplify your macOS setup experience into an "almost" one-command procedure. Define your settings once, then easily apply, track, and revert changes across your system—think of it as infrastructure-as-code for your Mac.
 
-> [!IMPORTANT]
-> This project is still under development. So, if you like it, consider starring! It's free, and it always supports the growth of such programming initiatives :3
+> [!WARNING]
+> This project is still under development. So, if you like it, consider starring! It's free, and it always supports me to make such projects.
 
 Check out the [Usage](#usage) section for more details.
 
 ## Key Features
 
-- Manage the system preferences of your Mac with just a single TOML file (wraps `defaults`).
+- Manage the system preferences of your Mac with just a single TOML file.
 - (WIP) Track installed packages with Homebrew without the slow bundle files.
 - Run external commands, both as hooks, or at your will.
 - Revert back modifications easily with the snapshot mechanism.
