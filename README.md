@@ -39,7 +39,7 @@ Check out the [Usage](#usage) section for more details.
 ## Key Features
 
 - Manage the system preferences of your Mac with just a single TOML file.
-- (WIP) Track installed packages with Homebrew without the slow bundle files.
+- Track installed packages with Homebrew without the slow bundle files.
 - Run external commands, both as hooks, or at your will.
 - Revert back modifications easily with the snapshot mechanism.
 - Made using [Rust](https://rust-lang.org/) for thread-safety and speed.
