@@ -1,312 +1,308 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <!-- Basic -->
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>🍎 cutler - Fast Mac Settings Management</title>
-        <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"
-        />
+  <head>
+    <!-- Basic -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🍎 cutler - Fast Mac Settings Management</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"
+    />
 
-        <!-- Open Graph -->
-        <meta property="og:title" content="cutler" />
-        <meta
-            property="og:description"
-            content="cutler is a powerful, declarative settings manager CLI for your Mac. Inspired by Nix."
-        />
-        <meta
-            property="og:image"
-            content="https://github.com/hitblast/cutler/blob/main/assets/banner.png?raw=true"
-        />
-        <meta property="og:url" content="https://hitblast.github.io/cutler" />
-        <meta property="og:type" content="website" />
+    <!-- Open Graph -->
+    <meta property="og:title" content="cutler" />
+    <meta
+      property="og:description"
+      content="cutler is a powerful, declarative settings manager CLI for your Mac. Inspired by Nix."
+    />
+    <meta
+      property="og:image"
+      content="https://github.com/hitblast/cutler/blob/main/assets/banner.png?raw=true"
+    />
+    <meta property="og:url" content="https://hitblast.github.io/cutler" />
+    <meta property="og:type" content="website" />
 
-        <!-- Styling -->
-        <style>
-            body {
-                font-family:
-                    "ui-sans-serif", "-apple-system", "BlinkMacSystemFont",
-                    "Helvetica Neue", "Roboto", sans-serif;
-                line-height: 1.4;
-                max-width: 800px;
-                margin: 0 auto;
-                padding: 2rem;
-                background-color: #2e2a24;
-                color: #f9d094;
-                font-size: 100%;
-            }
+    <!-- Styling -->
+    <style>
+      body {
+        font-family:
+          "ui-sans-serif", "-apple-system", "BlinkMacSystemFont",
+          "Helvetica Neue", "Roboto", sans-serif;
+        line-height: 1.4;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+        background-color: #2e2a24;
+        color: #f9d094;
+        font-size: 100%;
+      }
 
-            .logo-container {
-                text-align: center;
-                margin-bottom: 2rem;
-            }
+      .logo-container {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
 
-            .logo {
-                width: 180px;
-                border-radius: 20px;
-            }
+      .logo {
+        width: 180px;
+        border-radius: 20px;
+      }
 
-            h1 {
-                text-align: center;
-                font-size: 3.3rem;
-                margin: 0 0 0.1em;
-                color: #f9d094;
-                font-weight: 900;
-                line-height: 1.1;
-                text-shadow: 1px 1px 10px rgba(0, 0, 0, 0.25);
-            }
+      h1 {
+        text-align: center;
+        font-size: 3.3rem;
+        margin: 0 0 0.1em;
+        color: #f9d094;
+        font-weight: 900;
+        line-height: 1.1;
+        text-shadow: 1px 1px 10px rgba(0, 0, 0, 0.25);
+      }
 
-            h1 sup {
-                font-size: 1rem;
-                font-weight: 900;
-                line-height: 1.1;
-                margin-left: 10px;
-                text-shadow: 1px 1px 10px rgba(0, 0, 0, 0.25);
-            }
+      h1 sup {
+        font-size: 1rem;
+        font-weight: 900;
+        line-height: 1.1;
+        margin-left: 10px;
+        text-shadow: 1px 1px 10px rgba(0, 0, 0, 0.25);
+      }
 
-            .tagline {
-                text-align: center;
-                font-size: 1.3rem;
-                color: #f9d094;
-                margin-bottom: 2.5rem;
-            }
+      .tagline {
+        text-align: center;
+        font-size: 1.3rem;
+        color: #f9d094;
+        margin-bottom: 2.5rem;
+      }
 
-            .shields-stars {
-                margin-top: 15px;
-            }
-            .shields-general {
-                margin-left: 10px;
-            }
+      .shields-stars {
+        margin-top: 15px;
+      }
+      .shields-general {
+        margin-left: 10px;
+      }
 
-            h2 {
-                font-size: 2.3rem;
-                font-weight: 800;
-                margin-top: 40px;
-                color: #f9d094;
-                text-align: center;
-                line-height: 1.1;
-                text-shadow: 1px 1px 10px rgba(0, 0, 0, 0.25);
-            }
+      h2 {
+        font-size: 2.3rem;
+        font-weight: 800;
+        margin-top: 40px;
+        color: #f9d094;
+        text-align: center;
+        line-height: 1.1;
+        text-shadow: 1px 1px 10px rgba(0, 0, 0, 0.25);
+      }
 
-            hr {
-                border: none;
-                border-top: 1px solid rgba(0, 0, 0, 0.5);
-                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-                margin-bottom: 30px;
-            }
+      hr {
+        border: none;
+        border-top: 1px solid rgba(0, 0, 0, 0.5);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        margin-bottom: 30px;
+      }
 
-            h3 {
-                font-size: 1.3rem;
-                font-weight: 800;
-                margin-top: 2em;
-                margin-bottom: 1em;
-                color: #f9d094;
-                line-height: 1.1;
-                text-shadow: 1px 1px 10px rgba(0, 0, 0, 0.25);
-            }
+      h3 {
+        font-size: 1.3rem;
+        font-weight: 800;
+        margin-top: 2em;
+        margin-bottom: 1em;
+        color: #f9d094;
+        line-height: 1.1;
+        text-shadow: 1px 1px 10px rgba(0, 0, 0, 0.25);
+      }
 
-            code {
-                padding: 0.2rem 0.4rem;
-                border-radius: 3px;
-                font-family:
-                    "ui-monospace", "SF Mono", "Monaco", "Menlo", "Consolas",
-                    monospace;
-            }
+      code {
+        padding: 0.2rem 0.4rem;
+        border-radius: 3px;
+        font-family:
+          "ui-monospace", "SF Mono", "Monaco", "Menlo", "Consolas", monospace;
+      }
 
-            pre {
-                background: rgb(32, 29, 26);
-                padding: 1rem;
-                border-radius: 0.4em;
-                -moz-border-radius: 0.4em;
-                -webkit-border-radius: 0.4em;
-                overflow-x: auto;
-                margin: 0 0 1em 0;
-            }
+      pre {
+        background: rgb(32, 29, 26);
+        padding: 1rem;
+        border-radius: 0.4em;
+        -moz-border-radius: 0.4em;
+        -webkit-border-radius: 0.4em;
+        overflow-x: auto;
+        margin: 0 0 1em 0;
+      }
 
-            pre code {
-                font-family:
-                    "ui-monospace", "SF Mono", "Monaco", "Menlo", "Consolas",
-                    monospace;
-                font-size: 13px;
-                line-height: 1.6;
-            }
+      pre code {
+        font-family:
+          "ui-monospace", "SF Mono", "Monaco", "Menlo", "Consolas", monospace;
+        font-size: 13px;
+        line-height: 1.6;
+      }
 
-            pre[class*="language-"] {
-                background: rgb(32, 29, 26);
-            }
+      pre[class*="language-"] {
+        background: rgb(32, 29, 26);
+      }
 
-            code[class*="language-"] {
-                text-shadow: none;
-                color: #f9d094;
-            }
+      code[class*="language-"] {
+        text-shadow: none;
+        color: #f9d094;
+      }
 
-            .token.comment,
-            .token.prolog,
-            .token.doctype,
-            .token.cdata {
-                color: #7c7c7c;
-            }
+      .token.comment,
+      .token.prolog,
+      .token.doctype,
+      .token.cdata {
+        color: #7c7c7c;
+      }
 
-            .token.punctuation {
-                color: #c5c8c6;
-            }
+      .token.punctuation {
+        color: #c5c8c6;
+      }
 
-            .token.property,
-            .token.keyword,
-            .token.tag {
-                color: #96cbfe;
-            }
+      .token.property,
+      .token.keyword,
+      .token.tag {
+        color: #96cbfe;
+      }
 
-            .token.string {
-                color: #9c7645;
-            }
+      .token.string {
+        color: #9c7645;
+      }
 
-            .token.operator,
-            .token.entity,
-            .token.url {
-                color: #ededed;
-            }
+      .token.operator,
+      .token.entity,
+      .token.url {
+        color: #ededed;
+      }
 
-            .token.variable {
-                color: teal;
-            }
+      .token.variable {
+        color: teal;
+      }
 
-            .token.important {
-                color: #fd971f;
-            }
+      .token.important {
+        color: #fd971f;
+      }
 
-            .button {
-                display: inline-block;
-                background-color: rgba(162, 107, 20, 0.3);
-                color: #f9d094;
-                padding: 0.8rem 1.5rem;
-                border-radius: 5px;
-                font-weight: bold;
-                margin-right: 1rem;
-                margin-bottom: 1rem;
-            }
+      .button {
+        display: inline-block;
+        background-color: rgba(162, 107, 20, 0.3);
+        color: #f9d094;
+        padding: 0.8rem 1.5rem;
+        border-radius: 5px;
+        font-weight: bold;
+        margin-right: 1rem;
+        margin-bottom: 1rem;
+      }
 
-            .button:hover {
-                background-color: rgba(162, 107, 20, 0.25);
-                text-decoration: none;
-            }
+      .button:hover {
+        background-color: rgba(162, 107, 20, 0.25);
+        text-decoration: none;
+      }
 
-            .emoji {
-                font-size: 1.2em;
-                vertical-align: middle;
-                margin-right: 0.3em;
-            }
+      .emoji {
+        font-size: 1.2em;
+        vertical-align: middle;
+        margin-right: 0.3em;
+      }
 
-            footer {
-                margin-top: 3rem;
-                text-align: center;
-                color: #cccccc;
-                font-size: 0.9rem;
-            }
+      footer {
+        margin-top: 3rem;
+        text-align: center;
+        color: #cccccc;
+        font-size: 0.9rem;
+      }
 
-            .feature {
-                background: rgba(0, 0, 0, 0.2);
-                padding: 1.5rem;
-                border-radius: 10px;
-                margin-bottom: 1.5rem;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            }
+      .feature {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
 
-            .feature h3 {
-                margin-top: 0;
-                color: #f9d094;
-            }
+      .feature h3 {
+        margin-top: 0;
+        color: #f9d094;
+      }
 
-            .warning {
-                background-color: rgba(180, 100, 50, 0.15);
-                border-left: 4px solid #b46432;
-                padding: 0.8rem 1rem;
-                margin: 1rem 0;
-                border-radius: 0 5px 5px 0;
-            }
+      .warning {
+        background-color: rgba(180, 100, 50, 0.15);
+        border-left: 4px solid #b46432;
+        padding: 0.8rem 1rem;
+        margin: 1rem 0;
+        border-radius: 0 5px 5px 0;
+      }
 
-            .note {
-                background-color: rgba(80, 160, 80, 0.15);
-                border-left: 4px solid #4a9e4a;
-                padding: 0.8rem 1rem;
-                margin: 1rem 0;
-                border-radius: 0 5px 5px 0;
-            }
+      .note {
+        background-color: rgba(80, 160, 80, 0.15);
+        border-left: 4px solid #4a9e4a;
+        padding: 0.8rem 1rem;
+        margin: 1rem 0;
+        border-radius: 0 5px 5px 0;
+      }
 
-            a {
-                color: #be862d;
-                text-decoration: none;
-                font-weight: bold;
-            }
+      a {
+        color: #be862d;
+        text-decoration: none;
+        font-weight: bold;
+      }
 
-            a:hover {
-                color: #d3a459;
-                text-decoration: underline;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="logo-container">
-            <img src="assets/logo.png" alt="cutler Logo" class="logo" />
-        </div>
+      a:hover {
+        color: #d3a459;
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="logo-container">
+      <img src="assets/logo.png" alt="cutler Logo" class="logo" />
+    </div>
 
-        <h1>cutler<sup>v0.7.1</sup></h1>
-        <p class="tagline">
-            <strong
-                >Powerful, declarative settings management for your Mac, with
-                speed.</strong
-            >
-            <br />
-            <img
-                alt="GitHub Repo stars"
-                class="shields-stars"
-                src="https://img.shields.io/github/stars/hitblast/cutler"
-            />
-            <img
-                alt="GitHub forks"
-                class="shields-general"
-                src="https://img.shields.io/github/forks/hitblast/cutler"
-            />
-            <img
-                class="shields-general"
-                alt="Crates.io Total Downloads"
-                src="https://img.shields.io/crates/d/cutler?style=social&logo=Rust"
-            />
-        </p>
+    <h1>cutler<sup>v0.7.3</sup></h1>
+    <p class="tagline">
+      <strong
+        >Powerful, declarative settings management for your Mac, with
+        speed.</strong
+      >
+      <br />
+      <img
+        alt="GitHub Repo stars"
+        class="shields-stars"
+        src="https://img.shields.io/github/stars/hitblast/cutler"
+      />
+      <img
+        alt="GitHub forks"
+        class="shields-general"
+        src="https://img.shields.io/github/forks/hitblast/cutler"
+      />
+      <img
+        class="shields-general"
+        alt="Crates.io Total Downloads"
+        src="https://img.shields.io/crates/d/cutler?style=social&logo=Rust"
+      />
+    </p>
 
-        <div>
-            <p>
-                cutler aims to simplify your macOS setup experience into an
-                "almost" one-command procedure. Define your settings once, then
-                easily apply, track, and revert changes across your system—think
-                of it as infrastructure-as-code for your Mac.
-            </p>
-            <p></p>
-            <p>
-                This website is just an overview of what cutler can do. In order
-                to get a comprehensive guide on what cutler can do, please read
-                <a href="https://github.com/hitblast/cutler/blob/main/README.md"
-                    >the official README</a
-                >.
-            </p>
-            <p>
-                If you like this project, consider
-                <a href="https://github.com/hitblast/cutler"
-                    >⭐ starring it! :D</a
-                >
-            </p>
-        </div>
+    <div>
+      <p>
+        cutler aims to simplify your macOS setup experience into an "almost"
+        one-command procedure. Define your settings once, then easily apply,
+        track, and revert changes across your system—think of it as
+        infrastructure-as-code for your Mac.
+      </p>
+      <p></p>
+      <p>
+        This website is just an overview of what cutler can do. In order to get
+        a comprehensive guide on what cutler can do, please read
+        <a href="https://github.com/hitblast/cutler/blob/main/README.md"
+          >the official README</a
+        >.
+      </p>
+      <p>
+        If you like this project, consider
+        <a href="https://github.com/hitblast/cutler">⭐ starring it! :D</a>
+      </p>
+    </div>
 
-        <h2>Installation</h2>
-        <hr />
+    <h2>Installation</h2>
+    <hr />
 
-        <p>Just a single command and you're ready to go!</p>
-        <pre><code class="language-bash">/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/hitblast/cutler/main/install.sh)"</code></pre>
+    <p>Just a single command and you're ready to go!</p>
+    <pre><code class="language-bash">/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/hitblast/cutler/main/install.sh)"</code></pre>
 
-        <p>Or, use one of the following:</p>
-        <pre><code class="language-bash"># Using Homebrew (recommended)
+    <p>Or, use one of the following:</p>
+    <pre><code class="language-bash"># Using Homebrew (recommended)
 brew install hitblast/tap/cutler
 
 # Using cargo
@@ -315,45 +311,45 @@ cargo install cutler
 # Using mise
 mise use -g cargo:cutler</code></pre>
 
-        <h2>Configuration</h2>
-        <hr />
+    <h2>Configuration</h2>
+    <hr />
 
-        <p>
-            In order to setup a comprehensive example on your Mac automatically,
-            use this command:
-        </p>
-        <pre><code class="language-bash">cutler init</code></pre>
-        <p>
-            Or, create a <code>config.toml</code> file within one of the
-            locations listed below and write your preferred settings following
-            the defaults syntax. Check out the
-            <a href="https://github.com/hitblast/cutler/tree/main/examples"
-                >example configuration files</a
-            >
-            to get started quickly!
-        </p>
+    <p>
+      In order to setup a comprehensive example on your Mac automatically, use
+      this command:
+    </p>
+    <pre><code class="language-bash">cutler init</code></pre>
+    <p>
+      Or, create a <code>config.toml</code> file within one of the locations
+      listed below and write your preferred settings following the defaults
+      syntax. Check out the
+      <a href="https://github.com/hitblast/cutler/tree/main/examples"
+        >example configuration files</a
+      >
+      to get started quickly!
+    </p>
 
-        <div class="note">
-            <ul>
-                <li><code>$XDG_CONFIG_HOME/cutler/config.toml</code></li>
-                <li><code>~/.config/cutler/config.toml</code></li>
-                <li><code>~/.config/cutler.toml</code></li>
-                <li><code>config.toml</code> (current directory)</li>
-            </ul>
-        </div>
+    <div class="note">
+      <ul>
+        <li><code>$XDG_CONFIG_HOME/cutler/config.toml</code></li>
+        <li><code>~/.config/cutler/config.toml</code></li>
+        <li><code>~/.config/cutler.toml</code></li>
+        <li><code>config.toml</code> (current directory)</li>
+      </ul>
+    </div>
 
-        <h2 id="shell-integrations">Shell Integrations</h2>
-        <hr />
+    <h2 id="shell-integrations">Shell Integrations</h2>
+    <hr />
 
-        <h4>Shell Prompt</h4>
-        <p>
-            Always keep your system settings on track with the automatic shell
-            prompt by putting this command in your shell configuration:
-        </p>
-        <pre><code class="language-bash">cutler status --prompt</code></pre>
+    <h4>Shell Prompt</h4>
+    <p>
+      Always keep your system settings on track with the automatic shell prompt
+      by putting this command in your shell configuration:
+    </p>
+    <pre><code class="language-bash">cutler status --prompt</code></pre>
 
-        <h4>Completion Scripts</h4>
-        <pre><code class="language-bash"># Bash
+    <h4>Completion Scripts</h4>
+    <pre><code class="language-bash"># Bash
 cutler completion bash > cutler.bash
 mv cutler.bash ~/.bash-completion.d/
 
@@ -363,12 +359,12 @@ mv _cutler ~/.zfunc/
 
 # Other shells like powershell, elvish and fish are also available.</code></pre>
 
-        <h2>Commands Cookbook</h2>
-        <hr />
+    <h2>Commands Cookbook</h2>
+    <hr />
 
-        <div class="feature">
-            <h3>Apply your settings</h3>
-            <pre><code class="language-bash">cutler apply
+    <div class="feature">
+      <h3>Apply your settings</h3>
+      <pre><code class="language-bash">cutler apply
 
 # or, skip external commands (see reference below)
 cutler apply --no-exec
@@ -376,83 +372,82 @@ cutler apply --no-exec
 # or, also invoke `cutler brew install`
 cutler apply --with-brew
 </code></pre>
-            <p>
-                This command applies all settings from your config file and
-                restarts necessary system services.
-            </p>
-        </div>
+      <p>
+        This command applies all settings from your config file and restarts
+        necessary system services.
+      </p>
+    </div>
 
-        <div class="feature">
-            <h3>Check current status</h3>
-            <pre><code class="language-bash">cutler status</code></pre>
-            <p>
-                Compares your configuration with current system settings.<br />
-                See <a href="#shell-integrations">Shell Integrations</a> for
-                another use case of this command in your terminal.
-            </p>
-        </div>
+    <div class="feature">
+      <h3>Check current status</h3>
+      <pre><code class="language-bash">cutler status</code></pre>
+      <p>
+        Compares your configuration with current system settings.<br />
+        See <a href="#shell-integrations">Shell Integrations</a> for another use
+        case of this command in your terminal.
+      </p>
+    </div>
 
-        <div class="feature">
-            <h3>Revert changes</h3>
-            <pre><code class="language-bash">cutler unapply</code></pre>
-            <p>Removes all settings applied by cutler.</p>
-        </div>
+    <div class="feature">
+      <h3>Revert changes</h3>
+      <pre><code class="language-bash">cutler unapply</code></pre>
+      <p>Removes all settings applied by cutler.</p>
+    </div>
 
-        <div class="feature">
-            <h3>⚠️ Hard-reset config defaults</h3>
-            <pre><code class="language-bash">cutler reset --force</code></pre>
-            <p>
-                Resets every defaults domain written in the config file to
-                factory settings.
-                <br />NOTE: This should ONLY be used as a fallback option to
-                <code>cutler unapply</code>.
-            </p>
-        </div>
+    <div class="feature">
+      <h3>⚠️ Hard-reset config defaults</h3>
+      <pre><code class="language-bash">cutler reset --force</code></pre>
+      <p>
+        Resets every defaults domain written in the config file to factory
+        settings.
+        <br />NOTE: This should ONLY be used as a fallback option to
+        <code>cutler unapply</code>.
+      </p>
+    </div>
 
-        <div class="feature">
-            <h3>Manage configuration file</h3>
-            <pre><code class="language-bash"># Shows the contents of the configuration file
+    <div class="feature">
+      <h3>Manage configuration file</h3>
+      <pre><code class="language-bash"># Shows the contents of the configuration file
 cutler config show
 
 # Unapplies and deletes the configuration file
 cutler config delete</code></pre>
-        </div>
+    </div>
 
-        <div class="feature">
-            <h3>Updates</h3>
-            <pre><code class="language-bash"># Check only
+    <div class="feature">
+      <h3>Updates</h3>
+      <pre><code class="language-bash"># Check only
 cutler check-update
 
 # or, upgrade directly (if installed manually):
 cutler self-update</code></pre>
-        </div>
+    </div>
 
-        <div class="note">
-            <p>
-                When you run
-                <code>cutler apply</code>, a snapshot file
-                <code>.cutler_snapshot</code> is created in your home directory.
-                This file records your configuration state and lets you revert
-                to a previous setup if needed. Do not delete this file manually!
-            </p>
-        </div>
+    <div class="note">
+      <p>
+        When you run
+        <code>cutler apply</code>, a snapshot file
+        <code>.cutler_snapshot</code> is created in your home directory. This
+        file records your configuration state and lets you revert to a previous
+        setup if needed. Do not delete this file manually!
+      </p>
+    </div>
 
-        <div class="note">
-            <p>
-                Add <code>--verbose</code> to any command for more detailed
-                output about what's happening behind the scenes.
-            </p>
-        </div>
+    <div class="note">
+      <p>
+        Add <code>--verbose</code> to any command for more detailed output about
+        what's happening behind the scenes.
+      </p>
+    </div>
 
-        <h2>Manage Homebrew</h2>
-        <hr />
+    <h2>Manage Homebrew</h2>
+    <hr />
 
-        <p>
-            cutler eliminates manually installing packages by hand and using
-            bundle files for storing their identifiers using just these two
-            commands:
-        </p>
-        <pre><code class="language-bash"># Backup installed casks and formulae
+    <p>
+      cutler eliminates manually installing packages by hand and using bundle
+      files for storing their identifiers using just these two commands:
+    </p>
+    <pre><code class="language-bash"># Backup installed casks and formulae
 # This will store all formula/cask names to cutler.toml
 cutler brew backup
 
@@ -463,26 +458,26 @@ cutler brew backup --no-deps
 # Now, to install from your cutler.toml file:
 cutler brew install</code></pre>
 
-        <h2>External Commands</h2>
-        <hr />
+    <h2>External Commands</h2>
+    <hr />
 
-        <p>
-            When you apply your defaults using cutler, you can also define
-            custom external commands to be executed in a post-hook fashion:
-        </p>
+    <p>
+      When you apply your defaults using cutler, you can also define custom
+      external commands to be executed in a post-hook fashion:
+    </p>
 
-        <pre><code class="language-bash"># A basic hello
+    <pre><code class="language-bash"># A basic hello
 [commands.greet]
 cmd = "echo \"Hello World\"</code></pre>
 
-        <p>This translates to running:</p>
-        <pre><code class="language-bash">echo "Hello World"</code></pre>
+    <p>This translates to running:</p>
+    <pre><code class="language-bash">echo "Hello World"</code></pre>
 
-        <p>
-            For more complex scenarios, you can use a more advanced structure
-            with separate arguments and variables:
-        </p>
-        <pre><code class="language-bash"># Define reusable variables here:
+    <p>
+      For more complex scenarios, you can use a more advanced structure with
+      separate arguments and variables:
+    </p>
+    <pre><code class="language-bash"># Define reusable variables here:
 [vars]
 common_args = ["Hello", "World"]
 some_string = "Pancakes!"
@@ -491,56 +486,52 @@ some_string = "Pancakes!"
 run = "echo $common_args"
 sudo = false</code></pre>
 
-        <p>If you want to run them:</p>
-        <pre><code class="language-bash"># combined execution
+    <p>If you want to run them:</p>
+    <pre><code class="language-bash"># combined execution
 cutler exec
 
 # or
 cutler exec greet</code></pre>
 
-        <h2>Some Personal Take</h2>
-        <hr />
-        <p>
-            If you scroll around the
-            <a href="https://github.com/hitblast/cutler/releases"
-                >GitHub Releases</a
-            >
-            section, you will see more "personal takes" which are randomly
-            written notes of mine to share some open thoughts.<br /><br />
-            Anyways, cutler is one of my favorite concurrent hobby projects
-            right now. If you'd like to support me, consider starring this
-            project! :3
-        </p>
+    <h2>Some Personal Take</h2>
+    <hr />
+    <p>
+      If you scroll around the
+      <a href="https://github.com/hitblast/cutler/releases">GitHub Releases</a>
+      section, you will see more "personal takes" which are randomly written
+      notes of mine to share some open thoughts.<br /><br />
+      Anyways, cutler is one of my favorite concurrent hobby projects right now.
+      If you'd like to support me, consider starring this project! :3
+    </p>
 
-        <div style="text-align: center; margin: 3rem 0">
-            <a href="https://github.com/hitblast/cutler" class="button"
-                ><span class="emoji">⭐</span> View Source on GitHub</a
-            >
-            <a href="https://macos-defaults.com/" class="button"
-                ><span class="emoji">📚</span> macOS Defaults Reference</a
-            >
-            <br />
-            <a href="dev-docs/cutler/index.html" class="button">
-                <span class="emoji">📖</span> API Reference
-            </a>
-        </div>
+    <div style="text-align: center; margin: 3rem 0">
+      <a href="https://github.com/hitblast/cutler" class="button"
+        ><span class="emoji">⭐</span> View Source on GitHub</a
+      >
+      <a href="https://macos-defaults.com/" class="button"
+        ><span class="emoji">📚</span> macOS Defaults Reference</a
+      >
+      <br />
+      <a href="dev-docs/cutler/index.html" class="button">
+        <span class="emoji">📖</span> API Reference
+      </a>
+    </div>
 
-        <footer>
-            <p>
-                cutler is open-sourced under the MIT License. The website has
-                been inspired by <a href="https://brew.sh">Homebrew</a>.
-            </p>
-            <p>
-                Need more help? Run <code>cutler help</code> for additional
-                information.
-            </p>
-            <p>
-                Website and project made & maintained by
-                <a href="https://hitblast.github.io">HitBlast</a>.
-            </p>
-        </footer>
+    <footer>
+      <p>
+        cutler is open-sourced under the MIT License. The website has been
+        inspired by <a href="https://brew.sh">Homebrew</a>.
+      </p>
+      <p>
+        Need more help? Run <code>cutler help</code> for additional information.
+      </p>
+      <p>
+        Website and project made & maintained by
+        <a href="https://hitblast.github.io">HitBlast</a>.
+      </p>
+    </footer>
 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
-    </body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  </body>
 </html>
