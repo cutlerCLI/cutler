@@ -4,6 +4,7 @@ use cutler::cli::completion::generate_completion;
 use cutler::cli::{Args, Command};
 use cutler::commands::{GlobalArgs, Runnable};
 use cutler::util::globals::{set_accept_interactive, set_quiet};
+use cutler::util::io::restart_system_services;
 use cutler::util::logging::{LogLevel, print_log};
 
 #[tokio::main(flavor = "multi_thread")]
@@ -47,5 +48,7 @@ async fn main() {
     if let Err(err) = result {
         print_log(LogLevel::Error, &err.to_string());
         std::process::exit(1);
+    } else if !args.no_restart_services {
+        restart_system_services(&globals).await.unwrap();
     }
 }
