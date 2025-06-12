@@ -28,7 +28,7 @@ pub async fn restart_system_services(g: &GlobalArgs) -> Result<(), anyhow::Error
     let quiet = g.quiet;
 
     // services to restart
-    const SERVICES: &[&str] = &["cfprefsd", "Finder", "Dock", "SystemUIServer"];
+    const SERVICES: &[&str] = &["cfprefsd", "SystemUIServer", "Dock", "Finder"];
 
     for svc in SERVICES {
         if dry_run {
