@@ -20,7 +20,6 @@ pub fn confirm_action(prompt: &str) -> Result<bool> {
     let result = Confirm::new().with_prompt(prompt).interact()?;
     Ok(result)
 }
-
 /// Restart Finder, Dock, SystemUIServer so defaults take effect.
 pub async fn restart_system_services(g: &GlobalArgs) -> Result<(), anyhow::Error> {
     let verbose = g.verbose;
@@ -28,9 +27,30 @@ pub async fn restart_system_services(g: &GlobalArgs) -> Result<(), anyhow::Error
     let quiet = g.quiet;
 
     // services to restart
-    const SERVICES: &[&str] = &["cfprefsd", "Finder", "Dock", "SystemUIServer"];
+    const OTHER_SERVICES: &[&str] = &["Finder", "Dock", "SystemUIServer"];
+    let cfprefsd = "cfprefsd";
 
-    for svc in SERVICES {
+    // restart cfprefsd first
+    if dry_run {
+        if verbose && !quiet {
+            print_log(
+                LogLevel::Dry,
+                &format!("Would restart {} first for cache deletion", cfprefsd),
+            );
+        }
+    } else {
+        let out = Command::new("killall").arg(cfprefsd).output().await?;
+        if !out.status.success() {
+            print_log(LogLevel::Error, &format!("Failed to restart {}", cfprefsd));
+        } else if verbose && !quiet {
+            print_log(LogLevel::Success, &format!("{} restarted", cfprefsd));
+        }
+        // wait a moment to allow cfprefsd to restart
+        tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+    }
+
+    // restart the other services
+    for svc in OTHER_SERVICES {
         if dry_run {
             if verbose && !quiet {
                 print_log(LogLevel::Dry, &format!("Would restart {}", svc));
@@ -45,7 +65,9 @@ pub async fn restart_system_services(g: &GlobalArgs) -> Result<(), anyhow::Error
         }
     }
     if !verbose && !dry_run && !quiet {
-        println!("\n🍎 Done. System services restarted.");
+        println!(
+            "\n🍎 Done. System services restarted. Allow your Mac some time before another `cutler apply` so that it can reset the cache properly."
+        );
     } else if dry_run && !quiet {
         print_log(LogLevel::Dry, "Would restart system services.");
     }
