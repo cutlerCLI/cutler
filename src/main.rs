@@ -48,7 +48,5 @@ async fn main() {
     if let Err(err) = result {
         print_log(LogLevel::Error, &err.to_string());
         std::process::exit(1);
-    } else if !args.no_restart_services {
-        restart_system_services(&globals).await.unwrap();
     }
 }

@@ -122,6 +122,11 @@ impl Runnable for UnapplyCmd {
             }
         }
 
+        // Restart system services if requested
+        if !g.no_restart_services {
+            crate::util::io::restart_system_services(g).await?;
+        }
+
         Ok(())
     }
 }
