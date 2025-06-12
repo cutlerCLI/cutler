@@ -66,7 +66,7 @@ pub async fn restart_system_services(g: &GlobalArgs) -> Result<(), anyhow::Error
     }
     if !verbose && !dry_run && !quiet {
         println!(
-            "\n🍎 Done. System services restarted. Allow your Mac some time before another `cutler apply` so that it can reset the cache properly."
+            "\n🍎 Done. System services restarted. Allow some time before running another `cutler apply` so that it can reset the cache properly."
         );
     } else if dry_run && !quiet {
         print_log(LogLevel::Dry, "Would restart system services.");
