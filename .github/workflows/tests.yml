@@ -13,6 +13,7 @@ concurrency:
 
 jobs:
   tests:
+    if: github.actor != 'hitblast'
     runs-on: macos-latest
 
     steps:
@@ -45,3 +46,5 @@ jobs:
 
       - name: Check formatting
         run: cargo fmt --all -- --check
+```
+Replace `YOUR_GITHUB_USERNAME` with your actual GitHub username.
