@@ -46,5 +46,3 @@ jobs:
 
       - name: Check formatting
         run: cargo fmt --all -- --check
-```
-Replace `YOUR_GITHUB_USERNAME` with your actual GitHub username.
