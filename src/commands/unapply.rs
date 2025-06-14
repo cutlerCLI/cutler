@@ -67,13 +67,10 @@ impl Runnable for UnapplyCmd {
                 let pref_value = toml_to_prefvalue(&string_to_toml_value(&orig))?;
                 batch_restores
                     .entry(domain_obj)
-                    .or_insert_with(Vec::new)
+                    .or_default()
                     .push((s.key, pref_value));
             } else {
-                batch_deletes
-                    .entry(domain_obj)
-                    .or_insert_with(Vec::new)
-                    .push(s.key);
+                batch_deletes.entry(domain_obj).or_default().push(s.key);
             }
         }
 
