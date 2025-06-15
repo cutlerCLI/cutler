@@ -43,15 +43,13 @@ pub async fn ensure_xcode_clt(dry_run: bool) -> Result<()> {
         if !status.success() {
             anyhow::bail!("Failed to launch Xcode Command Line Tools installer.");
         }
+
         print_log(
             LogLevel::Info,
-            "Xcode Command Line Tools installer launched. Please complete installation before continuing.",
+            "Xcode Command Line Tools installer launched.",
         );
-        // Wait for user to finish installation
-        // Optionally, could poll for completion, but for now, just bail out.
-        anyhow::bail!(
-            "Xcode Command Line Tools installation required. Please re-run the command after installation completes."
-        );
+
+        anyhow::bail!("Re-run your command after installation completes.");
     } else {
         anyhow::bail!(
             "Xcode Command Line Tools are required for Homebrew operations, but were not found."
