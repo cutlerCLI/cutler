@@ -45,9 +45,7 @@ pub async fn restart_system_services(g: &GlobalArgs) -> Result<(), anyhow::Error
         }
     }
     if !verbose && !dry_run && !quiet {
-        println!(
-            "\n🍎 Done. System services restarted. Allow your Mac some time before running cutler again."
-        );
+        println!("\n🍎 Done. Log out and log back in to allow your Mac some time!");
     } else if dry_run && !quiet {
         print_log(LogLevel::Dry, "Would restart system services.");
     }
