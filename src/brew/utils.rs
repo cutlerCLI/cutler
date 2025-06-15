@@ -4,8 +4,66 @@ use anyhow::Result;
 use std::env;
 use tokio::process::Command;
 
+/// Ensures Xcode Command Line Tools are installed.
+/// If not, prompts the user to install them (unless dry_run).
+pub async fn ensure_xcode_clt(dry_run: bool) -> Result<()> {
+    let output = Command::new("xcode-select").arg("-p").output().await;
+
+    let clt_installed = match output {
+        Ok(out) if out.status.success() => {
+            let path = String::from_utf8_lossy(&out.stdout).trim().to_string();
+            !path.is_empty()
+        }
+        _ => false,
+    };
+
+    if clt_installed {
+        return Ok(());
+    }
+
+    if dry_run {
+        print_log(
+            LogLevel::Info,
+            "Would install Xcode Command Line Tools (not detected)",
+        );
+        return Ok(());
+    }
+
+    print_log(
+        LogLevel::Warning,
+        "Xcode Command Line Tools are not installed.",
+    );
+
+    if confirm_action("Install Xcode Command Line Tools now?")? {
+        print_log(LogLevel::Info, "Installing Xcode Command Line Tools...");
+        let status = Command::new("xcode-select")
+            .arg("--install")
+            .status()
+            .await?;
+        if !status.success() {
+            anyhow::bail!("Failed to launch Xcode Command Line Tools installer.");
+        }
+        print_log(
+            LogLevel::Info,
+            "Xcode Command Line Tools installer launched. Please complete installation before continuing.",
+        );
+        // Wait for user to finish installation
+        // Optionally, could poll for completion, but for now, just bail out.
+        anyhow::bail!(
+            "Xcode Command Line Tools installation required. Please re-run the command after installation completes."
+        );
+    } else {
+        anyhow::bail!(
+            "Xcode Command Line Tools are required for Homebrew operations, but were not found."
+        );
+    }
+}
+
 /// Checks if Homebrew is installed on the machine (should be recognizable by $PATH).
 pub async fn ensure_brew(dry_run: bool) -> Result<()> {
+    // ensure xcode command-line tools first
+    ensure_xcode_clt(dry_run).await?;
+
     let is_installed = Command::new("brew")
         .arg("--version")
         .output()
