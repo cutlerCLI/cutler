@@ -283,23 +283,6 @@ This will apply your configuration, but only errors and warnings will be "hushed
 
 ## Shell Integrations
 
-### Status Prompt
-
-If you would like to be constantly notified by cutler about whether your system has moved from the configuration, you can put this command to run during your shell init:
-
-```bash
-$ cutler status --prompt
-```
-
-For example, if you would like to set cutler up for `bash`, run this command and restart your shell instance.
-
-```bash
-$ eval $(cutler status --prompt) > .bashrc
-```
-
-> [!NOTE]
-> The `--prompt` flag above is hidden by default when accessing from the help menu.
-
 ### Completions
 
 cutler supports built-in shell completion for your ease of access for a variety of system shells, including
