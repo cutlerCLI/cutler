@@ -374,9 +374,9 @@ dependencies = [
 
 [[package]]
 name = "defaults-rs"
-version = "0.1.7"
+version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2f549baa7c42314870e3c3096db249226a87536060b0fb8ed86c11dd5c9f396"
+checksum = "a7a425dc256b5750b4c2d5b9a2fe93665c8327dde4acbe1a24b165e493619889"
 dependencies = [
  "clap",
  "futures",
