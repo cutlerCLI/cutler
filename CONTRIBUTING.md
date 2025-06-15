@@ -6,6 +6,7 @@ This is the standard contribution/development guidelines for the project. You ma
 
 - [Getting Started](#getting-started)
 - [Production Release Workflow](#production-release-workflow)
+- [Pull Request Guidelines](#pull-request-guidelines)
 - [License](#licensing)
 
 ## Getting Started
@@ -58,7 +59,6 @@ $ hookman build
 > [!NOTE]
 > The unit tests in the CI workflow are done using an **Apple Silicon M1 (3-core)** runner provided by GitHub Actions. See [this page](https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources) in GitHub's documentation for more information on all the runners. If the runners used in this project get outdated and don't get a bump, you may suggest one through [GitHub Issues](https://github.com/hitblast/cutler/issues/new).
 
-
 ### Build Reproduction
 
 You can easily create a release build for cutler using the following command:
@@ -80,6 +80,32 @@ Simply run the following command to format the code:
 ```bash
 $ cargo fmt --all
 ```
+
+## Pull Request Guidelines
+
+Before submitting a pull request, please ensure the following:
+
+- Your code is well-documented and follows the established coding standards.
+- The repository is correctly forked and your working branch is up-to-date with the latest changes from the main branch.
+- All tests pass locally, and you have verified that your changes do not introduce regressions.
+- If your pull request fixes an issue, mention the issue number in your PR description (e.g., Fixes #123).
+- For larger changes, consider discussing your approach by opening an issue first.
+
+Pull requests and issues must have the following pattern:
+
+```
+(<type>) <title>
+```
+
+Possible types include:
+
+- feat: New feature or enhancement
+- fix: Bug fix
+- docs: Documentation update
+- style: Code style or formatting change
+- refactor: Code refactoring without changing functionality
+- test: Test-related changes
+- chore: Maintenance or administrative tasks
 
 ## License
 
