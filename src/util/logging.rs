@@ -18,6 +18,7 @@ pub enum LogLevel {
     Info,
     CommandOutput,
     Dry,
+    Fruitful, // 🍎
 }
 
 /// Central logger.
@@ -34,9 +35,14 @@ pub fn print_log(level: LogLevel, msg: &str) {
         LogLevel::Info => ("INFO", BOLD),
         LogLevel::CommandOutput => ("CMD OUT", PINK),
         LogLevel::Dry => ("DRY-RUN", ORANGE),
+        LogLevel::Fruitful => ("🍎", ""), // Apple emoji, no color
     };
 
-    let line = format!("{}[{}]{} {}", color, tag, RESET, msg);
+    let line = if level == LogLevel::Fruitful {
+        format!("🍎 {}", msg)
+    } else {
+        format!("{}[{}]{} {}", color, tag, RESET, msg)
+    };
 
     if level == LogLevel::Error || level == LogLevel::Warning {
         eprintln!("{}", line);

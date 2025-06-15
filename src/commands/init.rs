@@ -29,7 +29,6 @@ impl Runnable for InitCmd {
     async fn run(&self, g: &GlobalArgs) -> Result<()> {
         let verbose = g.verbose;
         let dry_run = g.dry_run;
-        let quiet = g.quiet;
         let config_path = get_config_path();
 
         let exists = fs::metadata(&config_path).await.is_ok();
@@ -99,10 +98,13 @@ impl Runnable for InitCmd {
                     LogLevel::Success,
                     &format!("Configuration file created at: {:?}", config_path),
                 );
-            } else if !quiet {
-                println!(
-                    "🍎 New configuration created at {:?}\nReview and customize this file before running cutler again.",
-                    config_path
+            } else {
+                print_log(
+                    LogLevel::Fruitful,
+                    &format!(
+                        "New configuration created at {:?}\nReview and customize this file before running cutler again.",
+                        config_path
+                    ),
                 );
             }
         }

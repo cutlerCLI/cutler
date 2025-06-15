@@ -31,19 +31,16 @@ impl Runnable for ResetCmd {
         }
 
         let verbose = g.verbose;
-        let quiet = g.quiet;
         let dry_run = g.dry_run;
 
-        if !quiet {
-            print_log(
-                LogLevel::Warning,
-                "This will DELETE all settings defined in your config file.",
-            );
-            print_log(
-                LogLevel::Warning,
-                "Settings will be reset to macOS defaults, not to their previous values.",
-            );
-        }
+        print_log(
+            LogLevel::Warning,
+            "This will DELETE all settings defined in your config file.",
+        );
+        print_log(
+            LogLevel::Warning,
+            "Settings will be reset to macOS defaults, not to their previous values.",
+        );
 
         if !self.force && !confirm_action("Are you sure you want to continue?")? {
             return Ok(());
@@ -74,7 +71,7 @@ impl Runnable for ResetCmd {
                     } else {
                         match Preferences::delete(domain_obj, Some(&eff_key)).await {
                             Ok(_) => {
-                                if verbose && !quiet {
+                                if verbose {
                                     print_log(
                                         LogLevel::Success,
                                         &format!("Reset {}.{} to system default", eff_dom, eff_key),
@@ -89,7 +86,7 @@ impl Runnable for ResetCmd {
                             }
                         }
                     }
-                } else if verbose && !quiet {
+                } else if verbose {
                     print_log(
                         LogLevel::Info,
                         &format!("Skipping {}.{} (not set)", eff_dom, eff_key),
@@ -102,18 +99,16 @@ impl Runnable for ResetCmd {
         let snap_path = get_snapshot_path();
         if snap_path.exists() {
             if dry_run {
-                if !quiet {
-                    print_log(
-                        LogLevel::Dry,
-                        &format!("Would remove snapshot at {:?}", snap_path),
-                    );
-                }
+                print_log(
+                    LogLevel::Dry,
+                    &format!("Would remove snapshot at {:?}", snap_path),
+                );
             } else if let Err(e) = fs::remove_file(&snap_path).await {
                 print_log(
                     LogLevel::Warning,
                     &format!("Failed to remove snapshot: {}", e),
                 );
-            } else if verbose && !quiet {
+            } else if verbose {
                 print_log(
                     LogLevel::Success,
                     &format!("Removed snapshot at {:?}", snap_path),
@@ -121,9 +116,10 @@ impl Runnable for ResetCmd {
             }
         }
 
-        if !quiet {
-            println!("\n🍎 Reset complete. All configured settings have been removed.");
-        }
+        print_log(
+            LogLevel::Fruitful,
+            "Reset complete. All configured settings have been removed.",
+        );
 
         // restart system services if requested
         if !g.no_restart_services {

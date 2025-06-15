@@ -16,7 +16,6 @@ pub struct StatusCmd;
 #[async_trait]
 impl Runnable for StatusCmd {
     async fn run(&self, g: &GlobalArgs) -> Result<()> {
-        let quiet = g.quiet;
         let verbose = g.verbose;
 
         let config_path = get_config_path();
@@ -53,33 +52,39 @@ impl Runnable for StatusCmd {
         for (eff_dom, eff_key, desired, current, is_diff) in outcomes {
             if is_diff {
                 any_diff = true;
-                if !quiet {
-                    println!(
+                print_log(
+                    LogLevel::Info,
+                    &format!(
                         "{}{}.{}: should be {} (currently {}{}{}){}",
                         BOLD, eff_dom, eff_key, desired, RED, current, RESET, RESET,
-                    );
-                }
-            } else if verbose && !quiet {
-                println!(
-                    "{}{}.{}: {} (matches desired){}",
-                    GREEN, eff_dom, eff_key, current, RESET
+                    ),
+                );
+            } else if verbose {
+                print_log(
+                    LogLevel::Info,
+                    &format!(
+                        "{}{}.{}: {} (matches desired){}",
+                        GREEN, eff_dom, eff_key, current, RESET
+                    ),
                 );
             }
         }
 
-        if !quiet {
-            if !any_diff {
-                println!("\n🍎 All settings already match your configuration.");
-            } else {
-                println!("\nRun `cutler apply` to apply these changes from your config.");
-            }
+        if !any_diff {
+            print_log(
+                LogLevel::Fruitful,
+                "All settings already match your configuration.",
+            );
+        } else {
+            print_log(
+                LogLevel::Info,
+                "Run `cutler apply` to apply these changes from your config.",
+            );
         }
 
         // brew status reporting
         if let Some(brew_val) = toml.get("brew").and_then(|v| v.as_table()) {
-            if !quiet {
-                println!("\n🍺 Homebrew status:");
-            }
+            print_log(LogLevel::Fruitful, "Homebrew status:");
 
             // ensure homebrew is installed (skip if not)
             if let Err(e) = ensure_brew(g.dry_run).await {
@@ -97,50 +102,76 @@ impl Runnable for StatusCmd {
                         let mut any_brew_diff = false;
                         if !missing_formulae.is_empty() {
                             any_brew_diff = true;
-                            println!(
-                                "{}Formulae missing:{} {}",
-                                RED,
-                                RESET,
-                                missing_formulae.join(", ")
+                            print_log(
+                                LogLevel::Info,
+                                &format!(
+                                    "{}Formulae missing:{} {}",
+                                    RED,
+                                    RESET,
+                                    missing_formulae.join(", ")
+                                ),
                             );
                         }
                         if !extra_formulae.is_empty() {
                             any_brew_diff = true;
-                            println!(
-                                "{}Extra installed formulae:{} {}",
-                                RED,
-                                RESET,
-                                extra_formulae.join(", ")
+                            print_log(
+                                LogLevel::Info,
+                                &format!(
+                                    "{}Extra installed formulae:{} {}",
+                                    RED,
+                                    RESET,
+                                    extra_formulae.join(", ")
+                                ),
                             );
                         }
                         if !missing_casks.is_empty() {
                             any_brew_diff = true;
-                            println!(
-                                "{}Casks missing:{} {}",
-                                RED,
-                                RESET,
-                                missing_casks.join(", ")
+                            print_log(
+                                LogLevel::Info,
+                                &format!(
+                                    "{}Casks missing:{} {}",
+                                    RED,
+                                    RESET,
+                                    missing_casks.join(", ")
+                                ),
                             );
                         }
                         if !extra_casks.is_empty() {
                             any_brew_diff = true;
-                            println!(
-                                "{}Extra installed casks:{} {}",
-                                RED,
-                                RESET,
-                                extra_casks.join(", ")
+                            print_log(
+                                LogLevel::Info,
+                                &format!(
+                                    "{}Extra installed casks:{} {}",
+                                    RED,
+                                    RESET,
+                                    extra_casks.join(", ")
+                                ),
                             );
                         }
                         if !missing_taps.is_empty() {
                             any_brew_diff = true;
-                            println!("{}Taps missing:{} {}", RED, RESET, missing_taps.join(", "));
+                            print_log(
+                                LogLevel::Info,
+                                &format!(
+                                    "{}Taps missing:{} {}",
+                                    RED,
+                                    RESET,
+                                    missing_taps.join(", ")
+                                ),
+                            );
                         }
                         if !extra_taps.is_empty() {
                             any_brew_diff = true;
-                            println!("{}Extra tapped:{} {}", RED, RESET, extra_taps.join(", "));
+                            print_log(
+                                LogLevel::Info,
+                                &format!("{}Extra tapped:{} {}", RED, RESET, extra_taps.join(", ")),
+                            );
                         }
-                        if !any_brew_diff && !quiet {
-                            println!("All Homebrew things match your configuration.");
+                        if !any_brew_diff {
+                            print_log(
+                                LogLevel::Fruitful,
+                                "All Homebrew things match your configuration.",
+                            );
                         }
                     }
                     Err(e) => {

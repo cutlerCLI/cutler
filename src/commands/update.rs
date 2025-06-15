@@ -29,9 +29,6 @@ impl Runnable for CheckUpdateCmd {
                 &format!("Current version: {}", current_version),
             );
         }
-        if !quiet {
-            println!("Checking for updates...");
-        }
 
         // Fetch latest release tag from GitHub API
         let url = "https://api.github.com/repos/hitblast/cutler/releases/latest";
@@ -92,20 +89,16 @@ impl Runnable for CheckUpdateCmd {
                 }
             }
             Ordering::Equal => {
-                if !quiet {
-                    print_log(LogLevel::Success, "You are using the latest version.");
-                }
+                print_log(LogLevel::Success, "You are using the latest version.");
             }
             Ordering::Greater => {
-                if !quiet {
-                    print_log(
-                        LogLevel::Info,
-                        &format!(
-                            "You are on a development version ({}) ahead of latest release ({}).",
-                            current_version, latest_version
-                        ),
-                    );
-                }
+                print_log(
+                    LogLevel::Info,
+                    &format!(
+                        "You are on a development version ({}) ahead of latest release ({}).",
+                        current_version, latest_version
+                    ),
+                );
             }
         }
 

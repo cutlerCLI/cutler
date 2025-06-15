@@ -22,7 +22,6 @@ impl Runnable for ExecCmd {
     async fn run(&self, g: &GlobalArgs) -> Result<()> {
         let verbose = g.verbose;
         let dry_run = g.dry_run;
-        let quiet = g.quiet;
 
         let config_path_opt = crate::util::config::ensure_config_exists_or_init(g).await?;
         let config_path = match config_path_opt {
@@ -60,12 +59,10 @@ impl Runnable for ExecCmd {
 
         // save the snapshot before executing
         if dry_run {
-            if !quiet {
-                print_log(
-                    LogLevel::Dry,
-                    &format!("Would save snapshot to {:?}", snap_path),
-                );
-            }
+            print_log(
+                LogLevel::Dry,
+                &format!("Would save snapshot to {:?}", snap_path),
+            );
         } else {
             let snap = snapshot;
             let path = snap_path.clone();
@@ -85,8 +82,11 @@ impl Runnable for ExecCmd {
             runner::run_all(&toml, verbose, dry_run).await?;
         }
 
-        if !verbose && !dry_run && !quiet {
-            println!("\n🍎 External commands executed successfully.");
+        if !verbose && !dry_run {
+            print_log(
+                LogLevel::Fruitful,
+                "External commands executed successfully.",
+            );
         }
 
         Ok(())

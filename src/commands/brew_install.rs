@@ -19,17 +19,14 @@ pub struct BrewInstallCmd;
 impl Runnable for BrewInstallCmd {
     async fn run(&self, g: &GlobalArgs) -> Result<()> {
         let cfg_path = get_config_path();
-        let quiet = g.quiet;
         let dry_run = g.dry_run;
         let verbose = g.verbose;
 
         if !cfg_path.exists() {
-            if !quiet {
-                print_log(
-                    LogLevel::Error,
-                    "No config file found. Run `cutler init` to start.",
-                );
-            }
+            print_log(
+                LogLevel::Error,
+                "No config file found. Run `cutler init` to start.",
+            );
             return Ok(());
         }
 
@@ -146,7 +143,7 @@ impl Runnable for BrewInstallCmd {
             if !to_fetch_formulae.is_empty() || !to_fetch_casks.is_empty() {
                 print_log(LogLevel::Info, "Pre-downloading all formulae and casks...");
             }
-            fetch_all(&to_fetch_formulae, &to_fetch_casks, verbose && !quiet).await;
+            fetch_all(&to_fetch_formulae, &to_fetch_casks, verbose).await;
 
             // sequentially install
             install_sequentially(install_tasks).await?;
