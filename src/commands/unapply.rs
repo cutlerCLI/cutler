@@ -7,7 +7,7 @@ use tokio::fs;
 
 use crate::{
     commands::{GlobalArgs, Runnable},
-    defaults::{convert::toml_to_prefvalue, executor},
+    defaults::convert::toml_to_prefvalue,
     snapshot::state::{Snapshot, get_snapshot_path},
     util::logging::{LogLevel, print_log},
 };
@@ -56,7 +56,7 @@ impl Runnable for UnapplyCmd {
             HashMap::new();
         let mut batch_deletes: HashMap<Domain, Vec<String>> = HashMap::new();
 
-        // peverse order to undo in correct sequence
+        // reverse order to undo in correct sequence
         for s in snapshot.settings.into_iter().rev() {
             let domain_obj = if s.domain == "NSGlobalDomain" {
                 Domain::Global
@@ -103,7 +103,13 @@ impl Runnable for UnapplyCmd {
         } else {
             // perform batch restores
             if !batch_restores.is_empty() {
-                match Preferences::write_batch(batch_restores.into_iter().collect()).await {
+                let mut batch_vec = Vec::new();
+                for (domain, entries) in batch_restores {
+                    for (key, value) in entries {
+                        batch_vec.push((domain.clone(), key, value));
+                    }
+                }
+                match Preferences::write_batch(batch_vec).await {
                     Ok(_) => {
                         if verbose {
                             print_log(LogLevel::Success, "All settings restored (batch write).");
@@ -116,14 +122,22 @@ impl Runnable for UnapplyCmd {
             }
 
             // perform batch deletes
-            for (domain, keys) in batch_deletes {
-                let domain_str = match &domain {
-                    Domain::Global => "NSGlobalDomain",
-                    Domain::User(s) => s,
-                };
-
-                for key in keys {
-                    let _ = executor::delete(domain_str, &key, "Removing", verbose, dry_run).await;
+            if !batch_deletes.is_empty() {
+                let mut delete_vec = Vec::new();
+                for (domain, keys) in batch_deletes {
+                    for key in keys {
+                        delete_vec.push((domain.clone(), Some(key)));
+                    }
+                }
+                match Preferences::delete_batch(delete_vec).await {
+                    Ok(_) => {
+                        if verbose {
+                            print_log(LogLevel::Success, "All settings removed (batch delete).");
+                        }
+                    }
+                    Err(e) => {
+                        print_log(LogLevel::Error, &format!("Batch delete failed: {e}"));
+                    }
                 }
             }
         }

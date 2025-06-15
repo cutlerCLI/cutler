@@ -11,7 +11,6 @@ use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
 use defaults_rs::{Domain, preferences::Preferences};
-use std::collections::HashMap;
 use toml::Value;
 
 #[derive(Args, Debug)]
@@ -128,8 +127,8 @@ impl Runnable for ApplyCmd {
         }
 
         // use defaults-rs batch write API for all changed settings
-        // group jobs by domain for batch write
-        let mut batch: HashMap<Domain, Vec<(String, defaults_rs::PrefValue)>> = HashMap::new();
+        // collect jobs into a Vec<(Domain, String, PrefValue)>
+        let mut batch: Vec<(Domain, String, defaults_rs::PrefValue)> = Vec::new();
 
         for job in &jobs {
             let domain_obj = if job.domain == "NSGlobalDomain" {
@@ -148,15 +147,12 @@ impl Runnable for ApplyCmd {
                 );
             }
             let pref_value = toml_to_prefvalue(&job.toml_value)?;
-            batch
-                .entry(domain_obj)
-                .or_default()
-                .push((job.key.clone(), pref_value));
+            batch.push((domain_obj, job.key.clone(), pref_value));
         }
 
         // perform batch write
         if !dry_run {
-            match Preferences::write_batch(batch.into_iter().collect()).await {
+            match Preferences::write_batch(batch).await {
                 Ok(_) => {
                     if verbose {
                         print_log(LogLevel::Success, "All settings applied (batch write).");
