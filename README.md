@@ -38,11 +38,11 @@ Check out the [Usage](#usage) section for more details.
 
 ## Key Features
 
-- Manage the system preferences of your Mac with just a single TOML file.
-- Track installed packages with Homebrew without the slow bundle files.
+- Manage your Mac's system preferences with just one TOML file.
+- Track your Homebrew formulae/casks and back them up to restore later.
 - Run external commands, both as hooks, or at your will.
 - Revert back modifications easily with the snapshot mechanism.
-- Made using [Rust](https://rust-lang.org/) for thread-safety and speed.
+- Do all of these things at an incredibly fast speed, thanks to Rust.
 
 ## Installation
 
@@ -52,7 +52,7 @@ You can install cutler by directly running this command in the terminal:
 $ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/hitblast/cutler/main/install.sh)"
 ```
 
-Other installation methods are given below.
+Other installation methods are:
 
 1. Using 🍺 `homebrew`:
 
@@ -73,12 +73,12 @@ $ cargo install cutler
 $ mise use -g cargo:cutler
 ```
 
-Once installed, you can install the necessary [shell completions](#shell-completions) for your shell instance if needed.
-Installing via Homebrew doesn't require this step to be completed.
+Once installed, you can also enable [shell completions](#shell-completions) for your shell instance if needed.
+Installing via Homebrew doesn't require doing this step.
 
 ### Manual Installation
 
-You can also get the latest [prebuilt compressed binaries](https://github.com/hitblast/cutler/releases) if you would like to manually install the project.
+Get the latest [prebuilt compressed binaries](https://github.com/hitblast/cutler/releases) if you would like to manually install the project.
 
 Note than on devices running macOS, you'll have to remove the quarantine attribute from the binary:
 
@@ -88,9 +88,10 @@ $ xattr -d com.apple.quarantine bin/cutler  # inside extracted zip
 
 ## Usage
 
-To easily get started, simply type the following command to generate a prebuilt configuration:
+To easily get started, simply type the following command to generate a sample configuration:
 
-Most commands support a set of global flags that affect output and behavior. See [Global Flags](#global-flags) for details.
+Most commands support a set of global flags that affect output and behavior.
+See [Global Flags](#global-flags) for details.
 
 ```bash
 $ cutler init
@@ -104,8 +105,11 @@ But, it can also have other values depending on your setup:
 - `~/.config/cutler.toml`
 - `config.toml` in the current directory (fallback)
 
-It respects your `$XDG_CONFIG_HOME` setting, so you don't have to worry about
-path issues.
+It respects your `$XDG_CONFIG_HOME` setting, so you don't have to worry aboutpath issues.
+
+---
+
+cutler can do a number of things. Below are some brief descriptions on most of them.
 
 ### Getting started with automating `defaults`
 
