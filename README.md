@@ -109,11 +109,9 @@ It respects your `$XDG_CONFIG_HOME` setting, so you don't have to worry aboutpat
 
 ---
 
-cutler can do a number of things. Below are some brief descriptions on most of them.
+### Getting started with system preferences
 
-### Getting started with automating `defaults`
-
-Here’s a basic example of a TOML configuration for cutler:
+cutler can do a number of things if you use it right. Here’s a basic example of a TOML configuration for cutler:
 
 ```toml
 [set.dock]
@@ -123,51 +121,47 @@ tilesize = 46
 FlashDateSeparators = true
 ```
 
-Now, if you do not know about `defaults`, it is a command-line tool that allows you to modify system settings on macOS. It is used to set preferences and configurations for various system components.
+macOS heavily relies or preference files (in `.plist` format) stored in certain ways to save the state of your Mac's apps and settings. cutler takes advantage of this mechanism to automatically put your desired system settings in place by following the config file you wrote. It's a "declarative" way to set your settings without even touching the app itself.
 
-cutler basically wraps around this CLI as a part of one of its core functionalities, and by doing so, you do not have
-to tediously write the commands by hand and then run them individually, or even use a shell script.
-
-The chunk above roughly translates to the following:
+Ideally, the block above would look something like this if you were to manually call the `defaults` CLI tool which is used to modify these values on macOS:
 
 ```bash
 $ defaults write com.apple.dock "tilesize" -int "46"
 $ defaults write com.apple.menuextra.clock "FlashDateSeparators"
 ```
 
-You can also configure settings for `NSGlobalDomain` like this:
+You can also configure global preferences like this:
 
 ```toml
 [set.NSGlobalDomain]
+InitialKeyRepeat = 15
 ApplePressAndHoldEnabled = true
 
 [set.NSGlobalDomain.com.apple.mouse]
 linear = true
 ```
 
-Which would be executed as:
+Again, if you were to use `defaults`, it would look something like this:
 
 ```bash
 $ defaults write NSGlobalDomain "ApplePressAndHoldEnabled" -bool true
 $ defaults write NSGlobalDomain com.apple.mouse.linear -bool true
 ```
 
-Once you've set your preferred configurations in place, just type this one, simple command:
+Once you're ready, run this command.
+In a moment, you'll see a few different system services restart as you apply the modifications you just wrote for yourself.
 
 ```bash
 $ cutler apply
 ```
 
-In a moment, you'll see a few different system services restart as you apply the modifications you just
-wrote. This is cutler's way of applying and tracking everything from the config file, onto your system.
-
-To see what changes are being tracked, run:
+cutler also takes the changes into account and tracks them. To see your status, run:
 
 ```bash
 $ cutler status
 ```
 
-Unapplying everything is also as easy. Simply go ahead and run:
+Unapplying everything is also as easy. Simply go ahead and run the command below and cutler will restore your preferences to the exact previous state.
 
 ```bash
 $ cutler unapply
