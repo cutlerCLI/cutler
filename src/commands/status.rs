@@ -76,7 +76,7 @@ impl Runnable for StatusCmd {
         } else {
             print_log(
                 LogLevel::Warning,
-                "Run `cutler apply` to apply these changes from your config.",
+                "Run `cutler apply` to apply these changes from your config.\n",
             );
         }
 
@@ -145,6 +145,11 @@ impl Runnable for StatusCmd {
                                 LogLevel::Fruitful,
                                 "All Homebrew things match your configuration.",
                             );
+                        } else {
+                            print_log(
+                                LogLevel::Warning,
+                                "Use cutler's brew commands to sync/install.\n",
+                            )
                         }
                     }
                     Err(e) => {
