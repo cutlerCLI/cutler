@@ -51,7 +51,7 @@ impl Runnable for StatusCmd {
             if is_diff {
                 any_diff = true;
                 print_log(
-                    LogLevel::Info,
+                    LogLevel::Warning,
                     &format!(
                         "{}{}.{}: should be {} (currently {}{}{}){}",
                         BOLD, eff_dom, eff_key, desired, RED, current, RESET, RESET,
@@ -75,7 +75,7 @@ impl Runnable for StatusCmd {
             );
         } else {
             print_log(
-                LogLevel::Info,
+                LogLevel::Warning,
                 "Run `cutler apply` to apply these changes from your config.",
             );
         }
