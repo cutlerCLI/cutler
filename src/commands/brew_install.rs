@@ -7,9 +7,12 @@ use crate::{
     brew::utils::{
         BrewDiff, compare_brew_state, disable_auto_update, ensure_brew, restore_auto_update,
     },
-    commands::{GlobalArgs, Runnable},
+    commands::Runnable,
     config::{get_config_path, load_config},
-    util::logging::{LogLevel, print_log},
+    util::{
+        globals::should_dry_run,
+        logging::{LogLevel, print_log},
+    },
 };
 
 #[derive(Debug, Default, Args)]
@@ -17,10 +20,9 @@ pub struct BrewInstallCmd;
 
 #[async_trait]
 impl Runnable for BrewInstallCmd {
-    async fn run(&self, g: &GlobalArgs) -> Result<()> {
+    async fn run(&self) -> Result<()> {
         let cfg_path = get_config_path();
-        let dry_run = g.dry_run;
-        let verbose = g.verbose;
+        let dry_run = should_dry_run();
 
         if !cfg_path.exists() {
             print_log(
@@ -34,7 +36,7 @@ impl Runnable for BrewInstallCmd {
         let prev = disable_auto_update();
 
         // ensure homebrew installation
-        ensure_brew(dry_run).await?;
+        ensure_brew().await?;
 
         let config = load_config(&cfg_path).await?;
         let brew_cfg = config
@@ -143,7 +145,7 @@ impl Runnable for BrewInstallCmd {
             if !to_fetch_formulae.is_empty() || !to_fetch_casks.is_empty() {
                 print_log(LogLevel::Info, "Pre-downloading all formulae and casks...");
             }
-            fetch_all(&to_fetch_formulae, &to_fetch_casks, verbose).await;
+            fetch_all(&to_fetch_formulae, &to_fetch_casks).await;
 
             // sequentially install
             install_sequentially(install_tasks).await?;
@@ -155,7 +157,7 @@ impl Runnable for BrewInstallCmd {
 }
 
 /// Downloads all formulae/casks before installation.
-async fn fetch_all(formulae: &[String], casks: &[String], verbose: bool) {
+async fn fetch_all(formulae: &[String], casks: &[String]) {
     let mut handles = Vec::new();
 
     for name in formulae {
@@ -163,7 +165,8 @@ async fn fetch_all(formulae: &[String], casks: &[String], verbose: bool) {
         handles.push(tokio::spawn(async move {
             let mut cmd = Command::new("brew");
             cmd.arg("fetch").arg(&name);
-            if verbose {
+
+            if crate::util::globals::is_verbose() {
                 print_log(LogLevel::Info, &format!("Fetching formula: {}", name));
             } else {
                 cmd.arg("--quiet");
@@ -176,7 +179,7 @@ async fn fetch_all(formulae: &[String], casks: &[String], verbose: bool) {
         handles.push(tokio::spawn(async move {
             let mut cmd = Command::new("brew");
             cmd.arg("fetch").arg("--cask").arg(&name);
-            if verbose {
+            if crate::util::globals::is_verbose() {
                 print_log(LogLevel::Info, &format!("Fetching cask: {}", name));
             } else {
                 cmd.arg("--quiet");

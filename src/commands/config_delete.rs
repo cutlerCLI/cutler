@@ -3,10 +3,11 @@ use clap::Args;
 use tokio::fs;
 
 use crate::{
-    commands::{GlobalArgs, Runnable, UnapplyCmd},
+    commands::{Runnable, UnapplyCmd},
     config::loader::get_config_path,
     snapshot::{Snapshot, get_snapshot_path},
     util::{
+        globals::should_dry_run,
         io::confirm_action,
         logging::{LogLevel, print_log},
     },
@@ -18,9 +19,9 @@ pub struct ConfigDeleteCmd;
 
 #[async_trait]
 impl Runnable for ConfigDeleteCmd {
-    async fn run(&self, g: &GlobalArgs) -> Result<()> {
+    async fn run(&self) -> Result<()> {
         let config_path = get_config_path();
-        let dry_run = g.dry_run;
+        let dry_run = should_dry_run();
 
         if !config_path.exists() {
             print_log(LogLevel::Success, "No config file to delete.");
@@ -37,7 +38,7 @@ impl Runnable for ConfigDeleteCmd {
                 Snapshot::load(&snapshot_path).await?.settings.len()
             );
             if confirm_action("Unapply all previously applied defaults?")? {
-                UnapplyCmd.run(g).await?;
+                UnapplyCmd.run().await?;
             }
         }
 

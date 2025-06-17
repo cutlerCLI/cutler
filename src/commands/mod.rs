@@ -26,18 +26,8 @@ pub use status::StatusCmd;
 pub use unapply::UnapplyCmd;
 pub use update::{CheckUpdateCmd, SelfUpdateCmd};
 
-/// Struct holding all global CLI flags to be passed to commands
-#[derive(Debug, Clone, Copy)]
-pub struct GlobalArgs {
-    pub verbose: bool,
-    pub dry_run: bool,
-    pub quiet: bool,
-    pub no_restart_services: bool,
-    pub accept_interactive: bool,
-}
-
 /// Trait for all runnable commands.
 #[async_trait]
 pub trait Runnable {
-    async fn run(&self, globals: &GlobalArgs) -> Result<()>;
+    async fn run(&self) -> Result<()>;
 }

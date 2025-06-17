@@ -1,4 +1,6 @@
-use crate::commands::{GlobalArgs, Runnable};
+use crate::commands::Runnable;
+use crate::util::config::ensure_config_exists_or_init;
+use crate::util::globals::should_dry_run;
 use crate::{
     config::loader::load_config,
     external::runner,
@@ -19,11 +21,10 @@ pub struct ExecCmd {
 
 #[async_trait]
 impl Runnable for ExecCmd {
-    async fn run(&self, g: &GlobalArgs) -> Result<()> {
-        let verbose = g.verbose;
-        let dry_run = g.dry_run;
+    async fn run(&self) -> Result<()> {
+        let dry_run = should_dry_run();
 
-        let config_path_opt = crate::util::config::ensure_config_exists_or_init(g).await?;
+        let config_path_opt = ensure_config_exists_or_init().await?;
         let config_path = match config_path_opt {
             Some(path) => path,
             None => anyhow::bail!("Aborted."),
@@ -68,21 +69,19 @@ impl Runnable for ExecCmd {
             let path = snap_path.clone();
             snap.save(&path).await?;
 
-            if verbose {
-                print_log(
-                    LogLevel::Success,
-                    &format!("Snapshot updated at {:?} (external commands)", snap_path),
-                );
-            }
+            print_log(
+                LogLevel::Success,
+                &format!("Snapshot updated at {:?} (external commands)", snap_path),
+            );
         }
 
         if let Some(cmd_name) = &self.name {
-            runner::run_one(&toml, cmd_name, verbose, dry_run).await?;
+            runner::run_one(&toml, cmd_name, dry_run).await?;
         } else {
-            runner::run_all(&toml, verbose, dry_run).await?;
+            runner::run_all(&toml, dry_run).await?;
         }
 
-        if !verbose && !dry_run {
+        if !dry_run {
             print_log(
                 LogLevel::Fruitful,
                 "External commands executed successfully.",

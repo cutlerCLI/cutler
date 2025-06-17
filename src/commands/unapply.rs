@@ -6,10 +6,14 @@ use std::collections::HashMap;
 use tokio::fs;
 
 use crate::{
-    commands::{GlobalArgs, Runnable},
+    commands::Runnable,
     defaults::convert::toml_to_prefvalue,
     snapshot::state::{Snapshot, get_snapshot_path},
-    util::logging::{LogLevel, print_log},
+    util::{
+        globals::should_dry_run,
+        io::restart_system_services_if_needed,
+        logging::{LogLevel, print_log},
+    },
 };
 
 /// Helper: turn string to TOML value
@@ -33,7 +37,7 @@ pub struct UnapplyCmd;
 
 #[async_trait]
 impl Runnable for UnapplyCmd {
-    async fn run(&self, g: &GlobalArgs) -> Result<()> {
+    async fn run(&self) -> Result<()> {
         let snap_path = get_snapshot_path();
 
         if !snap_path.exists() {
@@ -43,8 +47,7 @@ impl Runnable for UnapplyCmd {
             );
         }
 
-        let verbose = g.verbose;
-        let dry_run = g.dry_run;
+        let dry_run = should_dry_run();
 
         // load snapshot from disk
         let snapshot = Snapshot::load(&snap_path)
@@ -113,9 +116,7 @@ impl Runnable for UnapplyCmd {
                 }
                 match Preferences::write_batch(batch_vec).await {
                     Ok(_) => {
-                        if verbose {
-                            print_log(LogLevel::Success, "All settings restored (batch write).");
-                        }
+                        print_log(LogLevel::Success, "All settings restored (batch write).");
                     }
                     Err(e) => {
                         print_log(LogLevel::Error, &format!("Batch restore failed: {e}"));
@@ -133,9 +134,7 @@ impl Runnable for UnapplyCmd {
                 }
                 match Preferences::delete_batch(delete_vec).await {
                     Ok(_) => {
-                        if verbose {
-                            print_log(LogLevel::Success, "All settings removed (batch delete).");
-                        }
+                        print_log(LogLevel::Success, "All settings removed (batch delete).");
                     }
                     Err(e) => {
                         print_log(LogLevel::Error, &format!("Batch delete failed: {e}"));
@@ -162,18 +161,14 @@ impl Runnable for UnapplyCmd {
             fs::remove_file(&snap_path)
                 .await
                 .context(format!("Failed to remove snapshot file at {:?}", snap_path))?;
-            if verbose {
-                print_log(
-                    LogLevel::Success,
-                    &format!("Removed snapshot file at {:?}", snap_path),
-                );
-            }
+            print_log(
+                LogLevel::Success,
+                &format!("Removed snapshot file at {:?}", snap_path),
+            );
         }
 
         // Restart system services if requested
-        if !g.no_restart_services {
-            crate::util::io::restart_system_services(g).await?;
-        }
+        restart_system_services_if_needed().await?;
 
         Ok(())
     }

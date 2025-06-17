@@ -23,11 +23,7 @@ mod tests {
         let config = Value::Table(root);
 
         // Dry‑run should always succeed
-        assert!(
-            run_all(&config, /*verbose=*/ true, /*dry_run=*/ true)
-                .await
-                .is_ok()
-        );
+        assert!(run_all(&config, /*dry_run=*/ true).await.is_ok());
     }
 
     #[tokio::test]
@@ -50,12 +46,6 @@ mod tests {
         let config = Value::Table(root);
 
         // Dry‑run single command
-        assert!(
-            run_one(
-                &config, "whoami", /*verbose=*/ true, /*dry_run=*/ true
-            )
-            .await
-            .is_ok()
-        );
+        assert!(run_one(&config, "whoami", /*dry_run=*/ true).await.is_ok());
     }
 }

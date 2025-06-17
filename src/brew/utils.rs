@@ -1,3 +1,4 @@
+use crate::util::globals::should_dry_run;
 use crate::util::io::confirm_action;
 use crate::util::logging::{LogLevel, print_log};
 use anyhow::Result;
@@ -6,7 +7,7 @@ use tokio::process::Command;
 
 /// Ensures Xcode Command Line Tools are installed.
 /// If not, prompts the user to install them (unless dry_run).
-pub async fn ensure_xcode_clt(dry_run: bool) -> Result<()> {
+pub async fn ensure_xcode_clt() -> Result<()> {
     let output = Command::new("xcode-select").arg("-p").output().await;
 
     let clt_installed = match output {
@@ -21,9 +22,9 @@ pub async fn ensure_xcode_clt(dry_run: bool) -> Result<()> {
         return Ok(());
     }
 
-    if dry_run {
+    if should_dry_run() {
         print_log(
-            LogLevel::Info,
+            LogLevel::Dry,
             "Would install Xcode Command Line Tools (not detected)",
         );
         return Ok(());
@@ -58,9 +59,9 @@ pub async fn ensure_xcode_clt(dry_run: bool) -> Result<()> {
 }
 
 /// Checks if Homebrew is installed on the machine (should be recognizable by $PATH).
-pub async fn ensure_brew(dry_run: bool) -> Result<()> {
+pub async fn ensure_brew() -> Result<()> {
     // ensure xcode command-line tools first
-    ensure_xcode_clt(dry_run).await?;
+    ensure_xcode_clt().await?;
 
     let is_installed = Command::new("brew")
         .arg("--version")
@@ -70,9 +71,9 @@ pub async fn ensure_brew(dry_run: bool) -> Result<()> {
         .unwrap_or(false);
 
     if !is_installed {
-        if dry_run {
+        if should_dry_run() {
             print_log(
-                LogLevel::Info,
+                LogLevel::Dry,
                 "Would install Homebrew since not found in $PATH",
             );
             return Ok(());

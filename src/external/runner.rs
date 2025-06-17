@@ -109,7 +109,7 @@ fn substitute(text: &str, vars: Option<&toml::value::Table>) -> String {
 }
 
 /// Run all extracted external commands via `sh -c` (or `sudo sh -c`) in parallel.
-pub async fn run_all(config: &Value, verbose: bool, dry_run: bool) -> Result<()> {
+pub async fn run_all(config: &Value, dry_run: bool) -> Result<()> {
     let vars: Option<toml::value::Table> = config.get("vars").and_then(Value::as_table).cloned();
     let cmds = extract(config);
 
@@ -128,9 +128,9 @@ pub async fn run_all(config: &Value, verbose: bool, dry_run: bool) -> Result<()>
                 print_log(LogLevel::Dry, &format!("Would exec {} {}", bin, final_cmd));
                 return Ok::<(), Error>(());
             }
-            if verbose {
-                print_log(LogLevel::Info, &format!("Exec {} {}", bin, final_cmd));
-            }
+
+            print_log(LogLevel::Info, &format!("Exec {} {}", bin, final_cmd));
+
             let child = Command::new(bin)
                 .args(&args)
                 .stdout(Stdio::piped())
@@ -148,7 +148,8 @@ pub async fn run_all(config: &Value, verbose: bool, dry_run: bool) -> Result<()>
                 );
                 return Err(Error::msg("cmd failed"));
             }
-            if verbose && !out.stdout.is_empty() {
+
+            if !out.stdout.is_empty() {
                 print_log(
                     LogLevel::CommandOutput,
                     &format!("Out: {}", String::from_utf8_lossy(&out.stdout)),
@@ -176,7 +177,7 @@ pub async fn run_all(config: &Value, verbose: bool, dry_run: bool) -> Result<()>
 }
 
 /// Run exactly one command entry, given its name.
-pub async fn run_one(config: &Value, which: &str, verbose: bool, dry_run: bool) -> Result<()> {
+pub async fn run_one(config: &Value, which: &str, dry_run: bool) -> Result<()> {
     let vars = config.get("vars").and_then(Value::as_table).cloned();
 
     let cmd_table = config
@@ -208,8 +209,7 @@ pub async fn run_one(config: &Value, which: &str, verbose: bool, dry_run: bool) 
     if dry_run {
         print_log(LogLevel::Dry, &format!("Would exec {} {}", bin, final_cmd));
         return Ok(());
-    }
-    if verbose {
+    } else {
         print_log(LogLevel::Info, &format!("Exec {} {}", bin, final_cmd));
     }
 
@@ -229,7 +229,7 @@ pub async fn run_one(config: &Value, which: &str, verbose: bool, dry_run: bool) 
         );
         Err(Error::msg("cmd failed"))
     } else {
-        if verbose && !output.stdout.is_empty() {
+        if !output.stdout.is_empty() {
             print_log(
                 LogLevel::CommandOutput,
                 &format!("Out: {}", String::from_utf8_lossy(&output.stdout)),

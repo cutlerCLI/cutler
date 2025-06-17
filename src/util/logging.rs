@@ -1,4 +1,4 @@
-use crate::util::globals::should_be_quiet;
+use crate::util::globals::{is_verbose, should_be_quiet};
 
 /// ANSI color codes
 pub const RED: &str = "\x1b[31m";
@@ -28,6 +28,10 @@ pub fn print_log(level: LogLevel, msg: &str) {
         return;
     }
 
+    if (level == LogLevel::Info || level == LogLevel::CommandOutput) && !is_verbose() {
+        return;
+    }
+
     let (tag, color) = match level {
         LogLevel::Success => ("SUCCESS", GREEN),
         LogLevel::Error => ("ERROR", RED),
@@ -35,7 +39,7 @@ pub fn print_log(level: LogLevel, msg: &str) {
         LogLevel::Info => ("INFO", BOLD),
         LogLevel::CommandOutput => ("CMD OUT", PINK),
         LogLevel::Dry => ("DRY-RUN", ORANGE),
-        LogLevel::Fruitful => ("🍎", ""), // Apple emoji, no color
+        LogLevel::Fruitful => ("🍎", ""),
     };
 
     let line = if level == LogLevel::Fruitful {

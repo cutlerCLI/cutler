@@ -1,4 +1,7 @@
-use crate::commands::{BrewInstallCmd, GlobalArgs, Runnable};
+use crate::commands::{BrewInstallCmd, Runnable};
+use crate::util::config::ensure_config_exists_or_init;
+use crate::util::globals::should_dry_run;
+use crate::util::io::restart_system_services_if_needed;
 use crate::{
     config::loader::load_config,
     defaults::{convert::toml_to_prefvalue, flags},
@@ -41,11 +44,10 @@ struct Job {
 
 #[async_trait]
 impl Runnable for ApplyCmd {
-    async fn run(&self, g: &GlobalArgs) -> Result<()> {
-        let verbose = g.verbose;
-        let dry_run = g.dry_run;
+    async fn run(&self) -> Result<()> {
+        let dry_run = should_dry_run();
 
-        let config_path_opt = crate::util::config::ensure_config_exists_or_init(g).await?;
+        let config_path_opt = ensure_config_exists_or_init().await?;
         let config_path = match config_path_opt {
             Some(path) => path,
             None => anyhow::bail!("Aborted."),
@@ -117,7 +119,7 @@ impl Runnable for ApplyCmd {
                         original,
                         new_value: desired.clone(),
                     });
-                } else if verbose {
+                } else {
                     print_log(
                         LogLevel::Info,
                         &format!("Skipping unchanged {}:{}", eff_dom, eff_key),
@@ -137,7 +139,7 @@ impl Runnable for ApplyCmd {
                 Domain::User(job.domain.clone())
             };
 
-            if verbose && !dry_run {
+            if !dry_run {
                 print_log(
                     LogLevel::Info,
                     &format!(
@@ -154,9 +156,7 @@ impl Runnable for ApplyCmd {
         if !dry_run {
             match Preferences::write_batch(batch).await {
                 Ok(_) => {
-                    if verbose {
-                        print_log(LogLevel::Success, "All settings applied (batch write).");
-                    }
+                    print_log(LogLevel::Success, "All settings applied (batch write).");
                 }
                 Err(e) => {
                     print_log(LogLevel::Error, &format!("Batch write failed: {e}"));
@@ -192,30 +192,26 @@ impl Runnable for ApplyCmd {
 
         if !dry_run {
             new_snap.save(&snap_path).await?;
-            if verbose {
-                print_log(
-                    LogLevel::Success,
-                    &format!("Snapshot saved: {:?}", snap_path),
-                );
-            }
+            print_log(
+                LogLevel::Success,
+                &format!("Snapshot saved: {:?}", snap_path),
+            );
         } else {
             print_log(LogLevel::Dry, "Would save snapshot");
         }
 
         // exec external commands
         if !self.no_exec {
-            let _ = runner::run_all(&toml, verbose, dry_run).await;
+            let _ = runner::run_all(&toml, dry_run).await;
         }
 
         // run brew
         if self.with_brew {
-            BrewInstallCmd.run(g).await?;
+            BrewInstallCmd.run().await?;
         }
 
         // restart system services if requested
-        if !g.no_restart_services {
-            crate::util::io::restart_system_services(g).await?;
-        }
+        restart_system_services_if_needed().await?;
 
         Ok(())
     }

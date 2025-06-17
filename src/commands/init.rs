@@ -1,4 +1,4 @@
-use crate::commands::{GlobalArgs, Runnable};
+use crate::{commands::Runnable, util::globals::should_dry_run};
 use anyhow::{Result, anyhow};
 use async_trait::async_trait;
 use clap::Args;
@@ -26,9 +26,8 @@ pub struct InitCmd {
 
 #[async_trait]
 impl Runnable for InitCmd {
-    async fn run(&self, g: &GlobalArgs) -> Result<()> {
-        let verbose = g.verbose;
-        let dry_run = g.dry_run;
+    async fn run(&self) -> Result<()> {
+        let dry_run = should_dry_run();
         let config_path = get_config_path();
 
         let exists = fs::metadata(&config_path).await.is_ok();
@@ -50,12 +49,10 @@ impl Runnable for InitCmd {
                     &format!("Would create directory: {:?}", parent),
                 );
             } else {
-                if verbose {
-                    print_log(
-                        LogLevel::Info,
-                        &format!("Creating parent dir: {:?}", parent),
-                    );
-                }
+                print_log(
+                    LogLevel::Info,
+                    &format!("Creating parent dir: {:?}", parent),
+                );
                 fs::create_dir_all(parent).await?;
             }
         }
@@ -63,18 +60,14 @@ impl Runnable for InitCmd {
         // default TOML template
         let default_cfg = match self.basic {
             true => {
-                if verbose {
-                    print_log(LogLevel::Info, "Choosing basic configuration...")
-                }
+                print_log(LogLevel::Info, "Choosing basic configuration...");
                 include_str!("../../examples/basic.toml")
             }
             _ => {
-                if verbose {
-                    print_log(
-                        LogLevel::Info,
-                        "No `--basic` flag, defaulting to advanced configuration...",
-                    )
-                }
+                print_log(
+                    LogLevel::Info,
+                    "No `--basic` flag, defaulting to advanced configuration...",
+                );
                 include_str!("../../examples/advanced.toml")
             }
         };
@@ -93,20 +86,14 @@ impl Runnable for InitCmd {
                 anyhow!("Failed to write configuration to {:?}: {}", config_path, e)
             })?;
 
-            if verbose {
-                print_log(
-                    LogLevel::Success,
-                    &format!("Configuration file created at: {:?}", config_path),
-                );
-            } else {
-                print_log(
-                    LogLevel::Fruitful,
-                    &format!(
-                        "New configuration created at {:?}\nReview and customize this file before running cutler again.",
-                        config_path
-                    ),
-                );
-            }
+            print_log(
+                LogLevel::Success,
+                &format!("Configuration file created at: {:?}", config_path),
+            );
+            print_log(
+                LogLevel::Fruitful,
+                "Review and customize this file before running cutler again.",
+            );
         }
 
         Ok(())

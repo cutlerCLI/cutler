@@ -9,9 +9,12 @@ use crate::{
     brew::utils::{
         brew_list, brew_list_taps, disable_auto_update, ensure_brew, restore_auto_update,
     },
-    commands::{GlobalArgs, Runnable},
+    commands::Runnable,
     config::get_config_path,
-    util::logging::{LogLevel, print_log},
+    util::{
+        globals::should_dry_run,
+        logging::{LogLevel, print_log},
+    },
 };
 
 #[derive(Debug, Default, Args)]
@@ -23,17 +26,14 @@ pub struct BrewBackupCmd {
 
 #[async_trait]
 impl Runnable for BrewBackupCmd {
-    async fn run(&self, g: &GlobalArgs) -> Result<()> {
+    async fn run(&self) -> Result<()> {
         let cfg_path = get_config_path();
-
-        let dry_run = g.dry_run;
-        let verbose = g.verbose;
 
         // disable auto-update
         let prev = disable_auto_update();
 
         // ensure brew install
-        ensure_brew(dry_run).await?;
+        ensure_brew().await?;
 
         let formulas = brew_list(&["list", "--formula"]).await?;
         let casks = brew_list(&["list", "--cask"]).await?;
@@ -42,7 +42,7 @@ impl Runnable for BrewBackupCmd {
         // fetch taps using the shared utility
         let taps = brew_list_taps().await?;
 
-        if dry_run {
+        if should_dry_run() {
             print_log(
                 LogLevel::Dry,
                 &format!(
@@ -70,75 +70,56 @@ impl Runnable for BrewBackupCmd {
         for formula in &formulas {
             if self.no_deps {
                 if !deps.contains(formula) {
-                    if verbose {
-                        print_log(
-                            LogLevel::Info,
-                            &format!("Pushing {} as a manually installed formula.", formula),
-                        );
-                    }
+                    print_log(
+                        LogLevel::Info,
+                        &format!("Pushing {} as a manually installed formula.", formula),
+                    );
                     formula_arr.push(formula.as_str());
                 }
             } else {
-                if verbose {
-                    print_log(LogLevel::Info, &format!("Pushing {}", formula));
-                }
+                print_log(LogLevel::Info, &format!("Pushing {}", formula));
                 formula_arr.push(formula.as_str());
             }
         }
-        if verbose {
-            print_log(
-                LogLevel::Info,
-                &format!("Pushed {} formulae.", formula_arr.len()),
-            );
-        }
+        print_log(
+            LogLevel::Info,
+            &format!("Pushed {} formulae.", formula_arr.len()),
+        );
         brew_tbl["formulae"] = Item::Value(Value::Array(formula_arr));
 
         let mut cask_arr = Array::new();
         for cask in &casks {
-            if verbose {
-                print_log(LogLevel::Info, &format!("Pushed {} as a cask.", cask));
-            }
+            print_log(LogLevel::Info, &format!("Pushed {} as a cask.", cask));
             cask_arr.push(cask.as_str());
         }
-        if verbose {
-            print_log(LogLevel::Info, &format!("Pushed {} casks.", cask_arr.len()));
-        }
+        print_log(LogLevel::Info, &format!("Pushed {} casks.", cask_arr.len()));
         brew_tbl["casks"] = Item::Value(Value::Array(cask_arr));
 
         // backup taps
         let mut taps_arr = Array::new();
         for tap in &taps {
-            if verbose {
-                print_log(LogLevel::Info, &format!("Pushed {} as a tap.", tap));
-            }
+            print_log(LogLevel::Info, &format!("Pushed {} as a tap.", tap));
             taps_arr.push(tap.as_str());
         }
-        if verbose {
-            print_log(LogLevel::Info, &format!("Pushed {} taps.", taps_arr.len()));
-        }
+        print_log(LogLevel::Info, &format!("Pushed {} taps.", taps_arr.len()));
         brew_tbl["taps"] = Item::Value(Value::Array(taps_arr));
 
         // give length of both lists in verbose, and let the user know about config location
-        if verbose {
-            print_log(LogLevel::Info, &format!("Writing backup to {:?}", cfg_path));
-        }
+        print_log(LogLevel::Info, &format!("Writing backup to {:?}", cfg_path));
         fs::write(&cfg_path, doc.to_string()).await?;
 
         // output message
-        if verbose {
-            print_log(
-                LogLevel::Success,
-                &format!("Backup saved to {:?}", cfg_path),
-            );
-        } else {
-            print_log(
-                LogLevel::Fruitful,
-                &format!(
-                    "Done! You can find the backup in your config file location {:?}",
-                    cfg_path
-                ),
-            );
-        }
+        print_log(
+            LogLevel::Success,
+            &format!("Backup saved to {:?}", cfg_path),
+        );
+        print_log(
+            LogLevel::Fruitful,
+            &format!(
+                "Done! You can find the backup in your config file location {:?}",
+                cfg_path
+            ),
+        );
 
         restore_auto_update(prev);
         Ok(())

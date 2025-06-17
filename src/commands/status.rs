@@ -1,6 +1,6 @@
 use crate::{
     brew::utils::{BrewDiff, compare_brew_state, ensure_brew},
-    commands::{GlobalArgs, Runnable},
+    commands::Runnable,
     config::loader::{get_config_path, load_config},
     defaults::normalize,
     domains::{collect, effective, read_current},
@@ -15,9 +15,7 @@ pub struct StatusCmd;
 
 #[async_trait]
 impl Runnable for StatusCmd {
-    async fn run(&self, g: &GlobalArgs) -> Result<()> {
-        let verbose = g.verbose;
-
+    async fn run(&self) -> Result<()> {
         let config_path = get_config_path();
         if !config_path.exists() {
             bail!("No config file found. Please run `cutler init` first, or create a config file.");
@@ -59,7 +57,7 @@ impl Runnable for StatusCmd {
                         BOLD, eff_dom, eff_key, desired, RED, current, RESET, RESET,
                     ),
                 );
-            } else if verbose {
+            } else {
                 print_log(
                     LogLevel::Info,
                     &format!(
@@ -87,7 +85,7 @@ impl Runnable for StatusCmd {
             print_log(LogLevel::Fruitful, "Homebrew status:");
 
             // ensure homebrew is installed (skip if not)
-            if let Err(e) = ensure_brew(g.dry_run).await {
+            if let Err(e) = ensure_brew().await {
                 print_log(LogLevel::Warning, &format!("Homebrew not available: {e}"));
             } else {
                 match compare_brew_state(brew_val).await {
@@ -103,68 +101,43 @@ impl Runnable for StatusCmd {
                         if !missing_formulae.is_empty() {
                             any_brew_diff = true;
                             print_log(
-                                LogLevel::Info,
-                                &format!(
-                                    "{}Formulae missing:{} {}",
-                                    RED,
-                                    RESET,
-                                    missing_formulae.join(", ")
-                                ),
+                                LogLevel::Warning,
+                                &format!("Formulae missing: {}", missing_formulae.join(", ")),
                             );
                         }
                         if !extra_formulae.is_empty() {
                             any_brew_diff = true;
                             print_log(
-                                LogLevel::Info,
-                                &format!(
-                                    "{}Extra installed formulae:{} {}",
-                                    RED,
-                                    RESET,
-                                    extra_formulae.join(", ")
-                                ),
+                                LogLevel::Warning,
+                                &format!("Extra installed formulae: {}", extra_formulae.join(", ")),
                             );
                         }
                         if !missing_casks.is_empty() {
                             any_brew_diff = true;
                             print_log(
-                                LogLevel::Info,
-                                &format!(
-                                    "{}Casks missing:{} {}",
-                                    RED,
-                                    RESET,
-                                    missing_casks.join(", ")
-                                ),
+                                LogLevel::Warning,
+                                &format!("Casks missing: {}", missing_casks.join(", ")),
                             );
                         }
                         if !extra_casks.is_empty() {
                             any_brew_diff = true;
                             print_log(
-                                LogLevel::Info,
-                                &format!(
-                                    "{}Extra installed casks:{} {}",
-                                    RED,
-                                    RESET,
-                                    extra_casks.join(", ")
-                                ),
+                                LogLevel::Warning,
+                                &format!("Extra installed casks: {}", extra_casks.join(", ")),
                             );
                         }
                         if !missing_taps.is_empty() {
                             any_brew_diff = true;
                             print_log(
-                                LogLevel::Info,
-                                &format!(
-                                    "{}Taps missing:{} {}",
-                                    RED,
-                                    RESET,
-                                    missing_taps.join(", ")
-                                ),
+                                LogLevel::Warning,
+                                &format!("Taps missing: {}", missing_taps.join(", ")),
                             );
                         }
                         if !extra_taps.is_empty() {
                             any_brew_diff = true;
                             print_log(
-                                LogLevel::Info,
-                                &format!("{}Extra tapped:{} {}", RED, RESET, extra_taps.join(", ")),
+                                LogLevel::Warning,
+                                &format!("Extra tapped: {}", extra_taps.join(", ")),
                             );
                         }
                         if !any_brew_diff {

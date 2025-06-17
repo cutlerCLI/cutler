@@ -7,7 +7,8 @@ use semver::Version;
 use std::cmp::Ordering;
 use ureq;
 
-use crate::commands::{GlobalArgs, Runnable};
+use crate::commands::Runnable;
+use crate::util::globals::should_be_quiet;
 use crate::util::logging::{LogLevel, print_log};
 
 #[derive(Args, Debug)]
@@ -18,17 +19,13 @@ pub struct SelfUpdateCmd;
 
 #[async_trait]
 impl Runnable for CheckUpdateCmd {
-    async fn run(&self, g: &GlobalArgs) -> Result<()> {
-        let verbose = g.verbose;
-        let quiet = g.quiet;
+    async fn run(&self) -> Result<()> {
         let current_version = env!("CARGO_PKG_VERSION");
 
-        if verbose {
-            print_log(
-                LogLevel::Info,
-                &format!("Current version: {}", current_version),
-            );
-        }
+        print_log(
+            LogLevel::Info,
+            &format!("Current version: {}", current_version),
+        );
 
         // Fetch latest release tag from GitHub API
         let url = "https://api.github.com/repos/hitblast/cutler/releases/latest";
@@ -56,12 +53,10 @@ impl Runnable for CheckUpdateCmd {
         })
         .await??;
 
-        if verbose {
-            print_log(
-                LogLevel::Info,
-                &format!("Latest version: {}", latest_version),
-            );
-        }
+        print_log(
+            LogLevel::Info,
+            &format!("Latest version: {}", latest_version),
+        );
 
         // let the comparison begin!
         let current = Version::parse(current_version).context("Could not parse current version")?;
@@ -69,7 +64,7 @@ impl Runnable for CheckUpdateCmd {
 
         match current.cmp(&latest) {
             Ordering::Less => {
-                if !quiet {
+                if !should_be_quiet() {
                     println!(
                         "\n{}Update available:{} {} → {}",
                         crate::util::logging::BOLD,
@@ -86,6 +81,8 @@ impl Runnable for CheckUpdateCmd {
                     println!("  cutler self-update                     # for manual installs");
                     println!("\nOr download the latest release from:");
                     println!("  https://github.com/hitblast/cutler/releases");
+                } else {
+                    println!("Update available!")
                 }
             }
             Ordering::Equal => {
@@ -108,7 +105,7 @@ impl Runnable for CheckUpdateCmd {
 
 #[async_trait]
 impl Runnable for SelfUpdateCmd {
-    async fn run(&self, g: &GlobalArgs) -> Result<()> {
+    async fn run(&self) -> Result<()> {
         use std::env;
 
         // get the path to the current executable
@@ -157,7 +154,7 @@ impl Runnable for SelfUpdateCmd {
             .build()?
             .update()?;
 
-        if !g.quiet {
+        if !should_be_quiet() {
             if status.updated() {
                 println!("✅ cutler updated to: {}", status.version());
             } else {

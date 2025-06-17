@@ -1,4 +1,4 @@
-use crate::commands::{GlobalArgs, Runnable};
+use crate::commands::Runnable;
 use crate::config::loader::get_config_path;
 use crate::util::io::confirm_action;
 use crate::util::logging::{LogLevel, print_log};
@@ -7,7 +7,7 @@ use std::path::PathBuf;
 
 /// Ensures the config file exists, or prompts to create it (runs init if needed).
 /// Returns Ok(Some(path)) if config exists (or was created), Ok(None) if user aborted.
-pub async fn ensure_config_exists_or_init(g: &GlobalArgs) -> Result<Option<PathBuf>> {
+pub async fn ensure_config_exists_or_init() -> Result<Option<PathBuf>> {
     let config_path = get_config_path();
     if config_path.exists() {
         return Ok(Some(config_path));
@@ -22,7 +22,7 @@ pub async fn ensure_config_exists_or_init(g: &GlobalArgs) -> Result<Option<PathB
             force: false,
         };
 
-        init_cmd.run(g).await?;
+        init_cmd.run().await?;
         Ok(Some(config_path))
     } else {
         print_log(LogLevel::Warning, "No config; aborting.");

@@ -5,12 +5,13 @@ use defaults_rs::{Domain, preferences::Preferences};
 use tokio::fs;
 
 use crate::{
-    commands::{GlobalArgs, Runnable},
+    commands::Runnable,
     config::loader::{get_config_path, load_config},
     domains::{collect, effective, read_current},
     snapshot::state::get_snapshot_path,
     util::{
-        io::confirm_action,
+        globals::should_dry_run,
+        io::{confirm_action, restart_system_services_if_needed},
         logging::{LogLevel, print_log},
     },
 };
@@ -24,14 +25,13 @@ pub struct ResetCmd {
 
 #[async_trait]
 impl Runnable for ResetCmd {
-    async fn run(&self, g: &GlobalArgs) -> Result<()> {
+    async fn run(&self) -> Result<()> {
         let config_path = get_config_path();
         if !config_path.exists() {
             bail!("No config file found. Please run `cutler init` first, or create a config file.");
         }
 
-        let verbose = g.verbose;
-        let dry_run = g.dry_run;
+        let dry_run = should_dry_run();
 
         print_log(
             LogLevel::Warning,
@@ -71,12 +71,10 @@ impl Runnable for ResetCmd {
                     } else {
                         match Preferences::delete(domain_obj, Some(&eff_key)).await {
                             Ok(_) => {
-                                if verbose {
-                                    print_log(
-                                        LogLevel::Success,
-                                        &format!("Reset {}.{} to system default", eff_dom, eff_key),
-                                    );
-                                }
+                                print_log(
+                                    LogLevel::Success,
+                                    &format!("Reset {}.{} to system default", eff_dom, eff_key),
+                                );
                             }
                             Err(e) => {
                                 print_log(
@@ -86,7 +84,7 @@ impl Runnable for ResetCmd {
                             }
                         }
                     }
-                } else if verbose {
+                } else {
                     print_log(
                         LogLevel::Info,
                         &format!("Skipping {}.{} (not set)", eff_dom, eff_key),
@@ -108,7 +106,7 @@ impl Runnable for ResetCmd {
                     LogLevel::Warning,
                     &format!("Failed to remove snapshot: {}", e),
                 );
-            } else if verbose {
+            } else {
                 print_log(
                     LogLevel::Success,
                     &format!("Removed snapshot at {:?}", snap_path),
@@ -122,9 +120,7 @@ impl Runnable for ResetCmd {
         );
 
         // restart system services if requested
-        if !g.no_restart_services {
-            crate::util::io::restart_system_services(g).await?;
-        }
+        restart_system_services_if_needed().await?;
 
         Ok(())
     }
