@@ -121,7 +121,7 @@ tilesize = 46
 FlashDateSeparators = true
 ```
 
-macOS heavily relies or preference files (in `.plist` format) stored in certain ways to save the state of your Mac's apps and settings. cutler takes advantage of this mechanism to automatically put your desired system settings in place by following the config file you wrote. It's a "declarative" way to set your settings without even touching the app itself.
+macOS heavily relies on preference files (in `.plist` format) stored in certain ways to save the state of your Mac's apps and settings. cutler takes advantage of this mechanism to automatically put your desired system settings in place by following the config file you wrote. It's a "declarative" way to set your settings without even touching the app itself.
 
 Ideally, the block above would look something like this if you were to manually call the `defaults` CLI tool which is used to modify these values on macOS:
 
