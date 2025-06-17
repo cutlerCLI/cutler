@@ -81,6 +81,7 @@ impl Runnable for UnapplyCmd {
                     let domain_str = match domain {
                         Domain::Global => "NSGlobalDomain",
                         Domain::User(s) => s,
+                        _ => unreachable!(),
                     };
                     print_log(
                         LogLevel::Dry,
@@ -93,6 +94,7 @@ impl Runnable for UnapplyCmd {
                     let domain_str = match domain {
                         Domain::Global => "NSGlobalDomain",
                         Domain::User(s) => s,
+                        _ => unreachable!(),
                     };
                     print_log(
                         LogLevel::Dry,

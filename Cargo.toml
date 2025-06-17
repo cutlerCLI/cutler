@@ -1,6 +1,6 @@
 [package]
 name = "cutler"
-version = "0.7.7"
+version = "0.7.8"
 edition = "2024"
 description = "Powerful, declarative settings management for your Mac, with speed."
 homepage = "https://hitblast.github.io/cutler"
@@ -17,7 +17,7 @@ clap = { version = "4", features = ["derive"] }
 clap_complete = "4.5.54"
 serde_json = "1.0.140"
 serde = { version = "1.0", features = ["derive"] }
-ureq = "3.0.11"
+ureq = "3.0.12"
 semver = "1.0.26"
 anyhow = "1.0.98"
 tokio = { version = "1", features = ["full"] }
@@ -26,7 +26,7 @@ toml_edit = "0.22"
 dialoguer = "0.11.0"
 self_update = { version = "0.42.0", features = ["compression-zip-deflate"] }
 async-trait = "0.1.88"
-defaults-rs = "0.1.8"
+defaults-rs = "0.2.2"
 
 [dev-dependencies]
 tempfile = "3.20.0"

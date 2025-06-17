@@ -352,7 +352,7 @@ dependencies = [
 
 [[package]]
 name = "cutler"
-version = "0.7.7"
+version = "0.7.8"
 dependencies = [
  "anstyle",
  "anyhow",
@@ -374,9 +374,9 @@ dependencies = [
 
 [[package]]
 name = "defaults-rs"
-version = "0.1.8"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7a425dc256b5750b4c2d5b9a2fe93665c8327dde4acbe1a24b165e493619889"
+checksum = "444051ed546984d018d14b5521676127f7dc791b856a28dc674dcd0900e599cb"
 dependencies = [
  "clap",
  "futures",
@@ -2145,9 +2145,9 @@ checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
 
 [[package]]
 name = "ureq"
-version = "3.0.11"
+version = "3.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7a3e9af6113ecd57b8c63d3cd76a385b2e3881365f1f489e54f49801d0c83ea"
+checksum = "9f0fde9bc91026e381155f8c67cb354bcd35260b2f4a29bcc84639f762760c39"
 dependencies = [
  "base64",
  "flate2",
@@ -2163,9 +2163,9 @@ dependencies = [
 
 [[package]]
 name = "ureq-proto"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fadf18427d33828c311234884b7ba2afb57143e6e7e69fda7ee883b624661e36"
+checksum = "59db78ad1923f2b1be62b6da81fe80b173605ca0d57f85da2e005382adf693f7"
 dependencies = [
  "base64",
  "http",
