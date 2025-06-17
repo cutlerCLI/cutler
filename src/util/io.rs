@@ -11,7 +11,7 @@ use anyhow::Result;
 pub fn confirm_action(prompt: &str) -> Result<bool> {
     if should_accept_interactive() {
         print_log(
-            LogLevel::Info,
+            LogLevel::Prompt,
             &format!("{} [y/N]: y (auto-accepted)", prompt),
         );
         return Ok(true);
@@ -40,7 +40,7 @@ pub async fn restart_system_services_if_needed() -> Result<(), anyhow::Error> {
             if !out.status.success() {
                 print_log(LogLevel::Error, &format!("Failed to restart {}", svc));
             } else {
-                print_log(LogLevel::Success, &format!("{} restarted", svc));
+                print_log(LogLevel::Info, &format!("{} restarted", svc));
             }
         }
     }

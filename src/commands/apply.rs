@@ -156,7 +156,7 @@ impl Runnable for ApplyCmd {
         if !dry_run {
             match Preferences::write_batch(batch).await {
                 Ok(_) => {
-                    print_log(LogLevel::Success, "All settings applied (batch write).");
+                    print_log(LogLevel::Success, "All preferences applied.");
                 }
                 Err(e) => {
                     print_log(LogLevel::Error, &format!("Batch write failed: {e}"));
@@ -192,10 +192,7 @@ impl Runnable for ApplyCmd {
 
         if !dry_run {
             new_snap.save(&snap_path).await?;
-            print_log(
-                LogLevel::Success,
-                &format!("Snapshot saved: {:?}", snap_path),
-            );
+            print_log(LogLevel::Info, &format!("Snapshot saved: {:?}", snap_path));
         } else {
             print_log(LogLevel::Dry, "Would save snapshot");
         }

@@ -16,6 +16,7 @@ pub enum LogLevel {
     Error,
     Warning,
     Info,
+    Prompt, // only for io::confirm_action()
     CommandOutput,
     Dry,
     Fruitful, // 🍎
@@ -38,6 +39,7 @@ pub fn print_log(level: LogLevel, msg: &str) {
         LogLevel::Warning => ("WARNING", YELLOW),
         LogLevel::Info => ("INFO", BOLD),
         LogLevel::CommandOutput => ("CMD OUT", PINK),
+        LogLevel::Prompt => ("PROMPT", PINK),
         LogLevel::Dry => ("DRY-RUN", ORANGE),
         LogLevel::Fruitful => ("🍎", ""),
     };

@@ -13,7 +13,7 @@ pub async fn ensure_config_exists_or_init() -> Result<Option<PathBuf>> {
         return Ok(Some(config_path));
     }
     print_log(
-        LogLevel::Info,
+        LogLevel::Warning,
         &format!("Config not found at {:?}", config_path),
     );
     if confirm_action("Create a new basic config?")? {

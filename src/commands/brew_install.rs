@@ -144,6 +144,8 @@ impl Runnable for BrewInstallCmd {
             // pre-download everything in parallel
             if !to_fetch_formulae.is_empty() || !to_fetch_casks.is_empty() {
                 print_log(LogLevel::Info, "Pre-downloading all formulae and casks...");
+            } else {
+                print_log(LogLevel::Info, "No formulae or casks to download/install.");
             }
             fetch_all(&to_fetch_formulae, &to_fetch_casks).await;
 

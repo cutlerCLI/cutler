@@ -72,7 +72,7 @@ impl Runnable for ResetCmd {
                         match Preferences::delete(domain_obj, Some(&eff_key)).await {
                             Ok(_) => {
                                 print_log(
-                                    LogLevel::Success,
+                                    LogLevel::Info,
                                     &format!("Reset {}.{} to system default", eff_dom, eff_key),
                                 );
                             }
@@ -108,7 +108,7 @@ impl Runnable for ResetCmd {
                 );
             } else {
                 print_log(
-                    LogLevel::Success,
+                    LogLevel::Info,
                     &format!("Removed snapshot at {:?}", snap_path),
                 );
             }

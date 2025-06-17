@@ -50,10 +50,7 @@ impl Runnable for ExecCmd {
             Snapshot::new()
         };
 
-        print_log(
-            LogLevel::Info,
-            "Executing only external commands (skipping defaults)",
-        );
+        print_log(LogLevel::Info, "Executing external commands...");
 
         // record external commands into the snapshot
         snapshot.external = runner::extract(&toml);
@@ -70,8 +67,11 @@ impl Runnable for ExecCmd {
             snap.save(&path).await?;
 
             print_log(
-                LogLevel::Success,
-                &format!("Snapshot updated at {:?} (external commands)", snap_path),
+                LogLevel::Info,
+                &format!(
+                    "Snapshot updated at {:?} (external commands only)",
+                    snap_path
+                ),
             );
         }
 

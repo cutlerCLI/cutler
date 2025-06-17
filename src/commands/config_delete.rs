@@ -24,7 +24,7 @@ impl Runnable for ConfigDeleteCmd {
         let dry_run = should_dry_run();
 
         if !config_path.exists() {
-            print_log(LogLevel::Success, "No config file to delete.");
+            print_log(LogLevel::Info, "No config file to delete.");
             return Ok(());
         }
 
@@ -32,10 +32,13 @@ impl Runnable for ConfigDeleteCmd {
         // (use snapshot to detect)
         let snapshot_path = get_snapshot_path();
         if snapshot_path.exists() {
-            println!(
-                "Found a snapshot at {:?}. It contains {} settings.",
-                snapshot_path,
-                Snapshot::load(&snapshot_path).await?.settings.len()
+            print_log(
+                LogLevel::Info,
+                &format!(
+                    "Found a snapshot at {:?}. It contains {} settings.",
+                    snapshot_path,
+                    Snapshot::load(&snapshot_path).await?.settings.len()
+                ),
             );
             if confirm_action("Unapply all previously applied defaults?")? {
                 UnapplyCmd.run().await?;
@@ -57,7 +60,7 @@ impl Runnable for ConfigDeleteCmd {
             if snapshot_path.exists() {
                 fs::remove_file(&snapshot_path).await?;
                 print_log(
-                    LogLevel::Success,
+                    LogLevel::Info,
                     &format!("Deleted snapshot at {:?}", snapshot_path),
                 );
             }

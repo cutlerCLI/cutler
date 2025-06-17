@@ -109,10 +109,7 @@ impl Runnable for BrewBackupCmd {
         fs::write(&cfg_path, doc.to_string()).await?;
 
         // output message
-        print_log(
-            LogLevel::Success,
-            &format!("Backup saved to {:?}", cfg_path),
-        );
+        print_log(LogLevel::Info, &format!("Backup saved to {:?}", cfg_path));
         print_log(
             LogLevel::Fruitful,
             &format!(

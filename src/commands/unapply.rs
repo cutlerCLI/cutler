@@ -43,7 +43,7 @@ impl Runnable for UnapplyCmd {
         if !snap_path.exists() {
             bail!(
                 "No snapshot found. Please run `cutler apply` first before unapplying.\n\
-                As a fallback, you can use `cutler reset` to reset settings to defaults."
+                As a fallback, you can use `cutler reset` to reset settings to their defaults."
             );
         }
 
@@ -114,9 +114,12 @@ impl Runnable for UnapplyCmd {
                         batch_vec.push((domain.clone(), key, value));
                     }
                 }
-                match Preferences::write_batch(batch_vec).await {
+                match Preferences::write_batch(batch_vec.clone()).await {
                     Ok(_) => {
-                        print_log(LogLevel::Success, "All settings restored (batch write).");
+                        print_log(
+                            LogLevel::Info,
+                            &format!("{} preferences restored.", batch_vec.len()),
+                        );
                     }
                     Err(e) => {
                         print_log(LogLevel::Error, &format!("Batch restore failed: {e}"));
@@ -132,9 +135,12 @@ impl Runnable for UnapplyCmd {
                         delete_vec.push((domain.clone(), Some(key)));
                     }
                 }
-                match Preferences::delete_batch(delete_vec).await {
+                match Preferences::delete_batch(delete_vec.clone()).await {
                     Ok(_) => {
-                        print_log(LogLevel::Success, "All settings removed (batch delete).");
+                        print_log(
+                            LogLevel::Info,
+                            &format!("{} preferences removed.", delete_vec.len()),
+                        );
                     }
                     Err(e) => {
                         print_log(LogLevel::Error, &format!("Batch delete failed: {e}"));
@@ -162,7 +168,7 @@ impl Runnable for UnapplyCmd {
                 .await
                 .context(format!("Failed to remove snapshot file at {:?}", snap_path))?;
             print_log(
-                LogLevel::Success,
+                LogLevel::Info,
                 &format!("Removed snapshot file at {:?}", snap_path),
             );
         }
