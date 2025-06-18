@@ -2,6 +2,7 @@ use crate::commands::{BrewInstallCmd, Runnable};
 use crate::util::config::ensure_config_exists_or_init;
 use crate::util::globals::should_dry_run;
 use crate::util::io::restart_system_services_if_needed;
+use crate::util::logging::{GREEN, RESET};
 use crate::{
     config::loader::load_config,
     defaults::{convert::toml_to_prefvalue, flags},
@@ -118,7 +119,7 @@ impl Runnable for ApplyCmd {
                 } else {
                     print_log(
                         LogLevel::Info,
-                        &format!("Skipping unchanged {}:{}", eff_dom, eff_key),
+                        &format!("Skipping unchanged {} | {}", eff_dom, eff_key),
                     );
                 }
             }
@@ -139,8 +140,8 @@ impl Runnable for ApplyCmd {
                 print_log(
                     LogLevel::Info,
                     &format!(
-                        "{} {}:{} -> {}",
-                        job.action, job.domain, job.key, job.new_value
+                        "{}{} {} | {} -> {}{}",
+                        GREEN, job.action, job.domain, job.key, job.new_value, RESET
                     ),
                 );
             }

@@ -53,7 +53,7 @@ impl Runnable for StatusCmd {
                 print_log(
                     LogLevel::Warning,
                     &format!(
-                        "{}{}.{}: should be {} (currently {}{}{}){}",
+                        "{}{} | {}: should be {} (currently {}{}{}){}",
                         BOLD, eff_dom, eff_key, desired, RED, current, RESET, RESET,
                     ),
                 );
@@ -61,7 +61,7 @@ impl Runnable for StatusCmd {
                 print_log(
                     LogLevel::Info,
                     &format!(
-                        "{}{}.{}: {} (matches desired){}",
+                        "{}{} | {}: {} (matches desired){}",
                         GREEN, eff_dom, eff_key, current, RESET
                     ),
                 );
