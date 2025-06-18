@@ -81,11 +81,6 @@ impl Runnable for ApplyCmd {
         let mut jobs: Vec<Job> = Vec::new();
 
         for (dom, table) in domains.into_iter() {
-            // if we need to insert the com.apple prefix, check once
-            if collector::needs_prefix(&dom) && !self.disable_checks {
-                collector::check_domain_exists(&format!("com.apple.{}", dom)).await?;
-            }
-
             for (key, toml_value) in table.into_iter() {
                 let (eff_dom, eff_key) = collector::effective(&dom, &key);
                 let desired = flags::normalize(&toml_value);

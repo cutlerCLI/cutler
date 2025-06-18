@@ -56,24 +56,33 @@ pub fn collect(parsed: &Value) -> Result<HashMap<String, toml::value::Table>, an
     Ok(out)
 }
 
-/// Given a config‑domain and key, return the effective “defaults” domain + key.
-pub fn effective(domain: &str, key: &str) -> (String, String) {
-    if domain == "NSGlobalDomain" {
-        ("NSGlobalDomain".into(), key.into())
-    } else if let Some(rest) = domain.strip_prefix("NSGlobalDomain.") {
-        if rest.is_empty() {
-            ("NSGlobalDomain".into(), key.into())
-        } else {
-            ("NSGlobalDomain".into(), format!("{}.{}", rest, key))
-        }
+/// Turn a config‐domain into the real defaults domain.
+///   finder            -> com.apple.finder
+///   NSGlobalDomain    -> NSGlobalDomain
+///   NSGlobalDomain.bar-> NSGlobalDomain
+fn full_domain(domain: &str) -> String {
+    if let Some(_) = domain.strip_prefix("NSGlobalDomain.") {
+        // NSGlobalDomain.foo -> NSGlobalDomain
+        "NSGlobalDomain".into()
+    } else if domain == "NSGlobalDomain" {
+        "NSGlobalDomain".into()
     } else {
-        (format!("com.apple.{}", domain), key.into())
+        // anything else gets com.apple.
+        format!("com.apple.{}", domain)
     }
 }
 
-/// do we need to prefix “com.apple.” on this domain?
-pub fn needs_prefix(domain: &str) -> bool {
-    !domain.starts_with("NSGlobalDomain") && !domain.starts_with("com.apple.")
+/// Given the TOML domain and key, figure out the true domain-key pair.
+pub fn effective(domain: &str, key: &str) -> (String, String) {
+    let dom = full_domain(domain);
+    let k = if dom == "NSGlobalDomain" && domain.starts_with("NSGlobalDomain.") {
+        // NSGlobalDomain.foo + key  -> foo.key
+        let rest = &domain["NSGlobalDomain.".len()..];
+        format!("{rest}.{key}")
+    } else {
+        key.into()
+    };
+    (dom, k)
 }
 
 /// Check whether a domain exists.

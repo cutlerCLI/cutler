@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use cutler::domains::{collect, effective, needs_prefix};
+    use cutler::domains::{collect, effective};
     use toml::{Value, value::Table};
 
     #[test]
@@ -54,14 +54,6 @@ mod tests {
 
         let (d, k) = effective("NSGlobalDomain.bar", "Baz");
         assert_eq!((d, k), ("NSGlobalDomain".into(), "bar.Baz".into()));
-    }
-
-    #[test]
-    fn test_needs_prefix() {
-        assert!(needs_prefix("dock"));
-        assert!(needs_prefix("finder"));
-        assert!(!needs_prefix("NSGlobalDomain"));
-        assert!(!needs_prefix("NSGlobalDomain.x"));
     }
 
     #[test]
