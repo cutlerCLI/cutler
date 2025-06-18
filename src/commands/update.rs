@@ -27,12 +27,12 @@ impl Runnable for CheckUpdateCmd {
             &format!("Current version: {}", current_version),
         );
 
-        // Fetch latest release tag from GitHub API
+        // fetch latest release tag from GitHub API
         let url = "https://api.github.com/repos/hitblast/cutler/releases/latest";
         let latest_version: String = tokio::task::spawn_blocking(move || {
             let response = ureq::get(url)
                 .header("Accept", "application/vnd.github.v3+json")
-                .header("User-Agent", "cutler-update-check") // ureq requires a User-Agent for GitHub API
+                .header("User-Agent", "cutler-update-check")
                 .call()
                 .map_err(|e| anyhow!("Failed to fetch latest GitHub release: {}", e))?;
 
