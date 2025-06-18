@@ -82,7 +82,7 @@ impl Runnable for StatusCmd {
 
         // brew status reporting
         if let Some(brew_val) = toml.get("brew").and_then(|v| v.as_table()) {
-            print_log(LogLevel::Fruitful, "Homebrew status:");
+            print_log(LogLevel::Info, "Homebrew status:");
 
             // ensure homebrew is installed (skip if not)
             if let Err(e) = ensure_brew().await {
@@ -143,7 +143,7 @@ impl Runnable for StatusCmd {
                         if !any_brew_diff {
                             print_log(
                                 LogLevel::Fruitful,
-                                "All Homebrew things match your configuration.",
+                                "All Homebrew formulae/casks match config.",
                             );
                         } else {
                             print_log(
