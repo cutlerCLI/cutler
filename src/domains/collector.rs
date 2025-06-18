@@ -62,7 +62,7 @@ pub fn collect(parsed: &Value) -> Result<HashMap<String, toml::value::Table>, an
 ///   NSGlobalDomain    -> NSGlobalDomain
 ///   NSGlobalDomain.bar-> NSGlobalDomain
 fn full_domain(domain: &str) -> String {
-    if let Some(_) = domain.strip_prefix("NSGlobalDomain.") {
+    if domain.strip_prefix("NSGlobalDomain.").is_some() {
         // NSGlobalDomain.foo -> NSGlobalDomain
         "NSGlobalDomain".into()
     } else if domain == "NSGlobalDomain" {
