@@ -2,7 +2,7 @@ use defaults_rs::{Domain, PrefValue, ReadResult, preferences::Preferences};
 use std::collections::HashMap;
 use toml::Value;
 
-/// Recursively flatten nested TOML tables into (domain, settings‑table) pairs.
+/// Recursively flatten nested TOML tables into (domain, settings-table) pairs.
 fn flatten_domains(
     prefix: Option<String>,
     table: &toml::value::Table,
@@ -56,6 +56,7 @@ pub fn collect(parsed: &Value) -> Result<HashMap<String, toml::value::Table>, an
     Ok(out)
 }
 
+/// Helper for effective() function.
 /// Turn a config‐domain into the real defaults domain.
 ///   finder            -> com.apple.finder
 ///   NSGlobalDomain    -> NSGlobalDomain

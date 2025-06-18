@@ -83,6 +83,7 @@ impl Runnable for ApplyCmd {
         for (dom, table) in domains.into_iter() {
             for (key, toml_value) in table.into_iter() {
                 let (eff_dom, eff_key) = collector::effective(&dom, &key);
+                collector::check_domain_exists(&eff_dom).await?;
                 let desired = flags::normalize(&toml_value);
 
                 // read the current value from the system
