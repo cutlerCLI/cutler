@@ -86,7 +86,7 @@ impl Runnable for CheckUpdateCmd {
                 }
             }
             Ordering::Equal => {
-                print_log(LogLevel::Success, "You are using the latest version.");
+                print_log(LogLevel::Fruitful, "You are using the latest version.");
             }
             Ordering::Greater => {
                 print_log(

@@ -54,7 +54,7 @@ impl Runnable for ConfigDeleteCmd {
         } else {
             fs::remove_file(&config_path).await?;
             print_log(
-                LogLevel::Success,
+                LogLevel::Fruitful,
                 &format!("Deleted config at {:?}", config_path),
             );
             if snapshot_path.exists() {

@@ -87,12 +87,11 @@ impl Runnable for InitCmd {
             })?;
 
             print_log(
-                LogLevel::Success,
-                &format!("Configuration file created at: {:?}", config_path),
-            );
-            print_log(
                 LogLevel::Fruitful,
-                "Review and customize this file before running cutler again.",
+                &format!(
+                    "Config created at {:?}, Review and customize it before applying.",
+                    config_path
+                ),
             );
         }
 

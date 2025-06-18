@@ -12,7 +12,6 @@ pub const BOLD: &str = "\x1b[1m";
 /// Logging level based on what action cutler is performing.
 #[derive(PartialEq)]
 pub enum LogLevel {
-    Success,
     Error,
     Warning,
     Info,
@@ -34,7 +33,6 @@ pub fn print_log(level: LogLevel, msg: &str) {
     }
 
     let (tag, color) = match level {
-        LogLevel::Success => ("SUCCESS", GREEN),
         LogLevel::Error => ("ERROR", RED),
         LogLevel::Warning => ("WARNING", YELLOW),
         LogLevel::Info => ("INFO", BOLD),

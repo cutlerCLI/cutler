@@ -156,7 +156,7 @@ impl Runnable for ApplyCmd {
         if !dry_run {
             match Preferences::write_batch(batch).await {
                 Ok(_) => {
-                    print_log(LogLevel::Success, "All preferences applied.");
+                    print_log(LogLevel::Info, "All preferences applied.");
                 }
                 Err(e) => {
                     print_log(LogLevel::Error, &format!("Batch write failed: {e}"));
