@@ -161,7 +161,7 @@ cutler also takes the changes into account and tracks them. To see your status, 
 $ cutler status
 ```
 
-Unapplying everything is also as easy. Simply go ahead and run the command below and cutler will restore your preferences to the exact previous state.
+Unapplying everything is also as easy. Run the command below and cutler will restore your preferences to the exact previous state:
 
 ```bash
 $ cutler unapply
