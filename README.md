@@ -105,7 +105,7 @@ But, it can also have other values depending on your setup:
 - `~/.config/cutler.toml`
 - `config.toml` in the current directory (fallback)
 
-It respects your `$XDG_CONFIG_HOME` setting, so you don't have to worry aboutpath issues.
+It respects your `$XDG_CONFIG_HOME`, so you don't have to worry about path issues.
 
 ---
 
