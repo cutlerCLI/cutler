@@ -71,7 +71,7 @@ impl Runnable for StatusCmd {
         if !any_diff {
             print_log(
                 LogLevel::Fruitful,
-                "All settings already match your configuration.",
+                "All preferences already match your configuration.",
             );
         } else {
             print_log(
@@ -148,7 +148,7 @@ impl Runnable for StatusCmd {
                         } else {
                             print_log(
                                 LogLevel::Warning,
-                                "Use cutler's brew commands to sync/install.\n",
+                                "Use cutler's brew commands to sync/install these if needed.\n",
                             )
                         }
                     }

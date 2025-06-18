@@ -66,21 +66,23 @@ impl Runnable for CheckUpdateCmd {
             Ordering::Less => {
                 if !should_be_quiet() {
                     println!(
-                        "\n{}Update available:{} {} → {}",
+                        r#"
+{}Update available:{} {} → {}
+
+To update, run one of the following:
+
+  brew update && brew upgrade cutler     # if installed via homebrew
+  cargo install cutler --force           # if installed via cargo
+  mise up cutler                         # if installed via mise
+  cutler self-update                     # for manual installs
+
+Or download the latest release from:
+  https://github.com/hitblast/cutler/releases"#,
                         crate::util::logging::BOLD,
                         crate::util::logging::RESET,
                         current_version,
                         latest_version
                     );
-                    println!("\nTo update, run one of the following:\n");
-                    println!(
-                        "  brew update && brew upgrade cutler     # if installed via homebrew"
-                    );
-                    println!("  cargo install cutler --force           # if installed via cargo");
-                    println!("  mise up cutler                         # if installed via mise");
-                    println!("  cutler self-update                     # for manual installs");
-                    println!("\nOr download the latest release from:");
-                    println!("  https://github.com/hitblast/cutler/releases");
                 } else {
                     println!("Update available!")
                 }
@@ -90,7 +92,7 @@ impl Runnable for CheckUpdateCmd {
             }
             Ordering::Greater => {
                 print_log(
-                    LogLevel::Info,
+                    LogLevel::Fruitful,
                     &format!(
                         "You are on a development version ({}) ahead of latest release ({}).",
                         current_version, latest_version
