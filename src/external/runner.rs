@@ -124,6 +124,7 @@ pub async fn run_all(config: &Value, dry_run: bool) -> Result<()> {
             } else {
                 ("sh", vec!["-c", &final_cmd])
             };
+
             if dry_run {
                 print_log(LogLevel::Dry, &format!("Would exec {} {}", bin, final_cmd));
                 return Ok::<(), Error>(());
