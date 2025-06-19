@@ -185,7 +185,7 @@ impl Runnable for ApplyCmd {
                 new_value: job.new_value,
             });
         }
-        new_snap.external = runner::extract(&toml);
+        new_snap.external = runner::extract_all_cmds(&toml);
 
         if !dry_run {
             new_snap.save(&snap_path).await?;
@@ -196,7 +196,7 @@ impl Runnable for ApplyCmd {
 
         // exec external commands
         if !self.no_exec {
-            let _ = runner::run_all(&toml, dry_run).await;
+            let _ = runner::run_all(&toml).await;
         }
 
         // run brew

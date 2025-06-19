@@ -7,7 +7,7 @@ use tokio::process::Command;
 
 /// Ensures Xcode Command Line Tools are installed.
 /// If not, prompts the user to install them (unless dry_run).
-pub async fn ensure_xcode_clt() -> Result<()> {
+async fn ensure_xcode_clt() -> Result<()> {
     let output = Command::new("xcode-select").arg("-p").output().await;
 
     let clt_installed = match output {

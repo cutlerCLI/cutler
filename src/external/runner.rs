@@ -1,4 +1,5 @@
 use crate::snapshot::state::ExternalCommandState;
+use crate::util::globals::should_dry_run;
 use crate::util::logging::{LogLevel, print_log};
 use anyhow::{Error, Result, anyhow};
 use std::env;
@@ -7,25 +8,45 @@ use tokio::process::Command;
 use tokio::task;
 use toml::Value;
 
-// Pull all commands into state objects.
-pub fn extract(config: &Value) -> Vec<ExternalCommandState> {
+/// Extract a single command by name from the user config.
+pub fn extract_cmd(config: &Value, name: &str) -> Result<ExternalCommandState> {
     let vars = config.get("vars").and_then(Value::as_table).cloned();
+
+    let cmd_table = config
+        .get("commands")
+        .and_then(Value::as_table)
+        .and_then(|m| m.get(name))
+        .and_then(Value::as_table)
+        .ok_or_else(|| anyhow!("no such command '{}'", name))?;
+
+    let template = cmd_table
+        .get("run")
+        .and_then(Value::as_str)
+        .ok_or_else(|| anyhow!("command '{}': missing `run` field", name))?;
+
+    // substitute to get possible variables
+    let final_line = substitute(template, vars.as_ref());
+
+    // extra fields
+    let sudo = cmd_table
+        .get("sudo")
+        .and_then(Value::as_bool)
+        .unwrap_or(false);
+
+    Ok(ExternalCommandState {
+        run: final_line,
+        sudo,
+    })
+}
+
+// Pull all external commands written in user config into state objects.
+pub fn extract_all_cmds(config: &Value) -> Vec<ExternalCommandState> {
     let mut out = Vec::new();
 
     if let Some(cmds) = config.get("commands").and_then(Value::as_table) {
-        for (_, tbl) in cmds {
-            if let Value::Table(tbl) = tbl {
-                // each command must have a "run = ..." block
-                if let Some(template) = tbl.get("run").and_then(Value::as_str) {
-                    // substitute to get possible varriables
-                    let final_line = substitute(template, vars.as_ref());
-                    let sudo = tbl.get("sudo").and_then(Value::as_bool).unwrap_or(false);
-
-                    out.push(ExternalCommandState {
-                        run: final_line,
-                        sudo,
-                    })
-                }
+        for (name, _) in cmds {
+            if let Ok(cmd_state) = extract_cmd(config, name) {
+                out.push(cmd_state);
             }
         }
     }
@@ -108,55 +129,68 @@ fn substitute(text: &str, vars: Option<&toml::value::Table>) -> String {
     result
 }
 
+/// Helper for run_one() and run_all().
+/// Execute a single command with the given template and sudo flag.
+async fn execute_command(
+    state: ExternalCommandState,
+    vars: Option<&toml::value::Table>,
+) -> Result<()> {
+    // command execution logic starts here
+    let dry_run = should_dry_run();
+    let final_cmd = substitute(&state.run, vars);
+
+    // build the actual runner
+    let (bin, args) = if state.sudo {
+        ("sudo", vec!["sh", "-c", &final_cmd])
+    } else {
+        ("sh", vec!["-c", &final_cmd])
+    };
+
+    if dry_run {
+        print_log(LogLevel::Dry, &format!("Would exec {} {}", bin, final_cmd));
+        return Ok(());
+    }
+
+    print_log(LogLevel::Info, &format!("Exec {} {}", bin, final_cmd));
+
+    let child = Command::new(bin)
+        .args(&args)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()?;
+    let output = child.wait_with_output().await?;
+    if !output.status.success() {
+        print_log(
+            LogLevel::Error,
+            &format!(
+                "External command failed: {}: {}",
+                final_cmd,
+                String::from_utf8_lossy(&output.stderr)
+            ),
+        );
+        return Err(Error::msg("cmd failed"));
+    }
+
+    if !output.stdout.is_empty() {
+        print_log(
+            LogLevel::CommandOutput,
+            &format!("Out: {}", String::from_utf8_lossy(&output.stdout)),
+        );
+    }
+    Ok(())
+}
+
 /// Run all extracted external commands via `sh -c` (or `sudo sh -c`) in parallel.
-pub async fn run_all(config: &Value, dry_run: bool) -> Result<()> {
+pub async fn run_all(config: &Value) -> Result<()> {
     let vars: Option<toml::value::Table> = config.get("vars").and_then(Value::as_table).cloned();
-    let cmds = extract(config);
+    let cmds = extract_all_cmds(config);
 
     // run every command concurrently
     let mut handles = Vec::new();
     for state in cmds {
         let vars = vars.clone();
         handles.push(task::spawn(async move {
-            let final_cmd = substitute(&state.run, vars.as_ref());
-            let (bin, args) = if state.sudo {
-                ("sudo", vec!["sh", "-c", &final_cmd])
-            } else {
-                ("sh", vec!["-c", &final_cmd])
-            };
-
-            if dry_run {
-                print_log(LogLevel::Dry, &format!("Would exec {} {}", bin, final_cmd));
-                return Ok::<(), Error>(());
-            }
-
-            print_log(LogLevel::Info, &format!("Exec {} {}", bin, final_cmd));
-
-            let child = Command::new(bin)
-                .args(&args)
-                .stdout(Stdio::piped())
-                .stderr(Stdio::piped())
-                .spawn()?;
-            let out = child.wait_with_output().await?;
-            if !out.status.success() {
-                print_log(
-                    LogLevel::Error,
-                    &format!(
-                        "External command failed: {}: {}",
-                        final_cmd,
-                        String::from_utf8_lossy(&out.stderr)
-                    ),
-                );
-                return Err(Error::msg("cmd failed"));
-            }
-
-            if !out.stdout.is_empty() {
-                print_log(
-                    LogLevel::CommandOutput,
-                    &format!("Out: {}", String::from_utf8_lossy(&out.stdout)),
-                );
-            }
-            Ok::<(), Error>(())
+            execute_command(state, vars.as_ref()).await
         }));
     }
     let mut failures = 0;
@@ -178,64 +212,9 @@ pub async fn run_all(config: &Value, dry_run: bool) -> Result<()> {
 }
 
 /// Run exactly one command entry, given its name.
-pub async fn run_one(config: &Value, which: &str, dry_run: bool) -> Result<()> {
+pub async fn run_one(config: &Value, which: &str) -> Result<()> {
     let vars = config.get("vars").and_then(Value::as_table).cloned();
+    let cmd_state = extract_cmd(config, which)?;
 
-    let cmd_table = config
-        .get("commands")
-        .and_then(Value::as_table)
-        .and_then(|m| m.get(which))
-        .and_then(Value::as_table)
-        .ok_or_else(|| anyhow!("no such command '{}'", which))?;
-
-    let template = cmd_table
-        .get("run")
-        .and_then(Value::as_str)
-        .ok_or_else(|| anyhow!("command '{}': missing `run` field", which))?;
-
-    let final_cmd = substitute(template, vars.as_ref());
-
-    let sudo = cmd_table
-        .get("sudo")
-        .and_then(Value::as_bool)
-        .unwrap_or(false);
-
-    // build the actual runner
-    let (bin, args) = if sudo {
-        ("sudo", vec!["sh", "-c", &final_cmd])
-    } else {
-        ("sh", vec!["-c", &final_cmd])
-    };
-
-    if dry_run {
-        print_log(LogLevel::Dry, &format!("Would exec {} {}", bin, final_cmd));
-        return Ok(());
-    } else {
-        print_log(LogLevel::Info, &format!("Exec {} {}", bin, final_cmd));
-    }
-
-    let child = Command::new(bin)
-        .args(&args)
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()?;
-    let output = child.wait_with_output().await?;
-    if !output.status.success() {
-        print_log(
-            LogLevel::Error,
-            &format!(
-                "External command failed: {}",
-                String::from_utf8_lossy(&output.stderr)
-            ),
-        );
-        Err(Error::msg("cmd failed"))
-    } else {
-        if !output.stdout.is_empty() {
-            print_log(
-                LogLevel::CommandOutput,
-                &format!("Out: {}", String::from_utf8_lossy(&output.stdout)),
-            );
-        }
-        Ok(())
-    }
+    execute_command(cmd_state, vars.as_ref()).await
 }

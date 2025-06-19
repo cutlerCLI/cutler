@@ -1,10 +1,15 @@
 #[cfg(test)]
 mod tests {
-    use cutler::external::runner::{run_all, run_one};
+    use cutler::{
+        external::runner::{run_all, run_one},
+        util::globals::set_dry_run,
+    };
     use toml::{Value, value::Table};
 
     #[tokio::test]
     async fn test_run_all_dry_run() {
+        set_dry_run(true);
+
         // Build a [vars] table
         let mut vars = Table::new();
         vars.insert("hostname".into(), Value::String("test-host".into()));
@@ -22,12 +27,13 @@ mod tests {
         root.insert("commands".into(), Value::Table(commands));
         let config = Value::Table(root);
 
-        // Dry‑run should always succeed
-        assert!(run_all(&config, /*dry_run=*/ true).await.is_ok());
+        assert!(run_all(&config).await.is_ok());
     }
 
     #[tokio::test]
     async fn test_run_one_dry_run() {
+        set_dry_run(true);
+
         // Very similar setup
         let mut vars = Table::new();
         vars.insert("USER".into(), Value::String("me".into()));
@@ -46,6 +52,6 @@ mod tests {
         let config = Value::Table(root);
 
         // Dry‑run single command
-        assert!(run_one(&config, "whoami", /*dry_run=*/ true).await.is_ok());
+        assert!(run_one(&config, "whoami").await.is_ok());
     }
 }

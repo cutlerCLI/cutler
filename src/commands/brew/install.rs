@@ -123,7 +123,11 @@ impl Runnable for BrewInstallCmd {
         let mut to_fetch_casks: Vec<String> = Vec::new();
 
         for name in brew_diff.missing_formulae.iter() {
-            install_tasks.push(vec!["install".to_string(), name.to_string()]);
+            install_tasks.push(vec![
+                "install".to_string(),
+                "--formula".to_string(),
+                name.to_string(),
+            ]);
             to_fetch_formulae.push(name.to_string());
         }
         for name in brew_diff.missing_casks.iter() {
