@@ -9,7 +9,7 @@ use ureq;
 
 use crate::commands::Runnable;
 use crate::util::globals::should_be_quiet;
-use crate::util::logging::{LogLevel, print_log};
+use crate::util::logging::{BOLD, LogLevel, RESET, print_log};
 
 #[derive(Args, Debug)]
 pub struct CheckUpdateCmd;
@@ -78,10 +78,7 @@ To update, run one of the following:
 
 Or download the latest release from:
   https://github.com/hitblast/cutler/releases"#,
-                        crate::util::logging::BOLD,
-                        crate::util::logging::RESET,
-                        current_version,
-                        latest_version
+                        BOLD, RESET, current_version, latest_version
                     );
                 } else {
                     println!("Update available!")
