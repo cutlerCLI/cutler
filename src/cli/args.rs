@@ -42,7 +42,7 @@ pub enum Command {
     Apply(ApplyCmd),
     /// Run your external command(s).
     Exec(ExecCmd),
-    /// Initialize a new config file with sensible defaults.
+    /// Initialize a new config file.
     Init(InitCmd),
     /// Unapply the previously applied modifications(s).
     Unapply(UnapplyCmd),
