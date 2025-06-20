@@ -201,6 +201,10 @@ The structure of the `brew` table inside cutler's configuration is like such:
 taps = ["hitblast/tap"]
 casks = ["zed", "zulu@21", "android-studio"]
 formulae = ["rust", "python3"]
+
+# Ensure dependencies aren't accounted for.
+# This is auto-set if --no-deps is used in `brew backup`.
+no-deps = true
 ```
 
 While running this command, cutler will also notify you about any extra software which is untracked by it. Then, you can run `cutler brew backup` again to sync.
@@ -223,7 +227,7 @@ This translates to running:
 $ echo Hello World
 ```
 
-You can also store variables in order to use them later in your custom commands:
+The ideal structure for writing external commands should be like this:
 
 ```toml
 [vars]

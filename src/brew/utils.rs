@@ -91,20 +91,6 @@ pub async fn ensure_brew() -> Result<()> {
     Ok(())
 }
 
-/// Lists all currently tapped Homebrew taps.
-pub async fn brew_list_taps() -> Result<Vec<String>> {
-    let output = Command::new("brew").arg("tap").output().await?;
-    if !output.status.success() {
-        return Ok(vec![]);
-    }
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    Ok(stdout
-        .lines()
-        .map(|l| l.trim().to_string())
-        .filter(|l| !l.is_empty())
-        .collect())
-}
-
 /// Installs Homebrew.
 async fn install_homebrew() -> Result<(), anyhow::Error> {
     let script = "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)";
@@ -118,7 +104,8 @@ async fn install_homebrew() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-/// Lists installed Homebrew formulae / casks.
+/// Run a Homebrew command asynchronously and auto-separate lines to be a vector of string.
+/// Useful for `brew list` and `brew tap`.
 pub async fn brew_list(args: &[&str]) -> Result<Vec<String>> {
     let output = Command::new("brew").args(args).output().await?;
     if !output.status.success() {
@@ -166,6 +153,16 @@ pub struct BrewDiff {
 /// Returns a BrewDiff struct with missing/extra formulae, casks, and taps.
 /// `brew_cfg` should be a reference to the [brew] table as toml::value::Table.
 pub async fn compare_brew_state(brew_cfg: &toml::value::Table) -> Result<BrewDiff> {
+    print_log(
+        LogLevel::Info,
+        "Starting comparison of Homebrew state with config...",
+    );
+
+    let no_deps = brew_cfg
+        .get("no-deps")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+
     let config_formulae: Vec<String> = brew_cfg
         .get("formulae")
         .and_then(|v| v.as_array())
@@ -200,9 +197,21 @@ pub async fn compare_brew_state(brew_cfg: &toml::value::Table) -> Result<BrewDif
         .unwrap_or_default();
 
     // fetch installed state
-    let installed_formulae = brew_list(&["list", "--formula"]).await?;
+    let mut installed_formulae = brew_list(&["list", "--formula"]).await?;
     let installed_casks = brew_list(&["list", "--cask"]).await?;
-    let installed_taps = brew_list_taps().await?;
+    let installed_taps = brew_list(&["tap"]).await?;
+
+    // omit installed as dependency
+    if no_deps {
+        print_log(LogLevel::Info, "deps-check found to be true, proceeding...");
+        let installed_as_deps = brew_list(&["list", "--installed-as-dependency"]).await?;
+
+        installed_formulae = installed_formulae
+            .iter()
+            .filter(|f| !installed_as_deps.contains(f))
+            .cloned()
+            .collect();
+    }
 
     // compute missing/extra
     let missing_formulae: Vec<String> = config_formulae

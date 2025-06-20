@@ -13,7 +13,11 @@ use async_trait::async_trait;
 use clap::Args;
 
 #[derive(Args, Debug)]
-pub struct StatusCmd;
+pub struct StatusCmd {
+    // Disable Homebrew state check.
+    #[arg(short, long)]
+    pub no_brew: bool,
+}
 
 #[async_trait]
 impl Runnable for StatusCmd {
@@ -85,82 +89,87 @@ impl Runnable for StatusCmd {
         }
 
         // brew status reporting
-        if let Some(brew_val) = toml.get("brew").and_then(|v| v.as_table()) {
-            print_log(LogLevel::Info, "Homebrew status:");
+        if !self.no_brew {
+            if let Some(brew_val) = toml.get("brew").and_then(|v| v.as_table()) {
+                print_log(LogLevel::Info, "Homebrew status:");
 
-            // ensure homebrew is installed (skip if not)
-            if let Err(e) = ensure_brew().await {
-                print_log(LogLevel::Warning, &format!("Homebrew not available: {e}"));
-            } else {
-                match compare_brew_state(brew_val).await {
-                    Ok(BrewDiff {
-                        missing_formulae,
-                        extra_formulae,
-                        missing_casks,
-                        extra_casks,
-                        missing_taps,
-                        extra_taps,
-                    }) => {
-                        let mut any_brew_diff = false;
-                        if !missing_formulae.is_empty() {
-                            any_brew_diff = true;
+                // ensure homebrew is installed (skip if not)
+                if let Err(e) = ensure_brew().await {
+                    print_log(LogLevel::Warning, &format!("Homebrew not available: {e}"));
+                } else {
+                    match compare_brew_state(brew_val).await {
+                        Ok(BrewDiff {
+                            missing_formulae,
+                            extra_formulae,
+                            missing_casks,
+                            extra_casks,
+                            missing_taps,
+                            extra_taps,
+                        }) => {
+                            let mut any_brew_diff = false;
+                            if !missing_formulae.is_empty() {
+                                any_brew_diff = true;
+                                print_log(
+                                    LogLevel::Warning,
+                                    &format!("Formulae missing: {}", missing_formulae.join(", ")),
+                                );
+                            }
+                            if !extra_formulae.is_empty() {
+                                any_brew_diff = true;
+                                print_log(
+                                    LogLevel::Warning,
+                                    &format!(
+                                        "Extra installed formulae: {}",
+                                        extra_formulae.join(", ")
+                                    ),
+                                );
+                            }
+                            if !missing_casks.is_empty() {
+                                any_brew_diff = true;
+                                print_log(
+                                    LogLevel::Warning,
+                                    &format!("Casks missing: {}", missing_casks.join(", ")),
+                                );
+                            }
+                            if !extra_casks.is_empty() {
+                                any_brew_diff = true;
+                                print_log(
+                                    LogLevel::Warning,
+                                    &format!("Extra installed casks: {}", extra_casks.join(", ")),
+                                );
+                            }
+                            if !missing_taps.is_empty() {
+                                any_brew_diff = true;
+                                print_log(
+                                    LogLevel::Warning,
+                                    &format!("Taps missing: {}", missing_taps.join(", ")),
+                                );
+                            }
+                            if !extra_taps.is_empty() {
+                                any_brew_diff = true;
+                                print_log(
+                                    LogLevel::Warning,
+                                    &format!("Extra tapped: {}", extra_taps.join(", ")),
+                                );
+                            }
+                            if !any_brew_diff {
+                                print_log(
+                                    LogLevel::Fruitful,
+                                    "All Homebrew formulae/casks match config.",
+                                );
+                            } else {
+                                print_log(
+                                    LogLevel::Warning,
+                                    "Use cutler's brew commands to sync/install these if needed.\n",
+                                )
+                            }
+                        }
+                        Err(e) => {
                             print_log(
                                 LogLevel::Warning,
-                                &format!("Formulae missing: {}", missing_formulae.join(", ")),
+                                &format!("Could not check Homebrew status: {e}"),
                             );
                         }
-                        if !extra_formulae.is_empty() {
-                            any_brew_diff = true;
-                            print_log(
-                                LogLevel::Warning,
-                                &format!("Extra installed formulae: {}", extra_formulae.join(", ")),
-                            );
-                        }
-                        if !missing_casks.is_empty() {
-                            any_brew_diff = true;
-                            print_log(
-                                LogLevel::Warning,
-                                &format!("Casks missing: {}", missing_casks.join(", ")),
-                            );
-                        }
-                        if !extra_casks.is_empty() {
-                            any_brew_diff = true;
-                            print_log(
-                                LogLevel::Warning,
-                                &format!("Extra installed casks: {}", extra_casks.join(", ")),
-                            );
-                        }
-                        if !missing_taps.is_empty() {
-                            any_brew_diff = true;
-                            print_log(
-                                LogLevel::Warning,
-                                &format!("Taps missing: {}", missing_taps.join(", ")),
-                            );
-                        }
-                        if !extra_taps.is_empty() {
-                            any_brew_diff = true;
-                            print_log(
-                                LogLevel::Warning,
-                                &format!("Extra tapped: {}", extra_taps.join(", ")),
-                            );
-                        }
-                        if !any_brew_diff {
-                            print_log(
-                                LogLevel::Fruitful,
-                                "All Homebrew formulae/casks match config.",
-                            );
-                        } else {
-                            print_log(
-                                LogLevel::Warning,
-                                "Use cutler's brew commands to sync/install these if needed.\n",
-                            )
-                        }
-                    }
-                    Err(e) => {
-                        print_log(
-                            LogLevel::Warning,
-                            &format!("Could not check Homebrew status: {e}"),
-                        );
                     }
                 }
             }

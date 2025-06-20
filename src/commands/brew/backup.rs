@@ -6,9 +6,7 @@ use clap::Args;
 use toml_edit::{Array, DocumentMut, Item, Table, Value};
 
 use crate::{
-    brew::utils::{
-        brew_list, brew_list_taps, disable_auto_update, ensure_brew, restore_auto_update,
-    },
+    brew::utils::{brew_list, disable_auto_update, ensure_brew, restore_auto_update},
     commands::Runnable,
     config::get_config_path,
     util::{
@@ -38,9 +36,7 @@ impl Runnable for BrewBackupCmd {
         let formulas = brew_list(&["list", "--formula"]).await?;
         let casks = brew_list(&["list", "--cask"]).await?;
         let deps = brew_list(&["list", "--installed-as-dependency"]).await?;
-
-        // fetch taps using the shared utility
-        let taps = brew_list_taps().await?;
+        let taps = brew_list(&["tap"]).await?;
 
         if should_dry_run() {
             print_log(
@@ -64,6 +60,16 @@ impl Runnable for BrewBackupCmd {
 
         let brew_item = doc.entry("brew").or_insert(Item::Table(Table::new()));
         let brew_tbl = brew_item.as_table_mut().unwrap();
+
+        // firstly remember the --no-deps value
+        brew_tbl["no-deps"] = Item::None;
+        if self.no_deps {
+            print_log(
+                LogLevel::Info,
+                "Setting no-deps to true in config for later reads.",
+            );
+            brew_tbl["no-deps"] = Item::Value(Value::Boolean(toml_edit::Formatted::new(true)));
+        }
 
         // build TOML arrays for formulae and casks
         let mut formula_arr = Array::new();
