@@ -38,7 +38,7 @@ pub struct Args {
 
 #[derive(Subcommand, Debug)]
 pub enum Command {
-    /// Apply your preferences.
+    /// Apply your preferences and other things.
     Apply(ApplyCmd),
     /// Run your external command(s).
     Exec(ExecCmd),
