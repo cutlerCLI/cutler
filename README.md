@@ -236,9 +236,6 @@ hostname = "darkstar"
 [commands.hostname]
 run = "scutil set --LocalHostName $hostname"  # or ${hostname}
 sudo = true  # a more "annotated" sudo
-
-[commands.hello]
-run = "echo Hello World"
 ```
 
 By default, cutler will run all of your external commands with the `cutler apply` command if you do not pass in the
