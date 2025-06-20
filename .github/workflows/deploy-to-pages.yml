@@ -24,34 +24,11 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-
-      - name: Cache Cargo registry and build
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-cargo-
-
       - uses: actions/configure-pages@v5
-
-      - name: Build the developer documentation
-        run: |
-          rm -rf landing/dev-docs && mkdir -p landing/dev-docs
-          cargo doc --locked --no-deps
-          mv target/doc/* landing/dev-docs/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
