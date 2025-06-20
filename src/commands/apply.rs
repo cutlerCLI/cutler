@@ -88,6 +88,7 @@ impl Runnable for ApplyCmd {
 
                 // read the current value from the system
                 // then, check if changed
+                // TODO: could use read_batch from defaults-rs here
                 let current = collector::read_current(&eff_dom, &eff_key)
                     .await
                     .unwrap_or_default();
