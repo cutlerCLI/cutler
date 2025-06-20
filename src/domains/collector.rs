@@ -109,13 +109,7 @@ pub async fn read_current(eff_domain: &str, eff_key: &str) -> Option<String> {
 
     fn prefvalue_to_cutler_string(val: &PrefValue) -> String {
         match val {
-            PrefValue::Boolean(b) => {
-                if *b {
-                    "1".into()
-                } else {
-                    "0".into()
-                }
-            }
+            PrefValue::Boolean(b) => b.to_string(),
             PrefValue::Integer(i) => i.to_string(),
             PrefValue::Float(f) => f.to_string(),
             PrefValue::String(s) => s.clone(),

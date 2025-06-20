@@ -3,7 +3,7 @@ use crate::util::config::ensure_config_exists_or_init;
 use crate::util::globals::should_dry_run;
 use crate::{
     config::loader::load_config,
-    external::runner,
+    exec::runner,
     util::logging::{LogLevel, print_log},
 };
 use anyhow::Result;

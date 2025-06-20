@@ -189,10 +189,12 @@ pub async fn run_all(config: &Value) -> Result<()> {
     let mut handles = Vec::new();
     for state in cmds {
         let vars = vars.clone();
+
         handles.push(task::spawn(async move {
             execute_command(state, vars.as_ref()).await
         }));
     }
+
     let mut failures = 0;
     for handle in handles {
         if handle.await.unwrap().is_err() {
@@ -214,7 +216,6 @@ pub async fn run_all(config: &Value) -> Result<()> {
 /// Run exactly one command entry, given its name.
 pub async fn run_one(config: &Value, which: &str) -> Result<()> {
     let vars = config.get("vars").and_then(Value::as_table).cloned();
-    let cmd_state = extract_cmd(config, which)?;
-
-    execute_command(cmd_state, vars.as_ref()).await
+    let state = extract_cmd(config, which)?;
+    execute_command(state, vars.as_ref()).await
 }

@@ -2,9 +2,11 @@ use crate::{
     brew::utils::{BrewDiff, compare_brew_state, ensure_brew},
     commands::Runnable,
     config::loader::{get_config_path, load_config},
-    defaults::normalize,
     domains::{collect, effective, read_current},
-    util::logging::{BOLD, GREEN, LogLevel, RED, RESET, print_log},
+    util::{
+        drs::normalize,
+        logging::{BOLD, GREEN, LogLevel, RED, RESET, print_log},
+    },
 };
 use anyhow::{Result, bail};
 use async_trait::async_trait;
@@ -38,11 +40,13 @@ impl Runnable for StatusCmd {
         let mut outcomes = Vec::with_capacity(entries.len());
         for (domain, key, value) in entries.iter() {
             let (eff_dom, eff_key) = effective(domain, key);
-            let desired = normalize(value);
+
             let current = read_current(&eff_dom, &eff_key)
                 .await
                 .unwrap_or_else(|| "Not set".into());
+            let desired = normalize(value);
             let is_diff = current != desired;
+
             outcomes.push((eff_dom, eff_key, desired, current, is_diff));
         }
 

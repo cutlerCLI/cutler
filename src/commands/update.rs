@@ -153,12 +153,13 @@ impl Runnable for SelfUpdateCmd {
             .build()?
             .update()?;
 
-        if !should_be_quiet() {
-            if status.updated() {
-                println!("✅ cutler updated to: {}", status.version());
-            } else {
-                println!("cutler is already up to date.");
-            }
+        if status.updated() {
+            print_log(
+                LogLevel::Fruitful,
+                &format!("cutler updated to: {}", status.version()),
+            );
+        } else {
+            print_log(LogLevel::Fruitful, "cutler is already up to date.");
         }
 
         Ok(())

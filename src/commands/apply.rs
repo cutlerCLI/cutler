@@ -1,13 +1,13 @@
 use crate::commands::{BrewInstallCmd, Runnable};
 use crate::util::config::ensure_config_exists_or_init;
+use crate::util::drs::{normalize, toml_to_prefvalue};
 use crate::util::globals::should_dry_run;
 use crate::util::io::restart_system_services_if_needed;
 use crate::util::logging::{GREEN, RESET};
 use crate::{
     config::loader::load_config,
-    defaults::{convert::toml_to_prefvalue, flags},
     domains::collector,
-    external::runner,
+    exec::runner,
     snapshot::state::{SettingState, Snapshot},
     util::logging::{LogLevel, print_log},
 };
@@ -85,13 +85,13 @@ impl Runnable for ApplyCmd {
             for (key, toml_value) in table.into_iter() {
                 let (eff_dom, eff_key) = collector::effective(&dom, &key);
                 collector::check_domain_exists(&eff_dom).await?;
-                let desired = flags::normalize(&toml_value);
 
                 // read the current value from the system
                 // then, check if changed
                 let current = collector::read_current(&eff_dom, &eff_key)
                     .await
                     .unwrap_or_default();
+                let desired = normalize(&toml_value);
                 let changed = current != desired;
 
                 // grab the old snapshot entry if it exists

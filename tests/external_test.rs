@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use cutler::{
-        external::runner::{run_all, run_one},
+        exec::runner::{run_all, run_one},
         util::globals::set_dry_run,
     };
     use toml::{Value, value::Table};
