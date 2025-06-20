@@ -72,8 +72,9 @@ impl Runnable for BrewInstallCmd {
                     );
                 }
                 if !diff.extra_formulae.is_empty() || !diff.extra_casks.is_empty() {
-                    println!(
-                        "\nRun `cutler brew backup` to synchronize your config with the system."
+                    print_log(
+                        LogLevel::Warning,
+                        "Run `cutler brew backup` to synchronize your config with the system.\n",
                     );
                 }
                 diff

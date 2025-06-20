@@ -125,8 +125,9 @@ impl Runnable for SelfUpdateCmd {
         let is_cargo = exe_path_str == cargo_bin_path;
 
         if is_homebrew || is_cargo {
-            println!(
-                "cutler was installed using a package manager, so cannot install updates manually."
+            print_log(
+                LogLevel::Warning,
+                "cutler was installed using a package manager, so cannot install updates manually.",
             );
             return Ok(());
         }
@@ -137,7 +138,10 @@ impl Runnable for SelfUpdateCmd {
             "x86_64" | "x86" => "darwin-x86_64",
             "aarch64" => "darwin-arm64",
             _ => {
-                println!("Unsupported architecture for self-update: {}", arch);
+                print_log(
+                    LogLevel::Error,
+                    &format!("Unsupported architecture for self-update: {}", arch),
+                );
                 return Ok(());
             }
         };
