@@ -231,7 +231,7 @@ hostname = "darkstar"
 
 [commands.hostname]
 run = "scutil set --LocalHostName $hostname"  # or ${hostname}
-sudo = true  # a more "annotated sudo"
+sudo = true  # a more "annotated" sudo
 
 [commands.hello]
 run = "echo Hello World"
