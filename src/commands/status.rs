@@ -15,7 +15,7 @@ use clap::Args;
 #[derive(Args, Debug)]
 pub struct StatusCmd {
     // Disable Homebrew state check.
-    #[arg(short, long)]
+    #[arg(long)]
     pub no_brew: bool,
 }
 
