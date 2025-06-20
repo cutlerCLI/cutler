@@ -48,7 +48,7 @@ pub enum Command {
     Unapply(UnapplyCmd),
     /// (DANGEROUS) Hard-reset all preferences.
     Reset(ResetCmd),
-    /// Display current status comparing the config and the system.
+    /// Compare your system against your config.
     Status(StatusCmd),
     /// Homebrew backup-and-restore related commands.
     Brew {
@@ -62,11 +62,11 @@ pub enum Command {
     },
     /// Check for version updates.
     CheckUpdate(CheckUpdateCmd),
-    /// Updates cutler itself (only for manual installs).
+    /// Updates cutler itself (for manual installs).
     SelfUpdate(SelfUpdateCmd),
     /// Generate shell completions.
     Completion {
-        /// Shell type to generate completions for.
+        /// Your shell type.
         #[arg(value_enum)]
         shell: Shell,
     },
@@ -74,7 +74,7 @@ pub enum Command {
 
 #[derive(Subcommand, Debug)]
 pub enum BrewSubcmd {
-    /// Backup current formulae and casks into config file.
+    /// Backup current formulae and casks into config.
     Backup(BrewBackupCmd),
     /// Install Homebrew if not present, then install all formulae and casks from config.
     Install(BrewInstallCmd),
@@ -82,8 +82,8 @@ pub enum BrewSubcmd {
 
 #[derive(Subcommand, Debug)]
 pub enum ConfigSubcmd {
-    /// Display the contents of the configuration file.
+    /// Display the contents of the config.
     Show(ConfigShowCmd),
-    /// Delete the configuration file.
+    /// Delete the config file.
     Delete(ConfigDeleteCmd),
 }
