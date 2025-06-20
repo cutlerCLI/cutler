@@ -38,15 +38,15 @@ pub struct Args {
 
 #[derive(Subcommand, Debug)]
 pub enum Command {
-    /// Apply the changes written in your config file.
+    /// Apply your preferences.
     Apply(ApplyCmd),
-    /// Run only the external commands written in the config file.
+    /// Run your external command(s).
     Exec(ExecCmd),
     /// Initialize a new config file with sensible defaults.
     Init(InitCmd),
     /// Unapply the previously applied modifications(s).
     Unapply(UnapplyCmd),
-    /// Hard reset domains written in the config file (dangerous).
+    /// (DANGEROUS) Hard-reset all preferences.
     Reset(ResetCmd),
     /// Display current status comparing the config and the system.
     Status(StatusCmd),
