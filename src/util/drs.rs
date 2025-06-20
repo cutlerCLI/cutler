@@ -44,13 +44,6 @@ pub fn prefvalue_to_toml(val: &PrefValue) -> Value {
 /// Normalize a TOML value to a string.
 pub fn normalize(value: &Value) -> String {
     match value {
-        Value::Boolean(b) => {
-            if *b {
-                "1".into()
-            } else {
-                "0".into()
-            }
-        }
         Value::String(s) => s.clone(),
         _ => value.to_string(),
     }
