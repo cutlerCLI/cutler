@@ -203,7 +203,7 @@ impl Runnable for ApplyCmd {
 
         // exec external commands
         if !self.no_exec {
-            let _ = runner::run_all(&toml).await;
+            runner::run_all(&toml).await?;
         }
 
         // restart system services if requested

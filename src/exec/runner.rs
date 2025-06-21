@@ -41,17 +41,16 @@ pub fn extract_cmd(config: &Value, name: &str) -> Result<ExternalCommandState> {
 
 // Pull all external commands written in user config into state objects.
 pub fn extract_all_cmds(config: &Value) -> Vec<ExternalCommandState> {
-    let mut out = Vec::new();
-
     if let Some(cmds) = config.get("commands").and_then(Value::as_table) {
-        for (name, _) in cmds {
-            if let Ok(cmd_state) = extract_cmd(config, name) {
-                out.push(cmd_state);
-            }
-        }
+        let output: Vec<ExternalCommandState> = cmds
+            .iter()
+            .filter_map(|(name, _)| extract_cmd(config, name).ok())
+            .collect();
+
+        return output;
     }
 
-    out
+    Vec::new()
 }
 
 /// Perform variable substitution (env + `[external.variables]`) in a text.
