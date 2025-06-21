@@ -29,7 +29,7 @@
             <img src="assets/logo.png" alt="cutler Logo" class="logo" />
         </div>
 
-        <h1>cutler<sup>v0.7.15</sup></h1>
+        <h1>cutler<sup>v0.8.0</sup></h1>
         <p class="tagline">
             <strong
                 >Powerful, declarative settings management for your Mac, with
@@ -80,24 +80,73 @@
         <hr />
 
         <p>Just a single command and you're ready to go!</p>
-        <pre><code class="language-bash">/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/hitblast/cutler/main/install.sh)"</code></pre>
+        <div class="code-container">
+            <button
+                class="copy-btn"
+                onclick="copyToClipboard(this)"
+                title="Copy to clipboard"
+            >
+                📋
+            </button>
+            <pre><code class="language-bash">/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/hitblast/cutler/main/install.sh)"</code></pre>
+        </div>
 
         <p>Or, use one of the following:</p>
-        <pre><code class="language-bash"># Using Homebrew (recommended)
-brew install hitblast/tap/cutler
 
-# Using cargo
-cargo install cutler
+        <h3>Using <code>brew</code></h3>
+        <div class="code-container">
+            <button
+                class="copy-btn"
+                onclick="copyToClipboard(this)"
+                title="Copy to clipboard"
+            >
+                📋
+            </button>
+            <pre><code class="language-bash">brew install hitblast/tap/cutler</code></pre>
+        </div>
 
-# Using mise
-mise use -g cargo:cutler</code></pre>
+        <h3>Using <code>cargo</code></h3>
+        <div class="code-container">
+            <button
+                class="copy-btn"
+                onclick="copyToClipboard(this)"
+                title="Copy to clipboard"
+            >
+                📋
+            </button>
+            <pre><code class="language-bash">cargo install cutler</code></pre>
+        </div>
+
+        <h3>Using <code>mise</code></h3>
+        <div class="code-container">
+            <button
+                class="copy-btn"
+                onclick="copyToClipboard(this)"
+                title="Copy to clipboard"
+            >
+                📋
+            </button>
+            <pre><code class="language-bash">mise use -g cargo:cutler</code></pre>
+        </div>
+
+        <br />
+        <hr />
 
         <p>Learn more about cutler by running either of these commands:</p>
-        <pre><code class="language-bash"># Included manpage (brew/manual)
+        <div class="code-container">
+            <button
+                class="copy-btn"
+                onclick="copyToClipboard(this)"
+                title="Copy to clipboard"
+            >
+                📋
+            </button>
+            <pre><code class="language-bash"># Included manpage (brew/manual)
 man cutler
 
 # or, the included help menu:
 cutler help</code></pre>
+        </div>
         <h2>Configuration</h2>
         <hr />
 
@@ -105,11 +154,18 @@ cutler help</code></pre>
             In order to setup a comprehensive example on your Mac automatically,
             use this command:
         </p>
-        <pre><code class="language-bash">cutler init</code></pre>
+        <div class="code-container">
+            <button
+                class="copy-btn"
+                onclick="copyToClipboard(this)"
+                title="Copy to clipboard"
+            >
+                📋
+            </button>
+            <pre><code class="language-bash">cutler init</code></pre>
+        </div>
         <p>
-            Or, create a <code>config.toml</code> file within one of the
-            locations listed below and write your preferred settings following
-            the defaults syntax. Check out the
+            Check out the
             <a href="https://github.com/hitblast/cutler/tree/main/examples"
                 >example configuration files</a
             >
@@ -119,23 +175,48 @@ cutler help</code></pre>
         <h2 id="shell-integrations">Shell Integrations</h2>
         <hr />
 
-        <h4>Completion Scripts</h4>
-        <pre><code class="language-bash"># Bash
-cutler completion bash > cutler.bash
-mv cutler.bash ~/.bash-completion.d/
+        <h3>For <code>bash</code> users</h3>
+        <div class="code-container">
+            <button
+                class="copy-btn"
+                onclick="copyToClipboard(this)"
+                title="Copy to clipboard"
+            >
+                📋
+            </button>
+            <pre><code class="language-bash">cutler completion bash > cutler.bash
+mv cutler.bash ~/.bash-completion.d/</code></pre>
+        </div>
 
-# Zsh
-cutler completion zsh > _cutler
-mv _cutler ~/.zfunc/
+        <h3>For <code>zsh</code> users</h3>
+        <div class="code-container">
+            <button
+                class="copy-btn"
+                onclick="copyToClipboard(this)"
+                title="Copy to clipboard"
+            >
+                📋
+            </button>
+            <pre><code class="language-bash">cutler completion zsh > _cutler
+mv _cutler ~/.zfunc/</code></pre>
+        </div>
 
-# Other shells like powershell, elvish and fish are also available.</code></pre>
+        <p>Other shells like powershell, elvish and fish are also available.</p>
 
         <h2>Commands Cookbook</h2>
         <hr />
 
         <div class="feature">
             <h3>Apply your settings</h3>
-            <pre><code class="language-bash">cutler apply
+            <div class="code-container">
+                <button
+                    class="copy-btn"
+                    onclick="copyToClipboard(this)"
+                    title="Copy to clipboard"
+                >
+                    📋
+                </button>
+                <pre><code class="language-bash">cutler apply
 
 # or, skip external commands (see reference below)
 cutler apply --no-exec
@@ -143,6 +224,7 @@ cutler apply --no-exec
 # or, also invoke `cutler brew install`
 cutler apply --with-brew
 </code></pre>
+            </div>
             <p>
                 This command applies all settings from your config file and
                 restarts necessary system services.
@@ -151,7 +233,16 @@ cutler apply --with-brew
 
         <div class="feature">
             <h3>Check current status</h3>
-            <pre><code class="language-bash">cutler status</code></pre>
+            <div class="code-container">
+                <button
+                    class="copy-btn"
+                    onclick="copyToClipboard(this)"
+                    title="Copy to clipboard"
+                >
+                    📋
+                </button>
+                <pre><code class="language-bash">cutler status</code></pre>
+            </div>
             <p>
                 Compares your configuration with current system settings.<br />
                 See <a href="#shell-integrations">Shell Integrations</a> for
@@ -161,13 +252,31 @@ cutler apply --with-brew
 
         <div class="feature">
             <h3>Revert changes</h3>
-            <pre><code class="language-bash">cutler unapply</code></pre>
+            <div class="code-container">
+                <button
+                    class="copy-btn"
+                    onclick="copyToClipboard(this)"
+                    title="Copy to clipboard"
+                >
+                    📋
+                </button>
+                <pre><code class="language-bash">cutler unapply</code></pre>
+            </div>
             <p>Removes all settings applied by cutler.</p>
         </div>
 
         <div class="feature">
             <h3>Hard-reset config defaults</h3>
-            <pre><code class="language-bash">cutler reset --force</code></pre>
+            <div class="code-container">
+                <button
+                    class="copy-btn"
+                    onclick="copyToClipboard(this)"
+                    title="Copy to clipboard"
+                >
+                    📋
+                </button>
+                <pre><code class="language-bash">cutler reset --force</code></pre>
+            </div>
             <p>
                 Resets every defaults domain written in the config file to
                 factory settings.
@@ -178,20 +287,38 @@ cutler apply --with-brew
 
         <div class="feature">
             <h3>Manage configuration file</h3>
-            <pre><code class="language-bash"># Shows the contents of the configuration file
+            <div class="code-container">
+                <button
+                    class="copy-btn"
+                    onclick="copyToClipboard(this)"
+                    title="Copy to clipboard"
+                >
+                    📋
+                </button>
+                <pre><code class="language-bash"># Shows the contents of the configuration file
 cutler config show
 
 # Unapplies and deletes the configuration file
 cutler config delete</code></pre>
+            </div>
         </div>
 
         <div class="feature">
             <h3>Manage updates</h3>
-            <pre><code class="language-bash"># Check only
+            <div class="code-container">
+                <button
+                    class="copy-btn"
+                    onclick="copyToClipboard(this)"
+                    title="Copy to clipboard"
+                >
+                    📋
+                </button>
+                <pre><code class="language-bash"># Check only
 cutler check-update
 
 # or, upgrade directly (if installed manually):
 cutler self-update</code></pre>
+            </div>
         </div>
 
         <h2>Manage Homebrew</h2>
@@ -202,7 +329,15 @@ cutler self-update</code></pre>
             bundle files for storing their identifiers using just these two
             commands:
         </p>
-        <pre><code class="language-bash"># Backup installed casks and formulae
+        <div class="code-container">
+            <button
+                class="copy-btn"
+                onclick="copyToClipboard(this)"
+                title="Copy to clipboard"
+            >
+                📋
+            </button>
+            <pre><code class="language-bash"># Backup installed casks and formulae
 # This will store all formula/cask names to cutler.toml
 cutler brew backup
 
@@ -212,6 +347,7 @@ cutler brew backup --no-deps
 
 # Now, to install from your cutler.toml file:
 cutler brew install</code></pre>
+        </div>
 
         <h2>External Commands</h2>
         <hr />
@@ -223,7 +359,7 @@ cutler brew install</code></pre>
 
         <pre><code class="language-bash"># A basic hello
 [commands.greet]
-cmd = "echo \"Hello World\"</code></pre>
+cmd = "echo \"Hello World\""</code></pre>
 
         <p>This translates to running:</p>
         <pre><code class="language-bash">echo "Hello World"</code></pre>
@@ -242,16 +378,25 @@ run = "echo $common_args"
 sudo = false</code></pre>
 
         <p>If you want to run them:</p>
-        <pre><code class="language-bash"># combined execution
+        <div class="code-container">
+            <button
+                class="copy-btn"
+                onclick="copyToClipboard(this)"
+                title="Copy to clipboard"
+            >
+                📋
+            </button>
+            <pre><code class="language-bash"># combined execution
 cutler exec
 
 # or
 cutler exec greet</code></pre>
+        </div>
 
         <h2>Some Personal Take</h2>
         <hr />
         <p>
-            If you scroll around the
+            Just a fun part of the project! If you scroll around the
             <a href="https://github.com/hitblast/cutler/releases"
                 >GitHub Releases</a
             >
@@ -289,5 +434,26 @@ cutler exec greet</code></pre>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+        <script>
+            function copyToClipboard(button) {
+                const codeBlock =
+                    button.nextElementSibling.querySelector("code");
+                const text = codeBlock.textContent;
+
+                navigator.clipboard
+                    .writeText(text)
+                    .then(function () {
+                        // Visual feedback
+                        const originalText = button.textContent;
+                        button.textContent = "✅";
+                        setTimeout(() => {
+                            button.textContent = originalText;
+                        }, 1000);
+                    })
+                    .catch(function (err) {
+                        console.error("Failed to copy text: ", err);
+                    });
+            }
+        </script>
     </body>
 </html>
