@@ -1,15 +1,16 @@
-use crate::commands::{BrewInstallCmd, Runnable};
-use crate::util::config::ensure_config_exists_or_init;
-use crate::util::drs::{normalize, toml_to_prefvalue};
-use crate::util::globals::should_dry_run;
-use crate::util::io::restart_system_services_if_needed;
-use crate::util::logging::{GREEN, RESET};
 use crate::{
+    commands::{BrewInstallCmd, Runnable},
     config::loader::load_config,
     domains::collector,
     exec::runner,
     snapshot::state::{SettingState, Snapshot},
-    util::logging::{LogLevel, print_log},
+    util::{
+        config::ensure_config_exists_or_init,
+        convert::{normalize, toml_to_prefvalue},
+        globals::should_dry_run,
+        io::restart_system_services_if_needed,
+        logging::{GREEN, LogLevel, RESET, print_log},
+    },
 };
 use anyhow::Result;
 use async_trait::async_trait;

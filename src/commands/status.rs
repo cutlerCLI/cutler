@@ -7,7 +7,7 @@ use crate::{
     config::loader::{get_config_path, load_config},
     domains::{collect, effective, read_current},
     util::{
-        drs::normalize,
+        convert::normalize,
         logging::{BOLD, GREEN, LogLevel, RED, RESET, print_log},
     },
 };

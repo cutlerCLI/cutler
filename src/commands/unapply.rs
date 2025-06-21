@@ -9,28 +9,12 @@ use crate::{
     commands::Runnable,
     snapshot::state::{Snapshot, get_snapshot_path},
     util::{
-        drs::toml_to_prefvalue,
+        convert::{string_to_toml_value, toml_to_prefvalue},
         globals::should_dry_run,
         io::restart_system_services_if_needed,
         logging::{LogLevel, print_log},
     },
 };
-
-/// Helper: turn string to TOML value
-fn string_to_toml_value(s: &str) -> toml::Value {
-    // try bool, int, float, fallback to string
-    if s == "true" {
-        toml::Value::Boolean(true)
-    } else if s == "false" {
-        toml::Value::Boolean(false)
-    } else if let Ok(i) = s.parse::<i64>() {
-        toml::Value::Integer(i)
-    } else if let Ok(f) = s.parse::<f64>() {
-        toml::Value::Float(f)
-    } else {
-        toml::Value::String(s.to_string())
-    }
-}
 
 #[derive(Args, Debug)]
 pub struct UnapplyCmd;

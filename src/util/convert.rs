@@ -41,6 +41,21 @@ pub fn prefvalue_to_toml(val: &PrefValue) -> Value {
     }
 }
 
+pub fn string_to_toml_value(s: &str) -> toml::Value {
+    // try bool, int, float, fallback to string
+    if s == "true" {
+        toml::Value::Boolean(true)
+    } else if s == "false" {
+        toml::Value::Boolean(false)
+    } else if let Ok(i) = s.parse::<i64>() {
+        toml::Value::Integer(i)
+    } else if let Ok(f) = s.parse::<f64>() {
+        toml::Value::Float(f)
+    } else {
+        toml::Value::String(s.to_string())
+    }
+}
+
 /// Normalize a TOML value to a string.
 pub fn normalize(value: &Value) -> String {
     match value {
