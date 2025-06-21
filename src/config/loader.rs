@@ -27,7 +27,7 @@ pub fn get_config_path() -> PathBuf {
         candidates.push(candidate2);
     }
 
-    candidates.push(PathBuf::from("config.toml"));
+    candidates.push(PathBuf::from("cutler.toml"));
 
     // return the first candidate that exists
     // might lead to a prompt to create an example config
@@ -39,7 +39,7 @@ pub fn get_config_path() -> PathBuf {
     candidates
         .first()
         .cloned()
-        .unwrap_or_else(|| PathBuf::from("config.toml"))
+        .unwrap_or_else(|| PathBuf::from("cutler.toml"))
 }
 
 /// Helper: Read and parse the configuration file at a given path.
