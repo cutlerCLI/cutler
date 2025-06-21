@@ -85,13 +85,11 @@ impl Runnable for BrewBackupCmd {
                         formula_arr.push(formula.as_str());
                     }
                 }
+            } else if dry_run {
+                print_log(LogLevel::Dry, &format!("Would push {}", formula));
             } else {
-                if dry_run {
-                    print_log(LogLevel::Dry, &format!("Would push {}", formula));
-                } else {
-                    print_log(LogLevel::Info, &format!("Pushing {}", formula));
-                    formula_arr.push(formula.as_str());
-                }
+                print_log(LogLevel::Info, &format!("Pushing {}", formula));
+                formula_arr.push(formula.as_str());
             }
         }
         print_log(
@@ -117,13 +115,11 @@ impl Runnable for BrewBackupCmd {
                         cask_arr.push(cask.as_str());
                     }
                 }
+            } else if dry_run {
+                print_log(LogLevel::Dry, &format!("Would push {}", cask));
             } else {
-                if dry_run {
-                    print_log(LogLevel::Dry, &format!("Would push {}", cask));
-                } else {
-                    print_log(LogLevel::Info, &format!("Pushed {} as a cask.", cask));
-                    cask_arr.push(cask.as_str());
-                }
+                print_log(LogLevel::Info, &format!("Pushed {} as a cask.", cask));
+                cask_arr.push(cask.as_str());
             }
         }
         print_log(
