@@ -11,7 +11,7 @@ use crate::{
     commands::Runnable,
     config::{get_config_path, load_config},
     util::{
-        globals::should_dry_run,
+        globals::{is_verbose, should_dry_run},
         logging::{LogLevel, print_log},
     },
 };
@@ -174,7 +174,7 @@ async fn fetch_all(formulae: &[String], casks: &[String]) {
             let mut cmd = Command::new("brew");
             cmd.arg("fetch").arg(&name);
 
-            if crate::util::globals::is_verbose() {
+            if is_verbose() {
                 print_log(LogLevel::Info, &format!("Fetching formula: {}", name));
             } else {
                 cmd.arg("--quiet");
@@ -187,7 +187,8 @@ async fn fetch_all(formulae: &[String], casks: &[String]) {
         handles.push(tokio::spawn(async move {
             let mut cmd = Command::new("brew");
             cmd.arg("fetch").arg("--cask").arg(&name);
-            if crate::util::globals::is_verbose() {
+
+            if is_verbose() {
                 print_log(LogLevel::Info, &format!("Fetching cask: {}", name));
             } else {
                 cmd.arg("--quiet");
@@ -201,6 +202,7 @@ async fn fetch_all(formulae: &[String], casks: &[String]) {
 }
 
 /// Install formulae/casks sequentially.
+/// The argument is a vector of vectors of strings, with each vector representing arguments to a brew command.
 async fn install_sequentially(install_tasks: Vec<Vec<String>>) -> anyhow::Result<()> {
     for args in install_tasks {
         let display = format!("brew {}", args.join(" "));
