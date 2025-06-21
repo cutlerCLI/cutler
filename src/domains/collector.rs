@@ -61,7 +61,7 @@ pub fn collect(parsed: &Value) -> Result<HashMap<String, toml::value::Table>, an
 ///   finder            -> com.apple.finder
 ///   NSGlobalDomain    -> NSGlobalDomain
 ///   NSGlobalDomain.bar-> NSGlobalDomain
-fn full_domain(domain: &str) -> String {
+fn get_defaults_domain(domain: &str) -> String {
     if domain.strip_prefix("NSGlobalDomain.").is_some() {
         // NSGlobalDomain.foo -> NSGlobalDomain
         "NSGlobalDomain".into()
@@ -75,7 +75,7 @@ fn full_domain(domain: &str) -> String {
 
 /// Given the TOML domain and key, figure out the true domain-key pair.
 pub fn effective(domain: &str, key: &str) -> (String, String) {
-    let dom = full_domain(domain);
+    let dom = get_defaults_domain(domain);
     let k = if dom == "NSGlobalDomain" && domain.starts_with("NSGlobalDomain.") {
         // NSGlobalDomain.foo + key  -> foo.key
         let rest = &domain["NSGlobalDomain.".len()..];

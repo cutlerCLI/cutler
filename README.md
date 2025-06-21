@@ -137,6 +137,11 @@ You can also configure global preferences like this:
 InitialKeyRepeat = 15
 ApplePressAndHoldEnabled = true
 "com.apple.mouse.linear" = true
+
+# or, for the third entry, alternate structure:
+#
+# [set.NSGlobalDomain.com.apple.mouse]
+# linear = true
 ```
 
 Again, if you were to use `defaults`, it would look something like this:
@@ -146,12 +151,13 @@ $ defaults write NSGlobalDomain "ApplePressAndHoldEnabled" -bool true
 $ defaults write NSGlobalDomain com.apple.mouse.linear -bool true
 ```
 
-Once you're ready, run this command.
-In a moment, you'll see a few different system services restart as you apply the modifications you just wrote for yourself.
+Once you're ready, run this command to apply everything:
 
 ```bash
 $ cutler apply
 ```
+
+The `apply` command has multiple functionalities which happen alongside of applying the preferences. Please read the sections below in depth to learn more.
 
 cutler also takes the changes into account and tracks them. To see your status, run:
 
