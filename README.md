@@ -136,9 +136,7 @@ You can also configure global preferences like this:
 [set.NSGlobalDomain]
 InitialKeyRepeat = 15
 ApplePressAndHoldEnabled = true
-
-[set.NSGlobalDomain.com.apple.mouse]
-linear = true
+"com.apple.mouse.linear" = true
 ```
 
 Again, if you were to use `defaults`, it would look something like this:
