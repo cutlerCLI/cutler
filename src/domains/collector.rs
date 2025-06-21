@@ -56,7 +56,7 @@ pub fn collect(parsed: &Value) -> Result<HashMap<String, toml::value::Table>, an
     Ok(out)
 }
 
-/// Helper for effective() function.
+/// Helper for: effective()
 /// Turn a config‐domain into the real defaults domain.
 ///   finder            -> com.apple.finder
 ///   NSGlobalDomain    -> NSGlobalDomain

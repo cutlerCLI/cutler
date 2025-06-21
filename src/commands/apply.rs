@@ -195,14 +195,14 @@ impl Runnable for ApplyCmd {
             print_log(LogLevel::Dry, "Would save snapshot");
         }
 
-        // exec external commands
-        if !self.no_exec {
-            let _ = runner::run_all(&toml).await;
-        }
-
         // run brew
         if self.with_brew {
             BrewInstallCmd.run().await?;
+        }
+
+        // exec external commands
+        if !self.no_exec {
+            let _ = runner::run_all(&toml).await;
         }
 
         // restart system services if requested

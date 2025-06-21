@@ -1,10 +1,14 @@
-use crate::util::globals::should_dry_run;
-use crate::util::io::confirm_action;
-use crate::util::logging::{LogLevel, print_log};
+use crate::brew::types::{BrewDiff, BrewListType};
+use crate::util::{
+    globals::should_dry_run,
+    io::confirm_action,
+    logging::{LogLevel, print_log},
+};
 use anyhow::Result;
 use std::env;
 use tokio::process::Command;
 
+/// Helper for: ensure_brew()
 /// Ensures Xcode Command Line Tools are installed.
 /// If not, prompts the user to install them (unless dry_run).
 async fn ensure_xcode_clt() -> Result<()> {
@@ -104,10 +108,20 @@ async fn install_homebrew() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-/// Run a Homebrew command asynchronously and auto-separate lines to be a vector of string.
-/// Useful for `brew list` and `brew tap`.
-pub async fn brew_list(args: &[&str]) -> Result<Vec<String>> {
+/// Lists Homebrew things (formulae/casks/taps/deps) and separates them based on newline.
+pub async fn brew_list(list_type: BrewListType) -> Result<Vec<String>> {
+    let args = if list_type == BrewListType::Cask {
+        vec!["list", "--casks"]
+    } else if list_type == BrewListType::Formula {
+        vec!["list", "--formulae"]
+    } else if list_type == BrewListType::Tap {
+        vec!["tap"]
+    } else {
+        vec!["list", "--installed-as-dependency"]
+    };
+
     let output = Command::new("brew").args(args).output().await?;
+
     if !output.status.success() {
         return Ok(vec![]);
     }
@@ -136,17 +150,6 @@ pub fn restore_auto_update(prev: Option<String>) {
             None => env::remove_var("HOMEBREW_NO_AUTO_UPDATE"),
         }
     }
-}
-
-/// Struct representing the diff between config and installed Homebrew state.
-#[derive(Debug, Default)]
-pub struct BrewDiff {
-    pub missing_formulae: Vec<String>,
-    pub extra_formulae: Vec<String>,
-    pub missing_casks: Vec<String>,
-    pub extra_casks: Vec<String>,
-    pub missing_taps: Vec<String>,
-    pub extra_taps: Vec<String>,
 }
 
 /// Compare the [brew] config table with the actual Homebrew state.
@@ -197,14 +200,14 @@ pub async fn compare_brew_state(brew_cfg: &toml::value::Table) -> Result<BrewDif
         .unwrap_or_default();
 
     // fetch installed state
-    let mut installed_formulae = brew_list(&["list", "--formula"]).await?;
-    let installed_casks = brew_list(&["list", "--cask"]).await?;
-    let installed_taps = brew_list(&["tap"]).await?;
+    let mut installed_formulae = brew_list(BrewListType::Formula).await?;
+    let installed_casks = brew_list(BrewListType::Cask).await?;
+    let installed_taps = brew_list(BrewListType::Tap).await?;
 
     // omit installed as dependency
     if no_deps {
         print_log(LogLevel::Info, "deps-check found to be true, proceeding...");
-        let installed_as_deps = brew_list(&["list", "--installed-as-dependency"]).await?;
+        let installed_as_deps = brew_list(BrewListType::Dependency).await?;
 
         installed_formulae = installed_formulae
             .iter()

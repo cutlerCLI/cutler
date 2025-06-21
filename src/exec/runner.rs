@@ -129,7 +129,7 @@ fn substitute(text: &str, vars: Option<&toml::value::Table>) -> String {
     result
 }
 
-/// Helper for run_one() and run_all().
+/// Helper for: run_one(), run_all()
 /// Execute a single command with the given template and sudo flag.
 async fn execute_command(
     state: ExternalCommandState,

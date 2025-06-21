@@ -4,8 +4,9 @@ use clap::Args;
 use tokio::process::Command;
 
 use crate::{
-    brew::utils::{
-        BrewDiff, compare_brew_state, disable_auto_update, ensure_brew, restore_auto_update,
+    brew::{
+        types::BrewDiff,
+        utils::{compare_brew_state, disable_auto_update, ensure_brew, restore_auto_update},
     },
     commands::Runnable,
     config::{get_config_path, load_config},

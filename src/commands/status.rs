@@ -1,5 +1,8 @@
 use crate::{
-    brew::utils::{BrewDiff, compare_brew_state, ensure_brew},
+    brew::{
+        types::BrewDiff,
+        utils::{compare_brew_state, ensure_brew},
+    },
     commands::Runnable,
     config::loader::{get_config_path, load_config},
     domains::{collect, effective, read_current},
