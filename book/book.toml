@@ -6,9 +6,9 @@ language = "en"
 src = "src"
 
 [output.html]
-default-theme = "mdbook-homebrew"
-preferred-dark-theme = "mdbook-homebrew"
-additional-css = ["./theme/mdbook-homebrew.css"]
+default-theme = "mdbook-brew"
+preferred-dark-theme = "mdbook-brew"
+additional-css = ["./theme/mdbook-brew.css"]
 
 [output.html.search]
 limit-results = 15
