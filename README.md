@@ -46,16 +46,15 @@ Other installation methods:
   mise use -g cargo:cutler
   ```
 
-Manual installation and more details are available in the [documentation](https://hitblast.github.io/cutler/book/).
+For installing manually, [see this section](https://hitblast.github.io/cutler/book/installation.html#manual-installation).
 
 ## Documentation
 
-[The cutler Cookbook](https://hitblast.github.io/cutler/book/) should be a great starting point for anyone who wants to use this project in their setup. I strongly encourage to read it.
+[**"The cutler Cookbook"**](https://hitblast.github.io/cutler/book/) should be a great starting point for anyone who wants to use this project in their setup. It is strongly encouraged to read it.
 
 ## Contributing
 
-If you, as a developer, would like to dive into the nitty-gritty of contributing to cutler, view the [contribution guidelines](https://hitblast.github.io/cutler/book/contributing.html).
-
+View the [Contribution Guidelines](https://hitblast.github.io/cutler/book/contributing.html) to learn more about contributing to cutler.
 
 ## License
 
