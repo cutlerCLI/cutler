@@ -133,9 +133,9 @@ fn substitute(text: &str, vars: Option<&toml::value::Table>) -> String {
 async fn execute_command(
     state: ExternalCommandState,
     vars: Option<&toml::value::Table>,
+    dry_run: bool,
 ) -> Result<()> {
     // command execution logic starts here
-    let dry_run = should_dry_run();
     let final_cmd = substitute(&state.run, vars);
 
     // build the actual runner
@@ -183,6 +183,7 @@ async fn execute_command(
 pub async fn run_all(config: &Value) -> Result<()> {
     let vars: Option<toml::value::Table> = config.get("vars").and_then(Value::as_table).cloned();
     let cmds = extract_all_cmds(config);
+    let dry_run = should_dry_run();
 
     // run every command concurrently
     let mut handles = Vec::new();
@@ -190,7 +191,7 @@ pub async fn run_all(config: &Value) -> Result<()> {
         let vars = vars.clone();
 
         handles.push(task::spawn(async move {
-            execute_command(state, vars.as_ref()).await
+            execute_command(state, vars.as_ref(), dry_run).await
         }));
     }
 
@@ -216,5 +217,7 @@ pub async fn run_all(config: &Value) -> Result<()> {
 pub async fn run_one(config: &Value, which: &str) -> Result<()> {
     let vars = config.get("vars").and_then(Value::as_table).cloned();
     let state = extract_cmd(config, which)?;
-    execute_command(state, vars.as_ref()).await
+    let dry_run = should_dry_run();
+
+    execute_command(state, vars.as_ref(), dry_run).await
 }
