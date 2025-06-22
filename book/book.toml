@@ -5,4 +5,6 @@ src = "src"
 title = "The cutler Cookbook"
 
 [output.html]
-default-theme = "rust"
+default-theme = "latte"
+preferred-dark-theme = "latte"
+additional-css = ["./theme/catppuccin.css"]
