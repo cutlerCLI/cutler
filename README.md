@@ -215,20 +215,16 @@ While running this command, cutler will also notify you about any extra software
 
 ### Going manual with external commands
 
-cutler also supports running external shell commands the moment it applies the defaults. This is kind of like
-pre-commit git hooks where a command runs _before_ you commit anything to your project.
+Running commands to spring up your environment is essential for any workflow. Luckily, cutler is made with most scenarios in mind, given that most people usually set their dotfiles up with shell scripts which require manual execution and intervention.
 
 You can define external commands with simple syntax like this:
 
 ```toml
 [commands.greet]
 run = "echo Hello World"
-```
 
-This translates to running:
-
-```bash
-$ echo Hello World
+# This runs:
+# $ echo Hello World
 ```
 
 The ideal structure for writing external commands should be like this:
@@ -242,8 +238,15 @@ run = "scutil set --LocalHostName $hostname"  # or ${hostname}
 sudo = true  # a more "annotated" sudo
 ```
 
-By default, cutler will run all of your external commands with the `cutler apply` command if you do not pass in the
-`--no-exec` flag. But, if you'd like to _only_ run the commands and not apply defaults, run:
+Some people would like to run their commands "before" other commands. But, cutler runs all commands in parallel, which might not be what you want. In that case, you can use the `ensure-first` key to run then in your desired serial. You can apply this to multiple commands.
+
+```toml
+[commands.dotfiles]
+run = "git clone repo && cd repo && stow . -t ~"
+ensure-first = true
+```
+
+External commands are run whenever you run `cutler apply` by default. However, if you'd like to _only_ run the commands and not apply defaults, run:
 
 ```bash
 $ cutler exec

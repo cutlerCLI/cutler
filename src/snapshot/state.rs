@@ -16,6 +16,7 @@ pub struct SettingState {
 pub struct ExternalCommandState {
     pub run: String,
     pub sudo: bool,
+    pub ensure_first: bool,
 }
 
 /// The full snapshot on disk.

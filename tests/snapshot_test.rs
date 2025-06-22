@@ -52,6 +52,7 @@ mod tests {
         let command = ExternalCommandState {
             run: "echo Hello World".to_string(),
             sudo: false,
+            ensure_first: false,
         };
         assert_eq!(command.run, "echo Hello World");
         assert!(!command.sudo);
@@ -88,11 +89,13 @@ mod tests {
         snapshot.external.push(ExternalCommandState {
             run: "echo Hello".to_string(),
             sudo: false,
+            ensure_first: false,
         });
 
         snapshot.external.push(ExternalCommandState {
             run: "hostname -s macbook".to_string(),
             sudo: true,
+            ensure_first: false,
         });
 
         // Create a temporary file to store the snapshot

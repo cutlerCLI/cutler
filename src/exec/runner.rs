@@ -32,10 +32,15 @@ pub fn extract_cmd(config: &Value, name: &str) -> Result<ExternalCommandState> {
         .get("sudo")
         .and_then(Value::as_bool)
         .unwrap_or(false);
+    let ensure_first = cmd_table
+        .get("ensure-first")
+        .and_then(Value::as_bool)
+        .unwrap_or(false);
 
     Ok(ExternalCommandState {
         run: final_line,
         sudo,
+        ensure_first,
     })
 }
 
@@ -187,15 +192,22 @@ pub async fn run_all(config: &Value) -> Result<()> {
 
     // run every command concurrently
     let mut handles = Vec::new();
+    let mut failures = 0;
+
     for state in cmds {
         let vars = vars.clone();
 
-        handles.push(task::spawn(async move {
-            execute_command(state, vars.as_ref(), dry_run).await
-        }));
+        if state.ensure_first {
+            if let Err(_) = execute_command(state.clone(), vars.as_ref(), dry_run).await {
+                failures += 1;
+            }
+        } else {
+            handles.push(task::spawn(async move {
+                execute_command(state, vars.as_ref(), dry_run).await
+            }));
+        }
     }
 
-    let mut failures = 0;
     for handle in handles {
         if handle.await.unwrap().is_err() {
             failures += 1;
