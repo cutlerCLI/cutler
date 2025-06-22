@@ -19,4 +19,5 @@ But, it can also have other values depending on your setup:
 
 It respects your `$XDG_CONFIG_HOME`, so you don't have to worry about path issues.
 
-Next, have a look at the [Configuration Management](./config-management.md) section to learn more about how to modify and use it.
+The next section will describe how you can use this one configuration file to orchestrate between
+or use all of cutler's capabilities.
