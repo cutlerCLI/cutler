@@ -18,3 +18,5 @@ But, it can also have other values depending on your setup:
 - `cutler.toml` in the current directory
 
 It respects your `$XDG_CONFIG_HOME`, so you don't have to worry about path issues.
+
+Next, have a look at the [Configuration Management](./config-management.md) section to learn more about how to modify and use it.

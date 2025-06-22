@@ -68,7 +68,7 @@ $ cargo build --release --verbose --locked
 
 The major part of the release automation is currently done with [GitHub Actions]() via the [following workflow](./.github/workflows/release.yml) so, you can have a look at it to view the entire pipeline.
 
-The unit testing is done via [this workflow.](./.github/workflows/tests.yml)
+The unit testing is done via [this workflow.](https://github.com/hitblast/cutler/blob/main/.github/workflows/tests.yml)
 
 ### Code Formatting
 
