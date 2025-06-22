@@ -1,58 +1,8 @@
 [book]
 authors = ["HitBlast"]
 language = "en"
-multilingual = false
 src = "src"
 title = "The cutler Cookbook"
-description = "Powerful, declarative settings management for your Mac, with speed."
-
-[preprocessor.index]
-
-[build]
-build-dir = "book"
-create-missing = true
-preprocess = ["index"]
-use-default-preprocessors = true
 
 [output.html]
-default-theme = "light"
-preferred-dark-theme = "navy"
-curly-quotes = true
-mathjax-support = false
-copy-fonts = true
-additional-css = []
-additional-js = []
-no-section-label = false
-git-repository-url = "https://github.com/hitblast/cutler"
-git-repository-icon = "fa-github"
-edit-url-template = "https://github.com/hitblast/cutler/edit/main/book/{path}"
-site-url = "/cutler/book/"
-cname = "hitblast.github.io"
-
-[output.html.fold]
-enable = false
-level = 0
-
-[output.html.playground]
-copyable = true
-copy-js = true
-line-numbers = false
-runnable = false
-
-[output.html.search]
-enable = true
-limit-results = 30
-teaser-word-count = 30
-use-boolean-and = true
-boost-title = 2
-boost-hierarchy = 1
-boost-paragraph = 1
-expand = true
-heading-split-level = 3
-copy-js = true
-
-[output.html.redirect]
-
-[output.html.print]
-enable = true
-page-break = true
+default-theme = "rust"
