@@ -54,9 +54,7 @@ Manual installation and more details are available in the [documentation](https:
 
 ## Contributing
 
-This is a hobby project of mine which has slowly started to scale up to a full-time side project. You can always help out with new ideas or features by [creating a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) or [submitting an issue](https://github.com/hitblast/cutler/issues)!
-
-If you, as a developer, would like to dive into the nitty-gritty of contributing to cutler, view the [CONTRIBUTING.md](./CONTRIBUTING.md).
+If you, as a developer, would like to dive into the nitty-gritty of contributing to cutler, view the [contribution guidelines](https://hitblast.github.io/cutler/book/contributing.html).
 
 
 ## License
