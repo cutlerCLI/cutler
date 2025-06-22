@@ -1,10 +1,14 @@
 [book]
-authors = ["HitBlast"]
+title = "The cutler Cookbook"
+author = "HitBlast"
+description = "Documentation for cutler - a fast, declarative settings manager for the Mac"
 language = "en"
 src = "src"
-title = "The cutler Cookbook"
 
 [output.html]
-default-theme = "latte"
-preferred-dark-theme = "latte"
-additional-css = ["./theme/catppuccin.css"]
+default-theme = "mdbook-homebrew"
+preferred-dark-theme = "mdbook-homebrew"
+additional-css = ["./theme/mdbook-homebrew.css"]
+
+[output.html.search]
+limit-results = 15

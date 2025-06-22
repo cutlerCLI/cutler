@@ -1,0 +1,271 @@
+.mdbook-homebrew.hljs {
+    color: #f9d094;
+    background: #2e2a24;
+}
+
+.mdbook-homebrew .hljs-keyword {
+    color: #96cbfe;
+}
+
+.mdbook-homebrew .hljs-property {
+    color: #b0d6e7;
+}
+
+.mdbook-homebrew .hljs-tag {
+    color: #7eb6e0;
+}
+
+.mdbook-homebrew .hljs-built_in {
+    color: #fd971f;
+}
+
+.mdbook-homebrew .hljs-type {
+    color: #be862d;
+}
+
+.mdbook-homebrew .hljs-literal {
+    color: #e6b85c;
+}
+
+.mdbook-homebrew .hljs-number {
+    color: #d6a04a;
+}
+
+.mdbook-homebrew .hljs-operator {
+    color: #ededed;
+}
+
+.mdbook-homebrew .hljs-entity {
+    color: #e0cfae;
+}
+
+.mdbook-homebrew .hljs-url {
+    color: #bdbdbd;
+}
+
+.mdbook-homebrew .hljs-punctuation {
+    color: #c5c8c6;
+}
+
+.mdbook-homebrew .hljs-regexp {
+    color: #bfa05c;
+}
+
+.mdbook-homebrew .hljs-string {
+    color: #9c7645;
+}
+
+.mdbook-homebrew .hljs-char.escape_ {
+    color: #b88c5a;
+}
+
+.mdbook-homebrew .hljs-subst {
+    color: #f9d094;
+}
+
+.mdbook-homebrew .hljs-symbol {
+    color: #d6a04a;
+}
+
+.mdbook-homebrew .hljs-variable {
+    color: #3bb6b6;
+}
+
+.mdbook-homebrew .hljs-variable.language_ {
+    color: #2e8c8c;
+}
+
+.mdbook-homebrew .hljs-variable.constant_ {
+    color: #be862d;
+}
+
+.mdbook-homebrew .hljs-title {
+    color: #e6b85c;
+}
+
+.mdbook-homebrew .hljs-title.class_ {
+    color: #be862d;
+}
+
+.mdbook-homebrew .hljs-title.function_ {
+    color: #fd971f;
+}
+
+.mdbook-homebrew .hljs-params {
+    color: #f9d094;
+}
+
+.mdbook-homebrew .hljs-comment,
+.mdbook-homebrew .hljs-doctag {
+    color: #7c7c7c;
+}
+
+.mdbook-homebrew .hljs-meta {
+    color: #bfa05c;
+}
+
+.mdbook-homebrew .hljs-section {
+    color: #e6b85c;
+}
+
+.mdbook-homebrew .hljs-name {
+    color: #be862d;
+}
+
+.mdbook-homebrew .hljs-attr {
+    color: #d6a04a;
+}
+
+.mdbook-homebrew .hljs-attribute {
+    color: #b88c5a;
+}
+
+.mdbook-homebrew .hljs-bullet {
+    color: #fd971f;
+}
+
+.mdbook-homebrew .hljs-code {
+    color: #9c7645;
+}
+
+.mdbook-homebrew .hljs-emphasis {
+    color: #fd971f;
+    font-style: italic;
+}
+
+.mdbook-homebrew .hljs-strong {
+    color: #fd971f;
+    font-weight: bold;
+}
+
+.mdbook-homebrew .hljs-formula {
+    color: #be862d;
+}
+
+.mdbook-homebrew .hljs-link {
+    color: #7eb6e0;
+    font-style: italic;
+}
+
+.mdbook-homebrew .hljs-quote {
+    color: #b88c5a;
+    font-style: italic;
+}
+
+.mdbook-homebrew .hljs-selector-tag {
+    color: #be862d;
+}
+
+.mdbook-homebrew .hljs-selector-id {
+    color: #fd971f;
+}
+
+.mdbook-homebrew .hljs-selector-class {
+    color: #bfa05c;
+}
+
+.mdbook-homebrew .hljs-selector-attr {
+    color: #96cbfe;
+}
+
+.mdbook-homebrew .hljs-selector-pseudo {
+    color: #e6b85c;
+}
+
+.mdbook-homebrew .hljs-template-tag {
+    color: #bfa05c;
+}
+
+.mdbook-homebrew .hljs-template-variable {
+    color: #d6a04a;
+}
+
+.mdbook-homebrew .hljs-addition {
+    color: #9c7645;
+    background: rgba(156, 118, 69, 0.15);
+}
+
+.mdbook-homebrew .hljs-deletion {
+    color: #fd971f;
+    background: rgba(253, 151, 31, 0.15);
+}
+
+.mdbook-homebrew :is(h1, h2, h3, h4, h5, h6) a code {
+    color: #f9d094;
+}
+
+.mdbook-homebrew a code {
+    color: #be862d;
+}
+
+.mdbook-homebrew code {
+    color: #ffe0b0;
+    background: #241f18;
+}
+
+.mdbook-homebrew blockquote blockquote {
+    border-top: 0.1em solid #be862d;
+    border-bottom: 0.1em solid #be862d;
+}
+
+.mdbook-homebrew hr {
+    border-color: #be862d;
+    border-style: solid;
+}
+
+.mdbook-homebrew del {
+    color: #7c7c7c;
+}
+
+.mdbook-homebrew .ace_gutter {
+    color: #be862d;
+    background: #2e2a24;
+}
+
+.mdbook-homebrew .ace_gutter-active-line.ace_gutter-cell {
+    color: #fd971f;
+    background: #2e2a24;
+}
+
+.mdbook-homebrew .tooltiptext {
+    background: #2e2a24;
+    color: #f9d094;
+}
+
+.mdbook-homebrew {
+    --bg: #2e2a24;
+    --fg: #f9d094;
+    --sidebar-bg: #221e18;
+    --sidebar-fg: #f9d094;
+    --sidebar-non-existant: #7c7c7c;
+    --sidebar-active: #be862d;
+    --sidebar-spacer: #7c7c7c;
+    --scrollbar: #7c7c7c;
+    --icons: #7c7c7c;
+    --icons-hover: #d3a459;
+    --links: #be862d;
+    --inline-code-color: #f9d094;
+    --theme-popup-bg: #2e2a24;
+    --theme-popup-border: #be862d;
+    --theme-hover: #3a332a;
+    --quote-bg: #2e2a24;
+    --quote-border: #be862d;
+    --table-border-color: #be862d;
+    --table-header-bg: #2e2a24;
+    --table-alternate-bg: #2e2a24;
+    --searchbar-border-color: #be862d;
+    --searchbar-bg: #2e2a24;
+    --searchbar-fg: #f9d094;
+    --searchbar-shadow-color: #be862d;
+    --searchresults-header-fg: #f9d094;
+    --searchresults-border-color: #be862d;
+    --searchresults-li-bg: #2e2a24;
+    --search-mark-bg: #be862d;
+    --warning-border: #fd971f;
+    --color-scheme: dark;
+    --copy-button-filter: brightness(0) saturate(100%) invert(70%) sepia(30%)
+        saturate(800%) hue-rotate(20deg) brightness(90%) contrast(90%);
+    --copy-button-filter-hover: brightness(0) saturate(100%) invert(80%)
+        sepia(40%) saturate(1200%) hue-rotate(30deg) brightness(100%)
+        contrast(100%);
+}
