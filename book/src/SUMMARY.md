@@ -5,7 +5,7 @@
 # Getting Started
 
 - [Installation](./installation.md)
-- [Basic Usage](./basic-usage.md)
+- [Quick Start](./quickstart.md)
 
 # Configuration
 
@@ -20,7 +20,7 @@
 - [Shell Integrations](./shell-integrations.md)
 - [Resources](./resources.md)
 
-# Contributing
+# Guidelines
 
 - [Contributing](./contributing.md)
 - [License](./license.md)

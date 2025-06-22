@@ -1,4 +1,4 @@
-# Basic Usage
+# Quickstart
 
 To easily get started, simply type the following command to generate a sample configuration:
 

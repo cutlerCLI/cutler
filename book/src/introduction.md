@@ -1,32 +1,28 @@
-# The cutler Cookbook
 
 <div align="center">
 
 <img src="https://raw.githubusercontent.com/hitblast/cutler/main/assets/logo.png" width="200px">
 
-# <img src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/rust/rust.png" width="40px"> cutler
-
-Powerful, declarative settings management for your Mac, with speed.
-
-[![Release Builds](https://github.com/hitblast/cutler/actions/workflows/release.yml/badge.svg)](https://github.com/hitblast/cutler/actions/workflows/release.yml)
-[![Rust Tests](https://github.com/hitblast/cutler/actions/workflows/tests.yml/badge.svg)](https://github.com/hitblast/cutler/actions/workflows/tests.yml)
+# <img src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/rust/rust.png" width="40px"> The <code>cutler</code> Cookbook
 
 </div>
 
-> [!WARNING]
-> Although cutler is solid enough for daily-driving now, expect breaking changes before the v1 release.
+## Backstory
 
-## Overview
+Some of us really have a craze for configs and ricing. Though, looking at the dotfiles of others, I have realized that although they have really efficient scripts, they are not always easy to maintain and/or understand for others. I, personally, sometimes used to have a hard time navigating others' configurations.
 
-cutler aims to simplify your macOS setup experience into an "almost" one-command procedure. Define your settings once, then easily apply, track, and revert changes across your system—think of it as infrastructure-as-code for your Mac.
+And while, I might not be able to solve it for everyone, I have been using macOS for the past 4 years. Using it has given me a pretty good grip on the ecosystem and how preferences are handled.
 
-> [!WARNING]
-> This project is still under development. So, if you like it, consider starring! It's free, and it always supports me to make such projects.
+## Why?
 
-## Key Features
+While using macOS, I have come to realize that most solutions like [Nix](https://nixos.org/) are not always easy to maintain either. So, I wanted to create a tool that abstracts away all the complexity into simple, already-known terms for most power users.
 
-- Manage your Mac's system preferences with just one TOML file.
-- Track your Homebrew formulae/casks and back them up to restore later.
-- Run external commands, both as hooks, or at your will.
-- Revert back modifications easily with the snapshot mechanism.
-- Do all of these things at an incredibly fast speed, thanks to Rust.
+And that's how <code>cutler</code> came to be.
+
+## What this book does
+
+This book, by name, wants to introduce you with <code>cutler</code>, a software made to declaratively manage your macOS preferences and essentials. It can do a number of things. This book will help you navigate all of them, including new ones which are currently in development.
+
+It's a solo project, but I hope it will give you the proper impression for shrinking dotfiles by an order of magnitude.
+
+To get started with your cutlery, move to the next page.
