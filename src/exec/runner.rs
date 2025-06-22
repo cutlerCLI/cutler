@@ -190,22 +190,34 @@ pub async fn run_all(config: &Value) -> Result<()> {
     let cmds = extract_all_cmds(config);
     let dry_run = should_dry_run();
 
-    // run every command concurrently
-    let mut handles = Vec::new();
-    let mut failures = 0;
+    // separate ensure-first commands from regular commands
+    let mut ensure_first_cmds = Vec::new();
+    let mut regular_cmds = Vec::new();
 
     for state in cmds {
-        let vars = vars.clone();
-
         if state.ensure_first {
-            if let Err(_) = execute_command(state.clone(), vars.as_ref(), dry_run).await {
-                failures += 1;
-            }
+            ensure_first_cmds.push(state);
         } else {
-            handles.push(task::spawn(async move {
-                execute_command(state, vars.as_ref(), dry_run).await
-            }));
+            regular_cmds.push(state);
         }
+    }
+
+    let mut failures = 0;
+
+    // run all ensure-first commands sequentially first
+    for state in ensure_first_cmds {
+        if let Err(_) = execute_command(state, vars.as_ref(), dry_run).await {
+            failures += 1;
+        }
+    }
+
+    // then run all regular commands concurrently
+    let mut handles = Vec::new();
+    for state in regular_cmds {
+        let vars = vars.clone();
+        handles.push(task::spawn(async move {
+            execute_command(state, vars.as_ref(), dry_run).await
+        }));
     }
 
     for handle in handles {
