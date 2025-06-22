@@ -1,25 +1,32 @@
-# Introduction
+# The cutler Cookbook
 
-**cutler** is a powerful, declarative settings manager for your Mac, designed for speed and simplicity.
+<div align="center">
+
+<img src="https://raw.githubusercontent.com/hitblast/cutler/main/assets/logo.png" width="200px">
+
+# <img src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/rust/rust.png" width="40px"> cutler
+
+Powerful, declarative settings management for your Mac, with speed.
+
+[![Release Builds](https://github.com/hitblast/cutler/actions/workflows/release.yml/badge.svg)](https://github.com/hitblast/cutler/actions/workflows/release.yml)
+[![Rust Tests](https://github.com/hitblast/cutler/actions/workflows/tests.yml/badge.svg)](https://github.com/hitblast/cutler/actions/workflows/tests.yml)
+
+</div>
+
+> [!WARNING]
+> Although cutler is solid enough for daily-driving now, expect breaking changes before the v1 release.
+
+## Overview
 
 cutler aims to simplify your macOS setup experience into an "almost" one-command procedure. Define your settings once, then easily apply, track, and revert changes across your system—think of it as infrastructure-as-code for your Mac.
 
-> **Note:** This project is still under development. If you like it, consider starring the [GitHub repository](https://github.com/hitblast/cutler)! Your support helps drive further improvements.
+> [!WARNING]
+> This project is still under development. So, if you like it, consider starring! It's free, and it always supports me to make such projects.
 
----
+## Key Features
 
-## What is cutler?
-
-cutler lets you manage your Mac's system preferences, Homebrew packages, and custom setup commands using a single TOML configuration file. With cutler, you can:
-
-- Apply and revert system settings declaratively.
-- Track and restore Homebrew formulae and casks.
-- Run external commands as part of your setup or teardown.
-- Snapshot and restore your configuration state.
-- Enjoy fast, reliable operations thanks to Rust.
-
-Whether you're setting up a new Mac, sharing your configuration with others, or just want to keep your environment reproducible, cutler makes it easy.
-
----
-
-Continue to the [Quickstart](quickstart.md) to get up and running!
+- Manage your Mac's system preferences with just one TOML file.
+- Track your Homebrew formulae/casks and back them up to restore later.
+- Run external commands, both as hooks, or at your will.
+- Revert back modifications easily with the snapshot mechanism.
+- Do all of these things at an incredibly fast speed, thanks to Rust.

@@ -1,101 +1,16 @@
 # Contributing
 
-Thank you for your interest in contributing to **cutler**! This project welcomes contributions of all kinds, including code, documentation, bug reports, feature requests, and ideas.
+This is a hobby project of mine which has slowly started to scale up to a full-time side project. You can always help out with new ideas or features by [creating a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) or [submitting an issue](https://github.com/hitblast/cutler/issues)!
 
----
+If you, as a developer, would like to dive into the nitty-gritty of contributing to cutler, view the [CONTRIBUTING.md](./CONTRIBUTING.md). I'm still writing it as the project progresses.
 
-## Getting Started
-
-To contribute to cutler, you'll need:
-
-- [Rust](https://www.rust-lang.org/tools/install) (cutler uses the 2024 edition)
-- A Mac (preferably with [Apple Silicon](https://support.apple.com/en-us/HT211814)) for rapid development
-
-### Cloning the Repository
-
-1. **Fork** the repository on GitHub: [https://github.com/hitblast/cutler/fork](https://github.com/hitblast/cutler/fork)
-2. **Clone** your fork:
-
-   ```bash
-   # HTTPS
-   git clone https://github.com/<your_username>/cutler.git
-
-   # SSH
-   git clone git@github.com:<your_username>/cutler.git
-   ```
-
-   Replace `<your_username>` with your GitHub username.
-
-### Preparing the Environment
-
-Install the following Rust components:
-
-- [clippy](https://github.com/rust-lang/rust-clippy)
-- [rustfmt](https://github.com/rust-lang/rustfmt)
-
-You can install them with:
-
-```bash
-rustup component add clippy rustfmt
-```
-
----
-
-## Development Workflow
-
-### Testing
-
-Before pushing changes, run:
-
-```bash
-cargo fmt --all -- --check && cargo test --verbose && cargo clippy && cargo build
-```
-
-You can automate this with [hookman](https://github.com/hitblast/hookman):
-
-```bash
-hookman build
-```
-
-> **Note:** CI tests run on Apple Silicon M1 (3-core) runners via GitHub Actions.
-
-### Building
-
-To create a release build:
-
-```bash
-cargo build --release --verbose --locked
-```
-
-Release automation is handled via [GitHub Actions](https://github.com/hitblast/cutler/blob/main/.github/workflows/release.yml).
-
-### Code Formatting
-
-Run:
-
-```bash
-cargo fmt --all
-```
-
----
-
-## Pull Request Guidelines
-
-Before submitting a pull request:
-
-- Ensure your code is well-documented and follows the project's coding standards.
-- Keep your branch up-to-date with the latest changes from `main`.
-- All tests must pass locally.
-- If your PR fixes an issue, mention it in the description (e.g., Fixes #123).
-- For larger changes, consider opening an issue to discuss your approach first.
-
-**PR/Issue title format:**
+Pull requests and issues must have the following pattern:
 
 ```
 (<type>) <title>
 ```
 
-Where `<type>` is one of:
+Possible types include:
 
 - feat: New feature or enhancement
 - fix: Bug fix
@@ -105,12 +20,6 @@ Where `<type>` is one of:
 - test: Test-related changes
 - chore: Maintenance or administrative tasks
 
----
+## Acknowledgements
 
-## License
-
-By contributing, you agree that your contributions will be licensed under the MIT License.
-
----
-
-Thank you for helping make cutler better! If you have any questions, open an issue or reach out on GitHub.
+- ^w^ Heartfelt thanks to [@furtidev](https://github.com/furtidev) for helping me learn more about the optimization process of cutler.

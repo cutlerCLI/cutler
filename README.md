@@ -14,7 +14,6 @@ Powerful, declarative settings management for your Mac, with speed.
 > [!WARNING]
 > Although cutler is solid enough for daily-driving now, expect breaking changes before the v1 release.
 
----
 
 ## Overview
 
@@ -22,7 +21,6 @@ cutler aims to simplify your macOS setup experience into an "almost" one-command
 
 > This project is still under development. If you like it, consider starring! It's free, and it always supports me to make such projects.
 
----
 
 ## Installation
 
@@ -38,18 +36,20 @@ Other installation methods:
   ```bash
   brew install hitblast/tap/cutler
   ```
-- **Cargo**:
+- **cargo**:
   ```bash
   cargo install cutler
   ```
-- **Mise**:
+- **mise**:
   ```bash
   mise use -g cargo:cutler
   ```
 
 Manual installation and more details are available in the [documentation](https://hitblast.github.io/cutler/book/).
 
----
+## Documentation
+
+[The cutler Cookbook](https://hitblast.github.io/cutler/book/) should be a great starting point for anyone who wants to use this project in their setup. I strongly encourage to read it.
 
 ## Contributing
 
@@ -57,17 +57,7 @@ This is a hobby project of mine which has slowly started to scale up to a full-t
 
 If you, as a developer, would like to dive into the nitty-gritty of contributing to cutler, view the [CONTRIBUTING.md](./CONTRIBUTING.md).
 
----
 
 ## License
 
 This project is licensed under the [MIT License](https://github.com/hitblast/cutler/blob/main/LICENSE).
-
----
-
-## Documentation
-
-Full documentation, usage, quickstart, and advanced guides are available at:
-
-- [cutler Book (mdBook)](https://hitblast.github.io/cutler/book/)
-

@@ -1,116 +1,72 @@
 # Shell Integrations
 
-cutler supports built-in shell completion for a variety of system shells, making it easier and faster to use in your terminal. This page explains how to enable and use shell completions for different shells.
+## Completions
 
----
+cutler supports built-in shell completion for your ease of access for a variety of system shells, including
+`bash`, `zsh`, `powershell` etc. Below you will find instructions for each of them.
 
-## Supported Shells
+> [!IMPORTANT]
+> If you have installed cutler using Homebrew, the shell completion will automatically be
+> installed. Just restart your shell after initial installation.
 
-- **Bash**
-- **Zsh**
-- **Fish**
-- **Elvish**
-- **PowerShell**
+### Bash completions setup
 
-> **Note:** If you installed cutler using Homebrew, shell completions are installed automatically. Just restart your shell after installation.
-
----
-
-## Bash Completions
-
-1. **Create a directory for completions (if needed):**
-
-    ```bash
-    mkdir -p ~/.bash-completion.d/
-    ```
-
-2. **Generate the completion script:**
-
-    ```bash
-    cutler completion bash > cutler.bash
-    mv cutler.bash ~/.bash-completion.d/
-    ```
-
-3. **Source the completion script in your `.bashrc`:**
-
-    ```bash
-    echo 'source ~/.bash-completion.d/cutler.bash' >> ~/.bashrc
-    source ~/.bashrc
-    ```
-
----
-
-## Zsh Completions
-
-1. **Create a directory for custom completions (if needed):**
-
-    ```bash
-    mkdir -p ~/.zfunc
-    ```
-
-2. **Generate the completion script:**
-
-    ```bash
-    cutler completion zsh > _cutler
-    mv _cutler ~/.zfunc/
-    ```
-
-3. **Add to your `~/.zshrc`:**
-
-    ```bash
-    fpath=(~/.zfunc $fpath)
-    autoload -U compinit && compinit
-    source ~/.zshrc
-    ```
-
----
-
-## Fish Completions
-
-Generate and use the completion script:
+1. Make a directory to store Bash-specific completions:
 
 ```bash
-cutler completion fish > ~/.config/fish/completions/cutler.fish
+$ mkdir ~/.bash-completion.d/
 ```
 
----
-
-## Elvish Completions
-
-Generate and use the completion script:
+2. Generate the completion script using the following command and pipe the output to a new file:
 
 ```bash
-cutler completion elvish > ~/.elvish/lib/cutler.elv
+$ cutler completion bash > cutler.bash
+$ mv cutler.bash ~/.bash-completion.d/
 ```
 
----
-
-## PowerShell Completions
-
-Generate and use the completion script:
+3. Finally, source the completion script. The best way would be to simply add it to your `.bashrc` file:
 
 ```bash
-cutler completion powershell > cutler.ps1
-# Then, source or import the script in your PowerShell profile
+$ source ~/.bash_completion.d/cutler.bash > ~/.bashrc
 ```
 
----
+### Zsh completions setup
 
-## Usage
-
-Once completions are installed and sourced, you can use <kbd>Tab</kbd> to auto-complete cutler commands, flags, and arguments in your shell.
-
----
-
-## Troubleshooting
-
-- If completions do not work, ensure the completion script is sourced in your shell profile and that your shell supports programmable completion.
-- Restart your terminal session after making changes to your shell configuration files.
-
----
-
-For more help, see the [Quickstart](./quickstart.md) or run:
+1. Make sure you have a directory for custom completions:
 
 ```bash
-cutler --help
+$ mkdir -p ~/.zfunc
+```
+
+2. Then, generate the completion script and move it over:
+
+```bash
+$ cutler completion zsh > _cutler
+$ mv _cutler ~/.zfunc/
+```
+
+3. Then, add to your `~/.zshrc`:
+
+```bash
+$ fpath=(~/.zfunc $fpath)
+$ autoload -U compinit && compinit
+```
+
+4. Restart your shell or run:
+
+```bash
+$ source ~/.zshrc
+```
+
+### For other shells
+
+```bash
+# Fish
+$ cutler completion fish
+
+# Elvish
+$ cutler completion elvish
+
+# PowerShell
+$ cutler completion powershell
 ```
