@@ -30,6 +30,17 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
 
+      - name: Install mdBook
+        run: cargo install mdbook --locked
+
+      - name: Build mdBook documentation
+        run: |
+          cd cutler/book
+          mdbook build
+          cd ../..
+          mkdir -p cutler/landing/book
+          cp -r cutler/book/book-output/* cutler/landing/book/
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
