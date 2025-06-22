@@ -16,7 +16,7 @@ Ideally, the block above would look something like this if you were to manually 
 
 ```bash
 $ defaults write com.apple.dock "tilesize" -int "46"
-$ defaults write com.apple.menuextra.clock "FlashDateSeparators"
+$ defaults write com.apple.menuextra.clock "FlashDateSeparators" -bool true
 ```
 
 You can also configure global preferences like this:
