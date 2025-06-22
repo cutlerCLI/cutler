@@ -5,7 +5,6 @@
 cutler supports built-in shell completion for your ease of access for a variety of system shells, including
 `bash`, `zsh`, `powershell` etc. Below you will find instructions for each of them.
 
-> [!IMPORTANT]
 > If you have installed cutler using Homebrew, the shell completion will automatically be
 > installed. Just restart your shell after initial installation.
 
