@@ -7,7 +7,7 @@
 - [Installation](./installation.md)
 - [Quick Start](./quickstart.md)
 
-# Configuration
+# Usage & Configuration
 
 - [System Preferences](./system-preferences.md)
 - [Homebrew Management](./homebrew.md)
