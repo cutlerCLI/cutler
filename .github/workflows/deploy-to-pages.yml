@@ -35,11 +35,11 @@ jobs:
 
       - name: Build mdBook documentation
         run: |
-          cd cutler/book
+          cd book
           mdbook build
-          cd ../..
-          mkdir -p cutler/landing/book
-          cp -r cutler/book/book-output/* cutler/landing/book/
+          cd ..
+          mkdir -p landing/book
+          cp -r book/book/* landing/book/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
