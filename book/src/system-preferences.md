@@ -59,3 +59,13 @@ Unapplying everything is also as easy. Run the command below and cutler will res
 ```bash
 $ cutler unapply
 ```
+
+## Risky operations
+
+If you would like to write non-existent domains (create them) using cutler, you can run the `apply` command with a particular flag:
+
+```bash
+$ cutler apply --disable-checks
+```
+
+This will disable the "Domain does not exist" error which happens when cutler's backend does not recognize a domain.
