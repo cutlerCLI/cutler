@@ -14,7 +14,7 @@
 - [External Commands](./external-commands.md)
 - [Configuration Management](./config-management.md)
 
-# Reference
+# References
 
 - [Global Flags](./global-flags.md)
 - [Shell Integrations](./shell-integrations.md)

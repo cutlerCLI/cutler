@@ -1,9 +1,9 @@
 
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/hitblast/cutler/main/assets/logo.png" width="200px">
+<img src="https://raw.githubusercontent.com/hitblast/cutler/main/assets/logo.png" width="180px">
 
-# <img src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/rust/rust.png" width="40px"> The <code>cutler</code> Cookbook
+# The <code>cutler</code> Cookbook
 
 </div>
 
