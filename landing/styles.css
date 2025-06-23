@@ -73,9 +73,8 @@ hr {
 h3 {
     font-size: 1.5rem;
     font-weight: 800;
-    margin-top: 2em;
-    margin-bottom: 1em;
     color: #f9d094;
+    margin-bottom: 1em;
     line-height: 1.1;
     text-shadow: 1px 1px 10px rgba(0, 0, 0, 0.25);
 }
@@ -174,7 +173,6 @@ code[class*="language-"] {
     padding: 0.6rem 1.2rem;
     border-radius: 5px;
     font-weight: bold;
-    margin-right: 1rem;
     margin-bottom: 1rem;
     font-size: 1.05rem;
     box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.18);
@@ -184,6 +182,15 @@ code[class*="language-"] {
     background-color: rgba(162, 107, 20, 0.25);
     color: #f9d094;
     text-decoration: underline;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
 }
 
 .emoji {
