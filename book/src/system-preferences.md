@@ -62,7 +62,7 @@ $ cutler unapply
 
 ## Action Hints
 
-The fun part about using cutler is, it will mostly tell you to take certain actions based on what command are you using, without you having to think about it. This is due to cutler's immense synchronization between commands.
+The fun part about using cutler is, it will mostly tell you to take certain actions based on what command you are using, without you having to think about it. This is due to cutler's immense synchronization between commands.
 
 Say, for example, if my Dock should be at the `right` based on cutler's configuration, and `bottom` is its actual value right now, cutler will show this when running `cutler status`:
 
