@@ -133,23 +133,9 @@ pub async fn brew_list(list_type: BrewListType) -> Result<Vec<String>> {
         .collect())
 }
 
-/// Disables Homebrew auto-update globally for the process, returning previous value.
-/// Call this before brew commands.
-pub fn disable_auto_update() -> Option<String> {
-    let prev = env::var("HOMEBREW_NO_AUTO_UPDATE").ok();
+/// Disables Homebrew auto-update globally for the process.
+pub fn disable_brew_auto_update() {
     unsafe { env::set_var("HOMEBREW_NO_AUTO_UPDATE", "1") };
-    prev
-}
-
-/// Restores Homebrew auto-update to the given previous value.
-/// Call this after brew commands.
-pub fn restore_auto_update(prev: Option<String>) {
-    unsafe {
-        match prev {
-            Some(v) => env::set_var("HOMEBREW_NO_AUTO_UPDATE", v),
-            None => env::remove_var("HOMEBREW_NO_AUTO_UPDATE"),
-        }
-    }
 }
 
 /// Compare the [brew] config table with the actual Homebrew state.

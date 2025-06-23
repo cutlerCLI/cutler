@@ -8,7 +8,7 @@ use toml_edit::{Array, DocumentMut, Item, Table, Value};
 use crate::{
     brew::{
         types::BrewListType,
-        utils::{brew_list, disable_auto_update, ensure_brew, restore_auto_update},
+        utils::{brew_list, disable_brew_auto_update, ensure_brew},
     },
     commands::Runnable,
     config::get_config_path,
@@ -30,11 +30,10 @@ impl Runnable for BrewBackupCmd {
     async fn run(&self) -> Result<()> {
         let cfg_path = get_config_path();
         let dry_run = should_dry_run();
-        let mut prev = None;
 
         // disable auto-update
         if !dry_run {
-            prev = disable_auto_update();
+            disable_brew_auto_update();
         }
 
         // ensure brew install
@@ -155,7 +154,6 @@ impl Runnable for BrewBackupCmd {
                     cfg_path
                 ),
             );
-            restore_auto_update(prev);
         } else {
             print_log(
                 LogLevel::Info,
