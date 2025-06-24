@@ -6,21 +6,28 @@ use crate::util::{
 };
 use anyhow::Result;
 use std::env;
+use std::time::Duration;
 use tokio::process::Command;
 
 /// Helper for: ensure_brew()
 /// Ensures Xcode Command Line Tools are installed.
 /// If not, prompts the user to install them (unless dry_run).
 async fn ensure_xcode_clt() -> Result<()> {
-    let output = Command::new("xcode-select").arg("-p").output().await;
+    async fn check_installed() -> Result<bool> {
+        let output = Command::new("xcode-select").arg("-p").output().await;
 
-    let clt_installed = match output {
-        Ok(out) if out.status.success() => {
-            let path = String::from_utf8_lossy(&out.stdout).trim().to_string();
-            !path.is_empty()
-        }
-        _ => false,
-    };
+        let clt_installed = match output {
+            Ok(out) if out.status.success() => {
+                let path = String::from_utf8_lossy(&out.stdout).trim().to_string();
+                !path.is_empty()
+            }
+            _ => false,
+        };
+
+        Ok(clt_installed)
+    }
+
+    let clt_installed = check_installed().await?;
 
     if clt_installed {
         return Ok(());
@@ -40,26 +47,57 @@ async fn ensure_xcode_clt() -> Result<()> {
     );
 
     if confirm_action("Install Xcode Command Line Tools now?")? {
-        print_log(LogLevel::Info, "Installing Xcode Command Line Tools...");
+        print_log(
+            LogLevel::Info,
+            "Waiting to find Xcode Command Line Tools after installation...",
+        );
         let status = Command::new("xcode-select")
             .arg("--install")
             .status()
             .await?;
+
         if !status.success() {
-            anyhow::bail!("Failed to launch Xcode Command Line Tools installer.");
+            anyhow::bail!(
+                "Failed to launch Xcode Command Line Tools installer. Try manually installing it using `xcode-select --install`."
+            );
         }
 
         print_log(
             LogLevel::Info,
-            "Xcode Command Line Tools installer launched.",
+            "Xcode Command Line Tools installer launched. Waiting for installation to complete...",
         );
 
-        anyhow::bail!("Re-run your command after installation completes.");
+        // wait for 20 minutes for the user to finish installation
+        // otherwise, bail out
+        for _ in 0..240 {
+            tokio::time::sleep(Duration::from_millis(5000)).await;
+
+            if check_installed().await.unwrap() {
+                print_log(LogLevel::Info, "Xcode Command Line Tools installed.");
+                return Ok(());
+            }
+        }
+
+        anyhow::bail!("Timed out. Re-run this command after installation completes.");
     } else {
         anyhow::bail!(
-            "Xcode Command Line Tools are required for Homebrew operations, but were not found."
+            "Xcode Command Line Tools are required for Homebrew operations, but were not found. Aborting."
         );
     }
+}
+
+/// Helper for: ensure_brew()
+/// Installs Homebrew.
+async fn install_homebrew() -> Result<(), anyhow::Error> {
+    let script = "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)";
+
+    print_log(LogLevel::Info, "Installing Homebrew...");
+
+    let status = Command::new("sh").arg("-c").arg(script).status().await?;
+    if !status.success() {
+        anyhow::bail!("Failed to install Homebrew.");
+    }
+    Ok(())
 }
 
 /// Checks if Homebrew is installed on the machine (should be recognizable by $PATH).
@@ -92,19 +130,6 @@ pub async fn ensure_brew() -> Result<()> {
         }
     }
 
-    Ok(())
-}
-
-/// Installs Homebrew.
-async fn install_homebrew() -> Result<(), anyhow::Error> {
-    let script = "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)";
-
-    print_log(LogLevel::Info, "Installing Homebrew...");
-
-    let status = Command::new("sh").arg("-c").arg(script).status().await?;
-    if !status.success() {
-        anyhow::bail!("Failed to install Homebrew");
-    }
     Ok(())
 }
 

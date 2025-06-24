@@ -206,7 +206,7 @@ pub async fn run_all(config: &Value) -> Result<()> {
 
     // run all ensure-first commands sequentially first
     for state in ensure_first_cmds {
-        if let Err(_) = execute_command(state, vars.as_ref(), dry_run).await {
+        if (execute_command(state, vars.as_ref(), dry_run).await).is_err() {
             failures += 1;
         }
     }
