@@ -34,17 +34,24 @@ autohide-delay = 0
 autohide-time-modifier = 0.6
 expose-group-apps = true
 
-[set.HIToolBox]
+[set.HIToolbox]
 AppleFnUsageType = 0
 
-[set.CloudSubscriptionFeatures.optIn]
-545129924 = false
+[set.screencapture]
+show-thumbnail = false
+target = "clipboard"
+type = "png"
+
+# [set.CloudSubscriptionFeatures.optIn]
+# 545129924 = false
 
 [set.NSGlobalDomain]
+KeyRepeat = 2
+InitialKeyRepeat = 15
 NSDocumentSaveNewDocumentsToCloud = false
-
-[set.NSGlobalDomain.com.apple.keyboard]
-fnState = false
+NSAutomaticInlinePredictionEnabled = 0
+NSAutomaticSpellingCorrectionEnabled = 0
+"com.apple.keyboard.fnState" = false
 
 # External command execution
 # This includes setting the global hostname and configuring sudo authentication with Touch ID.
@@ -52,20 +59,76 @@ fnState = false
 [vars]
 hostname = "darkstar"
 
+[commands.dotfiles]
+run = "mkdir ~/Developer && git clone https://github.com/hitblast/dotfiles.git ~/Developer/dotfiles && cd ~/Developer/dotfiles && stow . -t ~"
+ensure-first = true
+
+[commands.mise]
+run = "mise install"
+ensure-first = true
+
 [commands.hostname]
 run = "scutil --set ComputerName $hostname && scutil --set HostName $hostname && scutil --set LocalHostName $hostname"
 sudo = true
 
-[commands.touchid]
-run = "sed -e 's/^#auth/auth/' /etc/pam.d/sudo_local.template | tee /etc/pam.d/sudo_local"
-sudo = true
+[commands.wallpaper]
+run = "osascript -e 'tell application \"System Events\" to tell every desktop to set picture to \"~/Pictures/bg-wall.png\"'"
 
-[commands.wall]
-run = "osascript -e 'tell application \"System Events\" to tell every desktop to set picture to \"/System/Library/Desktop Pictures/Solid Colors/Black.png\" as POSIX file'"
-
-# Homebrew formulae/casks list
-# Please see: https://github.com/hitblast/cutler/blob/main/examples/brew.toml
+# Homebrew formula / casks listing
 
 [brew]
-casks = []
-formulae = []
+formulae = [
+    "bash",
+    "bash-completion@2",
+    "bat",
+    "cargo-edit",
+    "cmake",
+    "cmatrix",
+    "cutler",
+    "drs",
+    "dust",
+    "fd",
+    "fzf",
+    "gh",
+    "git",
+    "hookman",
+    "lazygit",
+    "libyaml",
+    "mactop",
+    "mas",
+    "mise",
+    "ncspot",
+    "neovim",
+    "ninja",
+    "ripgrep",
+    "sccache",
+    "starship",
+    "stow",
+    "tokei",
+    "uutils-coreutils",
+    "uv",
+    "zoxide",
+]
+casks = [
+    "aerospace",
+    "android-studio",
+    "appcleaner",
+    "container",
+    "discord",
+    "font-input",
+    "ghostty",
+    "hot",
+    "iina",
+    "karabiner-elements",
+    "keyboardcleantool",
+    "onyx",
+    "protonvpn",
+    "spotify",
+    "transmission",
+    "whatsapp",
+    "zed",
+    "zen",
+    "zulu@21",
+]
+taps = ["hitblast/tap", "nikitabobko/tap"]
+no-deps = true
