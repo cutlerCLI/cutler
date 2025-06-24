@@ -63,7 +63,7 @@ pub async fn load_config(path: &Path) -> Result<Value, anyhow::Error> {
 
     // handle optional locking
     if parsed.get("lock").and_then(Value::as_bool).unwrap_or(false) {
-        bail!("The config is locked. Remove the `lock = true` line to apply this config.");
+        bail!("The config file is locked. Run `cutler config unlock` to unlock.");
     }
     Ok(parsed)
 }
@@ -82,7 +82,7 @@ pub async fn load_config_mut(path: &Path) -> Result<DocumentMut, anyhow::Error> 
 
     // handle optional locking
     if parsed.get("lock").and_then(Item::as_bool).unwrap_or(false) {
-        bail!("The config is locked. Remove the `lock = true` line to apply this config.");
+        bail!("The config file is locked. Run `cutler config unlock` to unlock.");
     }
 
     Ok(DocumentMut::from(parsed))
