@@ -119,52 +119,47 @@ impl Runnable for BrewInstallCmd {
             }
         }
 
-        // collect install tasks only for missing formulae and casks
-        let mut install_tasks: Vec<Vec<String>> = Vec::new();
-        let mut to_fetch_formulae: Vec<String> = Vec::new();
-        let mut to_fetch_casks: Vec<String> = Vec::new();
-
-        for name in brew_diff.missing_formulae.iter() {
-            install_tasks.push(vec![
-                "install".to_string(),
-                "--formula".to_string(),
-                name.to_string(),
-            ]);
-            to_fetch_formulae.push(name.to_string());
-        }
-        for name in brew_diff.missing_casks.iter() {
-            install_tasks.push(vec![
-                "install".to_string(),
-                "--cask".to_string(),
-                name.to_string(),
-            ]);
-            to_fetch_casks.push(name.to_string());
-        }
-
-        if dry_run {
-            for args in &install_tasks {
-                let display = format!("brew {}", args.join(" "));
-                print_log(LogLevel::Dry, &display);
-            }
+        if !brew_diff.missing_formulae.is_empty() || !brew_diff.missing_casks.is_empty() {
+            print_log(LogLevel::Info, "Pre-downloading all formulae and casks...");
         } else {
-            // pre-download everything in parallel
-            if !to_fetch_formulae.is_empty() || !to_fetch_casks.is_empty() {
-                print_log(LogLevel::Info, "Pre-downloading all formulae and casks...");
-            } else {
-                print_log(LogLevel::Info, "No formulae or casks to download/install.");
-            }
-            fetch_all(&to_fetch_formulae, &to_fetch_casks).await;
-
-            // sequentially install
-            install_sequentially(install_tasks).await?;
+            print_log(LogLevel::Info, "No formulae or casks to download/install.");
+            return Ok(());
         }
+
+        // handle all of dry-run in this single block
+        if dry_run {
+            brew_diff.missing_formulae.iter().for_each(|formula| {
+                print_log(LogLevel::Dry, &format!("Would fetch formula: {}", formula));
+            });
+            brew_diff.missing_casks.iter().for_each(|cask| {
+                print_log(LogLevel::Dry, &format!("Would fetch cask: {}", cask));
+            });
+            return Ok(());
+        }
+
+        let (fetched_formulae, fetched_casks) =
+            fetch_all(&brew_diff.missing_formulae, &brew_diff.missing_casks).await;
+
+        // build install tasks only for successfully fetched items
+        let mut install_tasks: Vec<Vec<String>> = Vec::new();
+
+        for name in fetched_formulae {
+            install_tasks.push(vec!["install".to_string(), "--formula".to_string(), name]);
+        }
+        for name in fetched_casks {
+            install_tasks.push(vec!["install".to_string(), "--cask".to_string(), name]);
+        }
+
+        // sequentially install only the successfully fetched items
+        install_sequentially(install_tasks).await?;
 
         Ok(())
     }
 }
 
 /// Downloads all formulae/casks before installation.
-async fn fetch_all(formulae: &[String], casks: &[String]) {
+/// Returns only the successfully fetched formulae and casks.
+async fn fetch_all(formulae: &[String], casks: &[String]) -> (Vec<String>, Vec<String>) {
     let mut handles = Vec::new();
 
     for name in formulae {
@@ -178,7 +173,11 @@ async fn fetch_all(formulae: &[String], casks: &[String]) {
             } else {
                 cmd.arg("--quiet");
             }
-            let _ = cmd.status().await;
+
+            match cmd.status().await {
+                Ok(status) if status.success() => Some(("formula".to_string(), name)),
+                _ => None,
+            }
         }));
     }
     for name in casks {
@@ -192,12 +191,28 @@ async fn fetch_all(formulae: &[String], casks: &[String]) {
             } else {
                 cmd.arg("--quiet");
             }
-            let _ = cmd.status().await;
+
+            match cmd.status().await {
+                Ok(status) if status.success() => Some(("cask".to_string(), name)),
+                _ => None,
+            }
         }));
     }
+
+    let mut fetched_formulae = Vec::new();
+    let mut fetched_casks = Vec::new();
+
     for handle in handles {
-        let _ = handle.await;
+        if let Ok(Some((item_type, name))) = handle.await {
+            match item_type.as_str() {
+                "formula" => fetched_formulae.push(name),
+                "cask" => fetched_casks.push(name),
+                _ => {}
+            }
+        }
     }
+
+    (fetched_formulae, fetched_casks)
 }
 
 /// Install formulae/casks sequentially.
