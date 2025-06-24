@@ -39,3 +39,14 @@ no-deps = true
 ```
 
 While running this command, cutler will also notify you about any extra software which is untracked by it. Then, you can run `cutler brew backup` again to sync.
+
+## Backend Prerequisites
+
+Obviously, running Homebrew on a Mac requires the **Xcode Command-Line Tools** to be installed, let it be through Xcode itself or through
+the preincluded utility in macOS. By default, cutler will try to ensure that it is there, before executing any of the subprocesses.
+
+If you want to manually install it, you can do so by running:
+
+```bash
+$ xcode-select --install
+```
