@@ -1,3 +1,6 @@
+# Remove the line below to activate this configuration.
+lock = true
+
 [set.finder]
 AppleShowAllFiles = true
 CreateDesktop = false

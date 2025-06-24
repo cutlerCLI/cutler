@@ -68,7 +68,7 @@ impl Runnable for InitCmd {
                     LogLevel::Info,
                     "No `--basic` flag, defaulting to advanced configuration...",
                 );
-                include_str!("../../examples/advanced.toml")
+                include_str!("../../examples/complete.toml")
             }
         };
 

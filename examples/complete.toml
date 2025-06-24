@@ -1,4 +1,7 @@
-# System settings
+# Removed the line below to activate this configuration.
+lock = true
+
+# System Preferences
 
 [set.menuextra.clock]
 FlashDateSeparators = true
@@ -42,9 +45,6 @@ show-thumbnail = false
 target = "clipboard"
 type = "png"
 
-# [set.CloudSubscriptionFeatures.optIn]
-# 545129924 = false
-
 [set.NSGlobalDomain]
 KeyRepeat = 2
 InitialKeyRepeat = 15
@@ -54,7 +54,6 @@ NSAutomaticSpellingCorrectionEnabled = 0
 "com.apple.keyboard.fnState" = false
 
 # External command execution
-# This includes setting the global hostname and configuring sudo authentication with Touch ID.
 
 [vars]
 hostname = "darkstar"

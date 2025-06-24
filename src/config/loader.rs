@@ -3,7 +3,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use anyhow::Context;
+use anyhow::{Context, bail};
 use toml::Value;
 
 /// Returns the path to the configuration file by checking several candidate locations.
@@ -53,5 +53,10 @@ pub async fn load_config(path: &Path) -> Result<Value, anyhow::Error> {
             path
         )
     })?;
+
+    // handle optional locking
+    if parsed.get("lock").and_then(Value::as_bool).unwrap_or(false) {
+        bail!("The config is locked. Remove the `lock = true` line to apply this config.");
+    }
     Ok(parsed)
 }
