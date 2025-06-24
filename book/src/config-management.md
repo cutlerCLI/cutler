@@ -20,13 +20,23 @@ $
 
 You can use it to mark configurations as potentially unsafe to apply. cutler uses it to also generate new configuration files for you (without the risk of you accidentally applying it).
 
-## Commands
+If you wish to manually lock/unlock the file for your use case, you can do:
+
+```bash
+$ cutler config lock
+# or
+$ cutler config unlock
+```
+
+## View or delete
+
+To view your cutler configuration without the use of `cat` or any other fancy tools, use:
 
 ```bash
 $ cutler config show
 ```
 
-This will show all the bare-bones values that you have written. You can also delete the file if necessary:
+You can also delete it using:
 
 ```bash
 $ cutler config delete

@@ -6,6 +6,7 @@ use crate::{
     commands::{
         ApplyCmd, BrewBackupCmd, BrewInstallCmd, CheckUpdateCmd, ConfigDeleteCmd, ConfigShowCmd,
         ExecCmd, InitCmd, ResetCmd, SelfUpdateCmd, StatusCmd, UnapplyCmd,
+        config::{lock::ConfigLockCmd, unlock::ConfigUnlockCmd},
     },
 };
 
@@ -86,4 +87,8 @@ pub enum ConfigSubcmd {
     Show(ConfigShowCmd),
     /// Delete the config file.
     Delete(ConfigDeleteCmd),
+    /// Lock the config file.
+    Lock(ConfigLockCmd),
+    /// Lock the config file.
+    Unlock(ConfigUnlockCmd),
 }

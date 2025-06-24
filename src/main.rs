@@ -30,6 +30,8 @@ async fn main() {
         Command::Config { command } => match command {
             ConfigSubcmd::Show(cmd) => cmd.run().await,
             ConfigSubcmd::Delete(cmd) => cmd.run().await,
+            ConfigSubcmd::Lock(cmd) => cmd.run().await,
+            ConfigSubcmd::Unlock(cmd) => cmd.run().await,
         },
         Command::Brew { command } => match command {
             BrewSubcmd::Backup(cmd) => cmd.run().await,
