@@ -6,6 +6,7 @@ use std::{
 use anyhow::{Context, Result, anyhow, bail};
 use tokio::fs;
 use toml::Value;
+use toml_edit::{DocumentMut, Item};
 
 use crate::util::{
     globals::should_dry_run,
@@ -48,7 +49,7 @@ pub fn get_config_path() -> PathBuf {
         .unwrap_or_else(|| PathBuf::from("cutler.toml"))
 }
 
-/// Helper: Read and parse the configuration file at a given path.
+/// Read and parse the configuration file at a given path.
 pub async fn load_config(path: &Path) -> Result<Value, anyhow::Error> {
     let content = tokio::fs::read_to_string(path)
         .await
@@ -65,6 +66,26 @@ pub async fn load_config(path: &Path) -> Result<Value, anyhow::Error> {
         bail!("The config is locked. Remove the `lock = true` line to apply this config.");
     }
     Ok(parsed)
+}
+
+/// Same as load_config, but returns a mutable DocumentMut instance.
+pub async fn load_config_mut(path: &Path) -> Result<DocumentMut, anyhow::Error> {
+    let content = tokio::fs::read_to_string(path)
+        .await
+        .with_context(|| format!("Failed to read config file at {:?}", path))?;
+    let parsed: DocumentMut = content.parse::<DocumentMut>().with_context(|| {
+        format!(
+            "Failed to parse TOML at {:?}. Please check for syntax errors or invalid structure.",
+            path
+        )
+    })?;
+
+    // handle optional locking
+    if parsed.get("lock").and_then(Item::as_bool).unwrap_or(false) {
+        bail!("The config is locked. Remove the `lock = true` line to apply this config.");
+    }
+
+    Ok(DocumentMut::from(parsed))
 }
 
 /// Creates a new configuration file (uses complete.toml template).

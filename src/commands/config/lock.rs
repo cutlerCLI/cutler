@@ -1,13 +1,13 @@
 use async_trait::async_trait;
 use clap::Args;
 
-use anyhow::{Context, Result, bail};
+use anyhow::{Result, bail};
 use tokio::fs;
-use toml_edit::{DocumentMut, Item};
+use toml_edit::Item;
 
 use crate::{
     commands::Runnable,
-    config::get_config_path,
+    config::{get_config_path, loader::load_config_mut},
     util::{
         globals::should_dry_run,
         logging::{LogLevel, print_log},
@@ -24,9 +24,7 @@ impl Runnable for ConfigLockCmd {
         let dry_run = should_dry_run();
 
         let mut doc = if cfg_path.exists() {
-            let text = fs::read_to_string(&cfg_path).await?;
-            text.parse::<DocumentMut>()
-                .context("Failed to parse config TOML!")?
+            load_config_mut(&cfg_path).await?
         } else {
             bail!("Cannot lock a config file that does not exist.")
         };
