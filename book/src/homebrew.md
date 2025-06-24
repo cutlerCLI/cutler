@@ -23,7 +23,7 @@ You can also invoke the command's functionalty from within `cutler apply`:
 $ cutler apply --with-brew
 ```
 
-This will install every formula/cask which is uninstalled.
+This will install every formula/cask _alongside_ applying preferences and running external commands.
 
 The structure of the `brew` table inside cutler's configuration is like such:
 
