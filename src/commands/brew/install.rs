@@ -39,7 +39,7 @@ impl Runnable for BrewInstallCmd {
         // ensure homebrew installation
         ensure_brew().await?;
 
-        let config = load_config(&cfg_path).await?;
+        let config = load_config(&cfg_path, true).await?;
         let brew_cfg = config
             .get("brew")
             .and_then(|i| i.as_table())

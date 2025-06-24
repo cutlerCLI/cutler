@@ -24,7 +24,7 @@ impl Runnable for ConfigLockCmd {
         let dry_run = should_dry_run();
 
         let mut doc = if cfg_path.exists() {
-            load_config_mut(&cfg_path).await?
+            load_config_mut(&cfg_path, false).await?
         } else {
             bail!("Cannot lock a config file that does not exist.")
         };

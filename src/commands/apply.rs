@@ -56,7 +56,7 @@ impl Runnable for ApplyCmd {
         };
 
         // parse + flatten domains
-        let toml = load_config(&config_path).await?;
+        let toml = load_config(&config_path, true).await?;
         let domains = collector::collect(&toml)?;
 
         // load the old snapshot (if any), otherwise create a new instance

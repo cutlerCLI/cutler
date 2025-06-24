@@ -30,7 +30,7 @@ impl Runnable for StatusCmd {
             bail!("No config file found. Please run `cutler init` first, or create a config file.");
         }
 
-        let toml = load_config(&config_path).await?;
+        let toml = load_config(&config_path, false).await?;
         let domains = collect(&toml)?;
 
         // flatten all settings into a list

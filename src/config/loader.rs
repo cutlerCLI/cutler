@@ -50,7 +50,7 @@ pub fn get_config_path() -> PathBuf {
 }
 
 /// Read and parse the configuration file at a given path.
-pub async fn load_config(path: &Path) -> Result<Value, anyhow::Error> {
+pub async fn load_config(path: &Path, lock_check: bool) -> Result<Value, anyhow::Error> {
     let content = tokio::fs::read_to_string(path)
         .await
         .with_context(|| format!("Failed to read config file at {:?}", path))?;
@@ -62,14 +62,14 @@ pub async fn load_config(path: &Path) -> Result<Value, anyhow::Error> {
     })?;
 
     // handle optional locking
-    if parsed.get("lock").and_then(Value::as_bool).unwrap_or(false) {
+    if parsed.get("lock").and_then(Value::as_bool).unwrap_or(false) && lock_check {
         bail!("The config file is locked. Run `cutler config unlock` to unlock.");
     }
     Ok(parsed)
 }
 
 /// Same as load_config, but returns a mutable DocumentMut instance.
-pub async fn load_config_mut(path: &Path) -> Result<DocumentMut, anyhow::Error> {
+pub async fn load_config_mut(path: &Path, lock_check: bool) -> Result<DocumentMut, anyhow::Error> {
     let content = tokio::fs::read_to_string(path)
         .await
         .with_context(|| format!("Failed to read config file at {:?}", path))?;
@@ -81,7 +81,7 @@ pub async fn load_config_mut(path: &Path) -> Result<DocumentMut, anyhow::Error> 
     })?;
 
     // handle optional locking
-    if parsed.get("lock").and_then(Item::as_bool).unwrap_or(false) {
+    if parsed.get("lock").and_then(Item::as_bool).unwrap_or(false) && lock_check {
         bail!("The config file is locked. Run `cutler config unlock` to unlock.");
     }
 

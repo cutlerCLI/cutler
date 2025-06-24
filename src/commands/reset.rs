@@ -46,7 +46,7 @@ impl Runnable for ResetCmd {
             return Ok(());
         }
 
-        let toml = load_config(&config_path).await?;
+        let toml = load_config(&config_path, true).await?;
         let domains = collect(&toml)?;
 
         for (domain, table) in domains {

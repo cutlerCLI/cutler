@@ -44,7 +44,7 @@ impl Runnable for BrewBackupCmd {
         let mut deps = Vec::new();
 
         let mut doc = if cfg_path.exists() {
-            load_config_mut(&cfg_path).await?
+            load_config_mut(&cfg_path, true).await?
         } else {
             DocumentMut::new()
         };

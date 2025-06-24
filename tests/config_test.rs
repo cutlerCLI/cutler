@@ -50,7 +50,7 @@ mod tests {
         file.write_all(config_content.as_bytes()).unwrap();
 
         // Test loading the config
-        let config = load_config(&config_file).await.unwrap();
+        let config = load_config(&config_file, false).await.unwrap();
 
         // Verify the content
         let dock = config.get("dock").unwrap().as_table().unwrap();

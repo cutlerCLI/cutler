@@ -30,7 +30,7 @@ impl Runnable for ExecCmd {
         };
 
         // load & parse config
-        let toml = load_config(&config_path).await?;
+        let toml = load_config(&config_path, true).await?;
 
         if let Some(cmd_name) = &self.name {
             runner::run_one(&toml, cmd_name).await?;
