@@ -85,7 +85,7 @@ pub async fn load_config_mut(path: &Path, lock_check: bool) -> Result<DocumentMu
         bail!("The config file is locked. Run `cutler config unlock` to unlock.");
     }
 
-    Ok(DocumentMut::from(parsed))
+    Ok(parsed)
 }
 
 /// Creates a new configuration file (uses complete.toml template).
