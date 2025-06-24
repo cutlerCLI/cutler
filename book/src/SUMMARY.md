@@ -6,6 +6,7 @@
 
 - [Installation](./installation.md)
 - [Quick Start](./quickstart.md)
+- [Shell Integrations](./shell-integrations.md)
 
 # Usage & Configuration
 
@@ -17,7 +18,6 @@
 # References
 
 - [Global Flags](./global-flags.md)
-- [Shell Integrations](./shell-integrations.md)
 - [Resources](./resources.md)
 
 # Guidelines
