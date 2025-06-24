@@ -1,3 +1,4 @@
+use anyhow::bail;
 use defaults_rs::PrefValue;
 use std::collections::HashMap;
 use toml::Value;
@@ -19,7 +20,7 @@ pub fn toml_to_prefvalue(val: &Value) -> anyhow::Result<PrefValue> {
                 .map(|(k, v)| Ok((k.clone(), toml_to_prefvalue(v)?)))
                 .collect::<Result<HashMap<_, _>, anyhow::Error>>()?,
         ),
-        _ => anyhow::bail!("Unsupported TOML value for PrefValue"),
+        _ => bail!("Unsupported TOML value for PrefValue"),
     })
 }
 

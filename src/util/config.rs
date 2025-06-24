@@ -1,5 +1,4 @@
-use crate::commands::Runnable;
-use crate::config::loader::get_config_path;
+use crate::config::loader::{create_config, get_config_path};
 use crate::util::io::confirm_action;
 use crate::util::logging::{LogLevel, print_log};
 use anyhow::Result;
@@ -16,13 +15,8 @@ pub async fn ensure_config_exists_or_init() -> Result<Option<PathBuf>> {
         LogLevel::Warning,
         &format!("Config not found at {:?}", config_path),
     );
-    if confirm_action("Create a new basic config?")? {
-        let init_cmd = crate::commands::InitCmd {
-            basic: true,
-            force: false,
-        };
-
-        init_cmd.run().await?;
+    if confirm_action("Create a new config?")? {
+        create_config(&config_path).await?;
         Ok(Some(config_path))
     } else {
         print_log(LogLevel::Warning, "No config; aborting.");
