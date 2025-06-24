@@ -1,8 +1,7 @@
-use tokio::fs;
-
-use anyhow::{Context, Result};
+use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
+use tokio::fs;
 use toml_edit::{Array, DocumentMut, Item, Table, Value};
 
 use crate::{
@@ -11,7 +10,7 @@ use crate::{
         utils::{brew_list, disable_brew_auto_update, ensure_brew},
     },
     commands::Runnable,
-    config::get_config_path,
+    config::{get_config_path, loader::load_config_mut},
     util::{
         globals::should_dry_run,
         logging::{GREEN, LogLevel, RESET, print_log},
@@ -45,9 +44,7 @@ impl Runnable for BrewBackupCmd {
         let mut deps = Vec::new();
 
         let mut doc = if cfg_path.exists() {
-            let text = fs::read_to_string(&cfg_path).await?;
-            text.parse::<DocumentMut>()
-                .context("Failed to parse config TOML")?
+            load_config_mut(&cfg_path).await?
         } else {
             DocumentMut::new()
         };
