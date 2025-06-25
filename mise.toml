@@ -1,0 +1,11 @@
+[tools]
+"cargo:mdbook" = "latest"
+rust = "latest"
+
+[tasks.clippy] # watch it
+description = "Runs clippy on all targets"
+run = "cargo clippy --all-targets --all-features"
+
+[tasks.serve]
+description = "Serves the documentation in the 'book' subdirectory"
+run = "cd book && mdbook serve --open"

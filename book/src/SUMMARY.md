@@ -5,8 +5,8 @@
 # Getting Started
 
 - [Installation](./installation.md)
-- [Quick Start](./quickstart.md)
 - [Shell Integrations](./shell-integrations.md)
+- [Quick Start](./quickstart.md)
 
 # Usage & Configuration
 
