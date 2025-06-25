@@ -14,13 +14,13 @@ Unless you remove it, this will happen:
 
 ```bash
 $ cutler apply
-[ERROR] The config is locked. Remove the `lock = true` line to apply this config.
+[ERROR] The config file is locked. Run `cutler config unlock` to unlock.
 $
 ```
 
-You can use it to mark configurations as potentially unsafe to apply. cutler uses it to also generate new configuration files for you (without the risk of you accidentally applying it).
+You can use this feature to mark configurations as potentially unsafe to apply. cutler uses it to generate new configuration files for you so that you don't accidentally apply the sample.
 
-If you wish to manually lock/unlock the file for your use case, you can do:
+There are two commands to manage the lock status:
 
 ```bash
 $ cutler config lock
