@@ -19,7 +19,12 @@ The ideal structure for writing external commands should be like this:
 hostname = "darkstar"
 
 [commands.hostname]
-run = "scutil set --LocalHostName $hostname"  # or ${hostname}
+run = """
+#!/usr/bin/env bash
+scutil --set LocalHostName $hostname
+scutil --set HostName $hostname
+scutil --set ComputerName $hostname
+"""
 sudo = true  # a more "annotated" sudo
 ```
 

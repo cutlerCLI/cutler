@@ -141,21 +141,24 @@ async fn execute_command(
     dry_run: bool,
 ) -> Result<()> {
     // command execution logic starts here
-    let final_cmd = substitute(&state.run, vars);
+    let final_cmd = substitute(&state.run, vars).trim().to_string();
 
     // build the actual runner
     let (bin, args) = if state.sudo {
-        ("sudo", vec!["sh", "-c", &final_cmd])
+        ("sudo", vec!["/bin/bash", "-c", &final_cmd])
     } else {
-        ("sh", vec!["-c", &final_cmd])
+        ("/bin/bash", vec!["-c", &final_cmd])
     };
 
     if dry_run {
-        print_log(LogLevel::Dry, &format!("Would exec {} {}", bin, final_cmd));
+        print_log(
+            LogLevel::Dry,
+            &format!("Would execute: {} {}", bin, final_cmd),
+        );
         return Ok(());
     }
 
-    print_log(LogLevel::Info, &format!("Exec {} {}", bin, final_cmd));
+    print_log(LogLevel::Info, &format!("Execute: {} {}", bin, final_cmd));
 
     let child = Command::new(bin)
         .args(&args)
@@ -178,7 +181,7 @@ async fn execute_command(
     if !output.stdout.is_empty() {
         print_log(
             LogLevel::CommandOutput,
-            &format!("Out: {}", String::from_utf8_lossy(&output.stdout)),
+            &format!("{}", String::from_utf8_lossy(&output.stdout)),
         );
     }
     Ok(())
