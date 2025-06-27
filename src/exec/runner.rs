@@ -145,9 +145,9 @@ async fn execute_command(
 
     // build the actual runner
     let (bin, args) = if state.sudo {
-        ("sudo", vec!["/bin/bash", "-c", &final_cmd])
+        ("sudo", vec!["sh", "-c", &final_cmd])
     } else {
-        ("/bin/bash", vec!["-c", &final_cmd])
+        ("sh", vec!["-c", &final_cmd])
     };
 
     if dry_run {
