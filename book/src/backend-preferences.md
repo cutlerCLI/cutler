@@ -10,7 +10,7 @@ In cutler's earlier versions, it used to wrap around the `defaults` CLI using as
 
 </div>
 
-cutler's latest versions include <a href="https://github.com/hitblast/defaults-rs">defaults-rs</a>, a frontend for macOS preferences which has been directly written for interoperation with cutler. Instead of command invocation, it parses the preferences and can also modify them in batches, all the while minimizing the amount of I/O per call.
+cutler's latest versions include <a href="https://github.com/hitblast/defaults-rs">defaults-rs</a>, a frontend for macOS preferences which has been directly written for interop with cutler. Instead of command invocation, it parses the preferences and can also modify them in batches, all the while minimizing the amount of I/O per call.
 
 It has a neat little Rust API which is also asynchronous.
 
