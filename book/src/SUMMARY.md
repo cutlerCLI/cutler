@@ -20,6 +20,10 @@
 - [Global Flags](./global-flags.md)
 - [Resources](./resources.md)
 
+# Backends
+
+- [Preferences](./backend-preferences.md)
+
 # Guidelines
 
 - [Contributing](./contributing.md)
