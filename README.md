@@ -15,7 +15,6 @@ Powerful, declarative settings management for your Mac, with speed.
 > [!WARNING]
 > Although cutler is solid enough for daily-driving now, expect breaking changes before the v1 release.
 
-
 ## Overview
 
 cutler aims to simplify your macOS setup experience into an "almost" one-command procedure. Define your settings once, then easily apply, track, and revert changes across your system—think of it as infrastructure-as-code for your Mac.
@@ -23,13 +22,12 @@ cutler aims to simplify your macOS setup experience into an "almost" one-command
 > [!IMPORTANT]
 > This project is still under development. If you like it, consider starring! It's free, and it always supports me to make such projects.
 
-
 ## Installation
 
 You can install cutler by running this command in the terminal:
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/hitblast/cutler/main/install.sh)"
+/bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/hitblast/cutler/main/install.sh)"
 ```
 
 Other installation methods:

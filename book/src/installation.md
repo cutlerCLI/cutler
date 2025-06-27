@@ -3,7 +3,7 @@
 You can install cutler by directly running this command in the terminal:
 
 ```bash
-$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/hitblast/cutler/main/install.sh)"
+$ /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/hitblast/cutler/main/install.sh)"
 ```
 
 Other installation methods are:
