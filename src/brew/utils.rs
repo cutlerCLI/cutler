@@ -96,10 +96,10 @@ fn set_homebrew_env_vars() {
         let sbin = "/opt/homebrew/sbin";
         let mut new_path = existing_path.clone();
         if !existing_path.split(':').any(|p| p == bin) {
-            new_path = format!("{bin}:{}", new_path);
+            new_path = format!("{bin}:{new_path}");
         }
         if !existing_path.split(':').any(|p| p == sbin) {
-            new_path = format!("{sbin}:{}", new_path);
+            new_path = format!("{sbin}:{new_path}");
         }
         unsafe { env::set_var("PATH", &new_path) };
     } else if Path::new("/usr/local/bin/brew").exists() {
@@ -107,10 +107,10 @@ fn set_homebrew_env_vars() {
         let sbin = "/usr/local/sbin";
         let mut new_path = existing_path.clone();
         if !existing_path.split(':').any(|p| p == bin) {
-            new_path = format!("{bin}:{}", new_path);
+            new_path = format!("{bin}:{new_path}");
         }
         if !existing_path.split(':').any(|p| p == sbin) {
-            new_path = format!("{sbin}:{}", new_path);
+            new_path = format!("{sbin}:{new_path}");
         }
         unsafe { env::set_var("PATH", &new_path) };
     } else {

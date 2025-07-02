@@ -79,7 +79,7 @@ impl Runnable for BrewInstallCmd {
             }
             Err(e) => {
                 print_log(
-                    LogLevel::Warning,
+                    LogLevel::Error,
                     &format!("Could not check Homebrew status: {e}"),
                 );
                 // If we cannot compare the state, treat as if nothing is missing.
@@ -134,93 +134,96 @@ impl Runnable for BrewInstallCmd {
             return Ok(());
         }
 
-        let (fetched_formulae, fetched_casks) =
-            fetch_all(&brew_diff.missing_formulae, &brew_diff.missing_casks).await;
+        let fetched = fetch_all(&brew_diff.missing_formulae, &brew_diff.missing_casks).await;
 
         // build install tasks only for successfully fetched items
-        let mut install_tasks: Vec<Vec<String>> = Vec::new();
+        let mut install_args: Vec<Vec<String>> = Vec::new();
 
-        for name in fetched_formulae {
-            install_tasks.push(vec!["install".to_string(), "--formula".to_string(), name]);
+        for name in fetched.formulae {
+            install_args.push(vec!["--formula".to_string(), name]);
         }
-        for name in fetched_casks {
-            install_tasks.push(vec!["install".to_string(), "--cask".to_string(), name]);
+        for name in fetched.casks {
+            install_args.push(vec!["--cask".to_string(), name]);
         }
 
         // sequentially install only the successfully fetched items
-        install_sequentially(install_tasks).await?;
+        install_all(install_args).await?;
 
         Ok(())
     }
 }
 
-/// Downloads all formulae/casks before installation.
+/// Represents the result of fetching formulae and casks.
+pub struct FetchedThings {
+    pub formulae: Vec<String>,
+    pub casks: Vec<String>,
+    pub failed_formulae: Vec<String>,
+    pub failed_casks: Vec<String>,
+}
+
+/// Downloads all formulae/casks before installation, sequentially.
 /// Returns only the successfully fetched formulae and casks.
-async fn fetch_all(formulae: &[String], casks: &[String]) -> (Vec<String>, Vec<String>) {
-    let mut handles = Vec::new();
+async fn fetch_all(formulae: &[String], casks: &[String]) -> FetchedThings {
+    let verbose = is_verbose();
 
-    for name in formulae {
-        let name = name.clone();
-        handles.push(tokio::spawn(async move {
-            let mut cmd = Command::new("brew");
-            cmd.arg("fetch").arg(&name);
-
-            if is_verbose() {
-                print_log(LogLevel::Info, &format!("Fetching formula: {name}"));
-            } else {
-                cmd.arg("--quiet");
-            }
-
-            match cmd.status().await {
-                Ok(status) if status.success() => Some(("formula".to_string(), name)),
-                _ => None,
-            }
-        }));
-    }
-    for name in casks {
-        let name = name.clone();
-        handles.push(tokio::spawn(async move {
-            let mut cmd = Command::new("brew");
-            cmd.arg("fetch").arg("--cask").arg(&name);
-
-            if is_verbose() {
-                print_log(LogLevel::Info, &format!("Fetching cask: {name}"));
-            } else {
-                cmd.arg("--quiet");
-            }
-
-            match cmd.status().await {
-                Ok(status) if status.success() => Some(("cask".to_string(), name)),
-                _ => None,
-            }
-        }));
-    }
-
+    // create new vectors
     let mut fetched_formulae = Vec::new();
     let mut fetched_casks = Vec::new();
+    let mut failed_formulae = Vec::new();
+    let mut failed_casks = Vec::new();
 
-    for handle in handles {
-        if let Ok(Some((item_type, name))) = handle.await {
-            match item_type.as_str() {
-                "formula" => fetched_formulae.push(name),
-                "cask" => fetched_casks.push(name),
-                _ => {}
-            }
+    // Fetch formulae sequentially
+    for name in formulae {
+        let mut cmd = Command::new("brew");
+        cmd.arg("fetch").arg(name);
+
+        if verbose {
+            print_log(LogLevel::Info, &format!("Fetching formula: {name}"));
+        } else {
+            cmd.arg("--quiet");
+        }
+
+        match cmd.status().await {
+            Ok(status) if status.success() => fetched_formulae.push(name.clone()),
+            _ => failed_formulae.push(name.clone()),
         }
     }
 
-    (fetched_formulae, fetched_casks)
+    // Fetch casks sequentially
+    for name in casks {
+        let mut cmd = Command::new("brew");
+        cmd.arg("fetch").arg("--cask").arg(name);
+
+        if verbose {
+            print_log(LogLevel::Info, &format!("Fetching cask: {name}"));
+        } else {
+            cmd.arg("--quiet");
+        }
+
+        match cmd.status().await {
+            Ok(status) if status.success() => fetched_casks.push(name.clone()),
+            _ => failed_casks.push(name.clone()),
+        }
+    }
+
+    FetchedThings {
+        formulae: fetched_formulae,
+        casks: fetched_casks,
+        failed_formulae,
+        failed_casks,
+    }
 }
 
 /// Install formulae/casks sequentially.
-/// The argument is a vector of vectors of strings, with each vector representing arguments to a brew command.
-async fn install_sequentially(install_tasks: Vec<Vec<String>>) -> anyhow::Result<()> {
+/// The argument is a vector of argslices, representing the arguments to the `brew install` subcommand.
+async fn install_all(install_tasks: Vec<Vec<String>>) -> anyhow::Result<()> {
     for args in install_tasks {
         let display = format!("brew {}", args.join(" "));
         print_log(LogLevel::Info, &format!("Installing: {display}"));
         let arg_slices: Vec<&str> = args.iter().map(String::as_str).collect();
 
         let status = Command::new("brew")
+            .arg("install")
             .args(&arg_slices)
             .stdout(std::process::Stdio::inherit())
             .stderr(std::process::Stdio::inherit())
