@@ -131,6 +131,10 @@ fn set_homebrew_env_vars() {
 /// Helper for: ensure_brew()
 /// Installs Homebrew via the official script.
 async fn install_homebrew() -> Result<(), anyhow::Error> {
+    unsafe {
+        env::set_var("NONINTERACTIVE", "1");
+    }
+
     let script = "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)";
 
     print_log(LogLevel::Info, "Installing Homebrew...");
