@@ -6,7 +6,7 @@ use tokio::process::Command;
 use crate::{
     brew::{
         types::BrewDiff,
-        utils::{compare_brew_state, disable_brew_auto_update, ensure_brew},
+        utils::{compare_brew_state, ensure_brew},
     },
     commands::Runnable,
     config::{get_config_path, load_config},
@@ -32,9 +32,6 @@ impl Runnable for BrewInstallCmd {
             );
             return Ok(());
         }
-
-        // disable homebrew auto-update
-        disable_brew_auto_update();
 
         // ensure homebrew installation
         ensure_brew().await?;

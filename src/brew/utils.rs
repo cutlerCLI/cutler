@@ -88,14 +88,30 @@ async fn ensure_xcode_clt() -> Result<()> {
 }
 
 /// Sets the required environment variables for cutler to interact with Homebrew.
-fn set_homebrew_in_path() {
+fn set_homebrew_env_vars() {
     let existing_path = std::env::var("PATH").unwrap_or_default();
 
     if Path::new("/opt/homebrew/bin/brew").exists() {
-        let new_path = format!("/opt/homebrew/bin:/opt/homebrew/sbin:{existing_path}");
+        let bin = "/opt/homebrew/bin";
+        let sbin = "/opt/homebrew/sbin";
+        let mut new_path = existing_path.clone();
+        if !existing_path.split(':').any(|p| p == bin) {
+            new_path = format!("{bin}:{}", new_path);
+        }
+        if !existing_path.split(':').any(|p| p == sbin) {
+            new_path = format!("{sbin}:{}", new_path);
+        }
         unsafe { env::set_var("PATH", &new_path) };
     } else if Path::new("/usr/local/bin/brew").exists() {
-        let new_path = format!("/usr/local/bin:/usr/local/sbin:{existing_path}");
+        let bin = "/usr/local/bin";
+        let sbin = "/usr/local/sbin";
+        let mut new_path = existing_path.clone();
+        if !existing_path.split(':').any(|p| p == bin) {
+            new_path = format!("{bin}:{}", new_path);
+        }
+        if !existing_path.split(':').any(|p| p == sbin) {
+            new_path = format!("{sbin}:{}", new_path);
+        }
         unsafe { env::set_var("PATH", &new_path) };
     } else {
         return print_log(
@@ -104,6 +120,8 @@ fn set_homebrew_in_path() {
         );
     }
 
+    unsafe { env::set_var("HOMEBREW_NO_AUTO_UPDATE", "1") };
+
     print_log(
         LogLevel::Info,
         "Updated PATH with Homebrew for this process.",
@@ -111,7 +129,7 @@ fn set_homebrew_in_path() {
 }
 
 /// Helper for: ensure_brew()
-/// Installs Homebrew.
+/// Installs Homebrew via the official script.
 async fn install_homebrew() -> Result<(), anyhow::Error> {
     let script = "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)";
 
@@ -121,6 +139,7 @@ async fn install_homebrew() -> Result<(), anyhow::Error> {
     if !status.success() {
         anyhow::bail!("Failed to install Homebrew.");
     }
+
     Ok(())
 }
 
@@ -150,8 +169,8 @@ pub async fn ensure_brew() -> Result<()> {
         if confirm_action("Install Homebrew now?")? {
             install_homebrew().await?;
 
-            // update PATH with brew binary location
-            set_homebrew_in_path();
+            // set environment variables for `brew`
+            set_homebrew_env_vars();
 
             // re-check that Homebrew is now installed and in $PATH
             let is_installed_after = Command::new("brew")
@@ -197,11 +216,6 @@ pub async fn brew_list(list_type: BrewListType) -> Result<Vec<String>> {
         .map(|l| l.trim().to_string())
         .filter(|l| !l.is_empty())
         .collect())
-}
-
-/// Disables Homebrew auto-update globally for the process.
-pub fn disable_brew_auto_update() {
-    unsafe { env::set_var("HOMEBREW_NO_AUTO_UPDATE", "1") };
 }
 
 /// Compare the [brew] config table with the actual Homebrew state.
