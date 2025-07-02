@@ -3,9 +3,11 @@ use async_trait::async_trait;
 use clap::Args;
 use self_update::backends::github::Update;
 use self_update::cargo_crate_version;
+use std::env;
 use tokio::fs;
 
 use crate::commands::Runnable;
+use crate::util::common::is_root;
 use crate::util::logging::{LogLevel, print_log};
 
 #[derive(Args, Debug)]
@@ -14,7 +16,7 @@ pub struct SelfUpdateCmd;
 #[async_trait]
 impl Runnable for SelfUpdateCmd {
     async fn run(&self) -> Result<()> {
-        use std::env;
+        is_root()?;
 
         // get the path to the current executable
         let exe_path = env::current_exe()?;
@@ -55,23 +57,25 @@ impl Runnable for SelfUpdateCmd {
             }
         };
 
-        let status = Update::configure()
-            .repo_owner("hitblast")
-            .repo_name("cutler")
-            .target(target)
-            .bin_name("cutler")
-            .bin_path_in_archive("bin/cutler")
-            .show_download_progress(true)
-            .current_version(cargo_crate_version!())
-            .build()?
-            .update()?;
+        // run the self_update updater in a blocking thread to avoid dropping a runtime in async context
+        let status = tokio::task::spawn_blocking(move || {
+            Update::configure()
+                .repo_owner("hitblast")
+                .repo_name("cutler")
+                .target(target)
+                .bin_name("cutler")
+                .bin_path_in_archive("bin/cutler")
+                .show_download_progress(true)
+                .current_version(cargo_crate_version!())
+                .build()?
+                .update()
+        })
+        .await??;
 
         if status.updated() {
             print_log(LogLevel::Info, "Binary updated, updating manpage...");
 
-            let manpage_url = format!(
-                "https://raw.githubusercontent.com/hitblast/cutler/refs/heads/main/man/man1/cutler.1"
-            );
+            let manpage_url = "https://raw.githubusercontent.com/hitblast/cutler/refs/heads/main/man/man1/cutler.1".to_string();
             let manpage_content = ureq::get(&manpage_url)
                 .call()?
                 .into_body()
