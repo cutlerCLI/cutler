@@ -124,7 +124,37 @@ pub async fn ensure_brew() -> Result<()> {
         print_log(LogLevel::Warning, "Homebrew is not installed.");
 
         if confirm_action("Install Homebrew now?")? {
-            install_homebrew().await?
+            install_homebrew().await?;
+
+            // update PATH with brew binary location
+            let existing_path = std::env::var("PATH").unwrap_or_default();
+            if std::path::Path::new("/opt/homebrew/bin/brew").exists() {
+                let new_path = format!("/opt/homebrew/bin:{}", existing_path);
+                unsafe { std::env::set_var("PATH", &new_path) };
+                print_log(LogLevel::Info, "Updated PATH with /opt/homebrew/bin");
+            } else if std::path::Path::new("/usr/local/bin/brew").exists() {
+                let new_path = format!("/usr/local/bin:{}", existing_path);
+                unsafe { std::env::set_var("PATH", &new_path) };
+                print_log(LogLevel::Info, "Updated PATH with /usr/local/bin");
+            } else {
+                print_log(
+                    LogLevel::Warning,
+                    "Brew binary not found in standard directories; PATH not updated.",
+                );
+            }
+
+            // re-check that Homebrew is now installed and in $PATH
+            let is_installed_after = Command::new("brew")
+                .arg("--version")
+                .output()
+                .await
+                .map(|o| o.status.success())
+                .unwrap_or(false);
+            if !is_installed_after {
+                anyhow::bail!(
+                    "Homebrew installation seems to have failed or brew is still not in PATH. Please update your PATH accordingly."
+                );
+            }
         } else {
             anyhow::bail!("Homebrew is required for brew operations, but was not found.");
         }
