@@ -35,7 +35,7 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo-
 
       - name: Build release artifact
-        run: cargo build --release --verbose --locked
+        run: cargo build --release --verbose
 
       - name: Generate manpage
         run: cargo xtask manpage --dir man/man1
@@ -90,7 +90,7 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo-
 
       - name: Build release artifact
-        run: cargo build --release --verbose --locked
+        run: cargo build --release --verbose
 
       - name: Generate manpage
         run: cargo xtask manpage --dir man/man1
