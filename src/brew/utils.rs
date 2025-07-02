@@ -129,11 +129,11 @@ pub async fn ensure_brew() -> Result<()> {
             // update PATH with brew binary location
             let existing_path = std::env::var("PATH").unwrap_or_default();
             if std::path::Path::new("/opt/homebrew/bin/brew").exists() {
-                let new_path = format!("/opt/homebrew/bin:{}", existing_path);
+                let new_path = format!("/opt/homebrew/bin:{existing_path}");
                 unsafe { std::env::set_var("PATH", &new_path) };
                 print_log(LogLevel::Info, "Updated PATH with /opt/homebrew/bin");
             } else if std::path::Path::new("/usr/local/bin/brew").exists() {
-                let new_path = format!("/usr/local/bin:{}", existing_path);
+                let new_path = format!("/usr/local/bin:{existing_path}");
                 unsafe { std::env::set_var("PATH", &new_path) };
                 print_log(LogLevel::Info, "Updated PATH with /usr/local/bin");
             } else {

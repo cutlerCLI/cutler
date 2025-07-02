@@ -28,7 +28,7 @@ impl Runnable for ConfigShowCmd {
         if should_dry_run() {
             print_log(
                 LogLevel::Dry,
-                &format!("Would display config at {:?}", config_path),
+                &format!("Would display config at {config_path:?}"),
             );
             return Ok(());
         }
@@ -36,7 +36,7 @@ impl Runnable for ConfigShowCmd {
         // read and print the file
         let content = fs::read_to_string(&config_path).await?;
         if !should_be_quiet() {
-            println!("{}", content);
+            println!("{content}");
         }
 
         print_log(LogLevel::Info, "Displayed configuration file.");

@@ -36,7 +36,7 @@ impl Runnable for UnapplyCmd {
         // load snapshot from disk
         let snapshot = Snapshot::load(&snap_path)
             .await
-            .context(format!("Failed to load snapshot from {:?}", snap_path))?;
+            .context(format!("Failed to load snapshot from {snap_path:?}"))?;
 
         // prepare undo operations, grouping by domain for efficiency
         let mut batch_restores: HashMap<Domain, Vec<(String, defaults_rs::PrefValue)>> =
@@ -72,7 +72,7 @@ impl Runnable for UnapplyCmd {
                     };
                     print_log(
                         LogLevel::Dry,
-                        &format!("Would restore setting '{}' for {}", key, domain_str),
+                        &format!("Would restore setting '{key}' for {domain_str}"),
                     );
                 }
             }
@@ -85,7 +85,7 @@ impl Runnable for UnapplyCmd {
                     };
                     print_log(
                         LogLevel::Dry,
-                        &format!("Would remove setting '{}' for {}", key, domain_str),
+                        &format!("Would remove setting '{key}' for {domain_str}"),
                     );
                 }
             }
@@ -145,15 +145,15 @@ impl Runnable for UnapplyCmd {
         if dry_run {
             print_log(
                 LogLevel::Dry,
-                &format!("Would remove snapshot file at {:?}", snap_path),
+                &format!("Would remove snapshot file at {snap_path:?}"),
             );
         } else {
             fs::remove_file(&snap_path)
                 .await
-                .context(format!("Failed to remove snapshot file at {:?}", snap_path))?;
+                .context(format!("Failed to remove snapshot file at {snap_path:?}"))?;
             print_log(
                 LogLevel::Info,
-                &format!("Removed snapshot file at {:?}", snap_path),
+                &format!("Removed snapshot file at {snap_path:?}"),
             );
         }
 

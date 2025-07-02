@@ -65,7 +65,7 @@ impl Runnable for ApplyCmd {
             Snapshot::load(&snap_path).await.unwrap_or_else(|e| {
                 print_log(
                     LogLevel::Warning,
-                    &format!("Bad snapshot: {}; starting new", e),
+                    &format!("Bad snapshot: {e}; starting new"),
                 );
                 Snapshot::new()
             })
@@ -121,7 +121,7 @@ impl Runnable for ApplyCmd {
                 } else {
                     print_log(
                         LogLevel::Info,
-                        &format!("Skipping unchanged {} | {}", eff_dom, eff_key),
+                        &format!("Skipping unchanged {eff_dom} | {eff_key}"),
                     );
                 }
             }
@@ -191,7 +191,7 @@ impl Runnable for ApplyCmd {
 
         if !dry_run {
             new_snap.save(&snap_path).await?;
-            print_log(LogLevel::Info, &format!("Snapshot saved: {:?}", snap_path));
+            print_log(LogLevel::Info, &format!("Snapshot saved: {snap_path:?}"));
         } else {
             print_log(LogLevel::Dry, "Would save snapshot");
         }

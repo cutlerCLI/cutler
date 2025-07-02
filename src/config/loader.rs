@@ -53,11 +53,10 @@ pub fn get_config_path() -> PathBuf {
 pub async fn load_config(path: &Path, lock_check: bool) -> Result<Value, anyhow::Error> {
     let content = tokio::fs::read_to_string(path)
         .await
-        .with_context(|| format!("Failed to read config file at {:?}", path))?;
+        .with_context(|| format!("Failed to read config file at {path:?}"))?;
     let parsed: Value = content.parse::<Value>().with_context(|| {
         format!(
-            "Failed to parse TOML at {:?}. Please check for syntax errors or invalid structure.",
-            path
+            "Failed to parse TOML at {path:?}. Please check for syntax errors or invalid structure."
         )
     })?;
 
@@ -72,11 +71,10 @@ pub async fn load_config(path: &Path, lock_check: bool) -> Result<Value, anyhow:
 pub async fn load_config_mut(path: &Path, lock_check: bool) -> Result<DocumentMut, anyhow::Error> {
     let content = tokio::fs::read_to_string(path)
         .await
-        .with_context(|| format!("Failed to read config file at {:?}", path))?;
+        .with_context(|| format!("Failed to read config file at {path:?}"))?;
     let parsed: DocumentMut = content.parse::<DocumentMut>().with_context(|| {
         format!(
-            "Failed to parse TOML at {:?}. Please check for syntax errors or invalid structure.",
-            path
+            "Failed to parse TOML at {path:?}. Please check for syntax errors or invalid structure."
         )
     })?;
 
@@ -97,12 +95,12 @@ pub async fn create_config(config_path: &PathBuf) -> Result<(), anyhow::Error> {
         if dry_run {
             print_log(
                 LogLevel::Dry,
-                &format!("Would create directory: {:?}", parent),
+                &format!("Would create directory: {parent:?}"),
             );
         } else {
             print_log(
                 LogLevel::Info,
-                &format!("Creating parent dir: {:?}", parent),
+                &format!("Creating parent dir: {parent:?}"),
             );
             fs::create_dir_all(parent).await?;
         }
@@ -114,11 +112,11 @@ pub async fn create_config(config_path: &PathBuf) -> Result<(), anyhow::Error> {
     if dry_run {
         print_log(
             LogLevel::Dry,
-            &format!("Would write configuration to {:?}", config_path),
+            &format!("Would write configuration to {config_path:?}"),
         );
         print_log(
             LogLevel::Dry,
-            &format!("Configuration content:\n{}", default_cfg),
+            &format!("Configuration content:\n{default_cfg}"),
         );
 
         Ok(())
@@ -130,8 +128,7 @@ pub async fn create_config(config_path: &PathBuf) -> Result<(), anyhow::Error> {
         print_log(
             LogLevel::Fruitful,
             &format!(
-                "Config created at {:?}, Review and customize it before applying.",
-                config_path
+                "Config created at {config_path:?}, Review and customize it before applying."
             ),
         );
 

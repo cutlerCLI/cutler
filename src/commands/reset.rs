@@ -58,7 +58,7 @@ impl Runnable for ResetCmd {
                     let domain_obj = if eff_dom == "NSGlobalDomain" {
                         Domain::Global
                     } else if let Some(rest) = eff_dom.strip_prefix("com.apple.") {
-                        Domain::User(format!("com.apple.{}", rest))
+                        Domain::User(format!("com.apple.{rest}"))
                     } else {
                         Domain::User(eff_dom.clone())
                     };
@@ -66,20 +66,20 @@ impl Runnable for ResetCmd {
                     if dry_run {
                         print_log(
                             LogLevel::Dry,
-                            &format!("Would reset {}.{} to system default", eff_dom, eff_key),
+                            &format!("Would reset {eff_dom}.{eff_key} to system default"),
                         );
                     } else {
                         match Preferences::delete(domain_obj, Some(&eff_key)).await {
                             Ok(_) => {
                                 print_log(
                                     LogLevel::Info,
-                                    &format!("Reset {}.{} to system default", eff_dom, eff_key),
+                                    &format!("Reset {eff_dom}.{eff_key} to system default"),
                                 );
                             }
                             Err(e) => {
                                 print_log(
                                     LogLevel::Error,
-                                    &format!("Failed to reset {}.{}: {}", eff_dom, eff_key, e),
+                                    &format!("Failed to reset {eff_dom}.{eff_key}: {e}"),
                                 );
                             }
                         }
@@ -87,7 +87,7 @@ impl Runnable for ResetCmd {
                 } else {
                     print_log(
                         LogLevel::Info,
-                        &format!("Skipping {}.{} (not set)", eff_dom, eff_key),
+                        &format!("Skipping {eff_dom}.{eff_key} (not set)"),
                     );
                 }
             }
@@ -99,17 +99,17 @@ impl Runnable for ResetCmd {
             if dry_run {
                 print_log(
                     LogLevel::Dry,
-                    &format!("Would remove snapshot at {:?}", snap_path),
+                    &format!("Would remove snapshot at {snap_path:?}"),
                 );
             } else if let Err(e) = fs::remove_file(&snap_path).await {
                 print_log(
                     LogLevel::Warning,
-                    &format!("Failed to remove snapshot: {}", e),
+                    &format!("Failed to remove snapshot: {e}"),
                 );
             } else {
                 print_log(
                     LogLevel::Info,
-                    &format!("Removed snapshot at {:?}", snap_path),
+                    &format!("Removed snapshot at {snap_path:?}"),
                 );
             }
         }

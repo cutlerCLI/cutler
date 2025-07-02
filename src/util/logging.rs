@@ -43,14 +43,14 @@ pub fn print_log(level: LogLevel, msg: &str) {
     };
 
     let line = if level == LogLevel::Fruitful {
-        format!("{} {}", tag, msg)
+        format!("{tag} {msg}")
     } else {
-        format!("{}[{}]{} {}", color, tag, RESET, msg)
+        format!("{color}[{tag}]{RESET} {msg}")
     };
 
     if level == LogLevel::Error || level == LogLevel::Warning {
-        eprintln!("{}", line);
+        eprintln!("{line}");
     } else {
-        println!("{}", line);
+        println!("{line}");
     }
 }

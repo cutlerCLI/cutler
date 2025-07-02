@@ -47,21 +47,21 @@ impl Runnable for ConfigDeleteCmd {
 
         // finally, delete config and snapshot
         if dry_run {
-            print_log(LogLevel::Dry, &format!("Would delete {:?}", config_path));
+            print_log(LogLevel::Dry, &format!("Would delete {config_path:?}"));
             if snapshot_path.exists() {
-                print_log(LogLevel::Dry, &format!("Would delete {:?}", snapshot_path));
+                print_log(LogLevel::Dry, &format!("Would delete {snapshot_path:?}"));
             }
         } else {
             fs::remove_file(&config_path).await?;
             print_log(
                 LogLevel::Fruitful,
-                &format!("Deleted config at {:?}", config_path),
+                &format!("Deleted config at {config_path:?}"),
             );
             if snapshot_path.exists() {
                 fs::remove_file(&snapshot_path).await?;
                 print_log(
                     LogLevel::Info,
-                    &format!("Deleted snapshot at {:?}", snapshot_path),
+                    &format!("Deleted snapshot at {snapshot_path:?}"),
                 );
             }
         }

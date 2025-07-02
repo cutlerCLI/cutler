@@ -14,7 +14,7 @@ fn flatten_domains(
         if let Value::Table(inner) = v {
             // descend into nested table
             let new_prefix = match &prefix {
-                Some(p) if !p.is_empty() => format!("{}.{}", p, k),
+                Some(p) if !p.is_empty() => format!("{p}.{k}"),
                 _ => k.clone(),
             };
             flatten_domains(Some(new_prefix), inner, dest);
@@ -69,7 +69,7 @@ fn get_defaults_domain(domain: &str) -> String {
         "NSGlobalDomain".into()
     } else {
         // anything else gets com.apple.
-        format!("com.apple.{}", domain)
+        format!("com.apple.{domain}")
     }
 }
 
@@ -102,7 +102,7 @@ pub async fn read_current(eff_domain: &str, eff_key: &str) -> Option<String> {
     let domain_obj = if eff_domain == "NSGlobalDomain" {
         Domain::Global
     } else if let Some(rest) = eff_domain.strip_prefix("com.apple.") {
-        Domain::User(format!("com.apple.{}", rest))
+        Domain::User(format!("com.apple.{rest}"))
     } else {
         Domain::User(eff_domain.to_string())
     };
@@ -119,7 +119,7 @@ pub async fn read_current(eff_domain: &str, eff_key: &str) -> Option<String> {
                     .map(prefvalue_to_cutler_string)
                     .collect::<Vec<_>>()
                     .join(", ");
-                format!("[{}]", inner)
+                format!("[{inner}]")
             }
             PrefValue::Dictionary(dict) => {
                 let inner = dict
@@ -127,7 +127,7 @@ pub async fn read_current(eff_domain: &str, eff_key: &str) -> Option<String> {
                     .map(|(k, v)| format!("{}: {}", k, prefvalue_to_cutler_string(v)))
                     .collect::<Vec<_>>()
                     .join(", ");
-                format!("{{{}}}", inner)
+                format!("{{{inner}}}")
             }
         }
     }

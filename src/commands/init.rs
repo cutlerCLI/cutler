@@ -29,7 +29,7 @@ impl Runnable for InitCmd {
         if exists {
             print_log(
                 LogLevel::Warning,
-                &format!("Configuration file already exists at {:?}", config_path),
+                &format!("Configuration file already exists at {config_path:?}"),
             );
             if !confirm_action("Do you want to overwrite it?")? {
                 bail!("Configuration init aborted.")

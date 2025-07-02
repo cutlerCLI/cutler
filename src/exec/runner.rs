@@ -153,12 +153,12 @@ async fn execute_command(
     if dry_run {
         print_log(
             LogLevel::Dry,
-            &format!("Would execute: {} {}", bin, final_cmd),
+            &format!("Would execute: {bin} {final_cmd}"),
         );
         return Ok(());
     }
 
-    print_log(LogLevel::Info, &format!("Execute: {} {}", bin, final_cmd));
+    print_log(LogLevel::Info, &format!("Execute: {bin} {final_cmd}"));
 
     let child = Command::new(bin)
         .args(&args)
@@ -233,7 +233,7 @@ pub async fn run_all(config: &Value) -> Result<()> {
     if failures > 0 {
         print_log(
             LogLevel::Warning,
-            &format!("{} external commands failed", failures),
+            &format!("{failures} external commands failed"),
         );
     }
 

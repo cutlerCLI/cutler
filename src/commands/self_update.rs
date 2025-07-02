@@ -24,9 +24,9 @@ impl Runnable for SelfUpdateCmd {
 
         // check for cargo install (e.g., ~/.cargo/bin/cutler or $CARGO_HOME/bin/cutler)
         let cargo_bin_path = if let Ok(cargo_home) = std::env::var("CARGO_HOME") {
-            format!("{}/bin/cutler", cargo_home)
+            format!("{cargo_home}/bin/cutler")
         } else if let Ok(home) = std::env::var("HOME") {
-            format!("{}/.cargo/bin/cutler", home)
+            format!("{home}/.cargo/bin/cutler")
         } else {
             String::new()
         };
@@ -48,7 +48,7 @@ impl Runnable for SelfUpdateCmd {
             _ => {
                 print_log(
                     LogLevel::Error,
-                    &format!("Unsupported architecture for self-update: {}", arch),
+                    &format!("Unsupported architecture for self-update: {arch}"),
                 );
                 return Ok(());
             }

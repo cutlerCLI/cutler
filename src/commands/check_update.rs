@@ -23,7 +23,7 @@ impl Runnable for CheckUpdateCmd {
 
         print_log(
             LogLevel::Info,
-            &format!("Current version: {}", current_version),
+            &format!("Current version: {current_version}"),
         );
 
         // fetch latest release tag from GitHub API
@@ -54,7 +54,7 @@ impl Runnable for CheckUpdateCmd {
 
         print_log(
             LogLevel::Info,
-            &format!("Latest version: {}", latest_version),
+            &format!("Latest version: {latest_version}"),
         );
 
         // let the comparison begin!
@@ -66,7 +66,7 @@ impl Runnable for CheckUpdateCmd {
                 if !should_be_quiet() {
                     println!(
                         r#"
-{}Update available:{} {} → {}
+{BOLD}Update available:{RESET} {current_version} → {latest_version}
 
 To update, run one of the following:
 
@@ -76,8 +76,7 @@ To update, run one of the following:
   cutler self-update                     # for manual installs
 
 Or download the latest release from:
-  https://github.com/hitblast/cutler/releases"#,
-                        BOLD, RESET, current_version, latest_version
+  https://github.com/hitblast/cutler/releases"#
                     );
                 } else {
                     println!("Update available!")
@@ -90,8 +89,7 @@ Or download the latest release from:
                 print_log(
                     LogLevel::Fruitful,
                     &format!(
-                        "You are on a development version ({}) ahead of latest release ({}).",
-                        current_version, latest_version
+                        "You are on a development version ({current_version}) ahead of latest release ({latest_version})."
                     ),
                 );
             }

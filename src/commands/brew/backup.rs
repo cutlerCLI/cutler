@@ -71,20 +71,20 @@ impl Runnable for BrewBackupCmd {
                     if dry_run {
                         print_log(
                             LogLevel::Dry,
-                            &format!("Would push {} as a manually installed formula.", formula),
+                            &format!("Would push {formula} as a manually installed formula."),
                         );
                     } else {
                         print_log(
                             LogLevel::Info,
-                            &format!("Pushing {} as a manually installed formula.", formula),
+                            &format!("Pushing {formula} as a manually installed formula."),
                         );
                         formula_arr.push(formula.as_str());
                     }
                 }
             } else if dry_run {
-                print_log(LogLevel::Dry, &format!("Would push {}", formula));
+                print_log(LogLevel::Dry, &format!("Would push {formula}"));
             } else {
-                print_log(LogLevel::Info, &format!("Pushing {}", formula));
+                print_log(LogLevel::Info, &format!("Pushing {formula}"));
                 formula_arr.push(formula.as_str());
             }
         }
@@ -101,20 +101,20 @@ impl Runnable for BrewBackupCmd {
                     if dry_run {
                         print_log(
                             LogLevel::Dry,
-                            &format!("Would push {} as a manually installed cask.", cask),
+                            &format!("Would push {cask} as a manually installed cask."),
                         );
                     } else {
                         print_log(
                             LogLevel::Info,
-                            &format!("Pushing {} as a manually installed cask.", cask),
+                            &format!("Pushing {cask} as a manually installed cask."),
                         );
                         cask_arr.push(cask.as_str());
                     }
                 }
             } else if dry_run {
-                print_log(LogLevel::Dry, &format!("Would push {}", cask));
+                print_log(LogLevel::Dry, &format!("Would push {cask}"));
             } else {
-                print_log(LogLevel::Info, &format!("Pushed {} as a cask.", cask));
+                print_log(LogLevel::Info, &format!("Pushed {cask} as a cask."));
                 cask_arr.push(cask.as_str());
             }
         }
@@ -128,9 +128,9 @@ impl Runnable for BrewBackupCmd {
         let mut taps_arr = Array::new();
         for tap in &taps {
             if dry_run {
-                print_log(LogLevel::Dry, &format!("Would push {} as tap.", tap));
+                print_log(LogLevel::Dry, &format!("Would push {tap} as tap."));
             } else {
-                print_log(LogLevel::Info, &format!("Pushed {} as a tap.", tap));
+                print_log(LogLevel::Info, &format!("Pushed {tap} as a tap."));
                 taps_arr.push(tap.as_str());
             }
         }
@@ -143,18 +143,17 @@ impl Runnable for BrewBackupCmd {
         // write backup
         if !dry_run {
             fs::write(&cfg_path, doc.to_string()).await?;
-            print_log(LogLevel::Info, &format!("Backup saved to {:?}", cfg_path));
+            print_log(LogLevel::Info, &format!("Backup saved to {cfg_path:?}"));
             print_log(
                 LogLevel::Fruitful,
                 &format!(
-                    "Done! You can find the backup in your config file location {:?}",
-                    cfg_path
+                    "Done! You can find the backup in your config file location {cfg_path:?}"
                 ),
             );
         } else {
             print_log(
                 LogLevel::Info,
-                &format!("Backup would be saved to {:?}", cfg_path),
+                &format!("Backup would be saved to {cfg_path:?}"),
             );
         }
 

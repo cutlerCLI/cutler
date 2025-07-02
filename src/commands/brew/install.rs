@@ -101,9 +101,9 @@ impl Runnable for BrewInstallCmd {
         if !brew_diff.missing_taps.is_empty() {
             for tap in brew_diff.missing_taps.iter() {
                 if dry_run {
-                    print_log(LogLevel::Dry, &format!("Would tap {}", tap));
+                    print_log(LogLevel::Dry, &format!("Would tap {tap}"));
                 } else {
-                    print_log(LogLevel::Info, &format!("Tapping: {}", tap));
+                    print_log(LogLevel::Info, &format!("Tapping: {tap}"));
                     let status = Command::new("brew")
                         .arg("tap")
                         .arg(tap)
@@ -113,7 +113,7 @@ impl Runnable for BrewInstallCmd {
                         .status()
                         .await?;
                     if !status.success() {
-                        print_log(LogLevel::Error, &format!("Failed to tap: {}", tap));
+                        print_log(LogLevel::Error, &format!("Failed to tap: {tap}"));
                     }
                 }
             }
@@ -129,10 +129,10 @@ impl Runnable for BrewInstallCmd {
         // handle all of dry-run in this single block
         if dry_run {
             brew_diff.missing_formulae.iter().for_each(|formula| {
-                print_log(LogLevel::Dry, &format!("Would fetch formula: {}", formula));
+                print_log(LogLevel::Dry, &format!("Would fetch formula: {formula}"));
             });
             brew_diff.missing_casks.iter().for_each(|cask| {
-                print_log(LogLevel::Dry, &format!("Would fetch cask: {}", cask));
+                print_log(LogLevel::Dry, &format!("Would fetch cask: {cask}"));
             });
             return Ok(());
         }
@@ -169,7 +169,7 @@ async fn fetch_all(formulae: &[String], casks: &[String]) -> (Vec<String>, Vec<S
             cmd.arg("fetch").arg(&name);
 
             if is_verbose() {
-                print_log(LogLevel::Info, &format!("Fetching formula: {}", name));
+                print_log(LogLevel::Info, &format!("Fetching formula: {name}"));
             } else {
                 cmd.arg("--quiet");
             }
@@ -187,7 +187,7 @@ async fn fetch_all(formulae: &[String], casks: &[String]) -> (Vec<String>, Vec<S
             cmd.arg("fetch").arg("--cask").arg(&name);
 
             if is_verbose() {
-                print_log(LogLevel::Info, &format!("Fetching cask: {}", name));
+                print_log(LogLevel::Info, &format!("Fetching cask: {name}"));
             } else {
                 cmd.arg("--quiet");
             }
@@ -220,7 +220,7 @@ async fn fetch_all(formulae: &[String], casks: &[String]) -> (Vec<String>, Vec<S
 async fn install_sequentially(install_tasks: Vec<Vec<String>>) -> anyhow::Result<()> {
     for args in install_tasks {
         let display = format!("brew {}", args.join(" "));
-        print_log(LogLevel::Info, &format!("Installing: {}", display));
+        print_log(LogLevel::Info, &format!("Installing: {display}"));
         let arg_slices: Vec<&str> = args.iter().map(String::as_str).collect();
 
         let status = Command::new("brew")
@@ -232,7 +232,7 @@ async fn install_sequentially(install_tasks: Vec<Vec<String>>) -> anyhow::Result
             .await?;
 
         if !status.success() {
-            print_log(LogLevel::Error, &format!("Failed: {}", display));
+            print_log(LogLevel::Error, &format!("Failed: {display}"));
         }
     }
     Ok(())

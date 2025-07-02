@@ -12,7 +12,7 @@ pub fn confirm_action(prompt: &str) -> Result<bool> {
     if should_accept_interactive() {
         print_log(
             LogLevel::Prompt,
-            &format!("{} [y/N]: y (auto-accepted)", prompt),
+            &format!("{prompt} [y/N]: y (auto-accepted)"),
         );
         return Ok(true);
     }
@@ -34,13 +34,13 @@ pub async fn restart_system_services_if_needed() -> Result<(), anyhow::Error> {
 
     for svc in SERVICES {
         if dry_run {
-            print_log(LogLevel::Dry, &format!("Would restart {}", svc));
+            print_log(LogLevel::Dry, &format!("Would restart {svc}"));
         } else {
             let out = Command::new("killall").arg(svc).output().await?;
             if !out.status.success() {
-                print_log(LogLevel::Error, &format!("Failed to restart {}", svc));
+                print_log(LogLevel::Error, &format!("Failed to restart {svc}"));
             } else {
-                print_log(LogLevel::Info, &format!("{} restarted", svc));
+                print_log(LogLevel::Info, &format!("{svc} restarted"));
             }
         }
     }
