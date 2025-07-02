@@ -144,7 +144,6 @@ async fn install_homebrew() -> Result<(), anyhow::Error> {
 
     print_log(LogLevel::Info, "Installing Homebrew...");
 
-    let status = Command::new("/bin/bash").arg("-c").arg(script).status().await?;
     if !status.success() {
         anyhow::bail!("Failed to install Homebrew.");
     }
