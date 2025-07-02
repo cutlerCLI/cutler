@@ -1,7 +1,7 @@
 use crate::{
     brew::{
         types::BrewDiff,
-        utils::{compare_brew_state, ensure_brew},
+        utils::{compare_brew_state, is_brew_installed},
     },
     commands::Runnable,
     config::loader::{get_config_path, load_config},
@@ -93,8 +93,11 @@ impl Runnable for StatusCmd {
                 print_log(LogLevel::Info, "Homebrew status:");
 
                 // ensure homebrew is installed (skip if not)
-                if let Err(e) = ensure_brew().await {
-                    print_log(LogLevel::Warning, &format!("Homebrew not available: {e}"));
+                if is_brew_installed().await {
+                    print_log(
+                        LogLevel::Warning,
+                        &format!("Homebrew not available in PATH, skipping status check for it."),
+                    );
                 } else {
                     match compare_brew_state(brew_val).await {
                         Ok(BrewDiff {

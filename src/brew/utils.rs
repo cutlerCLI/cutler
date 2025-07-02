@@ -152,19 +152,22 @@ async fn install_homebrew() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-/// Checks if Homebrew is installed on the machine (should be recognizable by $PATH).
-pub async fn ensure_brew() -> Result<()> {
-    // ensure xcode command-line tools first
-    ensure_xcode_clt().await?;
-
-    let is_installed = Command::new("brew")
+/// Checks if Homebrew is actually installed.
+pub async fn is_brew_installed() -> bool {
+    Command::new("brew")
         .arg("--version")
         .output()
         .await
         .map(|o| o.status.success())
-        .unwrap_or(false);
+        .unwrap_or(false)
+}
 
-    if !is_installed {
+/// Ensures that Homebrew is installed on the machine.
+pub async fn ensure_brew() -> Result<()> {
+    // ensure xcode command-line tools first
+    ensure_xcode_clt().await?;
+
+    if !is_brew_installed().await {
         if should_dry_run() {
             print_log(
                 LogLevel::Dry,

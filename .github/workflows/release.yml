@@ -37,9 +37,6 @@ jobs:
       - name: Build release artifact
         run: cargo build --release --verbose --locked
 
-      - name: Generate manpage
-        run: cargo xtask manpage --dir man/man1
-
       - name: Package release
         run: |
           mkdir -p release/bin release/man/man1
@@ -91,9 +88,6 @@ jobs:
 
       - name: Build release artifact
         run: cargo build --release --verbose --locked
-
-      - name: Generate manpage
-        run: cargo xtask manpage --dir man/man1
 
       - name: Package release
         run: |
