@@ -157,8 +157,6 @@ impl Runnable for BrewInstallCmd {
 pub struct FetchedThings {
     pub formulae: Vec<String>,
     pub casks: Vec<String>,
-    pub failed_formulae: Vec<String>,
-    pub failed_casks: Vec<String>,
 }
 
 /// Downloads all formulae/casks before installation, sequentially.
@@ -172,7 +170,7 @@ async fn fetch_all(formulae: &[String], casks: &[String]) -> FetchedThings {
     let mut failed_formulae = Vec::new();
     let mut failed_casks = Vec::new();
 
-    // Fetch formulae sequentially
+    // fetch formulae sequentially
     for name in formulae {
         let mut cmd = Command::new("brew");
         cmd.arg("fetch").arg(name);
@@ -189,7 +187,7 @@ async fn fetch_all(formulae: &[String], casks: &[String]) -> FetchedThings {
         }
     }
 
-    // Fetch casks sequentially
+    // fetch casks sequentially
     for name in casks {
         let mut cmd = Command::new("brew");
         cmd.arg("fetch").arg("--cask").arg(name);
@@ -206,11 +204,29 @@ async fn fetch_all(formulae: &[String], casks: &[String]) -> FetchedThings {
         }
     }
 
+    // warn user about failed formulae and casks
+    if !failed_formulae.is_empty() {
+        print_log(
+            LogLevel::Warning,
+            &format!("Failed to fetch formulae: {:?}", failed_formulae),
+        );
+    }
+    if !failed_casks.is_empty() {
+        print_log(
+            LogLevel::Warning,
+            &format!("Failed to fetch casks: {:?}", failed_casks),
+        );
+    }
+    if !failed_formulae.is_empty() || !failed_casks.is_empty() {
+        print_log(
+            LogLevel::Warning,
+            "Some software failed to download and won't be installed.",
+        );
+    }
+
     FetchedThings {
         formulae: fetched_formulae,
         casks: fetched_casks,
-        failed_formulae,
-        failed_casks,
     }
 }
 
