@@ -135,7 +135,8 @@ async fn install_homebrew() -> Result<(), anyhow::Error> {
         env::set_var("NONINTERACTIVE", "1");
     }
 
-    let install_command = "curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | /bin/bash";
+    let install_command =
+        "curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | /bin/bash";
     let status = Command::new("/bin/bash")
         .arg("-c")
         .arg(install_command)
