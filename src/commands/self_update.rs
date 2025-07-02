@@ -81,6 +81,7 @@ impl Runnable for SelfUpdateCmd {
                 .into_body()
                 .read_to_string()?;
 
+            tokio::fs::create_dir_all("/usr/local/share/man/man1").await?;
             fs::write("/usr/local/share/man/man1/cutler.1", manpage_content).await?;
 
             print_log(
