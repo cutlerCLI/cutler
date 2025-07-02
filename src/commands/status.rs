@@ -93,7 +93,7 @@ impl Runnable for StatusCmd {
                 print_log(LogLevel::Info, "Homebrew status:");
 
                 // ensure homebrew is installed (skip if not)
-                if is_brew_installed().await {
+                if !is_brew_installed().await {
                     print_log(
                         LogLevel::Warning,
                         &format!("Homebrew not available in PATH, skipping status check for it."),
