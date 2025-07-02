@@ -208,13 +208,13 @@ async fn fetch_all(formulae: &[String], casks: &[String]) -> FetchedThings {
     if !failed_formulae.is_empty() {
         print_log(
             LogLevel::Warning,
-            &format!("Failed to fetch formulae: {:?}", failed_formulae),
+            &format!("Failed to fetch formulae: {failed_formulae:?}"),
         );
     }
     if !failed_casks.is_empty() {
         print_log(
             LogLevel::Warning,
-            &format!("Failed to fetch casks: {:?}", failed_casks),
+            &format!("Failed to fetch casks: {failed_casks:?}"),
         );
     }
     if !failed_formulae.is_empty() || !failed_casks.is_empty() {
