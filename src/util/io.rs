@@ -22,7 +22,7 @@ pub fn confirm_action(prompt: &str) -> Result<bool> {
 }
 
 /// Restart Finder, Dock, SystemUIServer so defaults take effect.
-pub async fn restart_system_services_if_needed() -> Result<(), anyhow::Error> {
+pub async fn restart_system_services() -> Result<(), anyhow::Error> {
     if should_not_restart_services() {
         return Ok(());
     }

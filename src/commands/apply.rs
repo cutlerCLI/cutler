@@ -8,7 +8,7 @@ use crate::{
         config::ensure_config_exists_or_init,
         convert::{normalize, toml_to_prefvalue},
         globals::should_dry_run,
-        io::restart_system_services_if_needed,
+        io::restart_system_services,
         logging::{GREEN, LogLevel, RESET, print_log},
     },
 };
@@ -207,7 +207,7 @@ impl Runnable for ApplyCmd {
         }
 
         // restart system services if requested
-        restart_system_services_if_needed().await?;
+        restart_system_services().await?;
 
         Ok(())
     }

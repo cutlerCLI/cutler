@@ -11,7 +11,7 @@ use crate::{
     util::{
         convert::{string_to_toml_value, toml_to_prefvalue},
         globals::should_dry_run,
-        io::restart_system_services_if_needed,
+        io::restart_system_services,
         logging::{LogLevel, print_log},
     },
 };
@@ -158,7 +158,7 @@ impl Runnable for UnapplyCmd {
         }
 
         // Restart system services if requested
-        restart_system_services_if_needed().await?;
+        restart_system_services().await?;
 
         Ok(())
     }

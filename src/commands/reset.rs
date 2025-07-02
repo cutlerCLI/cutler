@@ -11,7 +11,7 @@ use crate::{
     snapshot::state::get_snapshot_path,
     util::{
         globals::should_dry_run,
-        io::{confirm_action, restart_system_services_if_needed},
+        io::{confirm_action, restart_system_services},
         logging::{LogLevel, print_log},
     },
 };
@@ -120,7 +120,7 @@ impl Runnable for ResetCmd {
         );
 
         // restart system services if requested
-        restart_system_services_if_needed().await?;
+        restart_system_services().await?;
 
         Ok(())
     }
