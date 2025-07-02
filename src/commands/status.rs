@@ -70,9 +70,7 @@ impl Runnable for StatusCmd {
             } else {
                 print_log(
                     LogLevel::Info,
-                    &format!(
-                        "{GREEN}{eff_dom} | {eff_key}: {current} (matches desired){RESET}"
-                    ),
+                    &format!("{GREEN}{eff_dom} | {eff_key}: {current} (matches desired){RESET}"),
                 );
             }
         }

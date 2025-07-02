@@ -52,10 +52,7 @@ impl Runnable for CheckUpdateCmd {
         })
         .await??;
 
-        print_log(
-            LogLevel::Info,
-            &format!("Latest version: {latest_version}"),
-        );
+        print_log(LogLevel::Info, &format!("Latest version: {latest_version}"));
 
         // let the comparison begin!
         let current = Version::parse(current_version).context("Could not parse current version")?;

@@ -151,10 +151,7 @@ async fn execute_command(
     };
 
     if dry_run {
-        print_log(
-            LogLevel::Dry,
-            &format!("Would execute: {bin} {final_cmd}"),
-        );
+        print_log(LogLevel::Dry, &format!("Would execute: {bin} {final_cmd}"));
         return Ok(());
     }
 

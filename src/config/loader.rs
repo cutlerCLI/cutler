@@ -98,10 +98,7 @@ pub async fn create_config(config_path: &PathBuf) -> Result<(), anyhow::Error> {
                 &format!("Would create directory: {parent:?}"),
             );
         } else {
-            print_log(
-                LogLevel::Info,
-                &format!("Creating parent dir: {parent:?}"),
-            );
+            print_log(LogLevel::Info, &format!("Creating parent dir: {parent:?}"));
             fs::create_dir_all(parent).await?;
         }
     }
@@ -127,9 +124,7 @@ pub async fn create_config(config_path: &PathBuf) -> Result<(), anyhow::Error> {
 
         print_log(
             LogLevel::Fruitful,
-            &format!(
-                "Config created at {config_path:?}, Review and customize it before applying."
-            ),
+            &format!("Config created at {config_path:?}, Review and customize it before applying."),
         );
 
         Ok(())
