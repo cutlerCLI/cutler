@@ -3,6 +3,7 @@ use async_trait::async_trait;
 use clap::Args;
 use self_update::backends::github::Update;
 use self_update::cargo_crate_version;
+use tokio::fs;
 
 use crate::commands::Runnable;
 use crate::util::logging::{LogLevel, print_log};
@@ -66,6 +67,18 @@ impl Runnable for SelfUpdateCmd {
             .update()?;
 
         if status.updated() {
+            print_log(LogLevel::Info, "Binary updated, updating manpage...");
+
+            let manpage_url = format!(
+                "https://raw.githubusercontent.com/hitblast/cutler/refs/heads/main/man/man1/cutler.1"
+            );
+            let manpage_content = ureq::get(&manpage_url)
+                .call()?
+                .into_body()
+                .read_to_string()?;
+
+            fs::write("/usr/local/share/man/man1/cutler.1", manpage_content).await?;
+
             print_log(
                 LogLevel::Fruitful,
                 &format!("cutler updated to: {}", status.version()),
