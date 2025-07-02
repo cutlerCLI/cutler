@@ -77,6 +77,34 @@ if ! sudo chmod +x "$INSTALL_DIR/$BINARY"; then
   exit 1
 fi
 
+# Install the manpage if present
+MANPAGE_SRC=""
+if [[ -f "man/man1/cutler.1" ]]; then
+  MANPAGE_SRC="man/man1/cutler.1"
+elif [[ -f "cutler.1" ]]; then
+  MANPAGE_SRC="cutler.1"
+fi
+
+if [[ -n "$MANPAGE_SRC" ]]; then
+  MAN_DIR="/usr/local/share/man/man1"
+  echo "📖 Installing manpage to $MAN_DIR (may require sudo)..."
+  if ! sudo mkdir -p "$MAN_DIR"; then
+    echo "❌ Failed to create manpage directory $MAN_DIR"
+    exit 1
+  fi
+  if ! sudo cp "$MANPAGE_SRC" "$MAN_DIR/cutler.1"; then
+    echo "❌ Failed to copy manpage to $MAN_DIR"
+    exit 1
+  fi
+  if ! sudo gzip -f "$MAN_DIR/cutler.1"; then
+    echo "❌ Failed to gzip manpage in $MAN_DIR"
+    exit 1
+  fi
+  echo "✅ cutler manpage installed to $MAN_DIR/cutler.1.gz"
+else
+  echo "⚠️  cutler manpage not found in the archive."
+fi
+
 echo "✅ cutler installed to $INSTALL_DIR/$BINARY"
 
 # Check if it's on PATH
