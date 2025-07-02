@@ -6,6 +6,7 @@ use crate::util::{
 };
 use anyhow::Result;
 use std::env;
+use std::path::Path;
 use std::time::Duration;
 use tokio::process::Command;
 
@@ -86,6 +87,29 @@ async fn ensure_xcode_clt() -> Result<()> {
     }
 }
 
+/// Sets the required environment variables for cutler to interact with Homebrew.
+fn set_homebrew_in_path() {
+    let existing_path = std::env::var("PATH").unwrap_or_default();
+
+    if Path::new("/opt/homebrew/bin/brew").exists() {
+        let new_path = format!("/opt/homebrew/bin:/opt/homebrew/sbin:{existing_path}");
+        unsafe { env::set_var("PATH", &new_path) };
+    } else if Path::new("/usr/local/bin/brew").exists() {
+        let new_path = format!("/usr/local/bin:/usr/local/sbin:{existing_path}");
+        unsafe { env::set_var("PATH", &new_path) };
+    } else {
+        return print_log(
+            LogLevel::Warning,
+            "Brew binary not found in standard directories; PATH not updated.",
+        );
+    }
+
+    print_log(
+        LogLevel::Info,
+        "Updated PATH with Homebrew for this process.",
+    );
+}
+
 /// Helper for: ensure_brew()
 /// Installs Homebrew.
 async fn install_homebrew() -> Result<(), anyhow::Error> {
@@ -127,21 +151,7 @@ pub async fn ensure_brew() -> Result<()> {
             install_homebrew().await?;
 
             // update PATH with brew binary location
-            let existing_path = std::env::var("PATH").unwrap_or_default();
-            if std::path::Path::new("/opt/homebrew/bin/brew").exists() {
-                let new_path = format!("/opt/homebrew/bin:{existing_path}");
-                unsafe { std::env::set_var("PATH", &new_path) };
-                print_log(LogLevel::Info, "Updated PATH with /opt/homebrew/bin");
-            } else if std::path::Path::new("/usr/local/bin/brew").exists() {
-                let new_path = format!("/usr/local/bin:{existing_path}");
-                unsafe { std::env::set_var("PATH", &new_path) };
-                print_log(LogLevel::Info, "Updated PATH with /usr/local/bin");
-            } else {
-                print_log(
-                    LogLevel::Warning,
-                    "Brew binary not found in standard directories; PATH not updated.",
-                );
-            }
+            set_homebrew_in_path();
 
             // re-check that Homebrew is now installed and in $PATH
             let is_installed_after = Command::new("brew")
@@ -150,6 +160,7 @@ pub async fn ensure_brew() -> Result<()> {
                 .await
                 .map(|o| o.status.success())
                 .unwrap_or(false);
+
             if !is_installed_after {
                 anyhow::bail!(
                     "Homebrew installation seems to have failed or brew is still not in PATH. Please update your PATH accordingly."
