@@ -18,6 +18,8 @@ The prerequisites are as follows:
 - [Rust](https://www.rust-lang.org/tools/install) (`cutler` is configured to use the 2024 edition of the language)
 - A Mac (preferably with [Apple Silicon](https://support.apple.com/en-us/HT211814)) for rapid development
 
+I would personally recommend using the latest Rust version available. As of now, I'm using Rust **v1.88** as my version.
+
 ### Cloning the repository
 
 Once you have ensured the prerequisites, fork the repository [from here](https://github.com/hitblast/cutler/fork) and clone it using the following command:
