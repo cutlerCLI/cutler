@@ -263,9 +263,9 @@
     --search-mark-bg: #be862d;
     --warning-border: #fd971f;
     --color-scheme: dark;
-    --copy-button-filter: brightness(0) saturate(100%) invert(60%) sepia(80%)
-        saturate(900%) hue-rotate(10deg) brightness(90%) contrast(90%);
+    --copy-button-filter: brightness(0) saturate(100%) invert(70%) sepia(30%)
+        saturate(600%) hue-rotate(10deg) brightness(85%) contrast(100%);
     --copy-button-filter-hover: brightness(0) saturate(100%) invert(70%)
-        sepia(90%) saturate(1400%) hue-rotate(20deg) brightness(100%)
+        sepia(30%) saturate(600%) hue-rotate(10deg) brightness(100%)
         contrast(100%);
 }
