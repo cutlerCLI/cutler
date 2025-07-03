@@ -15,14 +15,19 @@ else
 fi
 
 echo "📖 Uninstalling manpage from $MANPAGE_DIR..."
+
 if [ -f "$MANPAGE_DIR/$BINARY.1.gz" ]; then
   sudo rm "$MANPAGE_DIR/$BINARY.1.gz"
   echo "✅ Removed $MANPAGE_DIR/$BINARY.1.gz"
-elif [ -f "$MANPAGE_DIR/$BINARY.1" ]; then
+else
+  echo "⚠️ Compressed manpage for $BINARY not found in $MANPAGE_DIR"
+fi
+
+if [ -f "$MANPAGE_DIR/$BINARY.1" ]; then
   sudo rm "$MANPAGE_DIR/$BINARY.1"
   echo "✅ Removed $MANPAGE_DIR/$BINARY.1"
 else
-  echo "⚠️  Manpage for $BINARY not found in $MANPAGE_DIR"
+  echo "⚠️ Manpage for $BINARY not found in $MANPAGE_DIR"
 fi
 
 echo "🎉 Uninstallation complete."
