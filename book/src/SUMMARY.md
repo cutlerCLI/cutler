@@ -12,19 +12,18 @@
 
 - [System Preferences](./system-preferences.md)
 - [Homebrew Management](./homebrew.md)
-- [External Commands](./external-commands.md)
 - [Configuration Management](./config-management.md)
+
+# Backends
+
+- [System Preferences](./backend-preferences.md)
+
+# Guidelines
+
+- [Contributing](./contributing.md)
 
 # References
 
 - [Global Flags](./global-flags.md)
 - [Resources](./resources.md)
-
-# Backends
-
-- [Preferences](./backend-preferences.md)
-
-# Guidelines
-
-- [Contributing](./contributing.md)
 - [License](./license.md)
