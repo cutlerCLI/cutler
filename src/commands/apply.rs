@@ -24,13 +24,13 @@ pub struct ApplyCmd {
     #[arg(long)]
     pub no_exec: bool,
 
+    /// Risky: Disables check for domain existence before applying modification
+    #[arg(long)]
+    pub no_checks: bool,
+
     /// Invoke `cutler brew install` after applying defaults.
     #[arg(long)]
     pub with_brew: bool,
-
-    /// Risky: Disables check for domain existence before applying modification
-    #[arg(long)]
-    pub disable_checks: bool,
 }
 
 /// Represents an apply command job.
@@ -85,7 +85,10 @@ impl Runnable for ApplyCmd {
         for (dom, table) in domains.into_iter() {
             for (key, toml_value) in table.into_iter() {
                 let (eff_dom, eff_key) = collector::effective(&dom, &key);
-                collector::check_domain_exists(&eff_dom).await?;
+
+                if !self.no_checks {
+                    collector::check_domain_exists(&eff_dom).await?;
+                }
 
                 // read the current value from the system
                 // then, check if changed
