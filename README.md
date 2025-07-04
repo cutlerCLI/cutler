@@ -6,8 +6,8 @@
 
 Powerful, declarative settings management for your Mac, with speed.
 
-[![Release Builds](https://github.com/hitblast/cutler/actions/workflows/release.yml/badge.svg)](https://github.com/hitblast/cutler/actions/workflows/release.yml)
-[![Rust Tests](https://github.com/hitblast/cutler/actions/workflows/tests.yml/badge.svg)](https://github.com/hitblast/cutler/actions/workflows/tests.yml)
+[![Release Builds](https://github.com/cutlercli/cutler/actions/workflows/release.yml/badge.svg)](https://github.com/cutlercli/cutler/actions/workflows/release.yml)
+[![Rust Tests](https://github.com/cutlercli/cutler/actions/workflows/tests.yml/badge.svg)](https://github.com/cutlercli/cutler/actions/workflows/tests.yml)
 [![Downloads](https://img.shields.io/crates/d/cutler?style=social&logo=Rust)](https://crates.io/crates/cutler)
 
 </div>
@@ -27,7 +27,7 @@ cutler aims to simplify your macOS setup experience into an "almost" one-command
 You can install cutler by running this command in the terminal:
 
 ```bash
-curl -s https://raw.githubusercontent.com/hitblast/cutler/main/install.sh | bash
+curl -s https://raw.githubusercontent.com/cutlercli/cutler/main/install.sh | bash
 ```
 
 Other installation methods:
@@ -45,16 +45,16 @@ Other installation methods:
   mise use -g cargo:cutler
   ```
 
-For installing manually, [see this section](https://hitblast.github.io/cutler/book/installation.html#manual-installation).
+For installing manually, [see this section](https://cutlercli.github.io/cookbook/installation.html#manual-installation).
 
 ## Documentation
 
-[**"The cutler Cookbook"**](https://hitblast.github.io/cutler/book/) should be a great starting point for anyone who wants to use this project in their setup. It is strongly encouraged to read it.
+[**"The cutler Cookbook"**](https://cutlercli.github.io/cookbook/) should be a great starting point for anyone who wants to use this project in their setup. It is strongly encouraged to read it.
 
 ## Contributing
 
-View the [Contribution Guidelines](https://hitblast.github.io/cutler/book/contributing.html) to learn more about contributing to cutler.
+View the [Contribution Guidelines](https://cutlercli.github.io/cookbook/contributing.html) to learn more about contributing to cutler.
 
 ## License
 
-This project is licensed under the [MIT License](https://github.com/hitblast/cutler/blob/main/LICENSE).
+This project is licensed under the [MIT License](https://github.com/cutlercli/cutler/blob/main/LICENSE).

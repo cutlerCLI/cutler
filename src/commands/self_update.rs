@@ -75,7 +75,7 @@ impl Runnable for SelfUpdateCmd {
         if status.updated() {
             print_log(LogLevel::Info, "Binary updated, updating manpage...");
 
-            let manpage_url = "https://raw.githubusercontent.com/hitblast/cutler/refs/heads/main/man/man1/cutler.1".to_string();
+            let manpage_url = "https://raw.githubusercontent.com/cutlercli/cutler/refs/heads/main/man/man1/cutler.1".to_string();
             let manpage_content = ureq::get(&manpage_url)
                 .call()?
                 .into_body()

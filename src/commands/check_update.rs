@@ -27,7 +27,7 @@ impl Runnable for CheckUpdateCmd {
         );
 
         // fetch latest release tag from GitHub API
-        let url = "https://api.github.com/repos/hitblast/cutler/releases/latest";
+        let url = "https://api.github.com/repos/cutlercli/cutler/releases/latest";
         let latest_version: String = tokio::task::spawn_blocking(move || {
             let response = ureq::get(url)
                 .header("Accept", "application/vnd.github.v3+json")
@@ -73,7 +73,7 @@ To update, run one of the following:
   cutler self-update                     # for manual installs
 
 Or download the latest release from:
-  https://github.com/hitblast/cutler/releases"#
+  https://github.com/cutlercli/cutler/releases"#
                     );
                 } else {
                     println!("Update available!")
