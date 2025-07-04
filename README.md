@@ -57,4 +57,4 @@ View the [Contribution Guidelines](https://cutlercli.github.io/cookbook/contribu
 
 ## License
 
-This project is licensed under the [MIT License](https://github.com/cutlercli/cutler/blob/main/LICENSE).
+This project is licensed under the [MIT License](https://github.com/cutlercli/cutler/blob/master/LICENSE).
