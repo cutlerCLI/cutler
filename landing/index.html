@@ -1,187 +1,190 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <!-- Basic -->
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🍎 cutler - Fast Mac Settings Management</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"
-    />
-    <link rel="stylesheet" href="styles.css" />
+    <head>
+        <!-- Basic -->
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>🍎 cutler - Fast Mac Settings Management</title>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"
+        />
+        <link rel="stylesheet" href="styles.css" />
 
-    <!-- Open Graph -->
-    <meta property="og:title" content="cutler" />
-    <meta
-      property="og:description"
-      content="cutler is a powerful, declarative settings manager CLI for your Mac. Inspired by Nix."
-    />
-    <meta
-      property="og:image"
-      content="https://github.com/hitblast/cutler/blob/main/assets/banner.png?raw=true"
-    />
-    <meta property="og:url" content="https://hitblast.github.io/cutler" />
-    <meta property="og:type" content="website" />
-  </head>
-  <body>
-    <div class="logo-container">
-      <img src="assets/logo.png" alt="cutler Logo" class="logo" />
-    </div>
+        <!-- Open Graph -->
+        <meta property="og:title" content="cutler" />
+        <meta
+            property="og:description"
+            content="cutler is a powerful, declarative settings manager CLI for your Mac. Inspired by Nix."
+        />
+        <meta
+            property="og:image"
+            content="https://github.com/hitblast/cutler/blob/main/assets/banner.png?raw=true"
+        />
+        <meta property="og:url" content="https://hitblast.github.io/cutler" />
+        <meta property="og:type" content="website" />
+    </head>
+    <body>
+        <div class="logo-container">
+            <img src="assets/logo.png" alt="cutler Logo" class="logo" />
+        </div>
 
-    <h1>cutler</h1>
-    <p class="tagline">
-      <strong
-        >Powerful, declarative settings management for your Mac, with
-        speed.</strong
-      >
-      <br />
-      <img
-        alt="GitHub Repo stars"
-        class="shields-stars"
-        src="https://img.shields.io/github/stars/hitblast/cutler"
-      />
-      <img
-        alt="GitHub forks"
-        class="shields-general"
-        src="https://img.shields.io/github/forks/hitblast/cutler"
-      />
-      <img
-        class="shields-general"
-        alt="Crates.io Total Downloads"
-        src="https://img.shields.io/crates/d/cutler?style=social&logo=Rust"
-      />
-    </p>
+        <h1>cutler</h1>
+        <p class="tagline">
+            <strong
+                >Powerful, declarative settings management for your Mac, with
+                speed.</strong
+            >
+            <br />
+            <img
+                alt="GitHub Repo stars"
+                class="shields-stars"
+                src="https://img.shields.io/github/stars/hitblast/cutler"
+            />
+            <img
+                alt="GitHub forks"
+                class="shields-general"
+                src="https://img.shields.io/github/forks/hitblast/cutler"
+            />
+            <img
+                class="shields-general"
+                alt="Crates.io Total Downloads"
+                src="https://img.shields.io/crates/d/cutler?style=social&logo=Rust"
+            />
+        </p>
 
-    <div>
-      <p>
-        cutler aims to simplify your macOS setup experience into an "almost"
-        one-command procedure. Define your settings once, then easily apply,
-        track, and revert changes across your system—think of it as
-        infrastructure-as-code for your Mac.
-      </p>
-      <p></p>
+        <div>
+            <p>
+                cutler aims to simplify your macOS setup experience into an
+                "almost" one-command procedure. Define your settings once, then
+                easily apply, track, and revert changes across your system—think
+                of it as infrastructure-as-code for your Mac.
+            </p>
+            <p></p>
 
-      <p>
-        If you like this project,
-        <a href="https://github.com/hitblast/cutler">consider starring it!</a>
-      </p>
-    </div>
+            <p>
+                If you like this project,
+                <a href="https://github.com/hitblast/cutler"
+                    >consider starring it!</a
+                >
+            </p>
+        </div>
 
-    <br />
-    <hr />
-    <h2>Installation</h2>
+        <br />
+        <hr />
+        <h2>Installation</h2>
 
-    <h3>Recommended install:</h3>
-    <div class="code-container">
-      <button
-        class="copy-btn"
-        onclick="copyToClipboard(this)"
-        title="Copy to clipboard"
-      >
-        📋
-      </button>
-      <pre><code class="language-bash">/bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/hitblast/cutler/main/install.sh)"</code></pre>
-    </div>
+        <h3>Recommended install:</h3>
+        <div class="code-container">
+            <button
+                class="copy-btn"
+                onclick="copyToClipboard(this)"
+                title="Copy to clipboard"
+            >
+                📋
+            </button>
+            <pre><code class="language-bash">$ curl -s https://raw.githubusercontent.com/hitblast/cutler/main/install.sh | bash</code></pre>
+        </div>
 
-    <br />
-    <p>Or, use your favorite package manager:</p>
+        <br />
+        <p>Or, use your favorite package manager:</p>
 
-    <h3>Using <code>brew</code>:</h3>
-    <div class="code-container">
-      <button
-        class="copy-btn"
-        onclick="copyToClipboard(this)"
-        title="Copy to clipboard"
-      >
-        📋
-      </button>
-      <pre><code class="language-bash">brew install hitblast/tap/cutler</code></pre>
-    </div>
+        <h3>Using <code>brew</code>:</h3>
+        <div class="code-container">
+            <button
+                class="copy-btn"
+                onclick="copyToClipboard(this)"
+                title="Copy to clipboard"
+            >
+                📋
+            </button>
+            <pre><code class="language-bash">$ brew install hitblast/tap/cutler</code></pre>
+        </div>
 
-    <h3>Using <code>cargo</code>:</h3>
-    <div class="code-container">
-      <button
-        class="copy-btn"
-        onclick="copyToClipboard(this)"
-        title="Copy to clipboard"
-      >
-        📋
-      </button>
-      <pre><code class="language-bash">cargo install cutler</code></pre>
-    </div>
+        <h3>Using <code>cargo</code>:</h3>
+        <div class="code-container">
+            <button
+                class="copy-btn"
+                onclick="copyToClipboard(this)"
+                title="Copy to clipboard"
+            >
+                📋
+            </button>
+            <pre><code class="language-bash">$ cargo install cutler</code></pre>
+        </div>
 
-    <h3>Using <code>mise</code>:</h3>
-    <div class="code-container">
-      <button
-        class="copy-btn"
-        onclick="copyToClipboard(this)"
-        title="Copy to clipboard"
-      >
-        📋
-      </button>
-      <pre><code class="language-bash">mise use -g cargo:cutler</code></pre>
-    </div>
+        <h3>Using <code>mise</code>:</h3>
+        <div class="code-container">
+            <button
+                class="copy-btn"
+                onclick="copyToClipboard(this)"
+                title="Copy to clipboard"
+            >
+                📋
+            </button>
+            <pre><code class="language-bash">$ mise use -g cargo:cutler</code></pre>
+        </div>
 
-    <br />
-    <hr />
+        <br />
+        <hr />
 
-    <h2>Quickstart & Documentation</h2>
-    <div class="button-container">
-      <a href="https://hitblast.github.io/cutler/book/" class="button">
-        View Cookbook / Documentation
-      </a>
-    </div>
+        <h2>Quickstart & Documentation</h2>
+        <div class="button-container">
+            <a href="https://hitblast.github.io/cutler/book/" class="button">
+                View Cookbook / Documentation
+            </a>
+        </div>
 
-    <hr />
+        <hr />
 
-    <h2>Source Code</h2>
-    <div class="button-container">
-      <a href="https://github.com/hitblast/cutler" class="button">
-        View Source on GitHub</a
-      >
-    </div>
+        <h2>Source Code</h2>
+        <div class="button-container">
+            <a href="https://github.com/hitblast/cutler" class="button">
+                View Source on GitHub</a
+            >
+        </div>
 
-    <hr />
+        <hr />
 
-    <h2>More Goodies for You</h2>
-    <div class="button-container">
-      <a href="https://macos-defaults.com/" class="button"
-        >macOS Defaults Reference</a
-      >
-    </div>
+        <h2>More Goodies for You</h2>
+        <div class="button-container">
+            <a href="https://macos-defaults.com/" class="button"
+                >macOS Defaults Reference</a
+            >
+        </div>
 
-    <footer>
-      <p>
-        cutler is open-sourced under the MIT License.<br />
-        The theme of the website is inspired by
-        <a href="https://brew.sh">Homebrew</a>.<br />
-        Website and project made & maintained by
-        <a href="https://hitblast.github.io">HitBlast</a>.
-      </p>
-    </footer>
+        <footer>
+            <p>
+                cutler is open-sourced under the MIT License.<br />
+                The theme of the website is inspired by
+                <a href="https://brew.sh">Homebrew</a>.<br />
+                Website and project made & maintained by
+                <a href="https://hitblast.github.io">HitBlast</a>.
+            </p>
+        </footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
-    <script>
-      function copyToClipboard(button) {
-        const codeBlock = button.nextElementSibling.querySelector("code");
-        const text = codeBlock.textContent;
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+        <script>
+            function copyToClipboard(button) {
+                const codeBlock =
+                    button.nextElementSibling.querySelector("code");
+                const text = codeBlock.textContent;
 
-        navigator.clipboard
-          .writeText(text)
-          .then(function () {
-            // Visual feedback
-            const originalText = button.textContent;
-            button.textContent = "✅";
-            setTimeout(() => {
-              button.textContent = originalText;
-            }, 1000);
-          })
-          .catch(function (err) {
-            console.error("Failed to copy text: ", err);
-          });
-      }
-    </script>
-  </body>
+                navigator.clipboard
+                    .writeText(text)
+                    .then(function () {
+                        // Visual feedback
+                        const originalText = button.textContent;
+                        button.textContent = "✅";
+                        setTimeout(() => {
+                            button.textContent = originalText;
+                        }, 1000);
+                    })
+                    .catch(function (err) {
+                        console.error("Failed to copy text: ", err);
+                    });
+            }
+        </script>
+    </body>
 </html>
