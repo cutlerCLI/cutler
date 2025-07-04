@@ -27,7 +27,7 @@ cutler aims to simplify your macOS setup experience into an "almost" one-command
 You can install cutler by running this command in the terminal:
 
 ```bash
-curl -fsSL https://cutler.github.io/scripts/install.sh | /bin/bash
+curl -fsSL https://cutlercli.github.io/scripts/install.sh | /bin/bash
 ```
 
 Other installation methods:
