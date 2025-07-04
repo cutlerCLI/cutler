@@ -3,6 +3,8 @@
 cutler can do a number of things if you use it right. Here's a basic example of a TOML configuration for cutler:
 
 ```toml
+# ~/.config/cutler/config.toml
+
 [set.dock]
 tilesize = 46
 
@@ -22,6 +24,8 @@ $ defaults write com.apple.menuextra.clock "FlashDateSeparators" -bool true
 You can also configure global preferences like this:
 
 ```toml
+# ~/.config/cutler/config.toml
+
 [set.NSGlobalDomain]
 InitialKeyRepeat = 15
 ApplePressAndHoldEnabled = true
@@ -43,7 +47,7 @@ $ defaults write NSGlobalDomain com.apple.mouse.linear -bool true
 Once you're ready, run this command to apply everything:
 
 ```bash
-$ cutler apply
+cutler apply
 ```
 
 The `apply` command has multiple functionalities which happen alongside of applying the preferences. Please read the sections below in depth to learn more.
@@ -51,13 +55,13 @@ The `apply` command has multiple functionalities which happen alongside of apply
 cutler also takes the changes into account and tracks them. To see your status, run:
 
 ```bash
-$ cutler status
+cutler status
 ```
 
 Unapplying everything is also as easy. Run the command below and cutler will restore your preferences to the exact previous state:
 
 ```bash
-$ cutler unapply
+cutler unapply
 ```
 
 ## Action Hints
@@ -81,7 +85,7 @@ As you can see, it suggests me to run `cutler apply`. Running the suggested comm
 If you would like to write non-existent domains (create them) using cutler, you can run the `apply` command with a particular flag:
 
 ```bash
-$ cutler apply --disable-checks
+cutler apply --disable-checks
 ```
 
 This will disable the "Domain does not exist" error which happens when cutler's backend does not recognize a domain.

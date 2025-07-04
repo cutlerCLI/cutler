@@ -7,7 +7,10 @@ cutler's configuration can be tiny or versatile depending on your needs. But, th
 When you run cutler init, the configuration file will usually contain this key-value pair at the very top:
 
 ```toml
+# ~/.config/cutler/config.toml
+
 lock = true
+...
 ```
 
 Unless you remove it, this will happen:
@@ -15,7 +18,6 @@ Unless you remove it, this will happen:
 ```bash
 $ cutler apply
 [ERROR] The config file is locked. Run `cutler config unlock` to unlock.
-$
 ```
 
 You can use this feature to mark configurations as potentially unsafe to apply. cutler uses it to generate new configuration files for you so that you don't accidentally apply the sample.
@@ -33,11 +35,11 @@ $ cutler config unlock
 To view your cutler configuration without the use of `cat` or any other fancy tools, use:
 
 ```bash
-$ cutler config show
+cutler config show
 ```
 
 You can also delete it using:
 
 ```bash
-$ cutler config delete
+cutler config delete
 ```

@@ -3,7 +3,7 @@
 You can install cutler by directly running this command in the terminal:
 
 ```bash
-$ curl -s https://raw.githubusercontent.com/hitblast/cutler/main/install.sh | bash
+curl -s https://raw.githubusercontent.com/hitblast/cutler/main/install.sh | bash
 ```
 
 Other installation methods are:
@@ -11,20 +11,20 @@ Other installation methods are:
 1. Using 🍺 Homebrew:
 
 ```bash
-$ brew install hitblast/tap/cutler
+brew install hitblast/tap/cutler
 ```
 
 2. Using `cargo`:
 
 ```bash
-$ cargo install cutler
+cargo install cutler
 ```
 
 3. Using `mise`:
 
 ```bash
 # NOTE: This will compile the binary manually for your system.
-$ mise use -g cargo:cutler
+mise use -g cargo:cutler
 ```
 
 Once installed, you can also enable [shell completions](./shell-integrations.md#completions) for your shell instance if needed.
@@ -37,5 +37,6 @@ Get the latest [prebuilt compressed binaries](https://github.com/hitblast/cutler
 Note than on devices running macOS, you'll have to remove the quarantine attribute from the binary:
 
 ```bash
-$ xattr -d com.apple.quarantine bin/cutler  # inside extracted zip
+# inside extracted zip
+xattr -d com.apple.quarantine bin/cutler
 ```

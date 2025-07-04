@@ -5,16 +5,20 @@ Running commands to spring up your environment is essential for any workflow. Lu
 You can define external commands with simple syntax like this:
 
 ```toml
+# ~/.config/cutler/config.toml
+
 [commands.greet]
 run = "echo Hello World"
 
 # This runs:
-# $ echo Hello World
+# echo Hello World
 ```
 
 The ideal structure for writing external commands should be like this:
 
 ```toml
+# ~/.config/cutler/config.toml
+
 [vars]
 hostname = "darkstar"
 
@@ -31,6 +35,8 @@ sudo = true  # a more "annotated" sudo
 Some people would like to run their commands "before" other commands. But, cutler runs all commands in parallel, which might not be what you want. In that case, you can use the `ensure-first` key to run then in your desired serial. You can apply this to multiple commands.
 
 ```toml
+# ~/.config/cutler/config.toml
+
 [commands.dotfiles]
 run = "git clone repo && cd repo && stow . -t ~"
 ensure-first = true
@@ -39,7 +45,7 @@ ensure-first = true
 External commands are run whenever you run `cutler apply` by default. However, if you'd like to _only_ run the commands and not apply defaults, run:
 
 ```bash
-$ cutler exec
+cutler exec
 ```
 
 You can also run a specific external command by attaching a name parameter:

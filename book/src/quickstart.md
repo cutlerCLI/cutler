@@ -6,7 +6,7 @@ Most commands support a set of global flags that affect output and behavior.
 See [Global Flags](./global-flags.md) for details.
 
 ```bash
-$ cutler init
+cutler init
 ```
 
 By default, cutler stores your configuration in `~/.config/cutler/config.toml`.
