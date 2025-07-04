@@ -2,7 +2,7 @@ name: Rust Tests
 
 on:
   pull_request:
-    branches: [main]
+    branches: [master]
 
 env:
   CARGO_TERM_COLOR: always
