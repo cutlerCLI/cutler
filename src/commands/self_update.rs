@@ -60,7 +60,7 @@ impl Runnable for SelfUpdateCmd {
         // run the self_update updater in a blocking thread to avoid dropping a runtime in async context
         let status = tokio::task::spawn_blocking(move || {
             Update::configure()
-                .repo_owner("hitblast")
+                .repo_owner("cutlercli")
                 .repo_name("cutler")
                 .target(target)
                 .bin_name("cutler")
