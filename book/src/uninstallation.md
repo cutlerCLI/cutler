@@ -7,7 +7,7 @@ Obviously, cutler is still an experimental software in heavy development, so if 
 Run this command in your terminal:
 
 ```bash
-curl -s https://raw.githubusercontent.com/hitblast/cutler/main/uninstall.sh | bash
+$ curl -s https://raw.githubusercontent.com/hitblast/cutler/main/uninstall.sh | bash
 ```
 
 ## For Package Manager Installs
@@ -17,20 +17,20 @@ If you have installed cutler through a package manager, please follow the instru
 1. For Homebrew:
 
 ```bash
-brew uninstall cutler
-brew untap hitblast/tap  # if you had only installed cutler from the tap
+$ brew uninstall cutler
+$ brew untap hitblast/tap  # if you had only installed cutler from the tap
 ```
 
 2. For `cargo`:
 
 ```bash
-cargo uninstall cutler
+$ cargo uninstall cutler
 ```
 
 3. For `mise`:
 
 ```bash
-mise unuse -g cargo:cutler
+$ mise unuse -g cargo:cutler
 
 # choose 'All' when pruning files if available
 ```
