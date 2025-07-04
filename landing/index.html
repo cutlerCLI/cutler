@@ -170,11 +170,17 @@
                 const codeBlock =
                     button.nextElementSibling.querySelector("code");
                 const text = codeBlock.textContent;
+                const cleanedText = text
+                    .split("\n")
+                    .map((line) =>
+                        line.startsWith("$ ") ? line.slice(2) : line,
+                    )
+                    .join("\n");
 
                 navigator.clipboard
-                    .writeText(text)
+                    .writeText(cleanedText)
                     .then(function () {
-                        // Visual feedback
+                        // visual feedback
                         const originalText = button.textContent;
                         button.textContent = "✅";
                         setTimeout(() => {
