@@ -20,6 +20,7 @@
 
 # Guidelines
 
+- [Uninstallation](./uninstallation.md)
 - [Contributing](./contributing.md)
 
 # References

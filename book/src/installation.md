@@ -8,7 +8,7 @@ $ /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/hitblast/cutler/mai
 
 Other installation methods are:
 
-1. Using 🍺 `homebrew`:
+1. Using 🍺 Homebrew:
 
 ```bash
 $ brew install hitblast/tap/cutler

@@ -19,10 +19,16 @@ While using macOS, I have come to realize that most solutions like [Nix](https:/
 
 And that's how <code>cutler</code> came to be.
 
-## What this book does
+## About this Book
 
 This book, by name, wants to introduce you with <code>cutler</code>, a software made to declaratively manage your macOS preferences and essentials. It can do a number of things. This book will help you navigate all of them, including new ones which are currently in development.
 
 It's a solo project, but I hope it will give you the proper impression for shrinking dotfiles by an order of magnitude.
 
 To get started with your cutlery, move to the next page.
+
+## Project Links
+
+- [GitHub](https://github.com/hitblast/cutler)
+- [Website](https://hitblast.github.io/cutler)
+- [crates.io](https://crates.io/crates/cutler)

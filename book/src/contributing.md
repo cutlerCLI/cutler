@@ -20,7 +20,7 @@ The prerequisites are as follows:
 
 I would personally recommend using the latest Rust version available. As of now, I'm using Rust **v1.88** as my version.
 
-### Cloning the repository
+### Cloning the Repository
 
 Once you have ensured the prerequisites, fork the repository [from here](https://github.com/hitblast/cutler/fork) and clone it using the following command:
 
@@ -34,7 +34,7 @@ $ git clone git@github.com:<your_username>/cutler.git
 
 Replace `<your_username>` with your GitHub username.
 
-### Preparing the environment
+### Preparing the Environment
 
 Working on this project will require a few Rust components beforehand:
 

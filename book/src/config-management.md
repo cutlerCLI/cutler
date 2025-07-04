@@ -2,7 +2,7 @@
 
 cutler's configuration can be tiny or versatile depending on your needs. But, there are some nifty features built into the software for your convenience.
 
-## Config-locking
+## Config-Locking
 
 When you run cutler init, the configuration file will usually contain this key-value pair at the very top:
 
@@ -28,7 +28,7 @@ $ cutler config lock
 $ cutler config unlock
 ```
 
-## View or delete
+## View or Delete
 
 To view your cutler configuration without the use of `cat` or any other fancy tools, use:
 

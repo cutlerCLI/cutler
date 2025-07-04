@@ -8,7 +8,7 @@ cutler supports built-in shell completion for your ease of access for a variety 
 > If you have installed cutler using Homebrew, the shell completion will automatically be
 > installed. Just restart your shell after initial installation.
 
-### Bash completions setup
+### For `bash`
 
 1. Make a directory to store Bash-specific completions:
 
@@ -29,7 +29,7 @@ $ mv cutler.bash ~/.bash-completion.d/
 $ source ~/.bash_completion.d/cutler.bash > ~/.bashrc
 ```
 
-### Zsh completions setup
+### For `zsh`
 
 1. Make sure you have a directory for custom completions:
 
@@ -57,7 +57,7 @@ $ autoload -U compinit && compinit
 $ source ~/.zshrc
 ```
 
-### For other shells
+### Other Shells
 
 ```bash
 # Fish
