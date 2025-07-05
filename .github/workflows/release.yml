@@ -9,11 +9,12 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build-arm64:
+  build-arm64-publish:
     runs-on: macos-latest
 
     env:
       FILE_NAME: cutler-${{ github.event.release.name }}-darwin-arm64.zip
+      ARTIFACT_NAME: cutler-${{ github.event.release.name }}-darwin-arm64
 
     steps:
       - uses: actions/checkout@v4
@@ -49,63 +50,11 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: cutler-darwin-arm64
+          name: ${{ env.ARTIFACT_NAME }}
           path: ${{ env.FILE_NAME }}
+          compression-level: 9
+          if-no-files-found: error
           retention-days: 90
-
-  build-x86_64:
-    runs-on: macos-13
-
-    env:
-      FILE_NAME: cutler-${{ github.event.release.name }}-darwin-x86_64.zip
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-
-      - name: Cache Cargo registry and build
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-cargo-
-
-      - name: Build release artifact
-        run: cargo build --release --verbose --locked
-
-      - name: Package release
-        run: |
-          mkdir -p release/bin release/man/man1
-          cp target/release/cutler release/bin/
-          cp man/man1/cutler.1 release/man/man1/
-          cp LICENSE release/
-          cp README.md release/
-          cd release && zip -r ../${{ env.FILE_NAME }} bin man README.md LICENSE && cd ..
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: cutler-darwin-x86_64
-          path: ${{ env.FILE_NAME }}
-          retention-days: 90
-
-  publish:
-    needs: [build-arm64, build-x86_64]
-    runs-on: macos-latest
-
-    env:
-      CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
-
-    steps:
-      - uses: actions/checkout@v4
 
       - name: Prepare Crates.io README
         run: sed -i '' '/^>/d' README.md
@@ -114,3 +63,50 @@ jobs:
         env:
           CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
         run: cargo publish --token $CRATES_TOKEN --allow-dirty
+
+  build-x86_64:
+    runs-on: macos-13
+
+    env:
+      FILE_NAME: cutler-${{ github.event.release.name }}-darwin-x86_64.zip
+      ARTIFACT_NAME: cutler-${{ github.event.release.name }}-darwin-x86_64
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Cache Cargo registry and build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
+
+      - name: Build release artifact
+        run: cargo build --release --verbose --locked
+
+      - name: Package release
+        run: |
+          mkdir -p release/bin release/man/man1
+          cp target/release/cutler release/bin/
+          cp man/man1/cutler.1 release/man/man1/
+          cp LICENSE release/
+          cp README.md release/
+          cd release && zip -r ../${{ env.FILE_NAME }} bin man README.md LICENSE && cd ..
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.FILE_NAME }}
+          compression-level: 9
+          if-no-files-found: error
+          retention-days: 90
