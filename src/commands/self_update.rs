@@ -7,7 +7,6 @@ use std::env;
 use tokio::fs;
 
 use crate::commands::Runnable;
-use crate::util::common::is_root;
 use crate::util::logging::{LogLevel, print_log};
 
 #[derive(Args, Debug)]
@@ -16,8 +15,6 @@ pub struct SelfUpdateCmd;
 #[async_trait]
 impl Runnable for SelfUpdateCmd {
     async fn run(&self) -> Result<()> {
-        is_root()?;
-
         // get the path to the current executable
         let exe_path = env::current_exe()?;
         let exe_path_str = exe_path.to_string_lossy();

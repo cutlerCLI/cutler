@@ -7,6 +7,7 @@ use cutler::util::globals::{
     set_accept_interactive, set_dry_run, set_no_restart_services, set_quiet, set_verbose,
 };
 use cutler::util::logging::{LogLevel, print_log};
+use cutler::util::sudo::{run_with_noroot, run_with_root};
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() {
@@ -19,6 +20,16 @@ async fn main() {
     set_verbose(args.verbose);
     set_dry_run(args.dry_run);
     set_no_restart_services(args.no_restart_services);
+
+    let result = match &args.command {
+        Command::SelfUpdate(_) => run_with_root(),
+        _ => run_with_noroot(),
+    };
+
+    if let Err(err) = result {
+        print_log(LogLevel::Error, &format!("Invoke failure: {err}"));
+        std::process::exit(1);
+    }
 
     let result = match &args.command {
         Command::Apply(cmd) => cmd.run().await,
