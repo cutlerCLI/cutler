@@ -6,8 +6,8 @@
 
 Powerful, declarative settings management for your Mac, with speed.
 
-[![Release Builds](https://github.com/cutlercli/cutler/actions/workflows/release.yml/badge.svg)](https://github.com/cutlercli/cutler/actions/workflows/release.yml)
-[![Rust Tests](https://github.com/cutlercli/cutler/actions/workflows/tests.yml/badge.svg)](https://github.com/cutlercli/cutler/actions/workflows/tests.yml)
+[![Release Builds](https://github.com/cutlerCLI/cutler/actions/workflows/release.yml/badge.svg)](https://github.com/cutlerCLI/cutler/actions/workflows/release.yml)
+[![Rust Tests](https://github.com/cutlerCLI/cutler/actions/workflows/tests.yml/badge.svg)](https://github.com/cutlerCLI/cutler/actions/workflows/tests.yml)
 [![Downloads](https://img.shields.io/crates/d/cutler?style=social&logo=Rust)](https://crates.io/crates/cutler)
 
 </div>
@@ -57,4 +57,4 @@ View the [Contribution Guidelines](https://cutlercli.github.io/cookbook/contribu
 
 ## License
 
-This project is licensed under the [MIT License](https://github.com/cutlercli/cutler/blob/master/LICENSE).
+This project is licensed under the [MIT License](https://github.com/cutlerCLI/cutler/blob/master/LICENSE).

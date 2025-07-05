@@ -57,7 +57,7 @@ impl Runnable for SelfUpdateCmd {
         // run the self_update updater in a blocking thread to avoid dropping a runtime in async context
         let status = tokio::task::spawn_blocking(move || {
             Update::configure()
-                .repo_owner("cutlercli")
+                .repo_owner("cutlerCLI")
                 .repo_name("cutler")
                 .target(target)
                 .bin_name("cutler")
@@ -72,7 +72,7 @@ impl Runnable for SelfUpdateCmd {
         if status.updated() {
             print_log(LogLevel::Info, "Binary updated, updating manpage...");
 
-            let manpage_url = "https://raw.githubusercontent.com/cutlercli/cutler/refs/heads/master/man/man1/cutler.1".to_string();
+            let manpage_url = "https://raw.githubusercontent.com/cutlerCLI/cutler/refs/heads/master/man/man1/cutler.1".to_string();
             let manpage_content = ureq::get(&manpage_url)
                 .call()?
                 .into_body()
