@@ -2,8 +2,9 @@ name: Release Builds
 
 on:
   workflow_dispatch:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "*"
 
 env:
   CARGO_TERM_COLOR: always
