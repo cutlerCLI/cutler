@@ -13,7 +13,6 @@ jobs:
     runs-on: macos-latest
 
     env:
-      FILE_NAME: cutler-${{ github.event.release.name }}-darwin-arm64.zip
       ARTIFACT_NAME: cutler-${{ github.event.release.name }}-darwin-arm64
 
     steps:
@@ -40,18 +39,17 @@ jobs:
 
       - name: Package release
         run: |
-          mkdir -p release/bin release/man/man1
-          cp target/release/cutler release/bin/
-          cp man/man1/cutler.1 release/man/man1/
-          cp LICENSE release/
-          cp README.md release/
-          cd release && zip -r ../${{ env.FILE_NAME }} bin man README.md LICENSE && cd ..
+          mkdir -p ${{ env.ARTIFACT_NAME }}/bin ${{ env.ARTIFACT_NAME }}/man/man1
+          cp target/release/cutler ${{ env.ARTIFACT_NAME }}/bin/
+          cp man/man1/cutler.1 ${{ env.ARTIFACT_NAME }}/man/man1/
+          cp LICENSE ${{ env.ARTIFACT_NAME }}/
+          cp README.md ${{ env.ARTIFACT_NAME }}/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARTIFACT_NAME }}
-          path: ${{ env.FILE_NAME }}
+          path: ${{ env.ARTIFACT_NAME }}
           compression-level: 9
           if-no-files-found: error
           retention-days: 90
@@ -68,7 +66,6 @@ jobs:
     runs-on: macos-13
 
     env:
-      FILE_NAME: cutler-${{ github.event.release.name }}-darwin-x86_64.zip
       ARTIFACT_NAME: cutler-${{ github.event.release.name }}-darwin-x86_64
 
     steps:
@@ -95,18 +92,17 @@ jobs:
 
       - name: Package release
         run: |
-          mkdir -p release/bin release/man/man1
-          cp target/release/cutler release/bin/
-          cp man/man1/cutler.1 release/man/man1/
-          cp LICENSE release/
-          cp README.md release/
-          cd release && zip -r ../${{ env.FILE_NAME }} bin man README.md LICENSE && cd ..
+          mkdir -p ${{ env.ARTIFACT_NAME }}/bin ${{ env.ARTIFACT_NAME }}/man/man1
+          cp target/release/cutler ${{ env.ARTIFACT_NAME }}/bin/
+          cp man/man1/cutler.1 ${{ env.ARTIFACT_NAME }}/man/man1/
+          cp LICENSE ${{ env.ARTIFACT_NAME }}/
+          cp README.md ${{ env.ARTIFACT_NAME }}/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARTIFACT_NAME }}
-          path: ${{ env.FILE_NAME }}
+          path: ${{ env.ARTIFACT_NAME }}
           compression-level: 9
           if-no-files-found: error
           retention-days: 90
