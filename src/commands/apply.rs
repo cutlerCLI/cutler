@@ -16,6 +16,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
 use defaults_rs::{Domain, preferences::Preferences};
+use tokio::fs;
 use toml::Value;
 
 #[derive(Args, Debug)]
@@ -61,7 +62,7 @@ impl Runnable for ApplyCmd {
 
         // load the old snapshot (if any), otherwise create a new instance
         let snap_path = crate::snapshot::state::get_snapshot_path();
-        let snap = if snap_path.exists() {
+        let snap = if fs::try_exists(&snap_path).await.unwrap() {
             Snapshot::load(&snap_path).await.unwrap_or_else(|e| {
                 print_log(
                     LogLevel::Warning,

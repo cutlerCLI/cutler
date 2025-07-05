@@ -2,31 +2,35 @@
 mod tests {
     use cutler::config::{get_config_path, load_config};
     use std::env;
-    use std::fs::{self, File};
-    use std::io::Write;
     use tempfile::TempDir;
+    use tokio::{
+        fs::{self, File},
+        io::AsyncWriteExt,
+    };
 
     // We need to test path resolution with environment variables
-    #[test]
-    fn test_get_config_path_with_env_vars() {
+    #[tokio::test]
+    async fn test_get_config_path_with_env_vars() {
         // Setup a temporary directory for testing
         let temp_dir = TempDir::new().unwrap();
         let temp_path = temp_dir.path();
 
         // Create a config directory structure
         let config_dir = temp_path.join("config");
-        fs::create_dir_all(&config_dir).unwrap();
+        fs::create_dir_all(&config_dir).await.unwrap();
 
         // Create a test config file
         let config_file = config_dir.join("cutler").join("config.toml");
-        fs::create_dir_all(config_file.parent().unwrap()).unwrap();
-        File::create(&config_file).unwrap();
+        fs::create_dir_all(config_file.parent().unwrap())
+            .await
+            .unwrap();
+        File::create(&config_file).await.unwrap();
 
         // Set XDG_CONFIG_HOME to our temp directory
         unsafe { env::set_var("XDG_CONFIG_HOME", config_dir) };
 
         // Test that get_config_path returns our test file
-        let config_path = get_config_path();
+        let config_path = get_config_path().await;
         assert_eq!(config_path, config_file);
 
         // Clean up
@@ -46,8 +50,8 @@ mod tests {
             autohide = true
         "#;
 
-        let mut file = File::create(&config_file).unwrap();
-        file.write_all(config_content.as_bytes()).unwrap();
+        let mut file = File::create(&config_file).await.unwrap();
+        file.write_all(config_content.as_bytes()).await.unwrap();
 
         // Test loading the config
         let config = load_config(&config_file, false).await.unwrap();

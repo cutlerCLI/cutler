@@ -23,7 +23,7 @@ pub struct InitCmd {
 #[async_trait]
 impl Runnable for InitCmd {
     async fn run(&self) -> Result<()> {
-        let config_path = get_config_path();
+        let config_path = get_config_path().await;
 
         let exists = fs::metadata(&config_path).await.is_ok();
         if exists {

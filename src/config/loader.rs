@@ -14,7 +14,7 @@ use crate::util::{
 };
 
 /// Returns the path to the configuration file by checking several candidate locations.
-pub fn get_config_path() -> PathBuf {
+pub async fn get_config_path() -> PathBuf {
     let mut candidates = Vec::new();
 
     // decide candidates in order
@@ -39,7 +39,7 @@ pub fn get_config_path() -> PathBuf {
     // return the first candidate that exists
     // might lead to a prompt to create an example config
     for candidate in &candidates {
-        if candidate.exists() {
+        if fs::try_exists(candidate).await.unwrap() {
             return candidate.to_owned();
         }
     }

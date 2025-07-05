@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use async_trait::async_trait;
 use clap::Args;
-use tokio::process::Command;
+use tokio::{fs, process::Command};
 
 use crate::{
     brew::{
@@ -22,10 +22,10 @@ pub struct BrewInstallCmd;
 #[async_trait]
 impl Runnable for BrewInstallCmd {
     async fn run(&self) -> Result<()> {
-        let cfg_path = get_config_path();
+        let cfg_path = get_config_path().await;
         let dry_run = should_dry_run();
 
-        if !cfg_path.exists() {
+        if !fs::try_exists(&cfg_path).await.unwrap() {
             print_log(
                 LogLevel::Error,
                 "No config file found. Run `cutler init` to start.",

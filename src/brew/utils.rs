@@ -5,9 +5,8 @@ use crate::util::{
     logging::{LogLevel, print_log},
 };
 use anyhow::Result;
-use std::env;
-use std::path::Path;
-use std::time::Duration;
+use std::{env, path::Path, time::Duration};
+use tokio::fs;
 use tokio::process::Command;
 
 /// Helper for: ensure_brew()
@@ -88,10 +87,13 @@ async fn ensure_xcode_clt() -> Result<()> {
 }
 
 /// Sets the required environment variables for cutler to interact with Homebrew.
-fn set_homebrew_env_vars() {
+async fn set_homebrew_env_vars() {
     let existing_path = std::env::var("PATH").unwrap_or_default();
 
-    if Path::new("/opt/homebrew/bin/brew").exists() {
+    if fs::try_exists(Path::new("/opt/homebrew/bin/brew"))
+        .await
+        .unwrap()
+    {
         let bin = "/opt/homebrew/bin";
         let sbin = "/opt/homebrew/sbin";
         let mut new_path = existing_path.clone();
@@ -102,7 +104,10 @@ fn set_homebrew_env_vars() {
             new_path = format!("{sbin}:{new_path}");
         }
         unsafe { env::set_var("PATH", &new_path) };
-    } else if Path::new("/usr/local/bin/brew").exists() {
+    } else if fs::try_exists(Path::new("/usr/local/bin/brew"))
+        .await
+        .unwrap()
+    {
         let bin = "/usr/local/bin";
         let sbin = "/usr/local/sbin";
         let mut new_path = existing_path.clone();
@@ -182,7 +187,7 @@ pub async fn ensure_brew() -> Result<()> {
             install_homebrew().await?;
 
             // set environment variables for `brew`
-            set_homebrew_env_vars();
+            set_homebrew_env_vars().await;
 
             // re-check that Homebrew is now installed and in $PATH
             let is_installed_after = Command::new("brew")

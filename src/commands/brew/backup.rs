@@ -27,7 +27,7 @@ pub struct BrewBackupCmd {
 #[async_trait]
 impl Runnable for BrewBackupCmd {
     async fn run(&self) -> Result<()> {
-        let cfg_path = get_config_path();
+        let cfg_path = get_config_path().await;
         let dry_run = should_dry_run();
 
         // ensure brew install
@@ -38,7 +38,7 @@ impl Runnable for BrewBackupCmd {
         let taps = brew_list(BrewListType::Tap).await?;
         let mut deps = Vec::new();
 
-        let mut doc = if cfg_path.exists() {
+        let mut doc = if fs::try_exists(&cfg_path).await.unwrap() {
             load_config_mut(&cfg_path, true).await?
         } else {
             DocumentMut::new()

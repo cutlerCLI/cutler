@@ -18,9 +18,9 @@ pub struct ConfigShowCmd;
 #[async_trait]
 impl Runnable for ConfigShowCmd {
     async fn run(&self) -> Result<()> {
-        let config_path = get_config_path();
+        let config_path = get_config_path().await;
 
-        if !config_path.exists() {
+        if !fs::try_exists(&config_path).await.unwrap() {
             bail!("Configuration file does not exist at {:?}", config_path);
         }
 

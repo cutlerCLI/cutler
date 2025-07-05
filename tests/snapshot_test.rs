@@ -3,10 +3,9 @@ mod tests {
     use cutler::snapshot::state::{
         ExternalCommandState, SettingState, Snapshot, get_snapshot_path,
     };
-    use std::collections::HashMap;
-    use std::path::PathBuf;
-    use std::{env, fs};
+    use std::{collections::HashMap, env, path::PathBuf};
     use tempfile::TempDir;
+    use tokio::fs;
 
     #[test]
     fn test_get_snapshot_path() {
@@ -106,8 +105,8 @@ mod tests {
         snapshot.save(&snapshot_path).await.unwrap();
 
         // Verify file exists and has content
-        assert!(snapshot_path.exists());
-        let content = fs::read_to_string(&snapshot_path).unwrap();
+        assert!(fs::try_exists(&snapshot_path).await.unwrap());
+        let content = fs::read_to_string(&snapshot_path).await.unwrap();
         assert!(content.contains("com.apple.dock"));
         assert!(content.contains("tilesize"));
 
@@ -168,7 +167,9 @@ mod tests {
         // Test loading from invalid JSON
         let temp_dir = TempDir::new().unwrap();
         let invalid_path = temp_dir.path().join("invalid.json");
-        fs::write(&invalid_path, "this is not valid json").unwrap();
+        fs::write(&invalid_path, "this is not valid json")
+            .await
+            .unwrap();
 
         let result = Snapshot::load(&invalid_path).await;
         assert!(result.is_err());

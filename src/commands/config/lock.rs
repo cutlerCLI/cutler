@@ -20,10 +20,10 @@ pub struct ConfigLockCmd;
 #[async_trait]
 impl Runnable for ConfigLockCmd {
     async fn run(&self) -> Result<()> {
-        let cfg_path = get_config_path();
+        let cfg_path = get_config_path().await;
         let dry_run = should_dry_run();
 
-        let mut doc = if cfg_path.exists() {
+        let mut doc = if fs::try_exists(&cfg_path).await.unwrap() {
             load_config_mut(&cfg_path, false).await?
         } else {
             bail!("Cannot lock a config file that does not exist.")

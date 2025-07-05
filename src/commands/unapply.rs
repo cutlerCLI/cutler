@@ -24,7 +24,7 @@ impl Runnable for UnapplyCmd {
     async fn run(&self) -> Result<()> {
         let snap_path = get_snapshot_path();
 
-        if !snap_path.exists() {
+        if !fs::try_exists(&snap_path).await.unwrap() {
             bail!(
                 "No snapshot found. Please run `cutler apply` first before unapplying.\n\
                 As a fallback, you can use `cutler reset` to reset settings to their defaults."

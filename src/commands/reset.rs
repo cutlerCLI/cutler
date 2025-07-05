@@ -26,8 +26,8 @@ pub struct ResetCmd {
 #[async_trait]
 impl Runnable for ResetCmd {
     async fn run(&self) -> Result<()> {
-        let config_path = get_config_path();
-        if !config_path.exists() {
+        let config_path = get_config_path().await;
+        if !fs::try_exists(&config_path).await.unwrap() {
             bail!("No config file found. Please run `cutler init` first, or create a config file.");
         }
 
@@ -95,7 +95,7 @@ impl Runnable for ResetCmd {
 
         // remove snapshot if present
         let snap_path = get_snapshot_path();
-        if snap_path.exists() {
+        if fs::try_exists(&snap_path).await.unwrap() {
             if dry_run {
                 print_log(
                     LogLevel::Dry,

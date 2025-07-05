@@ -14,6 +14,7 @@ use crate::{
 use anyhow::{Result, bail};
 use async_trait::async_trait;
 use clap::Args;
+use tokio::fs;
 
 #[derive(Args, Debug)]
 pub struct StatusCmd {
@@ -25,8 +26,8 @@ pub struct StatusCmd {
 #[async_trait]
 impl Runnable for StatusCmd {
     async fn run(&self) -> Result<()> {
-        let config_path = get_config_path();
-        if !config_path.exists() {
+        let config_path = get_config_path().await;
+        if !fs::try_exists(&config_path).await.unwrap() {
             bail!("No config file found. Please run `cutler init` first, or create a config file.");
         }
 
