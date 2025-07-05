@@ -2,7 +2,7 @@
 
 <img src="assets/logo.png" width="200px">
 
-# <a href="https://cutlercli.github.io/">cutler</a>
+# <a href="https://cutlercli.github.io/">cutler</a> <sup>/kŭt′lər/</sup>
 
 Powerful, declarative settings management for your Mac, with speed.
 
