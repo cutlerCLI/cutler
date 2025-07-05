@@ -1,6 +1,6 @@
 [package]
 name = "cutler"
-version = "0.8.16"
+version = "0.8.17"
 edition = "2024"
 description = "Powerful, declarative settings management for your Mac, with speed."
 homepage = "https://cutlercli.github.io/"
