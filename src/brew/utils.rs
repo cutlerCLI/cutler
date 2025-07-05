@@ -78,7 +78,9 @@ async fn ensure_xcode_clt() -> Result<()> {
             }
         }
 
-        anyhow::bail!("Timed out. Re-run this command after installation completes.");
+        anyhow::bail!(
+            "Timed out. Re-run this command once installation completes.\nIf there was an error during installation, try running `xcode-select --install` again."
+        );
     } else {
         anyhow::bail!(
             "Xcode Command Line Tools are required for Homebrew operations, but were not found. Aborting."
