@@ -1,3 +1,4 @@
+use anyhow::bail;
 use defaults_rs::{Domain, PrefValue, ReadResult, preferences::Preferences};
 use std::collections::HashMap;
 use toml::Value;
@@ -93,7 +94,7 @@ pub async fn check_domain_exists(full_domain: &str) -> Result<(), anyhow::Error>
     if domains.contains(&full_domain.to_owned()) {
         Ok(())
     } else {
-        anyhow::bail!("Domain \"{}\" does not exist!", full_domain)
+        bail!("Domain \"{}\" does not exist!", full_domain)
     }
 }
 

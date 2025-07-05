@@ -12,7 +12,7 @@ use crate::{
         logging::{GREEN, LogLevel, RESET, print_log},
     },
 };
-use anyhow::Result;
+use anyhow::{Result, bail};
 use async_trait::async_trait;
 use clap::Args;
 use defaults_rs::{Domain, preferences::Preferences};
@@ -53,7 +53,7 @@ impl Runnable for ApplyCmd {
         let config_path_opt = ensure_config_exists_or_init().await?;
         let config_path = match config_path_opt {
             Some(path) => path,
-            None => anyhow::bail!("Aborted."),
+            None => bail!("Aborted."),
         };
 
         // parse + flatten domains

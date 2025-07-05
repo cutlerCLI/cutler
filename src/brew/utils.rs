@@ -4,7 +4,7 @@ use crate::util::{
     io::confirm_action,
     logging::{LogLevel, print_log},
 };
-use anyhow::Result;
+use anyhow::{Result, bail};
 use std::{env, path::Path, time::Duration};
 use tokio::fs;
 use tokio::process::Command;
@@ -57,7 +57,7 @@ async fn ensure_xcode_clt() -> Result<()> {
             .await?;
 
         if !status.success() {
-            anyhow::bail!(
+            bail!(
                 "Failed to launch Xcode Command Line Tools installer. Try manually installing it using `xcode-select --install`."
             );
         }
@@ -78,11 +78,11 @@ async fn ensure_xcode_clt() -> Result<()> {
             }
         }
 
-        anyhow::bail!(
+        bail!(
             "Timed out. Re-run this command once installation completes.\nIf there was an error during installation, try running `xcode-select --install` again."
         );
     } else {
-        anyhow::bail!(
+        bail!(
             "Xcode Command Line Tools are required for Homebrew operations, but were not found. Aborting."
         );
     }
@@ -153,7 +153,7 @@ async fn install_homebrew() -> Result<(), anyhow::Error> {
     print_log(LogLevel::Info, "Installing Homebrew...");
 
     if !status.success() {
-        anyhow::bail!("Failed to install Homebrew.");
+        bail!("Failed to install Homebrew.");
     }
 
     Ok(())
@@ -200,12 +200,12 @@ pub async fn ensure_brew() -> Result<()> {
                 .unwrap_or(false);
 
             if !is_installed_after {
-                anyhow::bail!(
+                bail!(
                     "Homebrew installation seems to have failed or brew is still not in PATH. Please update your PATH accordingly."
                 );
             }
         } else {
-            anyhow::bail!("Homebrew is required for brew operations, but was not found.");
+            bail!("Homebrew is required for brew operations, but was not found.");
         }
     }
 

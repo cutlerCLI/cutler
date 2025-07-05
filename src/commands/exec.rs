@@ -6,7 +6,7 @@ use crate::{
     exec::runner,
     util::logging::{LogLevel, print_log},
 };
-use anyhow::Result;
+use anyhow::{Result, bail};
 use async_trait::async_trait;
 use clap::Args;
 
@@ -26,7 +26,7 @@ impl Runnable for ExecCmd {
         let config_path_opt = ensure_config_exists_or_init().await?;
         let config_path = match config_path_opt {
             Some(path) => path,
-            None => anyhow::bail!("Aborted."),
+            None => bail!("Aborted."),
         };
 
         // load & parse config
