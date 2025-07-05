@@ -1,8 +1,7 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
-use self_update::backends::github::Update;
-use self_update::cargo_crate_version;
+use self_update::{backends::github::Update, cargo_crate_version};
 use std::env;
 use tokio::fs;
 
