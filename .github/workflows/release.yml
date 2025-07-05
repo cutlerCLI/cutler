@@ -2,9 +2,8 @@ name: Release Builds
 
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - "*"
+  release:
+    types: [published]
 
 env:
   CARGO_TERM_COLOR: always
@@ -14,7 +13,7 @@ jobs:
     runs-on: macos-latest
 
     env:
-      ARTIFACT_NAME: cutler-${{ github.event.release.name }}-darwin-arm64
+      FILE_NAME: cutler-${{ github.event.release.name }}-darwin-arm64.zip
 
     steps:
       - uses: actions/checkout@v4
@@ -40,20 +39,27 @@ jobs:
 
       - name: Package release
         run: |
-          mkdir -p ${{ env.ARTIFACT_NAME }}/bin ${{ env.ARTIFACT_NAME }}/man/man1
-          cp target/release/cutler ${{ env.ARTIFACT_NAME }}/bin/
-          cp man/man1/cutler.1 ${{ env.ARTIFACT_NAME }}/man/man1/
-          cp LICENSE ${{ env.ARTIFACT_NAME }}/
-          cp README.md ${{ env.ARTIFACT_NAME }}/
+          mkdir -p release/bin release/man/man1
+          cp target/release/cutler release/bin/
+          cp man/man1/cutler.1 release/man/man1/
+          cp LICENSE release/
+          cp README.md release/
+          cd release && zip -r ../${{ env.FILE_NAME }} bin man README.md LICENSE && cd ..
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}
-          path: ${{ env.ARTIFACT_NAME }}
-          compression-level: 9
-          if-no-files-found: error
+          name: cutler-darwin-arm64
+          path: ${{ env.FILE_NAME }}
           retention-days: 90
+
+      - name: Upload binary to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ env.FILE_NAME }}
+          tag: ${{ github.ref }}
+          overwrite: true
 
       - name: Prepare Crates.io README
         run: sed -i '' '/^>/d' README.md
@@ -67,7 +73,7 @@ jobs:
     runs-on: macos-13
 
     env:
-      ARTIFACT_NAME: cutler-${{ github.event.release.name }}-darwin-x86_64
+      FILE_NAME: cutler-${{ github.event.release.name }}-darwin-x86_64.zip
 
     steps:
       - uses: actions/checkout@v4
@@ -93,17 +99,25 @@ jobs:
 
       - name: Package release
         run: |
-          mkdir -p ${{ env.ARTIFACT_NAME }}/bin ${{ env.ARTIFACT_NAME }}/man/man1
-          cp target/release/cutler ${{ env.ARTIFACT_NAME }}/bin/
-          cp man/man1/cutler.1 ${{ env.ARTIFACT_NAME }}/man/man1/
-          cp LICENSE ${{ env.ARTIFACT_NAME }}/
-          cp README.md ${{ env.ARTIFACT_NAME }}/
+          mkdir -p release/bin release/man/man1
+          cp target/release/cutler release/bin/
+          cp man/man1/cutler.1 release/man/man1/
+          cp LICENSE release/
+          cp README.md release/
+          cd release && zip -r ../${{ env.FILE_NAME }} bin man README.md LICENSE && cd ..
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}
-          path: ${{ env.ARTIFACT_NAME }}
-          compression-level: 9
-          if-no-files-found: error
+          name: cutler-darwin-x86_64
+          path: ${{ env.FILE_NAME }}
           retention-days: 90
+
+      - name: Upload binary to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ env.FILE_NAME }}
+          tag: ${{ github.ref }}
+          overwrite: true
+
