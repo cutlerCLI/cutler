@@ -42,9 +42,9 @@ jobs:
           mkdir -p release/bin release/man/man1
           cp target/release/cutler release/bin/
           cp man/man1/cutler.1 release/man/man1/
-          cp LICENSE release/
+          cp LICENSE.md release/
           cp README.md release/
-          cd release && zip -r ../${{ env.FILE_NAME }} bin man README.md LICENSE && cd ..
+          cd release && zip -r ../${{ env.FILE_NAME }} bin man README.md LICENSE.md && cd ..
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -102,9 +102,9 @@ jobs:
           mkdir -p release/bin release/man/man1
           cp target/release/cutler release/bin/
           cp man/man1/cutler.1 release/man/man1/
-          cp LICENSE release/
+          cp LICENSE.md release/
           cp README.md release/
-          cd release && zip -r ../${{ env.FILE_NAME }} bin man README.md LICENSE && cd ..
+          cd release && zip -r ../${{ env.FILE_NAME }} bin man README.md LICENSE.md && cd ..
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -120,4 +120,3 @@ jobs:
           file: ${{ env.FILE_NAME }}
           tag: ${{ github.ref }}
           overwrite: true
-
