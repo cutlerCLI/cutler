@@ -19,8 +19,7 @@ Powerful, declarative settings management for your Mac, with speed.
 
 cutler aims to simplify your macOS setup experience into an "almost" one-command procedure. Define your settings once, then easily apply, track, and revert changes across your system—think of it as infrastructure-as-code for your Mac.
 
-> [!IMPORTANT]
-> This project is still under development. If you like it, consider starring! It's free, and it always supports me to make such projects.
+This project is still under development, and more ways of improving it are constantly popping up. If you like it, consider starring! It's free, and it always supports me to make such projects.
 
 ## Installation
 
@@ -54,8 +53,8 @@ For installing manually, [see this section](https://cutlercli.github.io/cookbook
 ## Essential TODO
 
 > [!NOTE]
-> The list displayed below does NOT guarantee the addition of the features, but does guarantee that the developers are
-> working on them, and might as well release them if maturity is reached.
+> The list displayed below does NOT guarantee the addition of the features, but does guarantee that they're being worked on
+> and might as well get released if maturity is reached.
 
 - [ ] Add remote sync/orchestration features.
 - [ ] Add automatic git repo cloning/management.
