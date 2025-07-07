@@ -51,6 +51,15 @@ For installing manually, [see this section](https://cutlercli.github.io/cookbook
 
 [**"The cutler Cookbook"**](https://cutlercli.github.io/cookbook/) should be a great starting point for anyone who wants to use this project in their setup. It is strongly encouraged to read it.
 
+## Essential TODO
+
+> [!NOTE]
+> The list displayed below does NOT guarantee the addition of the features, but does guarantee that the developers are
+> working on them, and might as well release them if maturity is reached.
+
+- [ ] Add remote sync/orchestration features.
+- [ ] Add automatic git repo cloning/management.
+
 ## Contributing
 
 View the [Contribution Guidelines](https://cutlercli.github.io/cookbook/contributing.html) to learn more about contributing to cutler.
