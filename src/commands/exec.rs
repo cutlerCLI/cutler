@@ -1,12 +1,12 @@
 use crate::commands::Runnable;
-use crate::util::config::ensure_config_exists_or_init;
+
 use crate::util::globals::should_dry_run;
 use crate::{
     config::loader::load_config,
     exec::runner,
     util::logging::{LogLevel, print_log},
 };
-use anyhow::{Result, bail};
+use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
 
@@ -23,14 +23,8 @@ impl Runnable for ExecCmd {
     async fn run(&self) -> Result<()> {
         let dry_run = should_dry_run();
 
-        let config_path_opt = ensure_config_exists_or_init().await?;
-        let config_path = match config_path_opt {
-            Some(path) => path,
-            None => bail!("Aborted."),
-        };
-
         // load & parse config
-        let toml = load_config(&config_path, true).await?;
+        let toml = load_config(true).await?;
 
         if let Some(cmd_name) = &self.name {
             runner::run_one(&toml, cmd_name).await?;

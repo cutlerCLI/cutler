@@ -1,3 +1,4 @@
+pub mod autosync;
 pub mod brew;
 pub mod cli;
 pub mod commands;

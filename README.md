@@ -41,7 +41,7 @@ See ["Installation"](https://cutlercli.github.io/cookbook/installation.html) for
 > The list displayed below does NOT guarantee the addition of the features, but does guarantee that they're being worked on
 > and might as well get released if maturity is reached.
 
-- [ ] Add remote sync/orchestration features.
+- [x] Add remote sync/orchestration features.
 - [ ] Add automatic git repo cloning/management.
 
 ## Contributing

@@ -5,14 +5,13 @@ use crate::{
     exec::runner,
     snapshot::state::{SettingState, Snapshot},
     util::{
-        config::ensure_config_exists_or_init,
         convert::{normalize, toml_to_prefvalue},
         globals::should_dry_run,
         io::restart_system_services,
         logging::{GREEN, LogLevel, RESET, print_log},
     },
 };
-use anyhow::{Result, bail};
+use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
 use defaults_rs::{Domain, preferences::Preferences};
@@ -50,14 +49,8 @@ impl Runnable for ApplyCmd {
     async fn run(&self) -> Result<()> {
         let dry_run = should_dry_run();
 
-        let config_path_opt = ensure_config_exists_or_init().await?;
-        let config_path = match config_path_opt {
-            Some(path) => path,
-            None => bail!("Aborted."),
-        };
-
         // parse + flatten domains
-        let toml = load_config(&config_path, true).await?;
+        let toml = load_config(true).await?;
         let domains = collector::collect(&toml)?;
 
         // load the old snapshot (if any), otherwise create a new instance

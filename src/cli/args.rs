@@ -5,7 +5,7 @@ use crate::{
     cli::completion::Shell,
     commands::{
         ApplyCmd, BrewBackupCmd, BrewInstallCmd, CheckUpdateCmd, ConfigDeleteCmd, ConfigShowCmd,
-        ExecCmd, InitCmd, ResetCmd, SelfUpdateCmd, StatusCmd, UnapplyCmd,
+        ConfigSyncCmd, ExecCmd, InitCmd, ResetCmd, SelfUpdateCmd, StatusCmd, UnapplyCmd,
         config::{lock::ConfigLockCmd, unlock::ConfigUnlockCmd},
     },
 };
@@ -91,4 +91,6 @@ pub enum ConfigSubcmd {
     Lock(ConfigLockCmd),
     /// Lock the config file.
     Unlock(ConfigUnlockCmd),
+    /// Sync the config file with the remote config.
+    Sync(ConfigSyncCmd),
 }

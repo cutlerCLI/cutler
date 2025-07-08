@@ -1,4 +1,4 @@
-use anyhow::{Result, bail};
+use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
 use defaults_rs::{Domain, preferences::Preferences};
@@ -6,7 +6,7 @@ use tokio::fs;
 
 use crate::{
     commands::Runnable,
-    config::loader::{get_config_path, load_config},
+    config::loader::load_config,
     domains::{collect, effective, read_current},
     snapshot::state::get_snapshot_path,
     util::{
@@ -26,11 +26,6 @@ pub struct ResetCmd {
 #[async_trait]
 impl Runnable for ResetCmd {
     async fn run(&self) -> Result<()> {
-        let config_path = get_config_path().await;
-        if !fs::try_exists(&config_path).await.unwrap() {
-            bail!("No config file found. Please run `cutler init` first, or create a config file.");
-        }
-
         let dry_run = should_dry_run();
 
         print_log(
@@ -46,7 +41,7 @@ impl Runnable for ResetCmd {
             return Ok(());
         }
 
-        let toml = load_config(&config_path, true).await?;
+        let toml = load_config(true).await?;
         let domains = collect(&toml)?;
 
         for (domain, table) in domains {

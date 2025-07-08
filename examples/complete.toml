@@ -1,6 +1,12 @@
 # Remove the line below to activate this configuration.
 lock = true
 
+# Remote config example
+[remote]
+url = "https://url/to/config.toml"
+verify_signature = true
+update_on_cmd = false
+
 # System Preferences
 
 [set.menuextra.clock]

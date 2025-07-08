@@ -18,6 +18,7 @@ pub use brew::install::BrewInstallCmd;
 pub use check_update::CheckUpdateCmd;
 pub use config::delete::ConfigDeleteCmd;
 pub use config::show::ConfigShowCmd;
+pub use config::sync::ConfigSyncCmd;
 pub use exec::ExecCmd;
 pub use init::InitCmd;
 pub use reset::ResetCmd;

@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use async_trait::async_trait;
 use clap::Args;
-use tokio::{fs, process::Command};
+use tokio::process::Command;
 
 use crate::{
     brew::{
@@ -9,7 +9,7 @@ use crate::{
         utils::{compare_brew_state, ensure_brew},
     },
     commands::Runnable,
-    config::{get_config_path, load_config},
+    config::load_config,
     util::{
         globals::{is_verbose, should_dry_run},
         logging::{LogLevel, print_log},
@@ -22,25 +22,16 @@ pub struct BrewInstallCmd;
 #[async_trait]
 impl Runnable for BrewInstallCmd {
     async fn run(&self) -> Result<()> {
-        let cfg_path = get_config_path().await;
         let dry_run = should_dry_run();
 
-        if !fs::try_exists(&cfg_path).await.unwrap() {
-            print_log(
-                LogLevel::Error,
-                "No config file found. Run `cutler init` to start.",
-            );
-            return Ok(());
-        }
-
-        // ensure homebrew installation
-        ensure_brew().await?;
-
-        let config = load_config(&cfg_path, true).await?;
+        let config = load_config(true).await?;
         let brew_cfg = config
             .get("brew")
             .and_then(|i| i.as_table())
             .context("No [brew] table found in config")?;
+
+        // ensure homebrew installation
+        ensure_brew().await?;
 
         // check the current brew state, including taps, formulae, and casks
         let brew_diff = match compare_brew_state(brew_cfg).await {

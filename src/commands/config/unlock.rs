@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use clap::Args;
 
-use anyhow::{Result, bail};
+use anyhow::Result;
 use tokio::fs;
 use toml_edit::Item;
 
@@ -23,12 +23,7 @@ impl Runnable for ConfigUnlockCmd {
         let cfg_path = get_config_path().await;
         let dry_run = should_dry_run();
 
-        let mut doc = if fs::try_exists(&cfg_path).await.unwrap() {
-            load_config_mut(&cfg_path, false).await?
-        } else {
-            bail!("Cannot unlock a config file that does not exist.")
-        };
-
+        let mut doc = load_config_mut(false).await?;
         let is_locked = doc.get("lock").and_then(Item::as_bool).unwrap_or(false);
 
         if !is_locked {

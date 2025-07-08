@@ -2,7 +2,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
 use tokio::fs;
-use toml_edit::{Array, DocumentMut, Item, Table, Value};
+use toml_edit::{Array, Item, Table, Value};
 
 use crate::{
     brew::{
@@ -33,17 +33,16 @@ impl Runnable for BrewBackupCmd {
         // ensure brew install
         ensure_brew().await?;
 
+        // essential inits
         let formulas = brew_list(BrewListType::Formula).await?;
         let casks = brew_list(BrewListType::Cask).await?;
         let taps = brew_list(BrewListType::Tap).await?;
         let mut deps = Vec::new();
 
-        let mut doc = if fs::try_exists(&cfg_path).await.unwrap() {
-            load_config_mut(&cfg_path, true).await?
-        } else {
-            DocumentMut::new()
-        };
+        // init config
+        let mut doc = load_config_mut(true).await?;
 
+        // init brew table from config
         let brew_item = doc.entry("brew").or_insert(Item::Table(Table::new()));
         let brew_tbl = brew_item.as_table_mut().unwrap();
 

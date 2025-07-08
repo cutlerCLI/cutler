@@ -1,4 +1,5 @@
 use clap::Parser;
+use cutler::autosync::try_auto_sync;
 use cutler::cli::args::{BrewSubcmd, ConfigSubcmd};
 use cutler::cli::completion::generate_completion;
 use cutler::cli::{Args, Command};
@@ -21,6 +22,10 @@ async fn main() {
     set_dry_run(args.dry_run);
     set_no_restart_services(args.no_restart_services);
 
+    // remote config auto-sync (if enabled)
+    try_auto_sync(&args.command).await;
+
+    // sudo protection
     let result = match &args.command {
         Command::SelfUpdate(_) => run_with_root(),
         _ => run_with_noroot(),
@@ -31,6 +36,7 @@ async fn main() {
         std::process::exit(1);
     }
 
+    // command invocation (for real this time)
     let result = match &args.command {
         Command::Apply(cmd) => cmd.run().await,
         Command::Exec(cmd) => cmd.run().await,
@@ -43,6 +49,7 @@ async fn main() {
             ConfigSubcmd::Delete(cmd) => cmd.run().await,
             ConfigSubcmd::Lock(cmd) => cmd.run().await,
             ConfigSubcmd::Unlock(cmd) => cmd.run().await,
+            ConfigSubcmd::Sync(cmd) => cmd.run().await,
         },
         Command::Brew { command } => match command {
             BrewSubcmd::Backup(cmd) => cmd.run().await,

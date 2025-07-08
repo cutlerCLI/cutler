@@ -1,7 +1,4 @@
-use std::{
-    env,
-    path::{Path, PathBuf},
-};
+use std::{env, path::PathBuf};
 
 use anyhow::{Context, Result, anyhow, bail};
 use tokio::fs;
@@ -50,8 +47,14 @@ pub async fn get_config_path() -> PathBuf {
 }
 
 /// Read and parse the configuration file at a given path.
-pub async fn load_config(path: &Path, lock_check: bool) -> Result<Value, anyhow::Error> {
-    let content = tokio::fs::read_to_string(path)
+pub async fn load_config(lock_check: bool) -> Result<Value, anyhow::Error> {
+    let path = &get_config_path().await;
+
+    if !fs::try_exists(path).await.unwrap() {
+        bail!("No config file found at {path:?}.\nPlease start by creating one with `cutler init`.")
+    }
+
+    let content = fs::read_to_string(path)
         .await
         .with_context(|| format!("Failed to read config file at {path:?}"))?;
     let parsed: Value = content.parse::<Value>().with_context(|| {
@@ -68,8 +71,14 @@ pub async fn load_config(path: &Path, lock_check: bool) -> Result<Value, anyhow:
 }
 
 /// Same as load_config, but returns a mutable DocumentMut instance.
-pub async fn load_config_mut(path: &Path, lock_check: bool) -> Result<DocumentMut, anyhow::Error> {
-    let content = tokio::fs::read_to_string(path)
+pub async fn load_config_mut(lock_check: bool) -> Result<DocumentMut, anyhow::Error> {
+    let path = &get_config_path().await;
+
+    if !fs::try_exists(path).await.unwrap() {
+        bail!("No config file found at {path:?}.\nPlease start by creating one with `cutler init`.")
+    }
+
+    let content = fs::read_to_string(path)
         .await
         .with_context(|| format!("Failed to read config file at {path:?}"))?;
     let parsed: DocumentMut = content.parse::<DocumentMut>().with_context(|| {

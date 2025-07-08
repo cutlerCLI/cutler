@@ -4,17 +4,16 @@ use crate::{
         utils::{compare_brew_state, is_brew_installed},
     },
     commands::Runnable,
-    config::loader::{get_config_path, load_config},
+    config::loader::load_config,
     domains::{collect, effective, read_current},
     util::{
         convert::normalize,
         logging::{BOLD, GREEN, LogLevel, RED, RESET, print_log},
     },
 };
-use anyhow::{Result, bail};
+use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
-use tokio::fs;
 
 #[derive(Args, Debug)]
 pub struct StatusCmd {
@@ -26,12 +25,7 @@ pub struct StatusCmd {
 #[async_trait]
 impl Runnable for StatusCmd {
     async fn run(&self) -> Result<()> {
-        let config_path = get_config_path().await;
-        if !fs::try_exists(&config_path).await.unwrap() {
-            bail!("No config file found. Please run `cutler init` first, or create a config file.");
-        }
-
-        let toml = load_config(&config_path, false).await?;
+        let toml = load_config(false).await?;
         let domains = collect(&toml)?;
 
         // flatten all settings into a list
