@@ -3,13 +3,12 @@ lock = true
 
 # Remote config example
 [remote]
-url = "https://url/to/config.toml"
-verify_signature = true
-update_on_cmd = false
+url = "https://url/to/config.toml" # URL to your configuration file.
+update_on_cmd = false              # Whether to update the configuration on command execution.
 
 # System Preferences
 
-[set.menuextra.clock]
+[set.menuextra.clock] # Put the domain without the com.apple. prefix.
 FlashDateSeparators = true
 DateFormat = "\"h:mm:ss\""
 Show24Hour = false
@@ -61,16 +60,18 @@ NSAutomaticSpellingCorrectionEnabled = 0
 
 # External command execution
 
-[vars]
+[vars] # Initialize isolated variables for external commands. These aren't directy available in the environment.
 hostname = "darkstar"
 
 [commands.dotfiles]
 run = "mkdir ~/Developer && git clone https://github.com/hitblast/dotfiles.git ~/Developer/dotfiles && cd ~/Developer/dotfiles && stow . -t ~"
-ensure-first = true
+ensure_first = true
+# ensure_first ensures that these commands are run before any other command, synchronously.
 
 [commands.mise]
 run = "mise install"
-ensure-first = true
+ensure_first = true
+# this command will run after commands.dotfiles which is above
 
 [commands.hostname]
 run = "scutil --set ComputerName $hostname && scutil --set HostName $hostname && scutil --set LocalHostName $hostname"
@@ -136,4 +137,4 @@ casks = [
     "zulu@21",
 ]
 taps = ["hitblast/tap", "nikitabobko/tap"]
-no-deps = true
+no_deps = true # Use this if you do not want cutler to check for dependencies when comparing.

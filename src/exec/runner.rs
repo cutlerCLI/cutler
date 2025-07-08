@@ -32,9 +32,14 @@ pub fn extract_cmd(config: &Value, name: &str) -> Result<ExternalCommandState> {
         .and_then(Value::as_bool)
         .unwrap_or(false);
     let ensure_first = cmd_table
-        .get("ensure-first")
+        .get("ensure_first")
         .and_then(Value::as_bool)
-        .unwrap_or(false);
+        .unwrap_or(
+            cmd_table
+                .get("ensure-first")
+                .and_then(Value::as_bool)
+                .unwrap_or(false),
+        );
 
     Ok(ExternalCommandState {
         run: final_line,
@@ -189,7 +194,7 @@ pub async fn run_all(config: &Value) -> Result<()> {
     let cmds = extract_all_cmds(config);
     let dry_run = should_dry_run();
 
-    // separate ensure-first commands from regular commands
+    // separate ensure_first commands from regular commands
     let mut ensure_first_cmds = Vec::new();
     let mut regular_cmds = Vec::new();
 
@@ -203,7 +208,7 @@ pub async fn run_all(config: &Value) -> Result<()> {
 
     let mut failures = 0;
 
-    // run all ensure-first commands sequentially first
+    // run all ensure_first commands sequentially first
     for state in ensure_first_cmds {
         if (execute_command(state, vars.as_ref(), dry_run).await).is_err() {
             failures += 1;

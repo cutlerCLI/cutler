@@ -2,7 +2,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
 use tokio::fs;
-use toml_edit::{Array, Item, Table, Value};
+use toml_edit::{Array, DocumentMut, Item, Table, Value};
 
 use crate::{
     brew::{
@@ -44,7 +44,7 @@ impl Runnable for BrewBackupCmd {
             Ok(config) => config,
             Err(e) if e.to_string().contains("No such file or directory") => {
                 print_log(
-                    LogLevel::Warn,
+                    LogLevel::Warning,
                     "Configuration file not found. Initializing an empty configuration.",
                 );
                 DocumentMut::new()
@@ -57,14 +57,14 @@ impl Runnable for BrewBackupCmd {
         let brew_tbl = brew_item.as_table_mut().unwrap();
 
         // firstly remember the --no-deps value
-        brew_tbl["no-deps"] = Item::None;
+        brew_tbl["no_deps"] = Item::None;
         if self.no_deps {
             deps = brew_list(BrewListType::Dependency).await?;
             print_log(
                 LogLevel::Info,
-                "Setting no-deps to true in config for later reads.",
+                "Setting no_deps to true in config for later reads.",
             );
-            brew_tbl["no-deps"] = Item::Value(Value::Boolean(toml_edit::Formatted::new(true)));
+            brew_tbl["no_deps"] = Item::Value(Value::Boolean(toml_edit::Formatted::new(true)));
         }
 
         // build TOML arrays for formulae and casks

@@ -8,6 +8,7 @@ use anyhow::{Result, bail};
 use std::{env, path::Path, time::Duration};
 use tokio::fs;
 use tokio::process::Command;
+use toml::Value;
 
 /// Helper for: ensure_brew()
 /// Ensures Xcode Command Line Tools are installed.
@@ -246,14 +247,16 @@ pub async fn compare_brew_state(brew_cfg: &toml::value::Table) -> Result<BrewDif
         "Starting comparison of Homebrew state with config...",
     );
 
-    let no_deps = brew_cfg
-        .get("no-deps")
-        .and_then(|v| v.as_bool())
-        .unwrap_or(false);
+    let no_deps = brew_cfg.get("no_deps").and_then(Value::as_bool).unwrap_or(
+        brew_cfg
+            .get("no-deps")
+            .and_then(Value::as_bool)
+            .unwrap_or(false),
+    );
 
     let config_formulae: Vec<String> = brew_cfg
         .get("formulae")
-        .and_then(|v| v.as_array())
+        .and_then(Value::as_array)
         .map(|arr| {
             arr.iter()
                 .filter_map(|x| x.as_str())
@@ -264,7 +267,7 @@ pub async fn compare_brew_state(brew_cfg: &toml::value::Table) -> Result<BrewDif
 
     let config_casks: Vec<String> = brew_cfg
         .get("casks")
-        .and_then(|v| v.as_array())
+        .and_then(Value::as_array)
         .map(|arr| {
             arr.iter()
                 .filter_map(|x| x.as_str())
@@ -275,7 +278,7 @@ pub async fn compare_brew_state(brew_cfg: &toml::value::Table) -> Result<BrewDif
 
     let config_taps: Vec<String> = brew_cfg
         .get("taps")
-        .and_then(|v| v.as_array())
+        .and_then(Value::as_array)
         .map(|arr| {
             arr.iter()
                 .filter_map(|x| x.as_str())
@@ -291,7 +294,7 @@ pub async fn compare_brew_state(brew_cfg: &toml::value::Table) -> Result<BrewDif
 
     // omit installed as dependency
     if no_deps {
-        print_log(LogLevel::Info, "deps-check found to be true, proceeding...");
+        print_log(LogLevel::Info, "--no-deps used, proceeding with checks...");
         let installed_as_deps = brew_list(BrewListType::Dependency).await?;
 
         installed_formulae = installed_formulae
