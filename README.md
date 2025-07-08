@@ -6,9 +6,7 @@
 
 Powerful, declarative settings management for your Mac, with speed.
 
-[![Release Builds](https://github.com/cutlerCLI/cutler/actions/workflows/release.yml/badge.svg)](https://github.com/cutlerCLI/cutler/actions/workflows/release.yml)
-[![Rust Tests](https://github.com/cutlerCLI/cutler/actions/workflows/tests.yml/badge.svg)](https://github.com/cutlerCLI/cutler/actions/workflows/tests.yml)
-[![Downloads](https://img.shields.io/crates/d/cutler?style=social&logo=Rust)](https://crates.io/crates/cutler)
+[![Crates.io Downloads](https://img.shields.io/crates/d/cutler?style=social&logo=Rust)](https://crates.io/crates/cutler)
 
 </div>
 
