@@ -49,7 +49,7 @@ impl Runnable for BrewBackupCmd {
                 );
                 DocumentMut::new()
             }
-            Err(e) => return Err(e.into()),
+            Err(e) => return Err(e),
         };
 
         // init brew table from config

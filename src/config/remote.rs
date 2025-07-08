@@ -23,36 +23,36 @@ impl RemoteConfig {
 
         Some(Self { url, update_on_cmd })
     }
-}
 
-/// Fetch the remote config file as TOML.
-pub async fn fetch_remote_config(url: String) -> Result<Value> {
-    print_log(
-        LogLevel::Info,
-        &format!("Fetching remote config from {url}"),
-    );
+    /// Fetch the remote config file as TOML.
+    pub async fn fetch(&self) -> Result<Value> {
+        print_log(
+            LogLevel::Info,
+            &format!("Fetching remote config from {}", self.url),
+        );
 
-    let client = Client::builder()
-        .user_agent("cutler-remote-config")
-        .build()?;
+        let client = Client::builder()
+            .user_agent("cutler-remote-config")
+            .build()?;
 
-    let resp = client
-        .get(&url)
-        .send()
-        .await
-        .with_context(|| format!("Failed to fetch remote config from {url}"))?;
+        let resp = client
+            .get(&self.url)
+            .send()
+            .await
+            .with_context(|| format!("Failed to fetch remote config from {}", self.url))?;
 
-    if !resp.status().is_success() {
-        return Err(anyhow!(
-            "Failed to fetch remote config: HTTP {}",
-            resp.status()
-        ));
+        if !resp.status().is_success() {
+            return Err(anyhow!(
+                "Failed to fetch remote config: HTTP {}",
+                resp.status()
+            ));
+        }
+
+        let text = resp.text().await?;
+        let remote_config: Value = text
+            .parse::<Value>()
+            .with_context(|| format!("Failed to parse remote config as TOML from {}", self.url))?;
+
+        Ok(remote_config)
     }
-
-    let text = resp.text().await?;
-    let remote_config: Value = text
-        .parse::<Value>()
-        .with_context(|| format!("Failed to parse remote config as TOML from {url}"))?;
-
-    Ok(remote_config)
 }

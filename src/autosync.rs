@@ -1,5 +1,5 @@
 use crate::cli::args::ConfigSubcmd;
-use crate::config::remote::{RemoteConfig, fetch_remote_config};
+use crate::config::remote::RemoteConfig;
 use crate::config::{get_config_path, load_config};
 use crate::util::logging::{LogLevel, print_log};
 use tokio::fs;
@@ -29,7 +29,7 @@ pub async fn try_auto_sync(command: &crate::cli::Command) {
     let remote_cfg = RemoteConfig::from_toml(&local_doc);
     if let Some(remote_cfg) = remote_cfg {
         if remote_cfg.update_on_cmd {
-            match fetch_remote_config(remote_cfg.url).await {
+            match remote_cfg.fetch().await {
                 Ok(remote_val) => {
                     let remote_text = remote_val.to_string();
                     let cfg_path = get_config_path().await;

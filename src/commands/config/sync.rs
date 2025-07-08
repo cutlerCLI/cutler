@@ -5,11 +5,7 @@ use tokio::fs;
 
 use crate::{
     commands::Runnable,
-    config::{
-        load_config,
-        loader::get_config_path,
-        remote::{RemoteConfig, fetch_remote_config},
-    },
+    config::{load_config, loader::get_config_path, remote::RemoteConfig},
     util::{
         globals::should_dry_run,
         io::confirm_action,
@@ -36,7 +32,7 @@ impl Runnable for ConfigSyncCmd {
         };
 
         // fetch remote config
-        let remote_doc = match fetch_remote_config(remote_cfg.url).await {
+        let remote_doc = match remote_cfg.fetch().await {
             Ok(val) => val,
             Err(e) => bail!("Failed to fetch remote config: {e}"),
         };
