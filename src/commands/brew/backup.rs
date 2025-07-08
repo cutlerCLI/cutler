@@ -40,7 +40,17 @@ impl Runnable for BrewBackupCmd {
         let mut deps = Vec::new();
 
         // init config
-        let mut doc = load_config_mut(true).await?;
+        let mut doc = match load_config_mut(true).await {
+            Ok(config) => config,
+            Err(e) if e.to_string().contains("No such file or directory") => {
+                print_log(
+                    LogLevel::Warn,
+                    "Configuration file not found. Initializing an empty configuration.",
+                );
+                DocumentMut::new()
+            }
+            Err(e) => return Err(e.into()),
+        };
 
         // init brew table from config
         let brew_item = doc.entry("brew").or_insert(Item::Table(Table::new()));
