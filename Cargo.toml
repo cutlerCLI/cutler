@@ -26,8 +26,11 @@ dialoguer = "0.11.0"
 self_update = { version = "0.42.0", features = ["compression-zip-deflate"] }
 async-trait = "0.1.88"
 defaults-rs = "0.2.3"
-ureq = "3.0.12"
 nix = { version = "0.30.1", features = ["user"] }
+reqwest = { version = "0.12", features = [
+    "json",
+    "rustls-tls",
+], default-features = false }
 
 [dev-dependencies]
 tempfile = "3.20.0"

@@ -72,10 +72,15 @@ impl Runnable for SelfUpdateCmd {
             print_log(LogLevel::Info, "Binary updated, updating manpage...");
 
             let manpage_url = "https://raw.githubusercontent.com/cutlerCLI/cutler/refs/heads/master/man/man1/cutler.1".to_string();
-            let manpage_content = ureq::get(&manpage_url)
-                .call()?
-                .into_body()
-                .read_to_string()?;
+            let client = reqwest::Client::builder()
+                .user_agent("cutler-self-update")
+                .build()?;
+            let resp = client
+                .get(&manpage_url)
+                .send()
+                .await
+                .map_err(|e| anyhow::anyhow!("Failed to fetch manpage: {}", e))?;
+            let manpage_content = resp.text().await?;
 
             fs::create_dir_all("/usr/local/share/man/man1").await?;
             fs::write("/usr/local/share/man/man1/cutler.1", manpage_content).await?;

@@ -3,6 +3,7 @@ use std::cmp::Ordering;
 use anyhow::{Context, Result, anyhow};
 use async_trait::async_trait;
 use clap::Args;
+use reqwest;
 use semver::Version;
 
 use crate::{
@@ -28,29 +29,27 @@ impl Runnable for CheckUpdateCmd {
 
         // fetch latest release tag from GitHub API
         let url = "https://api.github.com/repos/cutlerCLI/cutler/releases/latest";
-        let latest_version: String = tokio::task::spawn_blocking(move || {
-            let response = ureq::get(url)
-                .header("Accept", "application/vnd.github.v3+json")
-                .header("User-Agent", "cutler-update-check")
-                .call()
-                .map_err(|e| anyhow!("Failed to fetch latest GitHub release: {}", e))?;
+        let client = reqwest::Client::builder()
+            .user_agent("cutler-update-check")
+            .build()
+            .expect("Failed to build request client");
+        let resp = client
+            .get(url)
+            .header("Accept", "application/vnd.github.v3+json")
+            .send()
+            .await
+            .with_context(|| format!("Failed to fetch latest GitHub release: {url}"))?;
+        let body = resp.text().await?;
+        let json: serde_json::Value = serde_json::from_str(&body)
+            .map_err(|e| anyhow!("Failed to parse GitHub API response: {}", e))?;
 
-            let body_reader = response
-                .into_body()
-                .read_to_string()
-                .map_err(|e| anyhow!("Failed to read GitHub API response body: {}", e))?;
-
-            let json: serde_json::Value = serde_json::from_str(&body_reader)
-                .map_err(|e| anyhow!("Failed to parse GitHub API response: {}", e))?;
-
-            // try "tag_name" first, fallback to "name"
-            json.get("tag_name")
-                .and_then(|v| v.as_str())
-                .or_else(|| json.get("name").and_then(|v| v.as_str()))
-                .map(|s| s.trim_start_matches('v').to_string())
-                .ok_or_else(|| anyhow!("Could not find latest version tag in GitHub API response"))
-        })
-        .await??;
+        // try "tag_name" first, fallback to "name"
+        let latest_version = json
+            .get("tag_name")
+            .and_then(|v| v.as_str())
+            .or_else(|| json.get("name").and_then(|v| v.as_str()))
+            .map(|s| s.trim_start_matches('v').to_string())
+            .ok_or_else(|| anyhow!("Could not find latest version tag in GitHub API response"))?;
 
         print_log(LogLevel::Info, &format!("Latest version: {latest_version}"));
 
