@@ -12,7 +12,8 @@ pub fn extract_cmd(config: &Value, name: &str) -> Result<ExternalCommandState> {
     let vars = config.get("vars").and_then(Value::as_table).cloned();
 
     let cmd_table = config
-        .get("commands")
+        .get("command")
+        .or_else(|| config.get("commands"))
         .and_then(Value::as_table)
         .and_then(|m| m.get(name))
         .and_then(Value::as_table)
@@ -33,13 +34,9 @@ pub fn extract_cmd(config: &Value, name: &str) -> Result<ExternalCommandState> {
         .unwrap_or(false);
     let ensure_first = cmd_table
         .get("ensure_first")
+        .or_else(|| cmd_table.get("ensure-first"))
         .and_then(Value::as_bool)
-        .unwrap_or(
-            cmd_table
-                .get("ensure-first")
-                .and_then(Value::as_bool)
-                .unwrap_or(false),
-        );
+        .unwrap_or(false);
 
     Ok(ExternalCommandState {
         run: final_line,

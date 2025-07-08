@@ -247,12 +247,11 @@ pub async fn compare_brew_state(brew_cfg: &toml::value::Table) -> Result<BrewDif
         "Starting comparison of Homebrew state with config...",
     );
 
-    let no_deps = brew_cfg.get("no_deps").and_then(Value::as_bool).unwrap_or(
-        brew_cfg
-            .get("no-deps")
-            .and_then(Value::as_bool)
-            .unwrap_or(false),
-    );
+    let no_deps = brew_cfg
+        .get("no_deps")
+        .or_else(|| brew_cfg.get("no-deps"))
+        .and_then(Value::as_bool)
+        .unwrap_or(false);
 
     let config_formulae: Vec<String> = brew_cfg
         .get("formulae")
@@ -294,7 +293,7 @@ pub async fn compare_brew_state(brew_cfg: &toml::value::Table) -> Result<BrewDif
 
     // omit installed as dependency
     if no_deps {
-        print_log(LogLevel::Info, "--no-deps used, proceeding with checks...");
+        print_log(LogLevel::Info, "--no found to be true, proceeding...");
         let installed_as_deps = brew_list(BrewListType::Dependency).await?;
 
         installed_formulae = installed_formulae
