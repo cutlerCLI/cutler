@@ -86,6 +86,7 @@ pub async fn load_config(lock_check: bool) -> Result<Value, anyhow::Error> {
     if parsed.get("lock").and_then(Value::as_bool).unwrap_or(false) && lock_check {
         bail!("The config file is locked. Run `cutler config unlock` to unlock.");
     }
+
     Ok(parsed)
 }
 
