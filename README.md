@@ -29,22 +29,7 @@ You can install cutler by running this command in the terminal:
 curl -fsSL https://cutlercli.github.io/scripts/install.sh | /bin/bash
 ```
 
-Other installation methods:
-
-- **Homebrew**:
-  ```bash
-  brew install hitblast/tap/cutler
-  ```
-- **cargo**:
-  ```bash
-  cargo install cutler
-  ```
-- **mise**:
-  ```bash
-  mise use -g cargo:cutler
-  ```
-
-For installing manually, [see this section](https://cutlercli.github.io/cookbook/installation.html#manual-installation).
+See ["Installation"](https://cutlercli.github.io/cookbook/installation.html) for other methods.
 
 ## Documentation
 
