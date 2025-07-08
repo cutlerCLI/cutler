@@ -293,7 +293,7 @@ pub async fn compare_brew_state(brew_cfg: &toml::value::Table) -> Result<BrewDif
 
     // omit installed as dependency
     if no_deps {
-        print_log(LogLevel::Info, "--no found to be true, proceeding...");
+        print_log(LogLevel::Info, "--no-deps used, proceeding with checks...");
         let installed_as_deps = brew_list(BrewListType::Dependency).await?;
 
         installed_formulae = installed_formulae
