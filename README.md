@@ -10,14 +10,12 @@ Powerful, declarative settings management for your Mac, with speed.
 
 </div>
 
-> [!WARNING]
-> Although cutler is solid enough for daily-driving now, expect breaking changes before the v1 release.
+> [!NOTE]
+> Consider starring the project! It always keeps the energy high for creating new features, fixes and patches for the project.
 
 ## Overview
 
 cutler aims to simplify your macOS setup experience into an "almost" one-command procedure. Define your settings once, then easily apply, track, and revert changes across your system—think of it as infrastructure-as-code for your Mac.
-
-This project is still under development, and more ways of improving it are constantly popping up. If you like it, consider starring! It's free, and it always supports me to make such projects.
 
 ## Installation
 
