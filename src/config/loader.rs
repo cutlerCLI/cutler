@@ -1,4 +1,4 @@
-use std::{env, path::PathBuf};
+use std::{env, path::PathBuf, sync::OnceLock};
 
 use anyhow::{Context, Result, anyhow, bail};
 use tokio::fs;
@@ -46,17 +46,36 @@ pub async fn get_config_path() -> PathBuf {
         .unwrap_or_else(|| PathBuf::from("cutler.toml"))
 }
 
-/// Read and parse the configuration file at a given path.
-pub async fn load_config(lock_check: bool) -> Result<Value, anyhow::Error> {
-    let path = &get_config_path().await;
+/// Variable to cache the configuration file content for the process lifetime.
+static CONFIG_CONTENT: OnceLock<String> = OnceLock::new();
 
-    if !fs::try_exists(path).await.unwrap() {
+/// Helper for: load_config(), load_config_mut()
+/// Read and cache the configuration file content for the process lifetime.
+async fn get_config_content() -> Result<(String, PathBuf), anyhow::Error> {
+    let path = get_config_path().await;
+    if !fs::try_exists(&path).await.unwrap() {
         bail!("No config file found at {path:?}.\nPlease start by creating one with `cutler init`.")
     }
 
-    let content = fs::read_to_string(path)
+    // try to get from cache
+    if let Some(content) = CONFIG_CONTENT.get() {
+        return Ok((content.clone(), path));
+    }
+
+    let content = fs::read_to_string(&path)
         .await
         .with_context(|| format!("Failed to read config file at {path:?}"))?;
+
+    // cache it
+    let _ = CONFIG_CONTENT.set(content.clone());
+
+    Ok((content, path))
+}
+
+/// Read and parse the configuration file at a given path.
+pub async fn load_config(lock_check: bool) -> Result<Value, anyhow::Error> {
+    let (content, path) = get_config_content().await?;
+
     let parsed: Value = content.parse::<Value>().with_context(|| {
         format!(
             "Failed to parse TOML at {path:?}. Please check for syntax errors or invalid structure."
@@ -70,17 +89,10 @@ pub async fn load_config(lock_check: bool) -> Result<Value, anyhow::Error> {
     Ok(parsed)
 }
 
-/// Same as load_config, but returns a mutable DocumentMut instance.
+/// Mutably read and parse the configuration file at a given path.
 pub async fn load_config_mut(lock_check: bool) -> Result<DocumentMut, anyhow::Error> {
-    let path = &get_config_path().await;
+    let (content, path) = get_config_content().await?;
 
-    if !fs::try_exists(path).await.unwrap() {
-        bail!("No config file found at {path:?}.\nPlease start by creating one with `cutler init`.")
-    }
-
-    let content = fs::read_to_string(path)
-        .await
-        .with_context(|| format!("Failed to read config file at {path:?}"))?;
     let parsed: DocumentMut = content.parse::<DocumentMut>().with_context(|| {
         format!(
             "Failed to parse TOML at {path:?}. Please check for syntax errors or invalid structure."
