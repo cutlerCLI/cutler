@@ -17,7 +17,18 @@ pub async fn try_auto_sync(command: &crate::cli::Command) {
     }
 
     // detached loading to not affect cache
-    let local_doc = load_config_detached(true).await.unwrap();
+    let local_doc = match load_config_detached(true).await {
+        Ok(doc) => doc,
+        Err(_) => {
+            print_log(
+                LogLevel::Warning,
+                &format!(
+                    "Config load failure when autosyncing. Might spread to other functions of cutler."
+                ),
+            );
+            return;
+        }
+    };
 
     // start
     let remote_cfg = RemoteConfig::from_toml(&local_doc);
@@ -49,6 +60,11 @@ pub async fn try_auto_sync(command: &crate::cli::Command) {
                     );
                 }
             }
+        } else {
+            print_log(
+                LogLevel::Info,
+                &format!("You might want to enable autosync in your config."),
+            );
         }
     }
 }
