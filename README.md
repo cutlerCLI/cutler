@@ -33,9 +33,6 @@ See ["Installation"](https://cutlercli.github.io/cookbook/installation.html) for
 
 ## Contributing
 
-> [!IMPORTANT]
-> If you would like to keep track of the bleeding-edge commits, check out the [official development fork](https://github.com/hitblast/cutler) of cutler where most of the latest development and feat happens.
-
 View the [Contribution Guidelines](https://cutlercli.github.io/cookbook/contributing.html) to learn more about contributing to cutler.
 
 ## License
