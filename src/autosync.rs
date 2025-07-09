@@ -22,11 +22,14 @@ pub async fn try_auto_sync(command: &crate::cli::Command) {
             match remote_cfg.fetch().await {
                 Ok(remote_val) => {
                     // preserve/merge [remote]
-                    let remote_text = merge_remote_config(&local_doc, &remote_val).to_string();
+                    let remote_text = merge_remote_config(&local_doc, &remote_val)
+                        .as_table()
+                        .unwrap()
+                        .to_string();
                     let cfg_path = get_config_path().await;
 
                     // finally write to disk
-                    if let Err(e) = fs::write(&cfg_path, &remote_text).await {
+                    if let Err(e) = fs::write(&cfg_path, remote_text).await {
                         print_log(
                             LogLevel::Warning,
                             &format!("Failed to auto-sync remote config: {e}"),

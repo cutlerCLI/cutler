@@ -95,8 +95,11 @@ impl Runnable for FetchCmd {
             );
         } else {
             // preserve/merge [remote]
-            let merged_doc = merge_remote_config(&local_doc, &remote_doc);
-            fs::write(&cfg_path, &merged_doc.to_string()).await?;
+            let merged_doc = merge_remote_config(&local_doc, &remote_doc)
+                .as_table()
+                .unwrap()
+                .to_string();
+            fs::write(&cfg_path, merged_doc).await?;
 
             print_log(
                 LogLevel::Fruitful,
