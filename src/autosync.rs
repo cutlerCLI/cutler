@@ -1,21 +1,13 @@
 use crate::commands::FetchCmd;
-use crate::config::remote::RemoteConfig;
-use crate::config::{get_config_path, load_config};
+use crate::config::loader::{get_config_path, load_config};
+use crate::config::remote::{RemoteConfig, merge_remote_config};
 use crate::util::logging::{LogLevel, print_log};
 use tokio::fs;
-
-/// Checks if auto-sync should run (not during config sync command).
-pub fn should_auto_sync(command: &crate::cli::Command) -> bool {
-    match command {
-        crate::cli::Command::Fetch(FetchCmd) => true,
-        _ => false,
-    }
-}
 
 /// Perform remote config auto-sync if enabled in [remote] and internet is available.
 /// This should be called early in main().
 pub async fn try_auto_sync(command: &crate::cli::Command) {
-    if should_auto_sync(command) {
+    if matches!(command, crate::cli::Command::Fetch(FetchCmd)) {
         return;
     }
 
@@ -26,12 +18,14 @@ pub async fn try_auto_sync(command: &crate::cli::Command) {
 
     let remote_cfg = RemoteConfig::from_toml(&local_doc);
     if let Some(remote_cfg) = remote_cfg {
-        if remote_cfg.update_on_cmd {
+        if remote_cfg.autosync {
             match remote_cfg.fetch().await {
                 Ok(remote_val) => {
-                    let remote_text = remote_val.to_string();
+                    // preserve/merge [remote]
+                    let remote_text = merge_remote_config(&local_doc, &remote_val).to_string();
                     let cfg_path = get_config_path().await;
 
+                    // finally write to disk
                     if let Err(e) = fs::write(&cfg_path, &remote_text).await {
                         print_log(
                             LogLevel::Warning,

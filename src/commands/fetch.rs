@@ -5,7 +5,10 @@ use tokio::fs;
 
 use crate::{
     commands::Runnable,
-    config::{load_config, loader::get_config_path, remote::RemoteConfig},
+    config::{
+        loader::{get_config_path, load_config},
+        remote::{RemoteConfig, merge_remote_config},
+    },
     util::{
         globals::should_dry_run,
         io::confirm_action,
@@ -67,13 +70,14 @@ impl Runnable for FetchCmd {
                 LogLevel::Info,
                 "No differences found between local and remote config.",
             );
+            return Ok(());
         } else {
             print_log(
-                LogLevel::Info,
+                LogLevel::Warning,
                 "Differences between local and remote config:",
             );
             for line in &changes {
-                println!("  {line}");
+                print_log(LogLevel::Warning, &format!("  {line}"));
             }
         }
 
@@ -84,15 +88,16 @@ impl Runnable for FetchCmd {
         }
 
         // overwrite local config with remote config (or just print in dry-run)
-        let remote_text = remote_doc.to_string();
         if dry_run {
             print_log(
                 LogLevel::Dry,
-                &format!("Would overwrite {cfg_path:?} with remote config:"),
+                &format!("Would overwrite {cfg_path:?} with remote config."),
             );
-            println!("{remote_text}");
         } else {
-            fs::write(&cfg_path, &remote_text).await?;
+            // preserve/merge [remote]
+            let merged_doc = merge_remote_config(&local_doc, &remote_doc);
+            fs::write(&cfg_path, &merged_doc.to_string()).await?;
+
             print_log(
                 LogLevel::Fruitful,
                 &format!("{GREEN}Local config updated from remote!{RESET}"),

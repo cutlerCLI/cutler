@@ -4,7 +4,7 @@ lock = true
 # Remote config example
 [remote]
 url = "https://url/to/config.toml" # URL to your configuration file.
-update_on_cmd = false              # Whether to update the configuration on command execution.
+autosync = false                   # Whether to update the configuration on command execution.
 
 # System Preferences
 

@@ -1,17 +1,23 @@
 use crate::{
     commands::{BrewInstallCmd, Runnable},
-    config::loader::load_config,
+    config::{
+        loader::{get_config_path, load_config},
+        remote::RemoteConfig,
+    },
     domains::collector,
     exec::runner,
-    snapshot::state::{SettingState, Snapshot},
+    snapshot::{
+        get_snapshot_path,
+        state::{SettingState, Snapshot},
+    },
     util::{
         convert::{normalize, toml_to_prefvalue},
         globals::should_dry_run,
-        io::restart_system_services,
+        io::{confirm_action, restart_system_services},
         logging::{GREEN, LogLevel, RESET, print_log},
     },
 };
-use anyhow::Result;
+use anyhow::{Result, bail};
 use async_trait::async_trait;
 use clap::Args;
 use defaults_rs::{Domain, preferences::Preferences};
@@ -20,6 +26,10 @@ use toml::Value;
 
 #[derive(Args, Debug)]
 pub struct ApplyCmd {
+    /// The URL to the remote config file.
+    #[arg(short, long)]
+    pub url: Option<String>,
+
     /// Skip executing external commands at the end.
     #[arg(long)]
     pub no_exec: bool,
@@ -49,12 +59,43 @@ impl Runnable for ApplyCmd {
     async fn run(&self) -> Result<()> {
         let dry_run = should_dry_run();
 
+        // remote download logic
+        let config_path = get_config_path().await;
+
+        if let Some(url) = &self.url {
+            if fs::try_exists(&config_path).await.unwrap()
+                && !confirm_action("Local config exists but a URL was still passed. Proceed?")
+                    .unwrap()
+            {
+                bail!("Aborted apply: --url is passed despite local config.")
+            }
+
+            let remote_txt = RemoteConfig {
+                url: url.clone(),
+                autosync: true,
+            }
+            .fetch()
+            .await
+            .map_err(|_| anyhow::anyhow!("Bad TOML file found in remote URL."))?
+            .to_string();
+
+            if let Some(parent) = config_path.parent() {
+                fs::create_dir_all(parent).await?;
+            }
+            fs::write(&config_path, remote_txt).await?;
+
+            print_log(
+                LogLevel::Info,
+                &format!("Remote config downloaded at path: {config_path:?}"),
+            );
+        }
+
         // parse + flatten domains
         let toml = load_config(true).await?;
         let domains = collector::collect(&toml)?;
 
         // load the old snapshot (if any), otherwise create a new instance
-        let snap_path = crate::snapshot::state::get_snapshot_path();
+        let snap_path = get_snapshot_path();
         let snap = if fs::try_exists(&snap_path).await.unwrap() {
             Snapshot::load(&snap_path).await.unwrap_or_else(|e| {
                 print_log(

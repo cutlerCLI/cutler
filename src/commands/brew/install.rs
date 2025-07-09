@@ -9,7 +9,7 @@ use crate::{
         utils::{compare_brew_state, ensure_brew},
     },
     commands::Runnable,
-    config::load_config,
+    config::loader::load_config,
     util::{
         globals::{is_verbose, should_dry_run},
         logging::{LogLevel, print_log},

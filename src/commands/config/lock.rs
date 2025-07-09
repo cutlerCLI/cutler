@@ -7,7 +7,7 @@ use toml_edit::Item;
 
 use crate::{
     commands::Runnable,
-    config::{get_config_path, loader::load_config_mut},
+    config::loader::{get_config_path, load_config_mut},
     util::{
         globals::should_dry_run,
         logging::{LogLevel, print_log},

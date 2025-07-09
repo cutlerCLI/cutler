@@ -1,4 +1,4 @@
-use crate::{commands::Runnable, config::loader::create_config};
+use crate::{commands::Runnable, config::utils::create_config};
 use anyhow::{Result, bail};
 use async_trait::async_trait;
 use clap::Args;

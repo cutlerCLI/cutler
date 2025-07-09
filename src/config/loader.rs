@@ -1,27 +1,19 @@
 use std::{env, path::PathBuf, sync::OnceLock};
 
-use anyhow::{Context, Result, anyhow, bail};
+use anyhow::{Context, Result, bail};
 use tokio::fs;
 use toml::Value;
 use toml_edit::{DocumentMut, Item};
-
-use crate::util::{
-    globals::should_dry_run,
-    logging::{LogLevel, print_log},
-};
 
 /// Returns the path to the configuration file by checking several candidate locations.
 pub async fn get_config_path() -> PathBuf {
     let mut candidates = Vec::new();
 
     // decide candidates in order
-    if let Some(xdg_config) = env::var_os("XDG_CONFIG_HOME") {
-        let candidate = PathBuf::from(xdg_config).join("cutler").join("config.toml");
-        candidates.push(candidate);
-    }
+    let home = env::var_os("HOME");
 
-    if let Some(home) = env::var_os("HOME") {
-        let candidate = PathBuf::from(&home)
+    if let Some(ref home) = home {
+        let candidate = PathBuf::from(home)
             .join(".config")
             .join("cutler")
             .join("config.toml");
@@ -34,16 +26,25 @@ pub async fn get_config_path() -> PathBuf {
     candidates.push(PathBuf::from("cutler.toml"));
 
     // return the first candidate that exists
-    // might lead to a prompt to create an example config
     for candidate in &candidates {
         if fs::try_exists(candidate).await.unwrap() {
             return candidate.to_owned();
         }
     }
-    candidates
-        .first()
-        .cloned()
-        .unwrap_or_else(|| PathBuf::from("cutler.toml"))
+
+    // if none exist, always return $HOME/.config/cutler/config.toml if HOME is set
+    // else fallback to ~/.config/cutler/config.toml
+    if let Some(home) = home {
+        PathBuf::from(home)
+            .join(".config")
+            .join("cutler")
+            .join("config.toml")
+    } else {
+        PathBuf::from("~")
+            .join(".config")
+            .join("cutler")
+            .join("config.toml")
+    }
 }
 
 /// Variable to cache the configuration file content for the process lifetime.
@@ -106,49 +107,4 @@ pub async fn load_config_mut(lock_check: bool) -> Result<DocumentMut, anyhow::Er
     }
 
     Ok(parsed)
-}
-
-/// Creates a new configuration file (uses complete.toml template).
-pub async fn create_config(config_path: &PathBuf) -> Result<(), anyhow::Error> {
-    let dry_run = should_dry_run();
-
-    // ensure parent directory exists
-    if let Some(parent) = config_path.parent() {
-        if dry_run {
-            print_log(
-                LogLevel::Dry,
-                &format!("Would create directory: {parent:?}"),
-            );
-        } else {
-            print_log(LogLevel::Info, &format!("Creating parent dir: {parent:?}"));
-            fs::create_dir_all(parent).await?;
-        }
-    }
-
-    // TOML template
-    let default_cfg = include_str!("../../examples/complete.toml");
-
-    if dry_run {
-        print_log(
-            LogLevel::Dry,
-            &format!("Would write configuration to {config_path:?}"),
-        );
-        print_log(
-            LogLevel::Dry,
-            &format!("Configuration content:\n{default_cfg}"),
-        );
-
-        Ok(())
-    } else {
-        fs::write(&config_path, default_cfg)
-            .await
-            .map_err(|e| anyhow!("Failed to write configuration to {:?}: {}", config_path, e))?;
-
-        print_log(
-            LogLevel::Fruitful,
-            &format!("Config created at {config_path:?}, Review and customize it before applying."),
-        );
-
-        Ok(())
-    }
 }
