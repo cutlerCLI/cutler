@@ -75,8 +75,9 @@ impl Runnable for ApplyCmd {
                 autosync: true,
             }
             .fetch()
-            .await
-            .map_err(|_| anyhow::anyhow!("Bad TOML file found in remote URL."))?
+            .await?
+            .as_table()
+            .unwrap()
             .to_string();
 
             if let Some(parent) = config_path.parent() {
