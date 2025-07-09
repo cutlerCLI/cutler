@@ -1,4 +1,4 @@
-use crate::cli::args::ConfigSubcmd;
+use crate::commands::FetchCmd;
 use crate::config::remote::RemoteConfig;
 use crate::config::{get_config_path, load_config};
 use crate::util::logging::{LogLevel, print_log};
@@ -7,9 +7,7 @@ use tokio::fs;
 /// Checks if auto-sync should run (not during config sync command).
 pub fn should_auto_sync(command: &crate::cli::Command) -> bool {
     match command {
-        crate::cli::Command::Config { command } => {
-            matches!(command, ConfigSubcmd::Sync(_))
-        }
+        crate::cli::Command::Fetch(FetchCmd) => true,
         _ => false,
     }
 }

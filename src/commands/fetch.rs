@@ -13,12 +13,11 @@ use crate::{
     },
 };
 
-/// Sync your local config with the remote config defined in [remote].
 #[derive(Debug, Default, Args)]
-pub struct ConfigSyncCmd;
+pub struct FetchCmd;
 
 #[async_trait]
-impl Runnable for ConfigSyncCmd {
+impl Runnable for FetchCmd {
     async fn run(&self) -> Result<()> {
         let cfg_path = get_config_path().await;
         let dry_run = should_dry_run();

@@ -5,7 +5,7 @@ use crate::{
     cli::completion::Shell,
     commands::{
         ApplyCmd, BrewBackupCmd, BrewInstallCmd, CheckUpdateCmd, ConfigDeleteCmd, ConfigShowCmd,
-        ConfigSyncCmd, ExecCmd, InitCmd, ResetCmd, SelfUpdateCmd, StatusCmd, UnapplyCmd,
+        ExecCmd, FetchCmd, InitCmd, ResetCmd, SelfUpdateCmd, StatusCmd, UnapplyCmd,
         config::{lock::ConfigLockCmd, unlock::ConfigUnlockCmd},
     },
 };
@@ -71,6 +71,8 @@ pub enum Command {
         #[arg(value_enum)]
         shell: Shell,
     },
+    /// Sync the local config with remote defined in [remote].
+    Fetch(FetchCmd),
 }
 
 #[derive(Subcommand, Debug)]
@@ -91,6 +93,4 @@ pub enum ConfigSubcmd {
     Lock(ConfigLockCmd),
     /// Lock the config file.
     Unlock(ConfigUnlockCmd),
-    /// Sync the config file with the remote config.
-    Sync(ConfigSyncCmd),
 }

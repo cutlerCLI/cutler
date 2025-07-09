@@ -12,7 +12,6 @@ use crate::{
     },
 };
 
-/// Initialize a new config file with sensible defaults.
 #[derive(Args, Debug)]
 pub struct InitCmd {
     /// Skip confirmation prompt.

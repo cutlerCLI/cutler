@@ -40,6 +40,7 @@ async fn main() {
     let result = match &args.command {
         Command::Apply(cmd) => cmd.run().await,
         Command::Exec(cmd) => cmd.run().await,
+        Command::Fetch(cmd) => cmd.run().await,
         Command::Init(cmd) => cmd.run().await,
         Command::Unapply(cmd) => cmd.run().await,
         Command::Reset(cmd) => cmd.run().await,
@@ -49,7 +50,6 @@ async fn main() {
             ConfigSubcmd::Delete(cmd) => cmd.run().await,
             ConfigSubcmd::Lock(cmd) => cmd.run().await,
             ConfigSubcmd::Unlock(cmd) => cmd.run().await,
-            ConfigSubcmd::Sync(cmd) => cmd.run().await,
         },
         Command::Brew { command } => match command {
             BrewSubcmd::Backup(cmd) => cmd.run().await,

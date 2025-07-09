@@ -10,7 +10,6 @@ use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
 
-/// Run only the external commands written in the config file.
 #[derive(Args, Debug)]
 pub struct ExecCmd {
     /// Provide a command name to execute if you only want to run it specifically.
