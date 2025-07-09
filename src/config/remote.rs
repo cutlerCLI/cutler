@@ -4,7 +4,7 @@ use toml::Value;
 
 use crate::util::logging::{LogLevel, print_log};
 
-/// Represents the [remote] config section
+/// Represents the [remote] config section.
 #[derive(Debug, Clone)]
 pub struct RemoteConfig {
     pub url: String,

@@ -108,3 +108,28 @@ pub async fn load_config_mut(lock_check: bool) -> Result<DocumentMut, anyhow::Er
 
     Ok(parsed)
 }
+
+/// Detached version of load_config: does not cache the result and does not interact with the OnceLock.
+pub async fn load_config_detached(lock_check: bool) -> Result<Value, anyhow::Error> {
+    let path = get_config_path().await;
+    if !fs::try_exists(&path).await.unwrap() {
+        bail!("No config file found at {path:?}.\nPlease start by creating one with `cutler init`.")
+    }
+
+    let content = fs::read_to_string(&path)
+        .await
+        .with_context(|| format!("Failed to read config file at {path:?}"))?;
+
+    let parsed: Value = content.parse::<Value>().with_context(|| {
+        format!(
+            "Failed to parse TOML at {path:?}. Please check for syntax errors or invalid structure."
+        )
+    })?;
+
+    // handle optional locking
+    if parsed.get("lock").and_then(Value::as_bool).unwrap_or(false) && lock_check {
+        bail!("The config file is locked. Run `cutler config unlock` to unlock.");
+    }
+
+    Ok(parsed)
+}
