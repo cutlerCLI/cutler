@@ -1,13 +1,12 @@
 use anyhow::{Result, bail};
 use async_trait::async_trait;
 use clap::Args;
-use tokio::fs;
 
 use crate::{
     commands::Runnable,
     config::{
         loader::{get_config_path, load_config},
-        remote::{RemoteConfig, merge_remote_config},
+        remote::{REMOTE_CONFIG, RemoteConfig},
     },
     util::{
         globals::should_dry_run,
@@ -28,16 +27,17 @@ impl Runnable for FetchCmd {
         let local_doc = load_config(false).await?;
 
         // parse [remote] section
-        let remote_cfg = match RemoteConfig::from_toml(&local_doc) {
+        let remote = match RemoteConfig::from_toml(&local_doc) {
             Some(cfg) => cfg,
             None => bail!("No [remote] section found in config. Add one to use remote sync."),
         };
 
         // fetch remote config
-        let remote_doc = match remote_cfg.fetch().await {
-            Ok(val) => val,
-            Err(e) => bail!("Failed to fetch remote config: {e}"),
-        };
+        remote.fetch().await?;
+        let remote_doc = REMOTE_CONFIG
+            .get()
+            .cloned()
+            .expect("Could not load remote configuration.");
 
         // comparison begins
         let mut changes = Vec::new();
@@ -66,10 +66,7 @@ impl Runnable for FetchCmd {
         }
 
         if changes.is_empty() {
-            print_log(
-                LogLevel::Info,
-                "No differences found between local and remote config.",
-            );
+            print_log(LogLevel::Fruitful, "No differences made, no files hurt.");
             return Ok(());
         } else {
             print_log(
@@ -94,12 +91,7 @@ impl Runnable for FetchCmd {
                 &format!("Would overwrite {cfg_path:?} with remote config."),
             );
         } else {
-            // preserve/merge [remote]
-            let merged_doc = merge_remote_config(&local_doc, &remote_doc)
-                .as_table()
-                .unwrap()
-                .to_string();
-            fs::write(&cfg_path, merged_doc).await?;
+            remote.save_merge_local().await?;
 
             print_log(
                 LogLevel::Fruitful,
