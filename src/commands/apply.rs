@@ -72,7 +72,7 @@ impl Runnable for ApplyCmd {
 
             let remote = RemoteConfig {
                 url: url.clone(),
-                autosync: true,
+                autosync: false,
             };
             remote.fetch().await?;
             remote.save().await?;
