@@ -40,57 +40,75 @@ pub struct Args {
 #[derive(Subcommand, Debug)]
 pub enum Command {
     /// Apply your preferences and other things.
+    #[command(alias = "a")]
     Apply(ApplyCmd),
     /// Run your external command(s).
+    #[command(alias = "x")]
     Exec(ExecCmd),
     /// Initialize a new config file.
+    #[command(alias = "i")]
     Init(InitCmd),
     /// Unapply the previously applied modifications(s).
+    #[command(alias = "u")]
     Unapply(UnapplyCmd),
     /// (DANGEROUS) Hard-reset all preferences.
+    #[command(alias = "r")]
     Reset(ResetCmd),
     /// Compare your system against your config.
+    #[command(alias = "s")]
     Status(StatusCmd),
     /// Homebrew backup-and-restore related commands.
+    #[command(alias = "b")]
     Brew {
         #[command(subcommand)]
         command: BrewSubcmd,
     },
     /// Manage the configuration file.
+    #[command(alias = "c")]
     Config {
         #[command(subcommand)]
         command: ConfigSubcmd,
     },
     /// Check for version updates.
+    #[command(alias = "cu")]
     CheckUpdate(CheckUpdateCmd),
     /// Updates cutler itself (for manual installs).
+    #[command(alias = "su")]
     SelfUpdate(SelfUpdateCmd),
     /// Generate shell completions.
+    #[command(alias = "comp")]
     Completion {
         /// Your shell type.
         #[arg(value_enum)]
         shell: Shell,
     },
     /// Sync the local config with remote defined in [remote].
+    #[command(alias = "f")]
     Fetch(FetchCmd),
 }
 
 #[derive(Subcommand, Debug)]
 pub enum BrewSubcmd {
     /// Backup current formulae and casks into config.
+    #[command(alias = "b")]
     Backup(BrewBackupCmd),
     /// Install Homebrew if not present, then install all formulae and casks from config.
+    #[command(alias = "i")]
     Install(BrewInstallCmd),
 }
 
 #[derive(Subcommand, Debug)]
 pub enum ConfigSubcmd {
     /// Display the contents of the config.
+    #[command(alias = "s")]
     Show(ConfigShowCmd),
     /// Delete the config file.
+    #[command(alias = "d")]
     Delete(ConfigDeleteCmd),
     /// Lock the config file.
+    #[command(alias = "l")]
     Lock(ConfigLockCmd),
     /// Lock the config file.
+    #[command(alias = "u")]
     Unlock(ConfigUnlockCmd),
 }
