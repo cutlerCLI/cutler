@@ -1,3 +1,4 @@
+use crate::cli::Command;
 use crate::commands::{CheckUpdateCmd, FetchCmd, SelfUpdateCmd};
 use crate::config::loader::{get_config_path, load_config_detached};
 use crate::config::remote::RemoteConfig;
@@ -6,11 +7,13 @@ use crate::util::logging::{LogLevel, print_log};
 /// Perform remote config auto-sync if enabled in [remote] and internet is available.
 /// This should be called early in main().
 pub async fn try_auto_sync(command: &crate::cli::Command) {
-    if matches!(command, crate::cli::Command::Fetch(FetchCmd))
-        || matches!(command, crate::cli::Command::SelfUpdate(SelfUpdateCmd))
-        || matches!(command, crate::cli::Command::CheckUpdate(CheckUpdateCmd))
-    {
-        return;
+    match command {
+        Command::Fetch(FetchCmd)
+        | Command::SelfUpdate(SelfUpdateCmd)
+        | Command::CheckUpdate(CheckUpdateCmd) => {
+            return;
+        }
+        _ => {}
     }
 
     let cfg_path = get_config_path().await;
