@@ -40,75 +40,75 @@ pub struct Args {
 #[derive(Subcommand, Debug)]
 pub enum Command {
     /// Apply your preferences and other things.
-    #[command(alias = "a")]
+    #[command(visible_alias = "a")]
     Apply(ApplyCmd),
     /// Run your external command(s).
-    #[command(alias = "x")]
+    #[command(visible_alias = "x")]
     Exec(ExecCmd),
     /// Initialize a new config file.
-    #[command(alias = "i")]
+    #[command(visible_alias = "i")]
     Init(InitCmd),
     /// Unapply the previously applied modifications(s).
-    #[command(alias = "u")]
+    #[command(visible_alias = "u")]
     Unapply(UnapplyCmd),
     /// (DANGEROUS) Hard-reset all preferences.
-    #[command(alias = "r")]
+    #[command(visible_alias = "r")]
     Reset(ResetCmd),
     /// Compare your system against your config.
-    #[command(alias = "s")]
+    #[command(visible_alias = "s")]
     Status(StatusCmd),
     /// Homebrew backup-and-restore related commands.
-    #[command(alias = "b")]
+    #[command(visible_alias = "b")]
     Brew {
         #[command(subcommand)]
         command: BrewSubcmd,
     },
     /// Manage the configuration file.
-    #[command(alias = "c")]
+    #[command(visible_alias = "c")]
     Config {
         #[command(subcommand)]
         command: ConfigSubcmd,
     },
     /// Check for version updates.
-    #[command(alias = "cu")]
+    #[command(visible_alias = "cu")]
     CheckUpdate(CheckUpdateCmd),
     /// Updates cutler itself (for manual installs).
-    #[command(alias = "su")]
+    #[command(visible_alias = "up")]
     SelfUpdate(SelfUpdateCmd),
     /// Generate shell completions.
-    #[command(alias = "comp")]
+    #[command(visible_alias = "comp")]
     Completion {
         /// Your shell type.
         #[arg(value_enum)]
         shell: Shell,
     },
     /// Sync the local config with remote defined in [remote].
-    #[command(alias = "f")]
+    #[command(visible_alias = "f")]
     Fetch(FetchCmd),
 }
 
 #[derive(Subcommand, Debug)]
 pub enum BrewSubcmd {
     /// Backup current formulae and casks into config.
-    #[command(alias = "b")]
+    #[command(visible_alias = "b")]
     Backup(BrewBackupCmd),
     /// Install Homebrew if not present, then install all formulae and casks from config.
-    #[command(alias = "i")]
+    #[command(visible_alias = "i")]
     Install(BrewInstallCmd),
 }
 
 #[derive(Subcommand, Debug)]
 pub enum ConfigSubcmd {
     /// Display the contents of the config.
-    #[command(alias = "s")]
+    #[command(visible_alias = "s")]
     Show(ConfigShowCmd),
     /// Delete the config file.
-    #[command(alias = "d")]
+    #[command(visible_alias = "d")]
     Delete(ConfigDeleteCmd),
     /// Lock the config file.
-    #[command(alias = "l")]
+    #[command(visible_alias = "l")]
     Lock(ConfigLockCmd),
     /// Lock the config file.
-    #[command(alias = "u")]
+    #[command(visible_alias = "u")]
     Unlock(ConfigUnlockCmd),
 }
