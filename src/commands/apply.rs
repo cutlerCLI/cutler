@@ -70,20 +70,12 @@ impl Runnable for ApplyCmd {
                 bail!("Aborted apply: --url is passed despite local config.")
             }
 
-            let remote_txt = RemoteConfig {
+            let remote = RemoteConfig {
                 url: url.clone(),
                 autosync: true,
-            }
-            .fetch()
-            .await?
-            .as_table()
-            .unwrap()
-            .to_string();
-
-            if let Some(parent) = config_path.parent() {
-                fs::create_dir_all(parent).await?;
-            }
-            fs::write(&config_path, remote_txt).await?;
+            };
+            remote.fetch().await?;
+            remote.save().await?;
 
             print_log(
                 LogLevel::Info,
