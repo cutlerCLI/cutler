@@ -13,7 +13,7 @@ use crate::{
     util::{
         globals::should_dry_run,
         io::confirm_action,
-        logging::{BOLD, GREEN, LogLevel, RESET, print_log},
+        logging::{BOLD, LogLevel, RESET, print_log},
     },
 };
 
@@ -68,7 +68,10 @@ impl Runnable for FetchCmd {
         }
 
         if changes.is_empty() {
-            print_log(LogLevel::Fruitful, "No differences made, no files hurt.");
+            print_log(
+                LogLevel::Fruitful,
+                "No changes found between remote & local configs.",
+            );
             return Ok(());
         } else {
             print_log(
@@ -97,7 +100,7 @@ impl Runnable for FetchCmd {
 
             print_log(
                 LogLevel::Fruitful,
-                &format!("{GREEN}Local config updated from remote!{RESET}"),
+                &format!("Local config updated from remote!"),
             );
         }
 
