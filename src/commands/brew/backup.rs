@@ -19,7 +19,7 @@ use crate::{
 
 #[derive(Debug, Default, Args)]
 pub struct BrewBackupCmd {
-    /// Exclude dependencies from backup
+    /// Exclude dependencies from backup.
     #[arg(long)]
     pub no_deps: bool,
 }
@@ -40,16 +40,14 @@ impl Runnable for BrewBackupCmd {
         let mut deps = Vec::new();
 
         // init config
-        let mut doc = match load_config_mut(true).await {
-            Ok(config) => config,
-            Err(e) if e.to_string().contains("No such file or directory") => {
-                print_log(
-                    LogLevel::Warning,
-                    "Configuration file not found. Initializing an empty configuration.",
-                );
-                DocumentMut::new()
-            }
-            Err(e) => return Err(e),
+        let mut doc = if fs::try_exists(&cfg_path).await.unwrap() {
+            load_config_mut(true).await?
+        } else {
+            print_log(
+                LogLevel::Warning,
+                "Config file does not exist. Creating new...",
+            );
+            DocumentMut::new()
         };
 
         // init brew table from config
@@ -146,7 +144,9 @@ impl Runnable for BrewBackupCmd {
 
         // write backup
         if !dry_run {
+            fs::create_dir_all(cfg_path.parent().unwrap()).await?;
             fs::write(&cfg_path, doc.to_string()).await?;
+
             print_log(LogLevel::Info, &format!("Backup saved to {cfg_path:?}"));
             print_log(
                 LogLevel::Fruitful,
