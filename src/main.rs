@@ -22,8 +22,12 @@ async fn main() {
     set_dry_run(args.dry_run);
     set_no_restart_services(args.no_restart_services);
 
-    // remote config auto-sync (if enabled)
-    try_auto_sync(&args.command).await;
+    // remote config auto-sync logic
+    if !args.no_sync {
+        try_auto_sync(&args.command).await;
+    } else {
+        print_log(LogLevel::Info, "Skipping remote config auto-sync.");
+    }
 
     // sudo protection
     let result = match &args.command {

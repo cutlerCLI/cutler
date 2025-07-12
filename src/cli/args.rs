@@ -25,6 +25,10 @@ pub struct Args {
     #[arg(short, long, global = true)]
     pub no_restart_services: bool,
 
+    /// Do not sync with remote config (if autosync = true).
+    #[arg(long, global = true)]
+    pub no_sync: bool,
+
     /// Run in dry-run mode. Commands will be printed but not executed.
     #[arg(long, global = true)]
     pub dry_run: bool,
