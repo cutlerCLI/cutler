@@ -6,6 +6,7 @@ pub const GREEN: &str = "\x1b[32m";
 pub const YELLOW: &str = "\x1b[33m";
 pub const PINK: &str = "\x1b[35m";
 pub const ORANGE: &str = "\x1b[38;5;208m";
+pub const CYAN: &str = "\x1b[36m";
 pub const RESET: &str = "\x1b[0m";
 pub const BOLD: &str = "\x1b[1m";
 
@@ -33,19 +34,19 @@ pub fn print_log(level: LogLevel, msg: &str) {
     }
 
     let (tag, color) = match level {
-        LogLevel::Error => ("ERROR", RED),
-        LogLevel::Warning => ("WARNING", YELLOW),
-        LogLevel::Info => ("INFO", BOLD),
-        LogLevel::CommandOutput => ("CMD OUT", PINK),
-        LogLevel::Prompt => ("PROMPT", PINK),
-        LogLevel::Dry => ("DRY-RUN", ORANGE),
+        LogLevel::Error => ("ERR  ", RED),
+        LogLevel::Warning => ("WARN ", ORANGE),
+        LogLevel::Info => ("INFO ", CYAN),
+        LogLevel::CommandOutput => ("OUT  ", GREEN),
+        LogLevel::Prompt => ("PRMT ", PINK),
+        LogLevel::Dry => ("DRY  ", YELLOW),
         LogLevel::Fruitful => ("🍎", ""),
     };
 
     let line = if level == LogLevel::Fruitful {
         format!("{tag} {msg}")
     } else {
-        format!("{color}[{tag}]{RESET} {msg}")
+        format!("{color}{tag}{RESET} {msg}")
     };
 
     if level == LogLevel::Error || level == LogLevel::Warning {
