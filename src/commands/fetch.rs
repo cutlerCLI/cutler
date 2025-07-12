@@ -98,10 +98,7 @@ impl Runnable for FetchCmd {
         } else {
             save_merge_local_remote_config().await?;
 
-            print_log(
-                LogLevel::Fruitful,
-                "Local config updated from remote!",
-            );
+            print_log(LogLevel::Fruitful, "Local config updated from remote!");
         }
 
         Ok(())
