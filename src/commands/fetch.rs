@@ -100,7 +100,7 @@ impl Runnable for FetchCmd {
 
             print_log(
                 LogLevel::Fruitful,
-                &format!("Local config updated from remote!"),
+                "Local config updated from remote!",
             );
         }
 

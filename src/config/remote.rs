@@ -57,7 +57,7 @@ pub async fn fetch_remote_config(url: String) -> Result<()> {
         .get_or_try_init(|| async {
             print_log(
                 LogLevel::Info,
-                &format!("Fetching remote config from {}", url),
+                &format!("Fetching remote config from {url}"),
             );
 
             let client = Client::builder()
@@ -67,7 +67,7 @@ pub async fn fetch_remote_config(url: String) -> Result<()> {
                 .get(&url)
                 .send()
                 .await
-                .with_context(|| format!("Failed to fetch remote config from {}", url))?;
+                .with_context(|| format!("Failed to fetch remote config from {url}"))?;
 
             if !resp.status().is_success() {
                 bail!("Failed to fetch remote config: HTTP {}", resp.status());
@@ -76,7 +76,7 @@ pub async fn fetch_remote_config(url: String) -> Result<()> {
             let text = resp.text().await?;
             let parsed = text
                 .parse::<Value>()
-                .with_context(|| format!("Invalid TOML config fetched from {}", url))?;
+                .with_context(|| format!("Invalid TOML config fetched from {url}"))?;
 
             Ok(parsed)
         })
