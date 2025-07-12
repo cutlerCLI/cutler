@@ -2,14 +2,14 @@ use dialoguer::Confirm;
 use tokio::process::Command;
 
 use crate::util::{
-    globals::{should_accept_interactive, should_dry_run, should_not_restart_services},
+    globals::{should_accept_all, should_dry_run, should_not_restart_services},
     logging::{LogLevel, print_log},
 };
 use anyhow::Result;
 
-/// Ask "Y/N?"; returns true if accept_interactive is set or the user types "y" or "Y"
+/// Ask "Y/N?"; returns true if accept_all is set or the user types "y" or "Y"
 pub fn confirm_action(prompt: &str) -> Result<bool> {
-    if should_accept_interactive() {
+    if should_accept_all() {
         print_log(
             LogLevel::Prompt,
             &format!("{prompt} [y/N]: y (auto-accepted)"),

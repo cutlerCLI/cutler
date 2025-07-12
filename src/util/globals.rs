@@ -7,15 +7,15 @@ use std::sync::atomic::{AtomicBool, Ordering};
  * "just in case".
  */
 
-// --accept-interactive
-static ACCEPT_INTERACTIVE: AtomicBool = AtomicBool::new(false);
+// --accept-all
+static ACCEPT_ALL: AtomicBool = AtomicBool::new(false);
 
-pub fn set_accept_interactive(value: bool) {
-    ACCEPT_INTERACTIVE.store(value, Ordering::SeqCst);
+pub fn set_accept_all(value: bool) {
+    ACCEPT_ALL.store(value, Ordering::SeqCst);
 }
 
-pub fn should_accept_interactive() -> bool {
-    ACCEPT_INTERACTIVE.load(Ordering::SeqCst)
+pub fn should_accept_all() -> bool {
+    ACCEPT_ALL.load(Ordering::SeqCst)
 }
 
 // --quiet

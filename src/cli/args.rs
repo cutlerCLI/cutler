@@ -31,7 +31,7 @@ pub struct Args {
 
     /// Accepts all interactive prompts.
     #[arg(short = 'y', long, global = true)]
-    pub accept_interactive: bool,
+    pub accept_all: bool,
 
     #[command(subcommand)]
     pub command: Command,

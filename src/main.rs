@@ -5,7 +5,7 @@ use cutler::cli::completion::generate_completion;
 use cutler::cli::{Args, Command};
 use cutler::commands::Runnable;
 use cutler::util::globals::{
-    set_accept_interactive, set_dry_run, set_no_restart_services, set_quiet, set_verbose,
+    set_accept_all, set_dry_run, set_no_restart_services, set_quiet, set_verbose,
 };
 use cutler::util::logging::{LogLevel, print_log};
 use cutler::util::sudo::{run_with_noroot, run_with_root};
@@ -16,7 +16,7 @@ async fn main() {
 
     // set some of them atomically
     // (described why in util/globals.rs)
-    set_accept_interactive(args.accept_interactive);
+    set_accept_all(args.accept_all);
     set_quiet(args.quiet);
     set_verbose(args.verbose);
     set_dry_run(args.dry_run);
