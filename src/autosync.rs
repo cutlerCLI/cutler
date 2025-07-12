@@ -1,7 +1,7 @@
 use crate::cli::Command;
 use crate::commands::{CheckUpdateCmd, FetchCmd, SelfUpdateCmd};
 use crate::config::loader::{get_config_path, load_config_detached};
-use crate::config::remote::RemoteConfig;
+use crate::config::remote::{RemoteConfig, fetch_remote_config, save_remote_config};
 use crate::util::logging::{LogLevel, print_log};
 
 /// Perform remote config auto-sync if enabled in [remote] and internet is available.
@@ -38,9 +38,9 @@ pub async fn try_auto_sync(command: &crate::cli::Command) {
     let remote_cfg = RemoteConfig::from_toml(&local_doc);
     if let Some(remote_cfg) = remote_cfg {
         if remote_cfg.autosync {
-            match remote_cfg.fetch().await {
+            match fetch_remote_config(remote_cfg.url).await {
                 Ok(()) => {
-                    if let Err(e) = remote_cfg.save().await {
+                    if let Err(e) = save_remote_config().await {
                         print_log(
                             LogLevel::Warning,
                             &format!("Failed to save remote config after auto-sync: {e}"),

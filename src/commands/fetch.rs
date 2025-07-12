@@ -6,7 +6,9 @@ use crate::{
     commands::Runnable,
     config::{
         loader::{get_config_path, load_config},
-        remote::{REMOTE_CONFIG, RemoteConfig},
+        remote::{
+            REMOTE_CONFIG, RemoteConfig, fetch_remote_config, save_merge_local_remote_config,
+        },
     },
     util::{
         globals::should_dry_run,
@@ -33,7 +35,7 @@ impl Runnable for FetchCmd {
         };
 
         // fetch remote config
-        remote.fetch().await?;
+        fetch_remote_config(remote.url).await?;
         let remote_doc = REMOTE_CONFIG
             .get()
             .cloned()
@@ -91,7 +93,7 @@ impl Runnable for FetchCmd {
                 &format!("Would overwrite {cfg_path:?} with remote config."),
             );
         } else {
-            remote.save_merge_local().await?;
+            save_merge_local_remote_config().await?;
 
             print_log(
                 LogLevel::Fruitful,

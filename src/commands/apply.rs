@@ -2,7 +2,7 @@ use crate::{
     commands::{BrewInstallCmd, Runnable},
     config::{
         loader::{get_config_path, load_config},
-        remote::RemoteConfig,
+        remote::{fetch_remote_config, save_remote_config},
     },
     domains::collector,
     exec::runner,
@@ -70,12 +70,8 @@ impl Runnable for ApplyCmd {
                 bail!("Aborted apply: --url is passed despite local config.")
             }
 
-            let remote = RemoteConfig {
-                url: url.clone(),
-                autosync: false,
-            };
-            remote.fetch().await?;
-            remote.save().await?;
+            fetch_remote_config(url.to_string()).await?;
+            save_remote_config().await?;
 
             print_log(
                 LogLevel::Info,
