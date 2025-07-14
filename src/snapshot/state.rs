@@ -17,6 +17,7 @@ pub struct ExternalCommandState {
     pub run: String,
     pub sudo: bool,
     pub ensure_first: bool,
+    pub required: Vec<String>,
 }
 
 /// The full snapshot on disk.

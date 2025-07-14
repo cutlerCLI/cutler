@@ -52,6 +52,7 @@ mod tests {
             run: "echo Hello World".to_string(),
             sudo: false,
             ensure_first: false,
+            required: vec!["echo".to_string()],
         };
         assert_eq!(command.run, "echo Hello World");
         assert!(!command.sudo);
@@ -89,12 +90,14 @@ mod tests {
             run: "echo Hello".to_string(),
             sudo: false,
             ensure_first: false,
+            required: vec!["echo".to_string()],
         });
 
         snapshot.external.push(ExternalCommandState {
             run: "hostname -s macbook".to_string(),
             sudo: true,
             ensure_first: false,
+            required: vec!["hostname".to_string()],
         });
 
         // Create a temporary file to store the snapshot

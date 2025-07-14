@@ -1,11 +1,6 @@
 use crate::commands::Runnable;
 
-use crate::util::globals::should_dry_run;
-use crate::{
-    config::loader::load_config,
-    exec::runner,
-    util::logging::{LogLevel, print_log},
-};
+use crate::{config::loader::load_config, exec::runner};
 use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
@@ -20,8 +15,6 @@ pub struct ExecCmd {
 #[async_trait]
 impl Runnable for ExecCmd {
     async fn run(&self) -> Result<()> {
-        let dry_run = should_dry_run();
-
         // load & parse config
         let toml = load_config(true).await?;
 
@@ -29,13 +22,6 @@ impl Runnable for ExecCmd {
             runner::run_one(&toml, cmd_name).await?;
         } else {
             runner::run_all(&toml).await?;
-        }
-
-        if !dry_run {
-            print_log(
-                LogLevel::Fruitful,
-                "External commands executed successfully.",
-            );
         }
 
         Ok(())

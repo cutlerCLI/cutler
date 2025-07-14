@@ -37,11 +37,21 @@ pub fn extract_cmd(config: &Value, name: &str) -> Result<ExternalCommandState> {
         .or_else(|| cmd_table.get("ensure-first"))
         .and_then(Value::as_bool)
         .unwrap_or(false);
+    let required: Vec<String> = cmd_table
+        .get("required")
+        .and_then(Value::as_array)
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|s| s.as_str().map(|s| s.to_string()))
+                .collect()
+        })
+        .unwrap_or_default();
 
     Ok(ExternalCommandState {
         run: final_line,
         sudo,
         ensure_first,
+        required,
     })
 }
 
@@ -158,50 +168,64 @@ async fn execute_command(
 
     print_log(LogLevel::Info, &format!("Execute: {bin} {final_cmd}"));
 
-    let child = Command::new(bin)
+    // Inherit stdin, stdout, and stderr so the user can interact with the command
+    let mut child = Command::new(bin)
         .args(&args)
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
+        .stdin(Stdio::inherit())
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit())
         .spawn()?;
-    let output = child.wait_with_output().await?;
-    if !output.status.success() {
+    let status = child.wait().await?;
+    if !status.success() {
         print_log(
             LogLevel::Error,
-            &format!(
-                "External command failed: {}: {}",
-                final_cmd,
-                String::from_utf8_lossy(&output.stderr)
-            ),
+            &format!("External command failed: {final_cmd}"),
         );
         return Err(Error::msg("cmd failed"));
     }
 
-    if !output.stdout.is_empty() {
-        print_log(
-            LogLevel::CommandOutput,
-            &format!("{}", String::from_utf8_lossy(&output.stdout)),
-        );
-    }
     Ok(())
+}
+
+/// Helper for: run_all(), run_one()
+/// Checks if the binaries designated in `required` are found in $PATH and whether to skip command execution.
+fn should_skip_exec(required: &[String]) -> bool {
+    let mut skip_exec = false;
+
+    if required.is_empty() {
+        return skip_exec;
+    }
+
+    for bin in required {
+        if which::which(bin).is_err() {
+            print_log(LogLevel::Warning, &format!("{bin} not in PATH"));
+            skip_exec = true;
+        }
+    }
+
+    skip_exec
 }
 
 /// Run all extracted external commands via `sh -c` (or `sudo sh -c`) in parallel.
 pub async fn run_all(config: &Value) -> Result<()> {
-    let vars: Option<toml::value::Table> = config.get("vars").and_then(Value::as_table).cloned();
     let cmds = extract_all_cmds(config);
-    let dry_run = should_dry_run();
 
     // separate ensure_first commands from regular commands
     let mut ensure_first_cmds = Vec::new();
     let mut regular_cmds = Vec::new();
 
     for state in cmds {
-        if state.ensure_first {
+        if should_skip_exec(&state.required) {
+            continue;
+        } else if state.ensure_first {
             ensure_first_cmds.push(state);
         } else {
             regular_cmds.push(state);
         }
     }
+
+    let dry_run = should_dry_run();
+    let vars: Option<toml::value::Table> = config.get("vars").and_then(Value::as_table).cloned();
 
     let mut failures = 0;
 
@@ -240,9 +264,18 @@ pub async fn run_all(config: &Value) -> Result<()> {
 
 /// Run exactly one command entry, given its name.
 pub async fn run_one(config: &Value, which: &str) -> Result<()> {
-    let vars = config.get("vars").and_then(Value::as_table).cloned();
     let state = extract_cmd(config, which)?;
-    let dry_run = should_dry_run();
 
+    if should_skip_exec(&state.required) {
+        print_log(
+            LogLevel::Error,
+            "Cannot execute command since the required binaries were not found.",
+        );
+
+        return Ok(());
+    }
+
+    let dry_run = should_dry_run();
+    let vars = config.get("vars").and_then(Value::as_table).cloned();
     execute_command(state, vars.as_ref(), dry_run).await
 }
