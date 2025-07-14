@@ -56,8 +56,8 @@ pub async fn try_auto_sync(command: &crate::cli::Command) {
             }
         } else {
             print_log(
-                LogLevel::Warning,
-                "Remote config auto-sync disabled. To manually sync, run `cutler fetch`.",
+                LogLevel::Info,
+                "Remote config auto-sync is disabled. To manually sync, run `cutler fetch`.",
             );
         }
     }
