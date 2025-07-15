@@ -1,7 +1,7 @@
 use anyhow::bail;
 use defaults_rs::{Domain, PrefValue, ReadResult, preferences::Preferences};
 use std::collections::HashMap;
-use toml::Value;
+use toml::{Table, Value};
 
 /// Recursively flatten nested TOML tables into (domain, settings-table) pairs.
 fn flatten_domains(
@@ -30,13 +30,10 @@ fn flatten_domains(
 }
 
 /// Collect all tables in `[set]`, flatten them, and return a map domain → settings.
-pub fn collect(parsed: &Value) -> Result<HashMap<String, toml::value::Table>, anyhow::Error> {
-    let root = parsed
-        .as_table()
-        .ok_or_else(|| anyhow::anyhow!("Config is not a TOML table"))?;
+pub fn collect(parsed: &Table) -> Result<HashMap<String, toml::value::Table>, anyhow::Error> {
     let mut out = HashMap::new();
 
-    for (key, val) in root {
+    for (key, val) in parsed {
         if key == "set" {
             if let Value::Table(set_inner) = val {
                 for (domain_key, domain_val) in set_inner {

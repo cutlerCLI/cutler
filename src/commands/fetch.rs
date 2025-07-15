@@ -44,25 +44,16 @@ impl Runnable for FetchCmd {
         // comparison begins
         let mut changes = Vec::new();
 
-        let local_table = match local_doc.as_table() {
-            Some(tbl) => tbl,
-            None => bail!("Local config is not a TOML table."),
-        };
-        let remote_table = match remote_doc.as_table() {
-            Some(tbl) => tbl,
-            None => bail!("Remote config is not a TOML table."),
-        };
-
-        for (k, v) in remote_table.iter() {
-            if !local_table.contains_key(k) {
+        for (k, v) in remote_doc.iter() {
+            if !local_doc.contains_key(k) {
                 changes.push(format!("{BOLD}{k}{RESET}: (new)"));
-            } else if local_table[k].to_string() != v.to_string() {
+            } else if local_doc[k].to_string() != v.to_string() {
                 changes.push(format!("{BOLD}{k}{RESET}: (changed)"));
             }
         }
 
-        for k in local_table.keys() {
-            if !remote_table.contains_key(k) {
+        for k in local_doc.keys() {
+            if !remote_doc.contains_key(k) {
                 changes.push(format!("{BOLD}{k}{RESET}: (removed in remote)"));
             }
         }

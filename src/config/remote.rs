@@ -3,7 +3,7 @@ use reqwest::Client;
 use tokio::fs;
 use tokio::io::AsyncWriteExt;
 use tokio::sync::OnceCell;
-use toml::Value;
+use toml::Table;
 
 use crate::{
     config::loader::{get_config_path, load_config},
@@ -12,18 +12,14 @@ use crate::{
 
 /// Global OnceCell holding the fetched remote config.
 /// This is accessible from outside the struct.
-pub static REMOTE_CONFIG: OnceCell<Value> = OnceCell::const_new();
+pub static REMOTE_CONFIG: OnceCell<Table> = OnceCell::const_new();
 
 /// Merge remote config into local config, preserving [remote] if not present in remote.
-fn merge_remote_config(local: &toml::Value, remote: &toml::Value) -> toml::Value {
-    let empty_map = toml::map::Map::new();
-    let remote_table = remote.as_table().unwrap_or(&empty_map);
-    let local_table = local.as_table().unwrap_or(&empty_map);
+fn merge_remote_config(local: &Table, remote: &Table) -> toml::Value {
+    let mut merged_table = remote.clone();
 
-    let mut merged_table = remote_table.clone();
-
-    if !remote_table.contains_key("remote") {
-        if let Some(local_remote) = local_table.get("remote") {
+    if !remote.contains_key("remote") {
+        if let Some(local_remote) = local.get("remote") {
             merged_table.insert("remote".to_string(), local_remote.clone());
         }
     }
@@ -38,7 +34,7 @@ pub struct RemoteConfig {
 }
 
 impl RemoteConfig {
-    pub fn from_toml(config: &Value) -> Option<Self> {
+    pub fn from_toml(config: &Table) -> Option<Self> {
         let tbl = config.get("remote")?.as_table()?;
         let url = tbl.get("url")?.as_str()?.to_string();
 
@@ -75,7 +71,7 @@ pub async fn fetch_remote_config(url: String) -> Result<()> {
 
             let text = resp.text().await?;
             let parsed = text
-                .parse::<Value>()
+                .parse::<Table>()
                 .with_context(|| format!("Invalid TOML config fetched from {url}"))?;
 
             Ok(parsed)
@@ -111,7 +107,7 @@ pub async fn save_merge_local_remote_config() -> Result<()> {
     let remote_val = REMOTE_CONFIG
         .get()
         .ok_or_else(|| anyhow::anyhow!("Remote config not fetched yet"))?;
-    let merged = merge_remote_config(&local, remote_val);
+    let merged = merge_remote_config(&local, &remote_val);
 
     let path = get_config_path().await;
     let toml_string =

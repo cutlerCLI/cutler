@@ -13,9 +13,8 @@ mod tests {
         set_table.insert("domain".into(), Value::Table(table));
         let mut root = Table::new();
         root.insert("set".into(), Value::Table(set_table));
-        let parsed = Value::Table(root);
 
-        let domains = collect(&parsed).unwrap();
+        let domains = collect(&root).unwrap();
         assert_eq!(domains.len(), 1);
         let got = domains.get("domain").unwrap();
         assert_eq!(got.get("key1").unwrap().as_str().unwrap(), "value1");
@@ -35,7 +34,7 @@ mod tests {
         let mut root = Table::new();
         root.insert("set".into(), Value::Table(set_table));
 
-        let domains = collect(&Value::Table(root)).unwrap();
+        let domains = collect(&root).unwrap();
         assert_eq!(domains.len(), 1);
         let got = domains.get("root.nested").unwrap();
         assert_eq!(
@@ -58,7 +57,7 @@ mod tests {
 
     #[test]
     fn test_collect_domains_set() {
-        let parsed: Value = r#"
+        let parsed: Table = r#"
 [set.dock]
 tilesize = "50"
 autohide = true

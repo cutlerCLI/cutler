@@ -25,9 +25,8 @@ mod tests {
         let mut root = Table::new();
         root.insert("vars".into(), Value::Table(vars));
         root.insert("commands".into(), Value::Table(commands));
-        let config = Value::Table(root);
 
-        assert!(run_all(&config).await.is_ok());
+        assert!(run_all(&root).await.is_ok());
     }
 
     #[tokio::test]
@@ -49,9 +48,8 @@ mod tests {
         let mut root = Table::new();
         root.insert("vars".into(), Value::Table(vars));
         root.insert("commands".into(), Value::Table(commands));
-        let config = Value::Table(root);
 
         // Dry‑run single command
-        assert!(run_one(&config, "whoami").await.is_ok());
+        assert!(run_one(&root, "whoami").await.is_ok());
     }
 }

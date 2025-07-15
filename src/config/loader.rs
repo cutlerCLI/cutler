@@ -2,7 +2,7 @@ use std::{env, path::PathBuf, sync::OnceLock};
 
 use anyhow::{Context, Result, bail};
 use tokio::fs;
-use toml::Value;
+use toml::{Table, Value};
 use toml_edit::{DocumentMut, Item};
 
 /// Returns the path to the configuration file by checking several candidate locations.
@@ -74,10 +74,10 @@ async fn get_config_content() -> Result<(String, PathBuf), anyhow::Error> {
 }
 
 /// Read and parse the configuration file at a given path.
-pub async fn load_config(lock_check: bool) -> Result<Value, anyhow::Error> {
+pub async fn load_config(lock_check: bool) -> Result<Table, anyhow::Error> {
     let (content, path) = get_config_content().await?;
 
-    let parsed: Value = content.parse::<Value>().with_context(|| {
+    let parsed: Table = content.parse::<Table>().with_context(|| {
         format!(
             "Failed to parse TOML at {path:?}. Please check for syntax errors or invalid structure."
         )
@@ -110,7 +110,7 @@ pub async fn load_config_mut(lock_check: bool) -> Result<DocumentMut, anyhow::Er
 }
 
 /// Detached version of load_config: does not cache the result and does not interact with the OnceLock.
-pub async fn load_config_detached(lock_check: bool) -> Result<Value, anyhow::Error> {
+pub async fn load_config_detached(lock_check: bool) -> Result<Table, anyhow::Error> {
     let path = get_config_path().await;
     if !fs::try_exists(&path).await.unwrap() {
         bail!("No config file found at {path:?}.\nPlease start by creating one with `cutler init`.")
@@ -120,7 +120,7 @@ pub async fn load_config_detached(lock_check: bool) -> Result<Value, anyhow::Err
         .await
         .with_context(|| format!("Failed to read config file at {path:?}"))?;
 
-    let parsed: Value = content.parse::<Value>().with_context(|| {
+    let parsed: Table = content.parse::<Table>().with_context(|| {
         format!(
             "Failed to parse TOML at {path:?}. Please check for syntax errors or invalid structure."
         )

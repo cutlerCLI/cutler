@@ -5,10 +5,10 @@ use anyhow::{Error, Result, anyhow};
 use std::{env, process::Stdio};
 use tokio::process::Command;
 use tokio::task;
-use toml::Value;
+use toml::{Table, Value};
 
 /// Extract a single command by name from the user config.
-pub fn extract_cmd(config: &Value, name: &str) -> Result<ExternalCommandState> {
+pub fn extract_cmd(config: &Table, name: &str) -> Result<ExternalCommandState> {
     let vars = config.get("vars").and_then(Value::as_table).cloned();
 
     let cmd_table = config
@@ -56,7 +56,7 @@ pub fn extract_cmd(config: &Value, name: &str) -> Result<ExternalCommandState> {
 }
 
 // Pull all external commands written in user config into state objects.
-pub fn extract_all_cmds(config: &Value) -> Vec<ExternalCommandState> {
+pub fn extract_all_cmds(config: &Table) -> Vec<ExternalCommandState> {
     if let Some(cmds) = config.get("commands").and_then(Value::as_table) {
         let output: Vec<ExternalCommandState> = cmds
             .iter()
@@ -207,7 +207,7 @@ fn should_skip_exec(required: &[String]) -> bool {
 }
 
 /// Run all extracted external commands via `sh -c` (or `sudo sh -c`) in parallel.
-pub async fn run_all(config: &Value) -> Result<()> {
+pub async fn run_all(config: &Table) -> Result<()> {
     let cmds = extract_all_cmds(config);
 
     // separate ensure_first commands from regular commands
@@ -263,7 +263,7 @@ pub async fn run_all(config: &Value) -> Result<()> {
 }
 
 /// Run exactly one command entry, given its name.
-pub async fn run_one(config: &Value, which: &str) -> Result<()> {
+pub async fn run_one(config: &Table, which: &str) -> Result<()> {
     let state = extract_cmd(config, which)?;
 
     if should_skip_exec(&state.required) {
