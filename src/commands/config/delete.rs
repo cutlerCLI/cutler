@@ -4,7 +4,7 @@ use tokio::fs;
 
 use crate::{
     commands::{Runnable, UnapplyCmd},
-    config::loader::get_config_path,
+    config::path::get_config_path,
     snapshot::{Snapshot, get_snapshot_path},
     util::{
         globals::should_dry_run,

@@ -1,7 +1,12 @@
 use crate::cli::Command;
-use crate::config::loader::{get_config_path, load_config_detached};
-use crate::config::remote::{RemoteConfig, fetch_remote_config, save_remote_config};
-use crate::util::logging::{LogLevel, print_log};
+use crate::{
+    config::{
+        loader::load_config_detached,
+        path::get_config_path,
+        remote::{RemoteConfig, fetch_remote_config, save_remote_config},
+    },
+    util::logging::{LogLevel, print_log},
+};
 
 /// Perform remote config auto-sync if enabled in [remote] and internet is available.
 /// This should be called early in main().

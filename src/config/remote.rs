@@ -6,7 +6,7 @@ use tokio::sync::OnceCell;
 use toml::Table;
 
 use crate::{
-    config::loader::{get_config_path, load_config},
+    config::{loader::load_config, path::get_config_path},
     util::logging::{LogLevel, print_log},
 };
 

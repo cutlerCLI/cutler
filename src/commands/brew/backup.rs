@@ -10,7 +10,7 @@ use crate::{
         utils::{brew_list, ensure_brew},
     },
     commands::Runnable,
-    config::loader::{get_config_path, load_config_mut},
+    config::{loader::load_config_mut, path::get_config_path},
     util::{
         globals::should_dry_run,
         logging::{GREEN, LogLevel, RESET, print_log},

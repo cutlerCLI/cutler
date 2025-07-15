@@ -5,7 +5,8 @@ use clap::Args;
 use crate::{
     commands::Runnable,
     config::{
-        loader::{get_config_path, load_config},
+        loader::load_config,
+        path::get_config_path,
         remote::{
             REMOTE_CONFIG, RemoteConfig, fetch_remote_config, save_merge_local_remote_config,
         },

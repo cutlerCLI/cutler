@@ -1,7 +1,8 @@
 use crate::{
     commands::{BrewInstallCmd, Runnable},
     config::{
-        loader::{get_config_path, load_config},
+        loader::load_config,
+        path::get_config_path,
         remote::{fetch_remote_config, save_remote_config},
     },
     domains::collector,

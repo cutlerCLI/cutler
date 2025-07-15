@@ -5,7 +5,7 @@ use tokio::fs;
 
 use crate::{
     commands::Runnable,
-    config::loader::get_config_path,
+    config::path::get_config_path,
     util::{
         globals::{should_be_quiet, should_dry_run},
         logging::{LogLevel, print_log},

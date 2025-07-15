@@ -5,7 +5,7 @@ use clap::Args;
 use tokio::fs;
 
 use crate::{
-    config::loader::get_config_path,
+    config::path::get_config_path,
     util::{
         io::confirm_action,
         logging::{LogLevel, print_log},
