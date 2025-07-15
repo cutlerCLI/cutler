@@ -107,7 +107,7 @@ pub async fn save_merge_local_remote_config() -> Result<()> {
     let remote_val = REMOTE_CONFIG
         .get()
         .ok_or_else(|| anyhow::anyhow!("Remote config not fetched yet"))?;
-    let merged = merge_remote_config(&local, &remote_val);
+    let merged = merge_remote_config(&local, remote_val);
 
     let path = get_config_path().await;
     let toml_string = toml::to_string_pretty(&merged)
