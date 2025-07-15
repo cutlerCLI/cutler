@@ -14,13 +14,14 @@ pub mod self_update;
 pub mod status;
 pub mod unapply;
 
+// this is directly used by src/cli/args.rs and other parts of the code to match commands
 pub use apply::ApplyCmd;
-pub use brew::backup::BrewBackupCmd;
-pub use brew::install::BrewInstallCmd;
+pub use brew::{backup::BrewBackupCmd, install::BrewInstallCmd};
 pub use check_update::CheckUpdateCmd;
-pub use completion::{CompletionCmd, Shell};
-pub use config::delete::ConfigDeleteCmd;
-pub use config::show::ConfigShowCmd;
+pub use completion::CompletionCmd;
+pub use config::{
+    delete::ConfigDeleteCmd, lock::ConfigLockCmd, show::ConfigShowCmd, unlock::ConfigUnlockCmd,
+};
 pub use exec::ExecCmd;
 pub use fetch::FetchCmd;
 pub use init::InitCmd;

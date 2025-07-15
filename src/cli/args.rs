@@ -3,8 +3,8 @@ use clap::{Parser, Subcommand};
 
 use crate::commands::{
     ApplyCmd, BrewBackupCmd, BrewInstallCmd, CheckUpdateCmd, CompletionCmd, ConfigDeleteCmd,
-    ConfigShowCmd, ExecCmd, FetchCmd, InitCmd, ResetCmd, SelfUpdateCmd, StatusCmd, UnapplyCmd,
-    config::{lock::ConfigLockCmd, unlock::ConfigUnlockCmd},
+    ConfigLockCmd, ConfigShowCmd, ConfigUnlockCmd, ExecCmd, FetchCmd, InitCmd, ResetCmd,
+    SelfUpdateCmd, StatusCmd, UnapplyCmd,
 };
 
 #[derive(Parser)]
