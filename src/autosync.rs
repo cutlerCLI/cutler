@@ -23,7 +23,7 @@ pub async fn try_auto_sync(command: &crate::cli::Command) {
 
     // use raw-reading, bypassing loader.rs
     // this is to avoid caching a possible 'old' config scenario
-    let local_doc = match load_config_detached(true).await {
+    let local_doc = match load_config_detached(false).await {
         Ok(doc) => doc,
         Err(e) => {
             print_log(
