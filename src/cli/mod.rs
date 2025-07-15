@@ -1,5 +1,4 @@
 pub mod args;
-pub mod completion;
 pub mod style;
 
 pub use args::{Args, Command};

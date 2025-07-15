@@ -1,5 +1,4 @@
 use crate::cli::Command;
-use crate::commands::{CheckUpdateCmd, FetchCmd, SelfUpdateCmd};
 use crate::config::loader::{get_config_path, load_config_detached};
 use crate::config::remote::{RemoteConfig, fetch_remote_config, save_remote_config};
 use crate::util::logging::{LogLevel, print_log};
@@ -8,9 +7,13 @@ use crate::util::logging::{LogLevel, print_log};
 /// This should be called early in main().
 pub async fn try_auto_sync(command: &crate::cli::Command) {
     match command {
-        Command::Fetch(FetchCmd)
-        | Command::SelfUpdate(SelfUpdateCmd)
-        | Command::CheckUpdate(CheckUpdateCmd) => {
+        Command::Fetch(_)
+        | Command::SelfUpdate(_)
+        | Command::CheckUpdate(_)
+        | Command::Completion(_)
+        | Command::Reset(_)
+        | Command::Init(_)
+        | Command::Config { .. } => {
             return;
         }
         _ => {}

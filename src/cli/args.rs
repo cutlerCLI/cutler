@@ -1,13 +1,10 @@
 use super::get_styles;
 use clap::{Parser, Subcommand};
 
-use crate::{
-    cli::completion::Shell,
-    commands::{
-        ApplyCmd, BrewBackupCmd, BrewInstallCmd, CheckUpdateCmd, ConfigDeleteCmd, ConfigShowCmd,
-        ExecCmd, FetchCmd, InitCmd, ResetCmd, SelfUpdateCmd, StatusCmd, UnapplyCmd,
-        config::{lock::ConfigLockCmd, unlock::ConfigUnlockCmd},
-    },
+use crate::commands::{
+    ApplyCmd, BrewBackupCmd, BrewInstallCmd, CheckUpdateCmd, CompletionCmd, ConfigDeleteCmd,
+    ConfigShowCmd, ExecCmd, FetchCmd, InitCmd, ResetCmd, SelfUpdateCmd, StatusCmd, UnapplyCmd,
+    config::{lock::ConfigLockCmd, unlock::ConfigUnlockCmd},
 };
 
 #[derive(Parser)]
@@ -81,11 +78,7 @@ pub enum Command {
     SelfUpdate(SelfUpdateCmd),
     /// Generate shell completions.
     #[command(visible_alias = "comp")]
-    Completion {
-        /// Your shell type.
-        #[arg(value_enum)]
-        shell: Shell,
-    },
+    Completion(CompletionCmd),
     /// Sync the local config with remote defined in [remote].
     #[command(visible_alias = "f")]
     Fetch(FetchCmd),

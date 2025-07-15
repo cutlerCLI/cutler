@@ -87,8 +87,8 @@ pub async fn save_remote_config() -> Result<()> {
         .get()
         .ok_or_else(|| anyhow::anyhow!("Remote config not fetched yet"))?;
 
-    let toml_string =
-        toml::to_string(config).with_context(|| "Failed to serialize remote config to TOML")?;
+    let toml_string = toml::to_string_pretty(config)
+        .with_context(|| "Failed to serialize remote config to TOML")?;
 
     let mut file = fs::File::create(path).await?;
     file.write_all(toml_string.as_bytes()).await?;
@@ -110,8 +110,8 @@ pub async fn save_merge_local_remote_config() -> Result<()> {
     let merged = merge_remote_config(&local, &remote_val);
 
     let path = get_config_path().await;
-    let toml_string =
-        toml::to_string(&merged).with_context(|| "Failed to serialize merged config to TOML")?;
+    let toml_string = toml::to_string_pretty(&merged)
+        .with_context(|| "Failed to serialize merged config to TOML")?;
 
     let mut file = fs::File::create(path).await?;
     file.write_all(toml_string.as_bytes()).await?;

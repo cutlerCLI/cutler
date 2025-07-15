@@ -1,7 +1,7 @@
 use clap::Parser;
 use cutler::autosync::try_auto_sync;
 use cutler::cli::args::{BrewSubcmd, ConfigSubcmd};
-use cutler::cli::completion::generate_completion;
+
 use cutler::cli::{Args, Command};
 use cutler::commands::Runnable;
 use cutler::util::globals::{
@@ -61,7 +61,7 @@ async fn main() {
         },
         Command::CheckUpdate(cmd) => cmd.run().await,
         Command::SelfUpdate(cmd) => cmd.run().await,
-        Command::Completion { shell } => generate_completion(shell.to_owned()).await,
+        Command::Completion(cmd) => cmd.run().await,
     };
 
     if let Err(err) = result {
