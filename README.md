@@ -11,7 +11,7 @@ Powerful, declarative settings management for your Mac, with speed.
 </div>
 
 > [!NOTE]
-> Consider starring the project! It always keeps the energy high for creating new features, fixes and patches for the project.
+> Consider starring the repository to support the development of cutler!
 
 > [!WARNING]
 > Expect breaking changes before the v1 release.
