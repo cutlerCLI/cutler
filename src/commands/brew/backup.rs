@@ -40,7 +40,7 @@ impl Runnable for BrewBackupCmd {
         let mut deps = Vec::new();
 
         // init config
-        let mut doc = if fs::try_exists(&cfg_path).await.unwrap() {
+        let mut doc = if fs::try_exists(&cfg_path).await.unwrap_or(false) {
             load_config_mut(true).await?
         } else {
             print_log(
@@ -144,7 +144,9 @@ impl Runnable for BrewBackupCmd {
 
         // write backup
         if !dry_run {
-            fs::create_dir_all(cfg_path.parent().unwrap()).await?;
+            if let Some(parent) = cfg_path.parent() {
+                fs::create_dir_all(parent).await?;
+            }
             fs::write(&cfg_path, doc.to_string()).await?;
 
             print_log(LogLevel::Info, &format!("Backup saved to {cfg_path:?}"));

@@ -73,7 +73,7 @@ async fn ensure_xcode_clt() -> Result<()> {
         for _ in 0..240 {
             tokio::time::sleep(Duration::from_millis(5000)).await;
 
-            if check_installed().await.unwrap() {
+            if check_installed().await.unwrap_or(false) {
                 print_log(LogLevel::Info, "Xcode Command Line Tools installed.");
                 return Ok(());
             }
@@ -95,7 +95,7 @@ async fn set_homebrew_env_vars() {
 
     if fs::try_exists(Path::new("/opt/homebrew/bin/brew"))
         .await
-        .unwrap()
+        .unwrap_or(false)
     {
         let bin = "/opt/homebrew/bin";
         let sbin = "/opt/homebrew/sbin";
@@ -109,7 +109,7 @@ async fn set_homebrew_env_vars() {
         unsafe { env::set_var("PATH", &new_path) };
     } else if fs::try_exists(Path::new("/usr/local/bin/brew"))
         .await
-        .unwrap()
+        .unwrap_or(false)
     {
         let bin = "/usr/local/bin";
         let sbin = "/usr/local/sbin";

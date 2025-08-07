@@ -1,6 +1,7 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
+#[cfg(feature = "macos-deps")]
 use defaults_rs::{Domain, preferences::Preferences};
 use tokio::fs;
 
@@ -44,53 +45,61 @@ impl Runnable for ResetCmd {
         let toml = load_config(true).await?;
         let domains = collect(&toml)?;
 
-        for (domain, table) in domains {
-            for (key, _) in table {
-                let (eff_dom, eff_key) = effective(&domain, &key);
+        #[cfg(feature = "macos-deps")]
+        {
+            for (domain, table) in domains {
+                for (key, _) in table {
+                    let (eff_dom, eff_key) = effective(&domain, &key);
 
-                // only delete it if currently set
-                if read_current(&eff_dom, &eff_key).await.is_some() {
-                    let domain_obj = if eff_dom == "NSGlobalDomain" {
-                        Domain::Global
-                    } else if let Some(rest) = eff_dom.strip_prefix("com.apple.") {
-                        Domain::User(format!("com.apple.{rest}"))
-                    } else {
-                        Domain::User(eff_dom.clone())
-                    };
+                    // only delete it if currently set
+                    if read_current(&eff_dom, &eff_key).await.is_some() {
+                        let domain_obj = if eff_dom == "NSGlobalDomain" {
+                            Domain::Global
+                        } else if let Some(rest) = eff_dom.strip_prefix("com.apple.") {
+                            Domain::User(format!("com.apple.{rest}"))
+                        } else {
+                            Domain::User(eff_dom.clone())
+                        };
 
-                    if dry_run {
-                        print_log(
-                            LogLevel::Dry,
-                            &format!("Would reset {eff_dom}.{eff_key} to system default"),
-                        );
-                    } else {
-                        match Preferences::delete(domain_obj, Some(&eff_key)).await {
-                            Ok(_) => {
-                                print_log(
-                                    LogLevel::Info,
-                                    &format!("Reset {eff_dom}.{eff_key} to system default"),
-                                );
-                            }
-                            Err(e) => {
-                                print_log(
-                                    LogLevel::Error,
-                                    &format!("Failed to reset {eff_dom}.{eff_key}: {e}"),
-                                );
+                        if dry_run {
+                            print_log(
+                                LogLevel::Dry,
+                                &format!("Would reset {eff_dom}.{eff_key} to system default"),
+                            );
+                        } else {
+                            match Preferences::delete(domain_obj, Some(&eff_key)).await {
+                                Ok(_) => {
+                                    print_log(
+                                        LogLevel::Info,
+                                        &format!("Reset {eff_dom}.{eff_key} to system default"),
+                                    );
+                                }
+                                Err(e) => {
+                                    print_log(
+                                        LogLevel::Error,
+                                        &format!("Failed to reset {eff_dom}.{eff_key}: {e}"),
+                                    );
+                                }
                             }
                         }
+                    } else {
+                        print_log(
+                            LogLevel::Info,
+                            &format!("Skipping {eff_dom}.{eff_key} (not set)"),
+                        );
                     }
-                } else {
-                    print_log(
-                        LogLevel::Info,
-                        &format!("Skipping {eff_dom}.{eff_key} (not set)"),
-                    );
                 }
             }
         }
 
+        #[cfg(not(feature = "macos-deps"))]
+        {
+            anyhow::bail!("Reset functionality requires macOS-specific dependencies. This platform is not supported for reset operations.");
+        }
+
         // remove snapshot if present
         let snap_path = get_snapshot_path();
-        if fs::try_exists(&snap_path).await.unwrap() {
+        if fs::try_exists(&snap_path).await.unwrap_or(false) {
             if dry_run {
                 print_log(
                     LogLevel::Dry,

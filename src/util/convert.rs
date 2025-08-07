@@ -1,9 +1,11 @@
 use anyhow::bail;
+#[cfg(feature = "macos-deps")]
 use defaults_rs::PrefValue;
 use std::collections::HashMap;
 use toml::Value;
 
 /// Turns a toml::Value into its defaults_rs::PrefValue counterpart.
+#[cfg(feature = "macos-deps")]
 pub fn toml_to_prefvalue(val: &Value) -> anyhow::Result<PrefValue> {
     Ok(match val {
         Value::String(s) => PrefValue::String(s.clone()),
@@ -25,6 +27,7 @@ pub fn toml_to_prefvalue(val: &Value) -> anyhow::Result<PrefValue> {
 }
 
 /// Turns a defaults_rs::PrefValue into its toml::Value counterpart.
+#[cfg(feature = "macos-deps")]
 pub fn prefvalue_to_toml(val: &PrefValue) -> Value {
     match val {
         PrefValue::String(s) => Value::String(s.clone()),
@@ -44,6 +47,11 @@ pub fn prefvalue_to_toml(val: &PrefValue) -> Value {
 
 /// Turns a string into its toml::Value counterpart.
 pub fn string_to_toml_value(s: &str) -> toml::Value {
+    // Handle empty string edge case
+    if s.is_empty() {
+        return toml::Value::String(String::new());
+    }
+    
     // try bool, int, float, fallback to string
     if s == "true" {
         toml::Value::Boolean(true)
@@ -52,7 +60,12 @@ pub fn string_to_toml_value(s: &str) -> toml::Value {
     } else if let Ok(i) = s.parse::<i64>() {
         toml::Value::Integer(i)
     } else if let Ok(f) = s.parse::<f64>() {
-        toml::Value::Float(f)
+        // Handle NaN and infinity edge cases
+        if f.is_nan() || f.is_infinite() {
+            toml::Value::String(s.to_string())
+        } else {
+            toml::Value::Float(f)
+        }
     } else {
         toml::Value::String(s.to_string())
     }

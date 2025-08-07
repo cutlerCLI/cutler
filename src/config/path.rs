@@ -24,21 +24,20 @@ pub async fn get_config_path() -> PathBuf {
 
     // return the first candidate that exists
     for candidate in &candidates {
-        if fs::try_exists(candidate).await.unwrap() {
+        if fs::try_exists(candidate).await.unwrap_or(false) {
             return candidate.to_owned();
         }
     }
 
     // if none exist, always return $HOME/.config/cutler/config.toml if HOME is set
-    // else fallback to ~/.config/cutler/config.toml
+    // else fallback to .config/cutler/config.toml in current directory
     if let Some(home) = home {
         PathBuf::from(home)
             .join(".config")
             .join("cutler")
             .join("config.toml")
     } else {
-        PathBuf::from("~")
-            .join(".config")
+        PathBuf::from(".config")
             .join("cutler")
             .join("config.toml")
     }

@@ -12,7 +12,7 @@ use crate::{
         state::{SettingState, Snapshot},
     },
     util::{
-        convert::{normalize, toml_to_prefvalue},
+        convert::normalize,
         globals::should_dry_run,
         io::{confirm_action, restart_system_services},
         logging::{GREEN, LogLevel, RESET, print_log},
@@ -21,6 +21,7 @@ use crate::{
 use anyhow::{Result, bail};
 use async_trait::async_trait;
 use clap::Args;
+#[cfg(feature = "macos-deps")]
 use defaults_rs::{Domain, preferences::Preferences};
 use tokio::fs;
 use toml::Value;
@@ -157,48 +158,65 @@ impl Runnable for ApplyCmd {
 
         // use defaults-rs batch write API for all changed settings
         // collect jobs into a Vec<(Domain, String, PrefValue)>
-        let mut batch: Vec<(Domain, String, defaults_rs::PrefValue)> = Vec::new();
+        #[cfg(feature = "macos-deps")]
+        {
+            use crate::util::convert::toml_to_prefvalue;
+            
+            let mut batch: Vec<(Domain, String, defaults_rs::PrefValue)> = Vec::new();
 
-        for job in &jobs {
-            let domain_obj = if job.domain == "NSGlobalDomain" {
-                Domain::Global
-            } else {
-                Domain::User(job.domain.clone())
-            };
-
-            if !dry_run {
-                print_log(
-                    LogLevel::Info,
-                    &format!(
-                        "{}{} {} | {} -> {}{}",
-                        GREEN, job.action, job.domain, job.key, job.new_value, RESET
-                    ),
-                );
-            }
-            let pref_value = toml_to_prefvalue(&job.toml_value)?;
-            batch.push((domain_obj, job.key.clone(), pref_value));
-        }
-
-        // perform batch write
-        if !dry_run {
-            match Preferences::write_batch(batch).await {
-                Ok(_) => {
-                    print_log(LogLevel::Info, "All preferences applied.");
-                }
-                Err(e) => {
-                    print_log(LogLevel::Error, &format!("Batch write failed: {e}"));
-                }
-            }
-        } else {
             for job in &jobs {
+                let domain_obj = if job.domain == "NSGlobalDomain" {
+                    Domain::Global
+                } else {
+                    Domain::User(job.domain.clone())
+                };
+
+                if !dry_run {
+                    print_log(
+                        LogLevel::Info,
+                        &format!(
+                            "{}{} {} | {} -> {}{}",
+                            GREEN, job.action, job.domain, job.key, job.new_value, RESET
+                        ),
+                    );
+                }
+                let pref_value = toml_to_prefvalue(&job.toml_value)?;
+                batch.push((domain_obj, job.key.clone(), pref_value));
+            }
+
+            // perform batch write
+            if !dry_run {
+                match Preferences::write_batch(batch).await {
+                    Ok(_) => {
+                        print_log(LogLevel::Info, "All preferences applied.");
+                    }
+                    Err(e) => {
+                        print_log(LogLevel::Error, &format!("Batch write failed: {e}"));
+                    }
+                }
+            } else {
                 print_log(
                     LogLevel::Dry,
-                    &format!(
-                        "Would {} setting '{}' for {}",
-                        job.action, job.key, job.domain
-                    ),
+                    &format!("Would apply {} preferences.", jobs.len()),
                 );
             }
+        }
+        
+        #[cfg(not(feature = "macos-deps"))]
+        {
+            // Show what would be applied in dry run mode for non-macOS
+            if dry_run {
+                for job in &jobs {
+                    print_log(
+                        LogLevel::Dry,
+                        &format!(
+                            "Would {} setting '{}' for {}",
+                            job.action, job.key, job.domain
+                        ),
+                    );
+                }
+            }
+            anyhow::bail!("Apply functionality requires macOS-specific dependencies. This platform is not supported for apply operations.");
         }
 
         let mut new_snap = Snapshot::new();

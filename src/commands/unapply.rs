@@ -1,6 +1,7 @@
 use anyhow::{Context, Result, bail};
 use async_trait::async_trait;
 use clap::Args;
+#[cfg(feature = "macos-deps")]
 use defaults_rs::{Domain, preferences::Preferences};
 use std::collections::HashMap;
 use tokio::fs;
@@ -9,7 +10,7 @@ use crate::{
     commands::Runnable,
     snapshot::state::{Snapshot, get_snapshot_path},
     util::{
-        convert::{string_to_toml_value, toml_to_prefvalue},
+        convert::string_to_toml_value,
         globals::should_dry_run,
         io::restart_system_services,
         logging::{LogLevel, print_log},
@@ -24,7 +25,7 @@ impl Runnable for UnapplyCmd {
     async fn run(&self) -> Result<()> {
         let snap_path = get_snapshot_path();
 
-        if !fs::try_exists(&snap_path).await.unwrap() {
+        if !fs::try_exists(&snap_path).await.unwrap_or(false) {
             bail!(
                 "No snapshot found. Please run `cutler apply` first before unapplying.\n\
                 As a fallback, you can use `cutler reset` to reset settings to their defaults."
@@ -39,12 +40,29 @@ impl Runnable for UnapplyCmd {
             .context(format!("Failed to load snapshot from {snap_path:?}"))?;
 
         // prepare undo operations, grouping by domain for efficiency
+        #[cfg(feature = "macos-deps")]
         let mut batch_restores: HashMap<Domain, Vec<(String, defaults_rs::PrefValue)>> =
             HashMap::new();
+        #[cfg(feature = "macos-deps")]
         let mut batch_deletes: HashMap<Domain, Vec<String>> = HashMap::new();
 
-        // reverse order to undo in correct sequence
-        for s in snapshot.settings.into_iter().rev() {
+        #[cfg(not(feature = "macos-deps"))]
+        {
+            if should_dry_run() {
+                print_log(
+                    LogLevel::Dry,
+                    &format!("Would unapply {} settings from snapshot", snapshot.settings.len()),
+                );
+            }
+            anyhow::bail!("Unapply functionality requires macOS-specific dependencies. This platform is not supported for unapply operations.");
+        }
+
+        #[cfg(feature = "macos-deps")]
+        {
+            use crate::util::convert::toml_to_prefvalue;
+            
+            // reverse order to undo in correct sequence
+            for s in snapshot.settings.into_iter().rev() {
             let domain_obj = if s.domain == "NSGlobalDomain" {
                 Domain::Global
             } else {
@@ -140,6 +158,7 @@ impl Runnable for UnapplyCmd {
                 "External commands were executed previously; please revert them manually if needed.",
             );
         }
+        } // end of macos-deps conditional block
 
         // delete the snapshot file
         if dry_run {

@@ -1,4 +1,5 @@
 use anyhow::bail;
+#[cfg(feature = "macos-deps")]
 use defaults_rs::{Domain, PrefValue, ReadResult, preferences::Preferences};
 use std::collections::HashMap;
 use toml::{Table, Value};
@@ -85,8 +86,10 @@ pub fn effective(domain: &str, key: &str) -> (String, String) {
 }
 
 /// Check whether a domain exists.
+#[cfg(feature = "macos-deps")]
 pub async fn check_domain_exists(full_domain: &str) -> Result<(), anyhow::Error> {
-    let domains = Preferences::list_domains().await.unwrap();
+    let domains = Preferences::list_domains().await
+        .map_err(|e| anyhow::anyhow!("Failed to list domains: {}", e))?;
 
     if domains.contains(&full_domain.to_owned()) {
         Ok(())
@@ -95,7 +98,15 @@ pub async fn check_domain_exists(full_domain: &str) -> Result<(), anyhow::Error>
     }
 }
 
+/// Check whether a domain exists (non-macOS fallback).
+#[cfg(not(feature = "macos-deps"))]
+pub async fn check_domain_exists(full_domain: &str) -> Result<(), anyhow::Error> {
+    // On non-macOS platforms, we can't actually check domains
+    bail!("Domain checking is not supported on this platform ({})", full_domain)
+}
+
 /// Read the current value of a defaults key, if any.
+#[cfg(feature = "macos-deps")]
 pub async fn read_current(eff_domain: &str, eff_key: &str) -> Option<String> {
     let domain_obj = if eff_domain == "NSGlobalDomain" {
         Domain::Global
@@ -137,4 +148,11 @@ pub async fn read_current(eff_domain: &str, eff_key: &str) -> Option<String> {
         },
         Err(_) => None,
     }
+}
+
+/// Read the current value of a defaults key, if any (non-macOS fallback).
+#[cfg(not(feature = "macos-deps"))]
+pub async fn read_current(_eff_domain: &str, _eff_key: &str) -> Option<String> {
+    // On non-macOS platforms, we can't read defaults
+    None
 }
