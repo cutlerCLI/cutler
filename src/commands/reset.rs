@@ -8,7 +8,7 @@ use tokio::fs;
 use crate::{
     commands::Runnable,
     config::loader::load_config,
-    domains::{collect, effective, read_current},
+    domains::collect,
     snapshot::state::get_snapshot_path,
     util::{
         globals::should_dry_run,
@@ -43,11 +43,13 @@ impl Runnable for ResetCmd {
         }
 
         let toml = load_config(true).await?;
-        let domains = collect(&toml)?;
+        let _domains = collect(&toml)?;
 
         #[cfg(feature = "macos-deps")]
         {
-            for (domain, table) in domains {
+            use crate::domains::{effective, read_current};
+            
+            for (domain, table) in _domains {
                 for (key, _) in table {
                     let (eff_dom, eff_key) = effective(&domain, &key);
 
@@ -94,7 +96,8 @@ impl Runnable for ResetCmd {
 
         #[cfg(not(feature = "macos-deps"))]
         {
-            anyhow::bail!("Reset functionality requires macOS-specific dependencies. This platform is not supported for reset operations.");
+            print_log(LogLevel::Warning, "Reset functionality requires macOS-specific dependencies. This platform is not supported for reset operations.");
+            print_log(LogLevel::Info, "As a fallback, you can manually remove configuration files if needed.");
         }
 
         // remove snapshot if present

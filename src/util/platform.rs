@@ -33,3 +33,28 @@ pub fn get_platform_name() -> &'static str {
         "Unknown"
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_platform_detection() {
+        let platform = get_platform_name();
+        assert!(!platform.is_empty());
+        // This will vary by platform but should return a valid string
+        assert!(matches!(platform, "macOS" | "Linux" | "Windows" | "Unknown"));
+    }
+
+    #[test]
+    fn test_platform_compatibility_check() {
+        // This test will pass or fail depending on the target platform
+        let result = check_platform_compatibility();
+        
+        if cfg!(target_os = "macos") {
+            assert!(result.is_ok());
+        } else {
+            assert!(result.is_err());
+        }
+    }
+}

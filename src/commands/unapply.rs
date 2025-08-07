@@ -3,14 +3,12 @@ use async_trait::async_trait;
 use clap::Args;
 #[cfg(feature = "macos-deps")]
 use defaults_rs::{Domain, preferences::Preferences};
-use std::collections::HashMap;
 use tokio::fs;
 
 use crate::{
     commands::Runnable,
     snapshot::state::{Snapshot, get_snapshot_path},
     util::{
-        convert::string_to_toml_value,
         globals::should_dry_run,
         io::restart_system_services,
         logging::{LogLevel, print_log},
@@ -59,7 +57,8 @@ impl Runnable for UnapplyCmd {
 
         #[cfg(feature = "macos-deps")]
         {
-            use crate::util::convert::toml_to_prefvalue;
+            use crate::util::convert::{toml_to_prefvalue, string_to_toml_value};
+            use std::collections::HashMap;
             
             // reverse order to undo in correct sequence
             for s in snapshot.settings.into_iter().rev() {

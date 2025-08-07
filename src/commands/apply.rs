@@ -9,13 +9,13 @@ use crate::{
     exec::runner,
     snapshot::{
         get_snapshot_path,
-        state::{SettingState, Snapshot},
+        state::Snapshot,
     },
     util::{
         convert::normalize,
         globals::should_dry_run,
         io::{confirm_action, restart_system_services},
-        logging::{GREEN, LogLevel, RESET, print_log},
+        logging::{LogLevel, print_log},
     },
 };
 use anyhow::{Result, bail};
@@ -161,6 +161,8 @@ impl Runnable for ApplyCmd {
         #[cfg(feature = "macos-deps")]
         {
             use crate::util::convert::toml_to_prefvalue;
+            use crate::util::logging::{GREEN, RESET};
+            use crate::snapshot::state::SettingState;
             
             let mut batch: Vec<(Domain, String, defaults_rs::PrefValue)> = Vec::new();
 
@@ -200,6 +202,41 @@ impl Runnable for ApplyCmd {
                     &format!("Would apply {} preferences.", jobs.len()),
                 );
             }
+            
+            // Create snapshot for successful operations
+            let mut new_snap = Snapshot::new();
+            for ((_, _), mut old_entry) in existing.into_iter() {
+                old_entry.new_value = old_entry.new_value.clone();
+                new_snap.settings.push(old_entry);
+            }
+            // now append all the newly applied/updated settings
+            for job in jobs {
+                new_snap.settings.push(SettingState {
+                    domain: job.domain,
+                    key: job.key,
+                    original_value: job.prev_value,
+                    new_value: job.new_value,
+                });
+            }
+            new_snap.external = runner::extract_all_cmds(&toml);
+
+            // TODO: append external command states to the snapshot
+            if !commands.is_empty() {
+                print_log(LogLevel::Warning, "The following external commands will be executed: ");
+                for (name, cmd) in &commands {
+                    print_log(LogLevel::Info, &format!("  {name}: {}", cmd.get("run").unwrap().as_str().unwrap()));
+                }
+                print_log(LogLevel::Warning, "External commands are not part of the snapshot and must be reverted manually.");
+            }
+
+            // save snapshot to disk
+            let snapshot_path = get_snapshot_path();
+            if !dry_run {
+                new_snap.save(&snapshot_path).await?;
+                print_log(LogLevel::Info, &format!("Snapshot saved to {snapshot_path:?}"));
+            } else {
+                print_log(LogLevel::Dry, &format!("Would save snapshot to {snapshot_path:?}"));
+            }
         }
         
         #[cfg(not(feature = "macos-deps"))]
@@ -216,30 +253,8 @@ impl Runnable for ApplyCmd {
                     );
                 }
             }
-            anyhow::bail!("Apply functionality requires macOS-specific dependencies. This platform is not supported for apply operations.");
-        }
-
-        let mut new_snap = Snapshot::new();
-        for ((_, _), mut old_entry) in existing.into_iter() {
-            old_entry.new_value = old_entry.new_value.clone();
-            new_snap.settings.push(old_entry);
-        }
-        // now append all the newly applied/updated settings
-        for job in jobs {
-            new_snap.settings.push(SettingState {
-                domain: job.domain,
-                key: job.key,
-                original_value: job.original.clone(),
-                new_value: job.new_value,
-            });
-        }
-        new_snap.external = runner::extract_all_cmds(&toml);
-
-        if !dry_run {
-            new_snap.save(&snap_path).await?;
-            print_log(LogLevel::Info, &format!("Snapshot saved: {snap_path:?}"));
-        } else {
-            print_log(LogLevel::Dry, "Would save snapshot");
+            print_log(LogLevel::Warning, "Apply functionality requires macOS-specific dependencies. This platform is not supported for apply operations.");
+            print_log(LogLevel::Info, "However, brew and external commands will still be executed if requested.");
         }
 
         // run brew
