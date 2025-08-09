@@ -7,6 +7,7 @@ casks = [
     "android-studio",
     "zed",
     "zulu@21",
-] # You can have both versioned and non-versioned formulae/casks at once.
+]
 formulae = ["rust", "python3", "mise", "ruby", "cmatrix", "fastfetch"]
+taps = ["hitblast/tap"]
 no_deps = true # Use this if you do not want cutler to check for dependencies when comparing.

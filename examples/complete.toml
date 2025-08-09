@@ -2,15 +2,16 @@
 lock = true
 
 # Remote config example
-[remote]
-url = "https://url/to/config.toml" # URL to your configuration file.
-autosync = false                   # Whether to update the configuration on command execution.
+# Uncomment to use:
+#
+# [remote]
+# url = "https://url/to/config.toml" # URL to your configuration file.
+# autosync = false                   # Whether to update the configuration on command execution.
 
 # System Preferences
 
 [set.menuextra.clock] # Put the domain without the com.apple. prefix.
 FlashDateSeparators = true
-DateFormat = "\"h:mm:ss\""
 Show24Hour = false
 ShowAMPM = false
 ShowDate = 2
@@ -42,9 +43,6 @@ autohide-delay = 0
 autohide-time-modifier = 0.6
 expose-group-apps = true
 
-[set.HIToolbox]
-AppleFnUsageType = 0
-
 [set.screencapture]
 show-thumbnail = false
 target = "clipboard"
@@ -54,31 +52,31 @@ type = "png"
 KeyRepeat = 2
 InitialKeyRepeat = 15
 NSDocumentSaveNewDocumentsToCloud = false
-NSAutomaticInlinePredictionEnabled = 0
-NSAutomaticSpellingCorrectionEnabled = 0
+NSAutomaticInlinePredictionEnabled = false
+NSAutomaticSpellingCorrectionEnabled = false
 "com.apple.keyboard.fnState" = false
 
 # External command execution
 
-[vars] # Initialize isolated variables for external commands. These aren't directy available in the environment.
+[vars] # create variables (not exposed to shell)
 hostname = "darkstar"
 
 [commands.dotfiles]
-run = "mkdir ~/Developer && git clone https://github.com/hitblast/dotfiles.git ~/Developer/dotfiles && cd ~/Developer/dotfiles && stow . -t ~"
-ensure_first = true
-# ensure_first ensures that these commands are run before any other command, synchronously.
-
-[commands.mise]
-run = "mise install"
-ensure_first = true
-# this command will run after commands.dotfiles which is above
+run = """
+mkdir ~/Developer
+git clone https://github.com/hitblast/dotfiles.git ~/Developer/dotfiles
+cd ~/Developer/dotfiles
+stow . -t ~
+"""
+ensure_first = true # ensures that these commands are run before any other command, synchronously.
 
 [commands.hostname]
-run = "scutil --set ComputerName $hostname && scutil --set HostName $hostname && scutil --set LocalHostName $hostname"
+run = """
+scutil --set ComputerName $hostname
+scutil --set HostName $hostname
+scutil --set LocalHostName $hostname
+"""
 sudo = true
-
-[commands.wallpaper]
-run = "osascript -e 'tell application \"System Events\" to tell every desktop to set picture to \"~/Pictures/bg-wall.png\"'"
 
 # Homebrew formula / casks listing
 
@@ -90,51 +88,7 @@ formulae = [
     "cargo-edit",
     "cmake",
     "cmatrix",
-    "cutler",
-    "drs",
-    "dust",
-    "fd",
-    "fzf",
-    "gh",
-    "git",
-    "hookman",
-    "lazygit",
-    "libyaml",
-    "mactop",
-    "mas",
-    "mise",
-    "ncspot",
-    "neovim",
-    "ninja",
-    "ripgrep",
-    "sccache",
-    "starship",
-    "stow",
-    "tokei",
-    "uutils-coreutils",
-    "uv",
-    "zoxide",
 ]
-casks = [
-    "aerospace",
-    "android-studio",
-    "appcleaner",
-    "container",
-    "discord",
-    "font-input",
-    "ghostty",
-    "hot",
-    "iina",
-    "karabiner-elements",
-    "keyboardcleantool",
-    "onyx",
-    "protonvpn",
-    "spotify",
-    "transmission",
-    "whatsapp",
-    "zed",
-    "zen",
-    "zulu@21",
-]
+casks = ["aerospace", "android-studio", "appcleaner", "container", "discord"]
 taps = ["hitblast/tap", "nikitabobko/tap"]
 no_deps = true # Use this if you do not want cutler to check for dependencies when comparing.
