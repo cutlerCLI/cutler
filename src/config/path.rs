@@ -1,9 +1,16 @@
+use std::sync::OnceLock;
 use std::{env, path::PathBuf};
-
 use tokio::fs;
+
+/// The configuration path decided for the current process.
+static CONFIG_PATH: OnceLock<PathBuf> = OnceLock::new();
 
 /// Returns the path to the configuration file by checking several candidate locations.
 pub async fn get_config_path() -> PathBuf {
+    if let Some(path) = CONFIG_PATH.get() {
+        return path.clone();
+    }
+
     let mut candidates = Vec::new();
 
     // decide candidates in order
@@ -21,14 +28,18 @@ pub async fn get_config_path() -> PathBuf {
     }
 
     // return the first candidate that exists
-    for candidate in &candidates {
-        if fs::try_exists(candidate).await.unwrap() {
-            return candidate.to_owned();
+    let chosen = if let Some(existing) = {
+        let mut found = None;
+        for candidate in &candidates {
+            if fs::try_exists(candidate).await.unwrap() {
+                found = Some(candidate.to_owned());
+                break;
+            }
         }
-    }
-
-    // if none exist, always return the HOME-based config location
-    if let Some(home) = home {
+        found
+    } {
+        existing
+    } else if let Some(home) = home {
         PathBuf::from(home)
             .join(".config")
             .join("cutler")
@@ -38,5 +49,8 @@ pub async fn get_config_path() -> PathBuf {
             .join(".config")
             .join("cutler")
             .join("config.toml")
-    }
+    };
+
+    CONFIG_PATH.set(chosen.clone()).ok();
+    chosen
 }
