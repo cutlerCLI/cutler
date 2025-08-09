@@ -68,9 +68,9 @@ async fn ensure_xcode_clt() -> Result<()> {
             "Xcode Command Line Tools installer launched. Waiting for installation to complete...",
         );
 
-        // wait for 20 minutes for the user to finish installation
+        // wait for 60 minutes for the user to finish installation
         // otherwise, bail out
-        for _ in 0..240 {
+        for _ in 0..720 {
             tokio::time::sleep(Duration::from_millis(5000)).await;
 
             if check_installed().await.unwrap() {
@@ -139,10 +139,6 @@ async fn set_homebrew_env_vars() {
 /// Helper for: ensure_brew()
 /// Installs Homebrew via the official script.
 async fn install_homebrew() -> Result<(), anyhow::Error> {
-    unsafe {
-        env::set_var("NONINTERACTIVE", "1");
-    }
-
     let install_command =
         "curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | /bin/bash";
     let status = Command::new("/bin/bash")
