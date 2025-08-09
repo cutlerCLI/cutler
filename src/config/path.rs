@@ -10,17 +10,15 @@ pub async fn get_config_path() -> PathBuf {
     let home = env::var_os("HOME");
 
     if let Some(ref home) = home {
-        let candidate = PathBuf::from(home)
+        let candidate1 = PathBuf::from(home)
             .join(".config")
             .join("cutler")
             .join("config.toml");
-        candidates.push(candidate);
+        candidates.push(candidate1);
 
         let candidate2 = PathBuf::from(home).join(".config").join("cutler.toml");
         candidates.push(candidate2);
     }
-
-    candidates.push(PathBuf::from("cutler.toml"));
 
     // return the first candidate that exists
     for candidate in &candidates {
@@ -29,8 +27,7 @@ pub async fn get_config_path() -> PathBuf {
         }
     }
 
-    // if none exist, always return $HOME/.config/cutler/config.toml if HOME is set
-    // else fallback to ~/.config/cutler/config.toml
+    // if none exist, always return the HOME-based config location
     if let Some(home) = home {
         PathBuf::from(home)
             .join(".config")

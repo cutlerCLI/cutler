@@ -1,10 +1,7 @@
 use crate::cli::Command;
+use crate::config::remote::{RemoteConfig, fetch_remote_config, save_remote_config};
 use crate::{
-    config::{
-        loader::load_config_detached,
-        path::get_config_path,
-        remote::{RemoteConfig, fetch_remote_config, save_remote_config},
-    },
+    config::{loader::load_config_detached, path::get_config_path},
     util::logging::{LogLevel, print_log},
 };
 
@@ -44,11 +41,12 @@ pub async fn try_auto_sync(command: &crate::cli::Command) {
 
     // start
     let remote_cfg = RemoteConfig::from_toml(&local_doc);
+
     if let Some(remote_cfg) = remote_cfg {
         if remote_cfg.autosync {
             match fetch_remote_config(remote_cfg.url).await {
                 Ok(()) => {
-                    if let Err(e) = save_remote_config().await {
+                    if let Err(e) = save_remote_config(&cfg_path).await {
                         print_log(
                             LogLevel::Warning,
                             &format!("Failed to save remote config after auto-sync: {e}"),

@@ -1,10 +1,10 @@
-use crate::{commands::Runnable, config::utils::create_config};
 use anyhow::{Result, bail};
 use async_trait::async_trait;
 use clap::Args;
 use tokio::fs;
 
 use crate::{
+    commands::Runnable,
     config::path::get_config_path,
     util::{
         io::confirm_action,
@@ -13,29 +13,35 @@ use crate::{
 };
 
 #[derive(Args, Debug)]
-pub struct InitCmd {
-    /// Skip confirmation prompt.
-    #[arg(short, long)]
-    pub force: bool,
-}
+pub struct InitCmd;
 
 #[async_trait]
 impl Runnable for InitCmd {
-    async fn run(&self) -> Result<()> {
+    async fn run(&self) -> Result<(), anyhow::Error> {
         let config_path = get_config_path().await;
 
-        let exists = fs::metadata(&config_path).await.is_ok();
-        if exists {
+        if config_path.try_exists().unwrap() {
             print_log(
                 LogLevel::Warning,
                 &format!("Configuration file already exists at {config_path:?}"),
             );
-            if !confirm_action("Do you want to overwrite it?")? {
+            if !confirm_action("Do you want to overwrite it?") {
                 bail!("Configuration init aborted.")
-            } else {
-                create_config(&config_path).await?;
             }
         }
+
+        // write TOML template to disk
+        // this is not done by create_empty_config
+        let default_cfg = include_str!("../../examples/complete.toml");
+
+        fs::create_dir_all(config_path.parent().unwrap()).await?;
+        fs::write(&config_path, default_cfg).await?;
+
+        print_log(
+            LogLevel::Fruitful,
+            &format!("Config created at {config_path:?}, Review and customize it before applying."),
+        );
+
         Ok(())
     }
 }

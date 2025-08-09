@@ -66,13 +66,12 @@ impl Runnable for ApplyCmd {
         if let Some(url) = &self.url {
             if fs::try_exists(&config_path).await.unwrap()
                 && !confirm_action("Local config exists but a URL was still passed. Proceed?")
-                    .unwrap()
             {
                 bail!("Aborted apply: --url is passed despite local config.")
             }
 
             fetch_remote_config(url.to_string()).await?;
-            save_remote_config().await?;
+            save_remote_config(&config_path).await?;
 
             print_log(
                 LogLevel::Info,

@@ -7,9 +7,7 @@ use crate::{
     config::{
         loader::load_config,
         path::get_config_path,
-        remote::{
-            REMOTE_CONFIG, RemoteConfig, fetch_remote_config, save_merge_local_remote_config,
-        },
+        remote::{REMOTE_CONFIG, RemoteConfig, fetch_remote_config, save_remote_config},
     },
     util::{
         globals::should_dry_run,
@@ -76,19 +74,18 @@ impl Runnable for FetchCmd {
         }
 
         // prompt user to proceed (unless dry-run)
-        if !dry_run && !confirm_action("Apply remote config (overwrite local config)?")? {
+        if !dry_run && !confirm_action("Apply remote config (overwrite local config)?") {
             print_log(LogLevel::Warning, "Sync aborted by user.");
             return Ok(());
         }
 
-        // overwrite local config with remote config (or just print in dry-run)
         if dry_run {
             print_log(
                 LogLevel::Dry,
                 &format!("Would overwrite {cfg_path:?} with remote config."),
             );
         } else {
-            save_merge_local_remote_config().await?;
+            save_remote_config(&cfg_path).await?;
 
             print_log(LogLevel::Fruitful, "Local config updated from remote!");
         }

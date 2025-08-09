@@ -37,7 +37,7 @@ impl Runnable for ResetCmd {
             "Settings will be reset to macOS defaults, not to their previous values.",
         );
 
-        if !self.force && !confirm_action("Are you sure you want to continue?")? {
+        if !self.force && !confirm_action("Are you sure you want to continue?") {
             return Ok(());
         }
 

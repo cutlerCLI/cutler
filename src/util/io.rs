@@ -8,17 +8,18 @@ use crate::util::{
 use anyhow::Result;
 
 /// Ask "Y/N?"; returns true if accept_all is set or the user types "y" or "Y"
-pub fn confirm_action(prompt: &str) -> Result<bool> {
+pub fn confirm_action(prompt: &str) -> bool {
     if should_accept_all() {
         print_log(
             LogLevel::Prompt,
             &format!("{prompt} [y/N]: y (auto-accepted)"),
         );
-        return Ok(true);
+
+        return true;
     }
 
-    let result = Confirm::new().with_prompt(prompt).interact()?;
-    Ok(result)
+    
+    Confirm::new().with_prompt(prompt).interact().unwrap()
 }
 
 /// Restart Finder, Dock, SystemUIServer so defaults take effect.

@@ -41,7 +41,7 @@ impl Snapshot {
         if let Some(dir) = path.parent() {
             fs::create_dir_all(dir).await?;
         }
-        let json = serde_json::to_string_pretty(self)?;
+        let json = serde_json::to_string(self)?;
         fs::write(path, json).await?;
         Ok(())
     }

@@ -47,7 +47,7 @@ async fn ensure_xcode_clt() -> Result<()> {
         "Xcode Command Line Tools are not installed.",
     );
 
-    if confirm_action("Install Xcode Command Line Tools now?")? {
+    if confirm_action("Install Xcode Command Line Tools now?") {
         print_log(
             LogLevel::Info,
             "Waiting to find Xcode Command Line Tools after installation...",
@@ -186,7 +186,7 @@ pub async fn ensure_brew() -> Result<()> {
 
         print_log(LogLevel::Warning, "Homebrew is not installed.");
 
-        if confirm_action("Install Homebrew now?")? {
+        if confirm_action("Install Homebrew now?") {
             install_homebrew().await?;
 
             // set environment variables for `brew`

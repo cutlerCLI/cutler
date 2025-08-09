@@ -106,8 +106,8 @@ impl Runnable for StatusCmd {
         let no_brew = self.no_brew;
 
         let brew_handle = task::spawn(async move {
-            if !no_brew {
-                if let Some(brew_val) = toml_brew.get("brew").and_then(|v| v.as_table()) {
+            if !no_brew
+                && let Some(brew_val) = toml_brew.get("brew").and_then(|v| v.as_table()) {
                     {
                         let _lock = log_mutex_brew.lock().await;
                         print_log(LogLevel::Info, "Homebrew status:");
@@ -211,7 +211,6 @@ impl Runnable for StatusCmd {
                         }
                     }
                 }
-            }
         });
 
         // wait for both tasks to finish
