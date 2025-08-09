@@ -106,111 +106,104 @@ impl Runnable for StatusCmd {
         let no_brew = self.no_brew;
 
         let brew_handle = task::spawn(async move {
-            if !no_brew
-                && let Some(brew_val) = toml_brew.get("brew").and_then(|v| v.as_table()) {
-                    {
-                        let _lock = log_mutex_brew.lock().await;
-                        print_log(LogLevel::Info, "Homebrew status:");
-                    }
+            if !no_brew && let Some(brew_val) = toml_brew.get("brew").and_then(|v| v.as_table()) {
+                {
+                    let _lock = log_mutex_brew.lock().await;
+                    print_log(LogLevel::Info, "Homebrew status:");
+                }
 
-                    // ensure homebrew is installed (skip if not)
-                    if !is_brew_installed().await {
-                        let _lock = log_mutex_brew.lock().await;
-                        print_log(
-                            LogLevel::Warning,
-                            "Homebrew not available in PATH, skipping status check for it.",
-                        );
-                    } else {
-                        match compare_brew_state(brew_val).await {
-                            Ok(BrewDiff {
-                                missing_formulae,
-                                extra_formulae,
-                                missing_casks,
-                                extra_casks,
-                                missing_taps,
-                                extra_taps,
-                            }) => {
-                                let mut any_brew_diff = false;
-                                if !missing_formulae.is_empty() {
-                                    any_brew_diff = true;
-                                    let _lock = log_mutex_brew.lock().await;
-                                    print_log(
-                                        LogLevel::Warning,
-                                        &format!(
-                                            "Formulae missing: {}",
-                                            missing_formulae.join(", ")
-                                        ),
-                                    );
-                                }
-                                if !extra_formulae.is_empty() {
-                                    any_brew_diff = true;
-                                    let _lock = log_mutex_brew.lock().await;
-                                    print_log(
-                                        LogLevel::Warning,
-                                        &format!(
-                                            "Extra installed formulae: {}",
-                                            extra_formulae.join(", ")
-                                        ),
-                                    );
-                                }
-                                if !missing_casks.is_empty() {
-                                    any_brew_diff = true;
-                                    let _lock = log_mutex_brew.lock().await;
-                                    print_log(
-                                        LogLevel::Warning,
-                                        &format!("Casks missing: {}", missing_casks.join(", ")),
-                                    );
-                                }
-                                if !extra_casks.is_empty() {
-                                    any_brew_diff = true;
-                                    let _lock = log_mutex_brew.lock().await;
-                                    print_log(
-                                        LogLevel::Warning,
-                                        &format!(
-                                            "Extra installed casks: {}",
-                                            extra_casks.join(", ")
-                                        ),
-                                    );
-                                }
-                                if !missing_taps.is_empty() {
-                                    any_brew_diff = true;
-                                    let _lock = log_mutex_brew.lock().await;
-                                    print_log(
-                                        LogLevel::Warning,
-                                        &format!("Taps missing: {}", missing_taps.join(", ")),
-                                    );
-                                }
-                                if !extra_taps.is_empty() {
-                                    any_brew_diff = true;
-                                    let _lock = log_mutex_brew.lock().await;
-                                    print_log(
-                                        LogLevel::Warning,
-                                        &format!("Extra tapped: {}", extra_taps.join(", ")),
-                                    );
-                                }
-                                let _lock = log_mutex_brew.lock().await;
-                                if !any_brew_diff {
-                                    print_log(
-                                        LogLevel::Fruitful,
-                                        "All Homebrew formulae/casks match config.",
-                                    );
-                                } else {
-                                    print_log(
-                                        LogLevel::Warning,
-                                        "Use cutler's brew commands to sync/install these if needed.\n",
-                                    )
-                                }
-                            }
-                            Err(e) => {
+                // ensure homebrew is installed (skip if not)
+                if !is_brew_installed().await {
+                    let _lock = log_mutex_brew.lock().await;
+                    print_log(
+                        LogLevel::Warning,
+                        "Homebrew not available in PATH, skipping status check for it.",
+                    );
+                } else {
+                    match compare_brew_state(brew_val).await {
+                        Ok(BrewDiff {
+                            missing_formulae,
+                            extra_formulae,
+                            missing_casks,
+                            extra_casks,
+                            missing_taps,
+                            extra_taps,
+                        }) => {
+                            let mut any_brew_diff = false;
+                            if !missing_formulae.is_empty() {
+                                any_brew_diff = true;
                                 let _lock = log_mutex_brew.lock().await;
                                 print_log(
                                     LogLevel::Warning,
-                                    &format!("Could not check Homebrew status: {e}"),
+                                    &format!("Formulae missing: {}", missing_formulae.join(", ")),
                                 );
                             }
+                            if !extra_formulae.is_empty() {
+                                any_brew_diff = true;
+                                let _lock = log_mutex_brew.lock().await;
+                                print_log(
+                                    LogLevel::Warning,
+                                    &format!(
+                                        "Extra installed formulae: {}",
+                                        extra_formulae.join(", ")
+                                    ),
+                                );
+                            }
+                            if !missing_casks.is_empty() {
+                                any_brew_diff = true;
+                                let _lock = log_mutex_brew.lock().await;
+                                print_log(
+                                    LogLevel::Warning,
+                                    &format!("Casks missing: {}", missing_casks.join(", ")),
+                                );
+                            }
+                            if !extra_casks.is_empty() {
+                                any_brew_diff = true;
+                                let _lock = log_mutex_brew.lock().await;
+                                print_log(
+                                    LogLevel::Warning,
+                                    &format!("Extra installed casks: {}", extra_casks.join(", ")),
+                                );
+                            }
+                            if !missing_taps.is_empty() {
+                                any_brew_diff = true;
+                                let _lock = log_mutex_brew.lock().await;
+                                print_log(
+                                    LogLevel::Warning,
+                                    &format!("Taps missing: {}", missing_taps.join(", ")),
+                                );
+                            }
+                            if !extra_taps.is_empty() {
+                                any_brew_diff = true;
+                                let _lock = log_mutex_brew.lock().await;
+                                print_log(
+                                    LogLevel::Warning,
+                                    &format!("Extra tapped: {}", extra_taps.join(", ")),
+                                );
+                            }
+                            let _lock = log_mutex_brew.lock().await;
+                            if !any_brew_diff {
+                                print_log(
+                                    LogLevel::Fruitful,
+                                    "All Homebrew formulae/casks match config.",
+                                );
+                            } else {
+                                print_log(
+                                    LogLevel::Warning,
+                                    "Use cutler's brew commands to sync/install these if needed.\n",
+                                )
+                            }
+                        }
+                        Err(e) => {
+                            let _lock = log_mutex_brew.lock().await;
+                            print_log(
+                                LogLevel::Warning,
+                                &format!("Could not check Homebrew status: {e}"),
+                            );
                         }
                     }
                 }
+            }
         });
 
         // wait for both tasks to finish

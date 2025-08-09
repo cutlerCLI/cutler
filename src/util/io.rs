@@ -18,7 +18,6 @@ pub fn confirm_action(prompt: &str) -> bool {
         return true;
     }
 
-    
     Confirm::new().with_prompt(prompt).interact().unwrap()
 }
 
