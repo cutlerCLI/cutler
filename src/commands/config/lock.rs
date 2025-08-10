@@ -21,6 +21,11 @@ pub struct ConfigLockCmd;
 impl Runnable for ConfigLockCmd {
     async fn run(&self) -> Result<()> {
         let cfg_path = get_config_path().await;
+
+        if !fs::try_exists(&cfg_path).await.unwrap() {
+            bail!("Cannot find a configuration to lock in the first place.")
+        }
+
         let dry_run = should_dry_run();
 
         let mut doc = load_config_mut(false).await?;
