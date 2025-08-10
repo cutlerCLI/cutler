@@ -1,4 +1,5 @@
 use crate::{
+    cli::atomic::should_dry_run,
     commands::{BrewInstallCmd, Runnable},
     config::{
         loader::load_config,
@@ -13,7 +14,6 @@ use crate::{
     },
     util::{
         convert::{normalize, toml_to_prefvalue},
-        globals::should_dry_run,
         io::{confirm_action, restart_system_services},
         logging::{GREEN, LogLevel, RESET, print_log},
     },

@@ -8,12 +8,10 @@ use crate::{
         types::BrewDiff,
         utils::{compare_brew_state, ensure_brew},
     },
+    cli::atomic::{should_be_verbose, should_dry_run},
     commands::Runnable,
     config::loader::load_config,
-    util::{
-        globals::{is_verbose, should_dry_run},
-        logging::{LogLevel, print_log},
-    },
+    util::logging::{LogLevel, print_log},
 };
 
 #[derive(Debug, Default, Args)]
@@ -153,7 +151,7 @@ pub struct FetchedThings {
 /// Downloads all formulae/casks before installation, sequentially.
 /// Returns only the successfully fetched formulae and casks.
 async fn fetch_all(formulae: &[String], casks: &[String]) -> FetchedThings {
-    let verbose = is_verbose();
+    let verbose = should_be_verbose();
 
     // create new vectors
     let mut fetched_formulae = Vec::new();

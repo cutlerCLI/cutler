@@ -1,6 +1,6 @@
 use crate::brew::types::{BrewDiff, BrewListType};
+use crate::cli::atomic::should_dry_run;
 use crate::util::{
-    globals::should_dry_run,
     io::confirm_action,
     logging::{LogLevel, print_log},
 };

@@ -3,11 +3,11 @@ use clap::Args;
 use tokio::fs;
 
 use crate::{
+    cli::atomic::should_dry_run,
     commands::{Runnable, UnapplyCmd},
     config::path::get_config_path,
     snapshot::{Snapshot, get_snapshot_path},
     util::{
-        globals::should_dry_run,
         io::confirm_action,
         logging::{LogLevel, print_log},
     },

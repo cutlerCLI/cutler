@@ -9,12 +9,10 @@ use crate::{
         types::BrewListType,
         utils::{brew_list, ensure_brew},
     },
+    cli::atomic::should_dry_run,
     commands::Runnable,
     config::{loader::load_config_mut, path::get_config_path},
-    util::{
-        globals::should_dry_run,
-        logging::{GREEN, LogLevel, RESET, print_log},
-    },
+    util::logging::{GREEN, LogLevel, RESET, print_log},
 };
 
 #[derive(Debug, Default, Args)]

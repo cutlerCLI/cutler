@@ -7,11 +7,9 @@ use reqwest;
 use semver::Version;
 
 use crate::{
+    cli::atomic::should_be_quiet,
     commands::Runnable,
-    util::{
-        globals::should_be_quiet,
-        logging::{BOLD, LogLevel, RESET, print_log},
-    },
+    util::logging::{BOLD, LogLevel, RESET, print_log},
 };
 
 #[derive(Args, Debug)]

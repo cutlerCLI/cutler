@@ -5,12 +5,12 @@ use defaults_rs::{Domain, preferences::Preferences};
 use tokio::fs;
 
 use crate::{
+    cli::atomic::should_dry_run,
     commands::Runnable,
     config::loader::load_config,
     domains::{collect, effective, read_current},
     snapshot::state::get_snapshot_path,
     util::{
-        globals::should_dry_run,
         io::{confirm_action, restart_system_services},
         logging::{LogLevel, print_log},
     },

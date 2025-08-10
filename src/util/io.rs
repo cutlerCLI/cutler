@@ -1,9 +1,9 @@
 use dialoguer::Confirm;
 use tokio::process::Command;
 
-use crate::util::{
-    globals::{should_accept_all, should_dry_run, should_not_restart_services},
-    logging::{LogLevel, print_log},
+use crate::{
+    cli::atomic::{should_accept_all, should_dry_run, should_not_restart_services},
+    util::logging::{LogLevel, print_log},
 };
 use anyhow::Result;
 

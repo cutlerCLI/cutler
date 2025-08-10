@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests {
     use cutler::{
+        cli::atomic::set_dry_run,
         exec::runner::{run_all, run_one},
-        util::globals::set_dry_run,
     };
     use toml::{Value, value::Table};
 

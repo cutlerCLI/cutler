@@ -1,4 +1,4 @@
-use crate::util::globals::{is_verbose, should_be_quiet};
+use crate::cli::atomic::{should_be_quiet, should_be_verbose};
 
 /// ANSI color codes
 pub const RED: &str = "\x1b[31m";
@@ -29,7 +29,7 @@ pub fn print_log(level: LogLevel, msg: &str) {
         return;
     }
 
-    if (level == LogLevel::Info || level == LogLevel::CommandOutput) && !is_verbose() {
+    if (level == LogLevel::Info || level == LogLevel::CommandOutput) && !should_be_verbose() {
         return;
     }
 

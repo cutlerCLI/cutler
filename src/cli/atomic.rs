@@ -36,7 +36,7 @@ pub fn set_verbose(value: bool) {
     VERBOSE.store(value, Ordering::SeqCst);
 }
 
-pub fn is_verbose() -> bool {
+pub fn should_be_verbose() -> bool {
     VERBOSE.load(Ordering::SeqCst)
 }
 

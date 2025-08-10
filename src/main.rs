@@ -2,11 +2,11 @@ use clap::Parser;
 use cutler::autosync::try_auto_sync;
 use cutler::cli::args::{BrewSubcmd, ConfigSubcmd};
 
-use cutler::cli::{Args, Command};
-use cutler::commands::Runnable;
-use cutler::util::globals::{
+use cutler::cli::atomic::{
     set_accept_all, set_dry_run, set_no_restart_services, set_quiet, set_verbose,
 };
+use cutler::cli::{Args, Command};
+use cutler::commands::Runnable;
 use cutler::util::logging::{LogLevel, print_log};
 use cutler::util::sudo::{run_with_noroot, run_with_root};
 

@@ -4,12 +4,10 @@ use clap::Args;
 use tokio::fs;
 
 use crate::{
+    cli::atomic::{should_be_quiet, should_dry_run},
     commands::Runnable,
     config::path::get_config_path,
-    util::{
-        globals::{should_be_quiet, should_dry_run},
-        logging::{LogLevel, print_log},
-    },
+    util::logging::{LogLevel, print_log},
 };
 
 #[derive(Debug, Default, Args)]

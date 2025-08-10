@@ -1,4 +1,5 @@
 pub mod args;
+pub mod atomic;
 pub mod style;
 
 pub use args::{Args, Command};

@@ -1,5 +1,5 @@
+use crate::cli::atomic::should_dry_run;
 use crate::snapshot::state::ExternalCommandState;
-use crate::util::globals::should_dry_run;
 use crate::util::logging::{LogLevel, print_log};
 use anyhow::{Error, Result, anyhow, bail};
 use std::{env, process::Stdio};

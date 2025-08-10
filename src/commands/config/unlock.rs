@@ -6,12 +6,10 @@ use tokio::fs;
 use toml_edit::Item;
 
 use crate::{
+    cli::atomic::should_dry_run,
     commands::Runnable,
     config::{loader::load_config_mut, path::get_config_path},
-    util::{
-        globals::should_dry_run,
-        logging::{LogLevel, print_log},
-    },
+    util::logging::{LogLevel, print_log},
 };
 
 #[derive(Debug, Default, Args)]

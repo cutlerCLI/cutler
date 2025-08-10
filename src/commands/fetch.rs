@@ -3,6 +3,7 @@ use async_trait::async_trait;
 use clap::Args;
 
 use crate::{
+    cli::atomic::should_dry_run,
     commands::Runnable,
     config::{
         loader::load_config,
@@ -10,7 +11,6 @@ use crate::{
         remote::{REMOTE_CONFIG, RemoteConfig, fetch_remote_config, save_remote_config},
     },
     util::{
-        globals::should_dry_run,
         io::confirm_action,
         logging::{BOLD, LogLevel, RESET, print_log},
     },
