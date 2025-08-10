@@ -5,39 +5,26 @@ use tokio::fs;
 /// A single defaults‑setting change.
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SettingState {
-    /// The domain for the preference.
     pub domain: String,
-    /// The key to change.
     pub key: String,
-    /// The original value for the domain-key pair.
     pub original_value: Option<String>,
-    /// The new value for the domain-key pair.
     pub new_value: String,
 }
 
 /// One external command run.
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct ExternalCommandState {
-    /// The actual command to run.
     pub run: String,
-    /// Annotated sudo (optional if separated commands need sudo).
     pub sudo: bool,
-    /// Run before any other commands (in serial order).
     pub ensure_first: bool,
-    /// Only run if `--exec-all` is passed in with `cutler apply`.
-    pub flag_only: bool,
-    /// Required apps in $PATH for the commmand.
     pub required: Vec<String>,
 }
 
 /// The full snapshot on disk.
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Snapshot {
-    /// Preferences which have been applied.
     pub settings: Vec<SettingState>,
-    /// External commands which have been run.
     pub external: Vec<ExternalCommandState>,
-    /// The version of cutler which created the snapshot.
     pub version: String,
 }
 

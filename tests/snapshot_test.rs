@@ -51,7 +51,6 @@ mod tests {
         let command = ExternalCommandState {
             run: "echo Hello World".to_string(),
             sudo: false,
-            flag_only: false,
             ensure_first: false,
             required: vec!["echo".to_string()],
         };
@@ -90,7 +89,6 @@ mod tests {
         snapshot.external.push(ExternalCommandState {
             run: "echo Hello".to_string(),
             sudo: false,
-            flag_only: false,
             ensure_first: false,
             required: vec!["echo".to_string()],
         });
@@ -98,7 +96,6 @@ mod tests {
         snapshot.external.push(ExternalCommandState {
             run: "hostname -s macbook".to_string(),
             sudo: true,
-            flag_only: false,
             ensure_first: false,
             required: vec!["hostname".to_string()],
         });

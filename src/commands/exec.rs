@@ -21,7 +21,7 @@ impl Runnable for ExecCmd {
         if let Some(cmd_name) = &self.name {
             runner::run_one(&toml, cmd_name).await?;
         } else {
-            runner::run_all(&toml, false).await?;
+            runner::run_all(&toml).await?;
         }
 
         Ok(())

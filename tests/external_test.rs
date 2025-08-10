@@ -26,7 +26,7 @@ mod tests {
         root.insert("vars".into(), Value::Table(vars));
         root.insert("commands".into(), Value::Table(commands));
 
-        assert!(run_all(&root, false).await.is_ok());
+        assert!(run_all(&root).await.is_ok());
     }
 
     #[tokio::test]

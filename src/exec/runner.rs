@@ -32,10 +32,6 @@ pub fn extract_cmd(config: &Table, name: &str) -> Result<ExternalCommandState> {
         .get("sudo")
         .and_then(Value::as_bool)
         .unwrap_or(false);
-    let flag_only = cmd_table
-        .get("flag_only")
-        .and_then(Value::as_bool)
-        .unwrap_or(false);
     let ensure_first = cmd_table
         .get("ensure_first")
         .or_else(|| cmd_table.get("ensure-first"))
@@ -54,7 +50,6 @@ pub fn extract_cmd(config: &Table, name: &str) -> Result<ExternalCommandState> {
     Ok(ExternalCommandState {
         run: final_line,
         sudo,
-        flag_only,
         ensure_first,
         required,
     })
@@ -194,7 +189,7 @@ async fn execute_command(
 
 /// Helper for: run_all(), run_one()
 /// Checks if the binaries designated in `required` are found in $PATH and whether to skip command execution.
-fn should_skip_exec_on_bin_missing(required: &[String]) -> bool {
+fn should_skip_exec(required: &[String]) -> bool {
     let mut skip_exec = false;
 
     if required.is_empty() {
@@ -212,19 +207,15 @@ fn should_skip_exec_on_bin_missing(required: &[String]) -> bool {
 }
 
 /// Run all extracted external commands via `sh -c` (or `sudo sh -c`) in parallel.
-pub async fn run_all(config: &Table, flag_only: bool) -> Result<()> {
-    let mut cmds = extract_all_cmds(config);
-
-    if flag_only {
-        cmds = cmds.into_iter().filter(|x| x.flag_only).collect();
-    }
+pub async fn run_all(config: &Table) -> Result<()> {
+    let cmds = extract_all_cmds(config);
 
     // separate ensure_first commands from regular commands
     let mut ensure_first_cmds = Vec::new();
     let mut regular_cmds = Vec::new();
 
     for state in cmds {
-        if should_skip_exec_on_bin_missing(&state.required) {
+        if should_skip_exec(&state.required) {
             continue;
         } else if state.ensure_first {
             ensure_first_cmds.push(state);
@@ -275,7 +266,7 @@ pub async fn run_all(config: &Table, flag_only: bool) -> Result<()> {
 pub async fn run_one(config: &Table, which: &str) -> Result<()> {
     let state = extract_cmd(config, which)?;
 
-    if should_skip_exec_on_bin_missing(&state.required) {
+    if should_skip_exec(&state.required) {
         print_log(
             LogLevel::Error,
             "Cannot execute command since the required binaries were not found.",
