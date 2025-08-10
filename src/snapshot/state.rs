@@ -14,6 +14,7 @@ pub struct SettingState {
 /// One external command run.
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct ExternalCommandState {
+    pub name: String,
     pub run: String,
     pub sudo: bool,
     pub ensure_first: bool,

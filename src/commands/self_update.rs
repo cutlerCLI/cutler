@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Result, bail};
 use async_trait::async_trait;
 use clap::Args;
 use self_update::{backends::github::Update, cargo_crate_version};
@@ -45,11 +45,7 @@ impl Runnable for SelfUpdateCmd {
             "x86_64" | "x86" => "darwin-x86_64",
             "aarch64" => "darwin-arm64",
             _ => {
-                print_log(
-                    LogLevel::Error,
-                    &format!("Unsupported architecture for self-update: {arch}"),
-                );
-                return Ok(());
+                bail!("Unsupported architecture for self-update: {arch}")
             }
         };
 

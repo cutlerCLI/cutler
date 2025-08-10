@@ -49,6 +49,7 @@ mod tests {
 
         // Test external command state
         let command = ExternalCommandState {
+            name: "echo".to_string(),
             run: "echo Hello World".to_string(),
             sudo: false,
             ensure_first: false,
@@ -87,6 +88,7 @@ mod tests {
 
         // Add multiple external commands
         snapshot.external.push(ExternalCommandState {
+            name: "echo".to_string(),
             run: "echo Hello".to_string(),
             sudo: false,
             ensure_first: false,
@@ -94,6 +96,7 @@ mod tests {
         });
 
         snapshot.external.push(ExternalCommandState {
+            name: "hostname".to_string(),
             run: "hostname -s macbook".to_string(),
             sudo: true,
             ensure_first: false,

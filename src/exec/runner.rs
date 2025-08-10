@@ -1,7 +1,7 @@
 use crate::snapshot::state::ExternalCommandState;
 use crate::util::globals::should_dry_run;
 use crate::util::logging::{LogLevel, print_log};
-use anyhow::{Error, Result, anyhow};
+use anyhow::{Error, Result, anyhow, bail};
 use std::{env, process::Stdio};
 use tokio::process::Command;
 use tokio::task;
@@ -17,15 +17,16 @@ pub fn extract_cmd(config: &Table, name: &str) -> Result<ExternalCommandState> {
         .and_then(Value::as_table)
         .and_then(|m| m.get(name))
         .and_then(Value::as_table)
-        .ok_or_else(|| anyhow!("no such command '{}'", name))?;
+        .ok_or_else(|| anyhow!("No such command '{}'", name))?;
 
     let template = cmd_table
         .get("run")
         .and_then(Value::as_str)
-        .ok_or_else(|| anyhow!("command '{}': missing `run` field", name))?;
+        .ok_or_else(|| anyhow!("Command '{}': missing `run` field", name))?;
 
     // substitute to get possible variables
-    let final_line = substitute(template, vars.as_ref());
+    // ultimately turning it into the final command to run
+    let run = substitute(template, vars.as_ref());
 
     // extra fields
     let sudo = cmd_table
@@ -48,7 +49,8 @@ pub fn extract_cmd(config: &Table, name: &str) -> Result<ExternalCommandState> {
         .unwrap_or_default();
 
     Ok(ExternalCommandState {
-        run: final_line,
+        name: name.to_string(),
+        run,
         sudo,
         ensure_first,
         required,
@@ -179,7 +181,7 @@ async fn execute_command(
     if !status.success() {
         print_log(
             LogLevel::Error,
-            &format!("External command failed: {final_cmd}"),
+            &format!("External command failed: {}", state.name),
         );
         return Err(Error::msg("cmd failed"));
     }
@@ -198,7 +200,7 @@ fn should_skip_exec(required: &[String]) -> bool {
 
     for bin in required {
         if which::which(bin).is_err() {
-            print_log(LogLevel::Warning, &format!("{bin} not in PATH"));
+            print_log(LogLevel::Warning, &format!("{bin} not found in $PATH."));
             skip_exec = true;
         }
     }
@@ -267,12 +269,7 @@ pub async fn run_one(config: &Table, which: &str) -> Result<()> {
     let state = extract_cmd(config, which)?;
 
     if should_skip_exec(&state.required) {
-        print_log(
-            LogLevel::Error,
-            "Cannot execute command since the required binaries were not found.",
-        );
-
-        return Ok(());
+        bail!("Cannot execute command due to missing binaries.")
     }
 
     let dry_run = should_dry_run();
