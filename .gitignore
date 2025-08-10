@@ -4,8 +4,5 @@
 *.zip
 defaults-rs
 
-# jetbrains
-.idea
-
 # mdbook
 book/book
