@@ -35,13 +35,9 @@ pub struct ApplyCmd {
     #[arg(long)]
     pub no_exec: bool,
 
-    /// Execute all external commands in the process. Without this flag, external commands with `flag_only` set to true will be ignored.
-    #[arg(long)]
-    pub exec_all: bool,
-
     /// Risky: Disables check for domain existence before applying modification
     #[arg(long)]
-    pub no_check: bool,
+    pub no_checks: bool,
 
     /// Invoke `cutler brew install` after applying defaults.
     #[arg(long)]
@@ -114,7 +110,7 @@ impl Runnable for ApplyCmd {
             for (key, toml_value) in table.into_iter() {
                 let (eff_dom, eff_key) = collector::effective(&dom, &key);
 
-                if !self.no_check {
+                if !self.no_checks {
                     collector::check_domain_exists(&eff_dom).await?;
                 }
 
@@ -234,7 +230,7 @@ impl Runnable for ApplyCmd {
 
         // exec external commands
         if !self.no_exec {
-            runner::run_all(&toml, true).await?;
+            runner::run_all(&toml).await?;
         }
 
         // restart system services if requested
