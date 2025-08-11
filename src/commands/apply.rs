@@ -188,6 +188,9 @@ impl Runnable for ApplyCmd {
                     print_log(LogLevel::Error, &format!("Batch write failed: {e}"));
                 }
             }
+
+            // restart system services if requested
+            restart_system_services().await?;
         } else {
             for job in &jobs {
                 print_log(
@@ -232,9 +235,6 @@ impl Runnable for ApplyCmd {
         if !self.no_exec {
             runner::run_all(&toml).await?;
         }
-
-        // restart system services if requested
-        restart_system_services().await?;
 
         Ok(())
     }
