@@ -352,7 +352,7 @@ dependencies = [
 
 [[package]]
 name = "cutler"
-version = "0.9.8"
+version = "0.9.9"
 dependencies = [
  "anstyle",
  "anyhow",
