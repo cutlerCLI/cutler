@@ -223,6 +223,8 @@ pub async fn brew_list(list_type: BrewListType) -> Result<Vec<String>> {
 
     let output = Command::new("brew").args(args).output().await?;
 
+    print_log(LogLevel::Info, "Running `brew list` command for listing...");
+
     if !output.status.success() {
         return Ok(vec![]);
     }

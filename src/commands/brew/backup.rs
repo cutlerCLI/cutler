@@ -12,7 +12,10 @@ use crate::{
     cli::atomic::should_dry_run,
     commands::Runnable,
     config::{loader::load_config_mut, path::get_config_path},
-    util::logging::{GREEN, LogLevel, RESET, print_log},
+    util::{
+        io::confirm_action,
+        logging::{GREEN, LogLevel, RESET, print_log},
+    },
 };
 
 #[derive(Debug, Default, Args)]
@@ -27,15 +30,10 @@ impl Runnable for BrewBackupCmd {
     async fn run(&self) -> Result<()> {
         let cfg_path = get_config_path().await;
         let dry_run = should_dry_run();
+        let mut backup_no_deps = self.no_deps;
 
         // ensure brew install
         ensure_brew().await?;
-
-        // essential inits
-        let formulas = brew_list(BrewListType::Formula).await?;
-        let casks = brew_list(BrewListType::Cask).await?;
-        let taps = brew_list(BrewListType::Tap).await?;
-        let mut deps = Vec::new();
 
         // init config
         let mut doc = if fs::try_exists(&cfg_path).await.unwrap() {
@@ -53,20 +51,51 @@ impl Runnable for BrewBackupCmd {
         let brew_tbl = brew_item.as_table_mut().unwrap();
 
         // firstly remember the --no-deps value
-        brew_tbl["no_deps"] = Item::None;
         if self.no_deps {
-            deps = brew_list(BrewListType::Dependency).await?;
-            print_log(
-                LogLevel::Info,
-                "Setting no_deps to true in config for later reads.",
-            );
-            brew_tbl["no_deps"] = Item::Value(Value::Boolean(toml_edit::Formatted::new(true)));
+            if brew_tbl
+                .get("no_deps")
+                .is_none_or(|x| !x.as_bool().unwrap())
+            {
+                print_log(
+                    LogLevel::Info,
+                    "Setting no_deps to true in config for later reads.",
+                );
+                brew_tbl["no_deps"] = Item::Value(Value::Boolean(toml_edit::Formatted::new(true)));
+            } else {
+                print_log(
+                    LogLevel::Info,
+                    "no_deps already found true in configuration, so not setting.",
+                );
+            }
+        } else {
+            if brew_tbl
+                .get("no_deps")
+                .is_some_and(|x| x.as_bool().unwrap())
+                && confirm_action("The previous backup was without dependencies. Do now too?")
+            {
+                backup_no_deps = true
+            } else {
+                brew_tbl["no_deps"] = Item::None;
+            }
         }
+
+        // load deps into memory for comparison
+        // this will also be reused for later comparisons
+        let deps = if backup_no_deps {
+            brew_list(BrewListType::Dependency).await?
+        } else {
+            vec![]
+        };
+
+        // load the formulae, casks and taps list from the `brew` command
+        let formulas = brew_list(BrewListType::Formula).await?;
+        let casks = brew_list(BrewListType::Cask).await?;
+        let taps = brew_list(BrewListType::Tap).await?;
 
         // build TOML arrays for formulae and casks
         let mut formula_arr = Array::new();
         for formula in &formulas {
-            if self.no_deps {
+            if backup_no_deps {
                 if !deps.contains(formula) {
                     if dry_run {
                         print_log(
@@ -96,7 +125,7 @@ impl Runnable for BrewBackupCmd {
 
         let mut cask_arr = Array::new();
         for cask in &casks {
-            if self.no_deps {
+            if backup_no_deps {
                 if !deps.contains(cask) {
                     if dry_run {
                         print_log(
