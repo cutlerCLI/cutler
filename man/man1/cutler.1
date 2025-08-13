@@ -1,6 +1,6 @@
 .ie \n(.g .ds Aq \(aq
 .el .ds Aq '
-.TH cutler 1  "cutler 0.9.9" 
+.TH cutler 1  "cutler 0.9.10" 
 .SH NAME
 cutler \- Powerful, declarative settings management for your Mac, with speed.
 .SH SYNOPSIS
@@ -13,13 +13,13 @@ Powerful, declarative settings management for your Mac, with speed.
 Increase output verbosity
 .TP
 \fB\-\-quiet\fR
-Suppress all output except errors and warnings
+Suppress all output except errors/warnings
 .TP
 \fB\-n\fR, \fB\-\-no\-restart\-services\fR
-Do not restart system services after command execution
+Do not restart system services after execution
 .TP
 \fB\-\-no\-sync\fR
-Do not sync with remote config (if autosync = true)
+Do not sync with remote (if autosync = true)
 .TP
 \fB\-\-dry\-run\fR
 Run in dry\-run mode. Commands will be printed but not executed
@@ -35,28 +35,27 @@ Print version
 .SH SUBCOMMANDS
 .TP
 cutler\-apply(1)
-Apply your preferences and other things
+Apply preferences and more from config
 .TP
 cutler\-exec(1)
-Run your external command(s)
+Run one/all external command(s)
 .TP
 cutler\-init(1)
 Initialize a new config file
 .TP
 cutler\-unapply(1)
-Unapply the previously applied modifications(s)
+Unapply previously applied modifications(s)
 .TP
 cutler\-reset(1)
-(DANGEROUS) Hard\-reset all preferences
 .TP
 cutler\-status(1)
-Compare your system against your config
+Compare your system against config
 .TP
 cutler\-brew(1)
-Homebrew backup\-and\-restore related commands
+Homebrew\-related commands
 .TP
 cutler\-config(1)
-Manage the configuration file
+Configuration\-related commands
 .TP
 cutler\-check\-update(1)
 Check for version updates
@@ -68,9 +67,9 @@ cutler\-completion(1)
 Generate shell completions
 .TP
 cutler\-fetch(1)
-Sync the local config with remote defined in [remote]
+Sync the local config with remote (if any in [remote])
 .TP
 cutler\-help(1)
 Print this message or the help of the given subcommand(s)
 .SH VERSION
-v0.9.9
+v0.9.10
