@@ -7,7 +7,7 @@ use clap::Args;
 
 #[derive(Args, Debug)]
 pub struct ExecCmd {
-    /// Provide a command name to execute if you only want to run it specifically.
+    /// The command to execute. Defaults to 'all' if not passed.
     #[arg(value_name = "NAME")]
     pub name: Option<String>,
 }

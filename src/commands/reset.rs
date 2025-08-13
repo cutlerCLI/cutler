@@ -17,11 +17,7 @@ use crate::{
 };
 
 #[derive(Args, Debug)]
-pub struct ResetCmd {
-    /// Forcefully reset configuration.
-    #[arg(short, long)]
-    force: bool,
-}
+pub struct ResetCmd;
 
 #[async_trait]
 impl Runnable for ResetCmd {
@@ -37,7 +33,7 @@ impl Runnable for ResetCmd {
             "Settings will be reset to macOS defaults, not to their previous values.",
         );
 
-        if !self.force && !confirm_action("Are you sure you want to continue?") {
+        if !confirm_action("Are you sure you want to continue?") {
             return Ok(());
         }
 

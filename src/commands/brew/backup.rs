@@ -67,16 +67,14 @@ impl Runnable for BrewBackupCmd {
                     "no_deps already found true in configuration, so not setting.",
                 );
             }
+        } else if brew_tbl
+            .get("no_deps")
+            .is_some_and(|x| x.as_bool().unwrap())
+            && confirm_action("The previous backup was without dependencies. Do now too?")
+        {
+            backup_no_deps = true
         } else {
-            if brew_tbl
-                .get("no_deps")
-                .is_some_and(|x| x.as_bool().unwrap())
-                && confirm_action("The previous backup was without dependencies. Do now too?")
-            {
-                backup_no_deps = true
-            } else {
-                brew_tbl["no_deps"] = Item::None;
-            }
+            brew_tbl["no_deps"] = Item::None;
         }
 
         // load deps into memory for comparison

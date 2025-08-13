@@ -14,15 +14,15 @@ pub struct Args {
     #[arg(short, long, global = true)]
     pub verbose: bool,
 
-    /// Suppress all output except errors and warnings.
+    /// Suppress all output except errors/warnings.
     #[arg(long, global = true)]
     pub quiet: bool,
 
-    /// Do not restart system services after command execution.
+    /// Do not restart system services after execution.
     #[arg(short, long, global = true)]
     pub no_restart_services: bool,
 
-    /// Do not sync with remote config (if autosync = true).
+    /// Do not sync with remote (if autosync = true).
     #[arg(long, global = true)]
     pub no_sync: bool,
 
@@ -40,31 +40,31 @@ pub struct Args {
 
 #[derive(Subcommand, Debug)]
 pub enum Command {
-    /// Apply your preferences and other things.
+    /// Apply preferences and more from config.
     #[command(visible_alias = "a")]
     Apply(ApplyCmd),
-    /// Run your external command(s).
+    /// Run one/all external command(s).
     #[command(visible_alias = "x")]
     Exec(ExecCmd),
     /// Initialize a new config file.
     #[command(visible_alias = "i")]
     Init(InitCmd),
-    /// Unapply the previously applied modifications(s).
+    /// Unapply previously applied modifications(s).
     #[command(visible_alias = "u")]
     Unapply(UnapplyCmd),
-    /// (DANGEROUS) Hard-reset all preferences.
+    // (Risky) Hard-reset all preferences.
     #[command(visible_alias = "r")]
     Reset(ResetCmd),
-    /// Compare your system against your config.
+    /// Compare your system against config.
     #[command(visible_alias = "s")]
     Status(StatusCmd),
-    /// Homebrew backup-and-restore related commands.
+    /// Homebrew-related commands.
     #[command(visible_alias = "b")]
     Brew {
         #[command(subcommand)]
         command: BrewSubcmd,
     },
-    /// Manage the configuration file.
+    /// Configuration-related commands.
     #[command(visible_alias = "c")]
     Config {
         #[command(subcommand)]
@@ -79,33 +79,33 @@ pub enum Command {
     /// Generate shell completions.
     #[command(visible_alias = "comp")]
     Completion(CompletionCmd),
-    /// Sync the local config with remote defined in [remote].
+    /// Sync the local config with remote (if any in [remote])
     #[command(visible_alias = "f")]
     Fetch(FetchCmd),
 }
 
 #[derive(Subcommand, Debug)]
 pub enum BrewSubcmd {
-    /// Backup current formulae and casks into config.
+    /// Backup current formulae/casks/taps into config.
     #[command(visible_alias = "b")]
     Backup(BrewBackupCmd),
-    /// Install Homebrew if not present, then install all formulae and casks from config.
+    /// Install formulae/casks/taps from config.
     #[command(visible_alias = "i")]
     Install(BrewInstallCmd),
 }
 
 #[derive(Subcommand, Debug)]
 pub enum ConfigSubcmd {
-    /// Display the contents of the config.
+    /// Display config contents.
     #[command(visible_alias = "s")]
     Show(ConfigShowCmd),
-    /// Delete the config file.
+    /// Delete config file.
     #[command(visible_alias = "d")]
     Delete(ConfigDeleteCmd),
-    /// Lock the config file.
+    /// Lock config file.
     #[command(visible_alias = "l")]
     Lock(ConfigLockCmd),
-    /// Lock the config file.
+    /// Unlock config file.
     #[command(visible_alias = "u")]
     Unlock(ConfigUnlockCmd),
 }

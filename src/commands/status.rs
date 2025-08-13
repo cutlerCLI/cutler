@@ -20,7 +20,7 @@ use tokio::task;
 
 #[derive(Args, Debug)]
 pub struct StatusCmd {
-    // Disable Homebrew state check.
+    // Disables Homebrew state check.
     #[arg(long)]
     pub no_brew: bool,
 }

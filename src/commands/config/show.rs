@@ -1,3 +1,6 @@
+use std::env;
+use std::process::Command;
+
 use anyhow::{Result, bail};
 use async_trait::async_trait;
 use clap::Args;
@@ -11,7 +14,11 @@ use crate::{
 };
 
 #[derive(Debug, Default, Args)]
-pub struct ConfigShowCmd;
+pub struct ConfigShowCmd {
+    /// Show your configuration in $EDITOR.
+    #[arg(short, long)]
+    pub editor: bool,
+}
 
 #[async_trait]
 impl Runnable for ConfigShowCmd {
@@ -29,6 +36,26 @@ impl Runnable for ConfigShowCmd {
                 &format!("Would display config at {config_path:?}"),
             );
             return Ok(());
+        }
+
+        // show inside editor if available
+        let editor = env::var("EDITOR");
+
+        if editor.is_ok() {
+            let editor_cmd = editor.unwrap();
+            let status = Command::new(editor_cmd).arg(&config_path).status();
+            match status {
+                Ok(s) if s.success() => {
+                    print_log(LogLevel::Info, "Opened configuration file in editor.");
+                    return Ok(());
+                }
+                Ok(s) => {
+                    bail!("Editor exited with status: {}", s);
+                }
+                Err(e) => {
+                    bail!("Failed to launch editor: {}", e);
+                }
+            }
         }
 
         // read and print the file

@@ -31,17 +31,17 @@ pub struct ApplyCmd {
     #[arg(short, long)]
     pub url: Option<String>,
 
-    /// Skip executing external commands at the end.
+    /// Skip executing external commands.
     #[arg(long)]
     pub no_exec: bool,
 
-    /// Risky: Disables check for domain existence before applying modification
+    /// Risky: Disables check for domain existence before applying modification.
     #[arg(long)]
-    pub no_checks: bool,
+    pub no_check: bool,
 
-    /// Invoke `cutler brew install` after applying defaults.
+    /// Invoke `brew install` after applying defaults.
     #[arg(long)]
-    pub with_brew: bool,
+    pub brew: bool,
 }
 
 /// Represents an apply command job.
@@ -110,7 +110,7 @@ impl Runnable for ApplyCmd {
             for (key, toml_value) in table.into_iter() {
                 let (eff_dom, eff_key) = collector::effective(&dom, &key);
 
-                if !self.no_checks {
+                if !self.no_check {
                     collector::check_domain_exists(&eff_dom).await?;
                 }
 
@@ -227,7 +227,7 @@ impl Runnable for ApplyCmd {
         }
 
         // run brew
-        if self.with_brew {
+        if self.brew {
             BrewInstallCmd.run().await?;
         }
 
