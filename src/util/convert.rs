@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 use anyhow::bail;
 use defaults_rs::PrefValue;
 use std::collections::HashMap;

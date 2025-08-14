@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 use anyhow::bail;
 use nix::unistd::Uid;
 

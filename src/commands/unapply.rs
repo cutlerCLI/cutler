@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 use anyhow::{Context, Result, bail};
 use async_trait::async_trait;
 use clap::Args;

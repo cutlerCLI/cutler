@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 use crate::commands::Runnable;
 
 use crate::{config::loader::load_config, exec::runner};

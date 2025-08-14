@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 use std::cmp::Ordering;
 
 use anyhow::{Context, Result, anyhow};

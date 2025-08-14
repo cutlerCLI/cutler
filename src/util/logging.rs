@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 use crate::cli::atomic::{should_be_quiet, should_be_verbose};
 
 /// ANSI color codes

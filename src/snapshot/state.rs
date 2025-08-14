@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 use serde::{Deserialize, Serialize};
 use std::{env, path::PathBuf};
 use tokio::fs;

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 use dialoguer::Confirm;
 use tokio::process::Command;
 

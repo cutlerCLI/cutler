@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: MIT -->
+
 <div align="center">
 
 <img src="assets/logo.png" width="200px">

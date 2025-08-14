@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 pub mod autosync;
 pub mod brew;
 pub mod cli;

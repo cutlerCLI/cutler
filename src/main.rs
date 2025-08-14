@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 use clap::Parser;
 use cutler::autosync::try_auto_sync;
 use cutler::cli::args::{BrewSubcmd, ConfigSubcmd};

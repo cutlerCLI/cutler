@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 use anyhow::{Context, Result};
 use clap::{CommandFactory, Parser, Subcommand};
 use clap_mangen::Man;

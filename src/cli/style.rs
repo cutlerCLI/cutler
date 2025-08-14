@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 use anstyle::{AnsiColor, Color::Ansi, Style};
 
 /// Style attributes for cutler CLI.

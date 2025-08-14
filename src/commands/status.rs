@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 use crate::{
     brew::{
         types::BrewDiff,

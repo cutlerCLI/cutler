@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 use crate::{
     cli::atomic::should_dry_run,
     commands::{BrewInstallCmd, Runnable},

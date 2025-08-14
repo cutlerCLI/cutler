@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 use std::sync::OnceLock;
 use std::{env, path::PathBuf};
 use tokio::fs;

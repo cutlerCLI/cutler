@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 use crate::cli::Command;
 use crate::config::remote::{RemoteConfig, fetch_remote_config, save_remote_config};
 use crate::{

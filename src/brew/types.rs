@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 /// Represents the type of software to list in Homebrew.
 #[derive(PartialEq)]
 pub enum BrewListType {
