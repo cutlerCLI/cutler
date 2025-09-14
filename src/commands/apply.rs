@@ -108,12 +108,15 @@ impl Runnable for ApplyCmd {
 
         let mut jobs: Vec<Job> = Vec::new();
 
+        let domains_list = Preferences::list_domains().await.unwrap();
         for (dom, table) in domains.into_iter() {
             for (key, toml_value) in table.into_iter() {
                 let (eff_dom, eff_key) = collector::effective(&dom, &key);
 
-                if !self.no_check {
-                    collector::check_domain_exists(&eff_dom).await?;
+                if !self.no_check && eff_dom != "NSGlobalDomain" {
+                    if !domains_list.contains(&eff_dom.to_owned()) {
+                        bail!("Domain \"{}\" does not exist!", eff_dom)
+                    }
                 }
 
                 // read the current value from the system

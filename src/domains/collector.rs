@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 
-use anyhow::bail;
 use defaults_rs::{Domain, PrefValue, ReadResult, preferences::Preferences};
 use std::collections::HashMap;
 use toml::{Table, Value};
@@ -84,17 +83,6 @@ pub fn effective(domain: &str, key: &str) -> (String, String) {
         key.into()
     };
     (dom, k)
-}
-
-/// Check whether a domain exists.
-pub async fn check_domain_exists(full_domain: &str) -> Result<(), anyhow::Error> {
-    let domains = Preferences::list_domains().await.unwrap();
-
-    if domains.contains(&full_domain.to_owned()) {
-        Ok(())
-    } else {
-        bail!("Domain \"{}\" does not exist!", full_domain)
-    }
 }
 
 /// Read the current value of a defaults key, if any.
