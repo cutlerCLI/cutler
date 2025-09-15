@@ -32,7 +32,7 @@ pub async fn restart_system_services() -> Result<(), anyhow::Error> {
     let dry_run = should_dry_run();
 
     // services to restart
-    const SERVICES: &[&str] = &["cfprefsd", "SystemUIServer", "Dock", "Finder"];
+    const SERVICES: &[&str] = &["SystemUIServer", "Dock", "Finder"];
 
     for svc in SERVICES {
         if dry_run {
