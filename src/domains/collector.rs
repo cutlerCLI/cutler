@@ -65,7 +65,7 @@ fn get_defaults_domain(domain: &str) -> String {
         // NSGlobalDomain.foo -> NSGlobalDomain
         "NSGlobalDomain".into()
     } else if domain == "NSGlobalDomain" {
-        "NSGlobalDomain".into()
+        domain.into()
     } else {
         // anything else gets com.apple.
         format!("com.apple.{domain}")
