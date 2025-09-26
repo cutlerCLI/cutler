@@ -43,8 +43,7 @@ impl Runnable for ConfigShowCmd {
         // show inside editor if available
         let editor = env::var("EDITOR");
 
-        if editor.is_ok() {
-            let editor_cmd = editor.unwrap();
+        if let Ok(editor_cmd) = editor {
             let status = Command::new(editor_cmd).arg(&config_path).status();
             match status {
                 Ok(s) if s.success() => {
