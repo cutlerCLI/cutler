@@ -1,25 +1,23 @@
 # Remove the line below to activate this configuration.
 lock = true
 
-# Remote config example
-# Uncomment to use:
-#
-# [remote]
-# url = "https://url/to/config.toml" # URL to your configuration file.
-# autosync = false                   # Whether to update the configuration on command execution.
+# This is a starter configuration.
+# If you want to explore what section of the configuration does in detail,
+# visit: https://cutlercli.github.io/cookbook
 
-# System Preferences
+# cutler works by storing various different configurations in a table-like structure.
+# The example below is of storing the system preferences:
 
-[set.menuextra.clock] # Put the domain without the com.apple. prefix.
-FlashDateSeparators = true
+[set.menuextra.clock]           # The preference is put without the com.apple. prefix (here it is com.apple.menuextra.clock)
+FlashDateSeparators = true      # Then there is the setting which you want to change and its value.
 Show24Hour = false
 ShowAMPM = false
 ShowDate = 2
 ShowDayOfWeek = false
 ShowSeconds = true
 
-[set.finder]
-AppleShowAllFiles = true
+[set.finder]                    # Some examples have been included for your convenience.
+AppleShowAllFiles = true        # (Finder, Dock, Trackpad etc.)
 CreateDesktop = false
 ShowPathbar = true
 ShowExternalHardDrivesOnDesktop = false
@@ -31,10 +29,10 @@ FXDefaultSearchScope = "SCcf"
 FirstClickThreshold = 0
 TrackpadThreeFingerDrag = true
 
-[set.dock]
-tilesize = 50
-autohide = true
-static-only = true
+[set.dock]                      # Sample Settings for Dock:
+tilesize = 50                   # This will change the dock's size to 50.
+autohide = true                 # This will autohide the dock.
+static-only = true              # Ony running apps will be shown on the dock.
 show-recents = false
 magnification = false
 orientation = "right"
@@ -48,7 +46,7 @@ show-thumbnail = false
 target = "clipboard"
 type = "png"
 
-[set.NSGlobalDomain]
+[set.NSGlobalDomain]            # For global domains, use the NSGlobalDomain key.
 KeyRepeat = 2
 InitialKeyRepeat = 15
 NSDocumentSaveNewDocumentsToCloud = false
@@ -56,29 +54,35 @@ NSAutomaticInlinePredictionEnabled = false
 NSAutomaticSpellingCorrectionEnabled = false
 "com.apple.keyboard.fnState" = false
 
-# External command execution
+# cutler can also help you run shell commands every now and then.
+# Store them inside their own [commands] table instance and run them by name using the command:
+#
+# `cutler exec <cmd_name>`
 
-[vars] # create variables (not exposed to shell)
-hostname = "darkstar"
+[vars]                          # The [vars] table stores variables only available to the
+hostname = "darkstar"           # commands you are storing in the configuration.
 
-[commands.dotfiles]
+[command.dotfiles]
 run = """
 mkdir ~/Developer
 git clone https://github.com/hitblast/dotfiles.git ~/Developer/dotfiles
 cd ~/Developer/dotfiles
 stow . -t ~
 """
-ensure_first = true # ensures that these commands are run before any other command, synchronously.
-
-[commands.hostname]
+ensure_first = true             # ensure_first = true; These commands will run first and in
+                                # synchronous order.
+[command.hostname]
 run = """
 scutil --set ComputerName $hostname
 scutil --set HostName $hostname
 scutil --set LocalHostName $hostname
 """
-sudo = true
+sudo = true                     # sudo = true; When you want your command to run with sudo privileges.
+                                # Please note that this is just a minor convenience feature;
+                                # regular sudo inside your actual command still works.
 
-# Homebrew formula / casks listing
+# cutler can also store your installed apps and tools via Homebrew.
+# It does so by wrapping around the tool and helping you automate the process.
 
 [brew]
 formulae = [
@@ -92,3 +96,10 @@ formulae = [
 casks = ["aerospace", "android-studio", "appcleaner", "container", "discord"]
 taps = ["hitblast/tap", "nikitabobko/tap"]
 no_deps = true # Use this if you do not want cutler to check for dependencies when comparing.
+
+# Remote config example
+# Uncomment to use:
+#
+# [remote]
+# url = "https://url/to/config.toml"        # URL to your configuration file.
+# autosync = false                          # Whether to update the configuration on command execution.

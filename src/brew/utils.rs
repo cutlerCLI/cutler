@@ -249,7 +249,6 @@ pub async fn compare_brew_state(brew_cfg: &toml::value::Table) -> Result<BrewDif
 
     let no_deps = brew_cfg
         .get("no_deps")
-        .or_else(|| brew_cfg.get("no-deps"))
         .and_then(Value::as_bool)
         .unwrap_or(false);
 

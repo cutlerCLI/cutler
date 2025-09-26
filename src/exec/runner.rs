@@ -15,7 +15,6 @@ pub fn extract_cmd(config: &Table, name: &str) -> Result<ExternalCommandState> {
 
     let cmd_table = config
         .get("command")
-        .or_else(|| config.get("commands"))
         .and_then(Value::as_table)
         .and_then(|m| m.get(name))
         .and_then(Value::as_table)
@@ -37,7 +36,6 @@ pub fn extract_cmd(config: &Table, name: &str) -> Result<ExternalCommandState> {
         .unwrap_or(false);
     let ensure_first = cmd_table
         .get("ensure_first")
-        .or_else(|| cmd_table.get("ensure-first"))
         .and_then(Value::as_bool)
         .unwrap_or(false);
     let required: Vec<String> = cmd_table
@@ -61,7 +59,7 @@ pub fn extract_cmd(config: &Table, name: &str) -> Result<ExternalCommandState> {
 
 // Pull all external commands written in user config into state objects.
 pub fn extract_all_cmds(config: &Table) -> Vec<ExternalCommandState> {
-    if let Some(cmds) = config.get("commands").and_then(Value::as_table) {
+    if let Some(cmds) = config.get("command").and_then(Value::as_table) {
         let output: Vec<ExternalCommandState> = cmds
             .iter()
             .filter_map(|(name, _)| extract_cmd(config, name).ok())
