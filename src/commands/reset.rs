@@ -115,6 +115,7 @@ impl Runnable for ResetCmd {
         // restart system services if requested
         restart_system_services().await?;
 
+        print_log(LogLevel::Fruitful, "Reset operation complete.");
         notify(
             "All settings reset!",
             "You may start reconfiguring now. Only the preferences that were applied by cutler were reset."

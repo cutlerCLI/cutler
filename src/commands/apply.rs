@@ -222,7 +222,7 @@ impl Runnable for ApplyCmd {
                 new_value: job.new_value,
             });
         }
-        new_snap.external = runner::extract_all_cmds(&toml, true);
+        new_snap.external = runner::extract_all_cmds(&toml);
 
         if !dry_run {
             new_snap.save(&snap_path).await?;
@@ -241,6 +241,7 @@ impl Runnable for ApplyCmd {
             runner::run_all(&toml).await?;
         }
 
+        print_log(LogLevel::Fruitful, "Apply operation complete.");
         notify(
             "Settings applied!",
             "You may need to log out and back in to allow your Mac some time.",

@@ -2,7 +2,7 @@
 
 use crate::cli::atomic::{should_be_quiet, should_be_verbose};
 
-/// ANSI color codes
+// ANSI color codes.
 pub const RED: &str = "\x1b[31m";
 pub const GREEN: &str = "\x1b[32m";
 pub const YELLOW: &str = "\x1b[33m";
@@ -19,7 +19,7 @@ pub enum LogLevel {
     Warning,
     Info,
     Prompt, // only for io::confirm_action()
-    CommandOutput,
+    Exec,
     Dry,
     Fruitful, // 🍎
 }
@@ -31,7 +31,7 @@ pub fn print_log(level: LogLevel, msg: &str) {
         return;
     }
 
-    if (level == LogLevel::Info || level == LogLevel::CommandOutput) && !should_be_verbose() {
+    if (level == LogLevel::Info || level == LogLevel::Exec) && !should_be_verbose() {
         return;
     }
 
@@ -39,7 +39,7 @@ pub fn print_log(level: LogLevel, msg: &str) {
         LogLevel::Error => ("ERR  ", RED),
         LogLevel::Warning => ("WARN ", ORANGE),
         LogLevel::Info => ("INFO ", CYAN),
-        LogLevel::CommandOutput => ("OUT  ", GREEN),
+        LogLevel::Exec => ("EXEC ", RED),
         LogLevel::Prompt => ("PRMT ", PINK),
         LogLevel::Dry => ("DRY  ", YELLOW),
         LogLevel::Fruitful => ("🍎", ""),

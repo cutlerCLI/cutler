@@ -15,6 +15,7 @@ pub fn extract_cmd(config: &Table, name: &str) -> Result<ExternalCommandState> {
 
     let cmd_table = config
         .get("command")
+        .or_else(|| config.get("commands"))
         .and_then(Value::as_table)
         .and_then(|m| m.get(name))
         .and_then(Value::as_table)
@@ -58,22 +59,18 @@ pub fn extract_cmd(config: &Table, name: &str) -> Result<ExternalCommandState> {
 }
 
 // Pull all external commands written in user config into state objects.
-pub fn extract_all_cmds(config: &Table, nowarn: bool) -> Vec<ExternalCommandState> {
-    // Support both [command] and [commands] tables, but warn if [commands] is used
-    if let Some(cmds) = config.get("command").and_then(Value::as_table) {
+pub fn extract_all_cmds(config: &Table) -> Vec<ExternalCommandState> {
+    if let Some(cmds) = config
+        .get("command")
+        .or_else(|| config.get("commands"))
+        .and_then(Value::as_table)
+    {
         let output: Vec<ExternalCommandState> = cmds
             .iter()
             .filter_map(|(name, _)| extract_cmd(config, name).ok())
             .collect();
 
         return output;
-    } else if let Some(_) = config.get("commands").and_then(Value::as_table)
-        && !nowarn
-    {
-        print_log(
-            LogLevel::Warning,
-            "[commands] table has been deprecated. Replace with [command] to run external commands.",
-        );
     }
 
     Vec::new()
@@ -176,7 +173,7 @@ async fn execute_command(
         return Ok(());
     }
 
-    print_log(LogLevel::Info, &format!("Execute: {bin} {final_cmd}"));
+    print_log(LogLevel::Exec, &format!("Execute: {bin} {final_cmd}"));
 
     // Inherit stdin, stdout, and stderr so the user can interact with the command
     let mut child = Command::new(bin)
@@ -218,7 +215,11 @@ fn should_skip_exec(required: &[String]) -> bool {
 
 /// Run all extracted external commands via `sh -c` (or `sudo sh -c`) in parallel.
 pub async fn run_all(config: &Table) -> Result<()> {
-    let cmds = extract_all_cmds(config, false);
+    print_log(
+        LogLevel::Warning,
+        "If you are using the [commands] table, switch to [command] as it will be deprecated soon.",
+    );
+    let cmds = extract_all_cmds(config);
 
     // separate ensure_first commands from regular commands
     let mut ensure_first_cmds = Vec::new();
@@ -275,6 +276,11 @@ pub async fn run_all(config: &Table) -> Result<()> {
 /// Run exactly one command entry, given its name.
 pub async fn run_one(config: &Table, which: &str) -> Result<()> {
     let state = extract_cmd(config, which)?;
+
+    print_log(
+        LogLevel::Warning,
+        "If you are using the [commands] table, switch to [command] as it will be deprecated soon.",
+    );
 
     if should_skip_exec(&state.required) {
         bail!("Cannot execute command due to missing binaries.")
