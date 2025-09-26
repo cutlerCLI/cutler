@@ -58,7 +58,8 @@ pub fn extract_cmd(config: &Table, name: &str) -> Result<ExternalCommandState> {
 }
 
 // Pull all external commands written in user config into state objects.
-pub fn extract_all_cmds(config: &Table) -> Vec<ExternalCommandState> {
+pub fn extract_all_cmds(config: &Table, nowarn: bool) -> Vec<ExternalCommandState> {
+    // Support both [command] and [commands] tables, but warn if [commands] is used
     if let Some(cmds) = config.get("command").and_then(Value::as_table) {
         let output: Vec<ExternalCommandState> = cmds
             .iter()
@@ -66,6 +67,13 @@ pub fn extract_all_cmds(config: &Table) -> Vec<ExternalCommandState> {
             .collect();
 
         return output;
+    } else if let Some(_) = config.get("commands").and_then(Value::as_table)
+        && !nowarn
+    {
+        print_log(
+            LogLevel::Warning,
+            "[commands] table has been deprecated. Replace with [command] to run external commands.",
+        );
     }
 
     Vec::new()
@@ -210,7 +218,7 @@ fn should_skip_exec(required: &[String]) -> bool {
 
 /// Run all extracted external commands via `sh -c` (or `sudo sh -c`) in parallel.
 pub async fn run_all(config: &Table) -> Result<()> {
-    let cmds = extract_all_cmds(config);
+    let cmds = extract_all_cmds(config, false);
 
     // separate ensure_first commands from regular commands
     let mut ensure_first_cmds = Vec::new();

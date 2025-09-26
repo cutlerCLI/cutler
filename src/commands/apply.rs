@@ -222,7 +222,7 @@ impl Runnable for ApplyCmd {
                 new_value: job.new_value,
             });
         }
-        new_snap.external = runner::extract_all_cmds(&toml);
+        new_snap.external = runner::extract_all_cmds(&toml, true);
 
         if !dry_run {
             new_snap.save(&snap_path).await?;
