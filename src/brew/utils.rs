@@ -140,7 +140,7 @@ async fn set_homebrew_env_vars() {
 
 /// Helper for: ensure_brew()
 /// Installs Homebrew via the official script.
-async fn install_homebrew() -> Result<(), anyhow::Error> {
+async fn install_homebrew() -> Result<()> {
     let install_command =
         "curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | /bin/bash";
     let status = Command::new("/bin/bash")

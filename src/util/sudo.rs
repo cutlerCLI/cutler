@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 
-use anyhow::bail;
+use anyhow::{Result, bail};
 use nix::unistd::Uid;
 
 /// Only run the command if cutler is running as root.
-pub fn run_with_root() -> Result<(), anyhow::Error> {
+pub fn run_with_root() -> Result<()> {
     if !Uid::effective().is_root() {
         bail!("You must run this command with sudo.");
     }
@@ -13,7 +13,7 @@ pub fn run_with_root() -> Result<(), anyhow::Error> {
 }
 
 /// Only run the command if cutler is running as non-root.
-pub fn run_with_noroot() -> Result<(), anyhow::Error> {
+pub fn run_with_noroot() -> Result<()> {
     if Uid::effective().is_root() {
         bail!("Do not use sudo on this command!");
     }

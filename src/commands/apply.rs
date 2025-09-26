@@ -16,7 +16,7 @@ use crate::{
     },
     util::{
         convert::{normalize, toml_to_prefvalue},
-        io::{confirm_action, restart_system_services},
+        io::{confirm_action, notify, restart_system_services},
         logging::{GREEN, LogLevel, RESET, print_log},
     },
 };
@@ -240,6 +240,12 @@ impl Runnable for ApplyCmd {
         if !self.no_exec {
             runner::run_all(&toml).await?;
         }
+
+        notify(
+            "Settings applied!",
+            "You may need to log out and back in to allow your Mac some time.",
+        )
+        .unwrap();
 
         Ok(())
     }

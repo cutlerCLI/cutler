@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 use dialoguer::Confirm;
+use mac_notification_sys::*;
 use tokio::process::Command;
 
 use crate::{
@@ -23,8 +24,25 @@ pub fn confirm_action(prompt: &str) -> bool {
     Confirm::new().with_prompt(prompt).interact().unwrap()
 }
 
+/// Send a notification with a dedicated message.
+pub fn notify(title: &str, message: &str) -> Result<()> {
+    send_notification(
+        title,
+        None,
+        message,
+        Some(
+            Notification::new()
+                .asynchronous(true)
+                .close_button("I'm good!")
+                .sound("Blow"),
+        ),
+    )
+    .unwrap();
+    Ok(())
+}
+
 /// Restart Finder, Dock, SystemUIServer so defaults take effect.
-pub async fn restart_system_services() -> Result<(), anyhow::Error> {
+pub async fn restart_system_services() -> Result<()> {
     if should_not_restart_services() {
         return Ok(());
     }
@@ -46,13 +64,6 @@ pub async fn restart_system_services() -> Result<(), anyhow::Error> {
             }
         }
     }
-    if !dry_run {
-        print_log(
-            LogLevel::Fruitful,
-            "Done. Log out and log back in to allow your Mac some time!",
-        );
-    } else {
-        print_log(LogLevel::Dry, "Would restart system services.");
-    }
+
     Ok(())
 }

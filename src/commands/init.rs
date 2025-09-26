@@ -19,7 +19,7 @@ pub struct InitCmd;
 
 #[async_trait]
 impl Runnable for InitCmd {
-    async fn run(&self) -> Result<(), anyhow::Error> {
+    async fn run(&self) -> Result<()> {
         let config_path = get_config_path().await;
 
         if config_path.try_exists().unwrap() {

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::{env, path::PathBuf};
 use tokio::fs;
@@ -40,7 +41,7 @@ impl Snapshot {
         }
     }
 
-    pub async fn save(&self, path: &PathBuf) -> Result<(), anyhow::Error> {
+    pub async fn save(&self, path: &PathBuf) -> Result<()> {
         if let Some(dir) = path.parent() {
             fs::create_dir_all(dir).await?;
         }

@@ -13,7 +13,7 @@ use crate::{
     snapshot::state::{Snapshot, get_snapshot_path},
     util::{
         convert::{string_to_toml_value, toml_to_prefvalue},
-        io::restart_system_services,
+        io::{notify, restart_system_services},
         logging::{LogLevel, print_log},
     },
 };
@@ -161,6 +161,12 @@ impl Runnable for UnapplyCmd {
 
         // Restart system services if requested
         restart_system_services().await?;
+
+        notify(
+            "Undoed changes.",
+            "For a complete reset of your preferred domains, run `cutler reset`.",
+        )
+        .unwrap();
 
         Ok(())
     }
