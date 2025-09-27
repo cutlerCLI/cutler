@@ -173,7 +173,7 @@ async fn execute_command(
         return Ok(());
     }
 
-    print_log(LogLevel::Exec, &format!("Execute: {bin} {final_cmd}"));
+    print_log(LogLevel::Exec, &format!("Execute: {}", state.name));
 
     // Inherit stdin, stdout, and stderr so the user can interact with the command
     let mut child = Command::new(bin)
