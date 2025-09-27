@@ -2,7 +2,7 @@
 
 use crate::cli::atomic::should_dry_run;
 use crate::snapshot::state::ExternalCommandState;
-use crate::util::logging::{LogLevel, print_log};
+use crate::util::logging::{BOLD, LogLevel, RESET, print_log};
 use anyhow::{Error, Result, anyhow, bail};
 use std::{env, process::Stdio};
 use tokio::process::Command;
@@ -173,7 +173,7 @@ async fn execute_command(
         return Ok(());
     }
 
-    print_log(LogLevel::Exec, &format!("Execute: {}", state.name));
+    print_log(LogLevel::Exec, &format!("{BOLD}{}{RESET}", state.name));
 
     // Inherit stdin, stdout, and stderr so the user can interact with the command
     let mut child = Command::new(bin)

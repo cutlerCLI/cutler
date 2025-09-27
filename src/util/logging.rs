@@ -37,7 +37,7 @@ pub fn print_log(level: LogLevel, msg: &str) {
         LogLevel::Error => ("ERR  ", RED),
         LogLevel::Warning => ("WARN ", ORANGE),
         LogLevel::Info => ("INFO ", CYAN),
-        LogLevel::Exec => ("EXEC ", RED),
+        LogLevel::Exec => ("EXEC ->", RED),
         LogLevel::Prompt => ("PRMT ", PINK),
         LogLevel::Dry => ("DRY  ", YELLOW),
         LogLevel::Fruitful => ("🍎", ""),
