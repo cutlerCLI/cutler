@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::Result;
 use defaults_rs::{Domain, PrefValue, ReadResult, preferences::Preferences};
 use std::collections::HashMap;
 use toml::{Table, Value};
@@ -31,7 +32,7 @@ fn flatten_domains(
 }
 
 /// Collect all tables in `[set]`, flatten them, and return a map domain → settings.
-pub fn collect(parsed: &Table) -> Result<HashMap<String, toml::value::Table>, anyhow::Error> {
+pub fn collect(parsed: &Table) -> Result<HashMap<String, toml::value::Table>> {
     let mut out = HashMap::new();
 
     for (key, val) in parsed {

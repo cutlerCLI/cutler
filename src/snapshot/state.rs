@@ -50,7 +50,7 @@ impl Snapshot {
         Ok(())
     }
 
-    pub async fn load(path: &PathBuf) -> Result<Self, anyhow::Error> {
+    pub async fn load(path: &PathBuf) -> Result<Self> {
         let txt = fs::read_to_string(path).await?;
         let snap: Snapshot = serde_json::from_str(&txt)?;
         Ok(snap)

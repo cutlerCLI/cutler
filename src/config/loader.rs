@@ -14,7 +14,7 @@ static CONFIG_CONTENT: OnceLock<String> = OnceLock::new();
 
 /// Helper for: load_config(), load_config_mut()
 /// Read and cache the configuration file content for the process lifetime.
-async fn get_config_content() -> Result<(String, PathBuf), anyhow::Error> {
+async fn get_config_content() -> Result<(String, PathBuf)> {
     let path = get_config_path().await;
     if !fs::try_exists(&path).await.unwrap() {
         bail!("No config file found at {path:?}.\nPlease start by creating one with `cutler init`.")
@@ -36,7 +36,7 @@ async fn get_config_content() -> Result<(String, PathBuf), anyhow::Error> {
 }
 
 /// Read and parse the configuration file at a given path.
-pub async fn load_config(lock_check: bool) -> Result<Table, anyhow::Error> {
+pub async fn load_config(lock_check: bool) -> Result<Table> {
     let (content, path) = get_config_content().await?;
 
     let parsed: Table = content.parse::<Table>().with_context(|| {
@@ -52,7 +52,7 @@ pub async fn load_config(lock_check: bool) -> Result<Table, anyhow::Error> {
 }
 
 /// Mutably read and parse the configuration file at a given path.
-pub async fn load_config_mut(lock_check: bool) -> Result<DocumentMut, anyhow::Error> {
+pub async fn load_config_mut(lock_check: bool) -> Result<DocumentMut> {
     let (content, path) = get_config_content().await?;
 
     let parsed: DocumentMut = content.parse::<DocumentMut>().with_context(|| {
@@ -68,7 +68,7 @@ pub async fn load_config_mut(lock_check: bool) -> Result<DocumentMut, anyhow::Er
 }
 
 /// Detached version of load_config: does not cache the result and does not interact with the OnceLock.
-pub async fn load_config_detached(lock_check: bool) -> Result<Table, anyhow::Error> {
+pub async fn load_config_detached(lock_check: bool) -> Result<Table> {
     let path = get_config_path().await;
     if !fs::try_exists(&path).await.unwrap() {
         bail!("No config file found at {path:?}.\nPlease start by creating one with `cutler init`.")

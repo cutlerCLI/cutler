@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::bail;
+use anyhow::{Result, bail};
 use defaults_rs::PrefValue;
 use std::collections::HashMap;
 use toml::Value;
@@ -15,12 +15,12 @@ pub fn toml_to_prefvalue(val: &Value) -> anyhow::Result<PrefValue> {
         Value::Array(arr) => PrefValue::Array(
             arr.iter()
                 .map(toml_to_prefvalue)
-                .collect::<Result<Vec<_>, anyhow::Error>>()?,
+                .collect::<Result<Vec<_>>>()?,
         ),
         Value::Table(tbl) => PrefValue::Dictionary(
             tbl.iter()
                 .map(|(k, v)| Ok((k.clone(), toml_to_prefvalue(v)?)))
-                .collect::<Result<HashMap<_, _>, anyhow::Error>>()?,
+                .collect::<Result<HashMap<_, _>>>()?,
         ),
         _ => bail!("Unsupported TOML value for PrefValue"),
     })
