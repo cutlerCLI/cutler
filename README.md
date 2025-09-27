@@ -12,11 +12,6 @@ Powerful, declarative settings management for your Mac, with speed.
 
 </div>
 
-> [!WARNING]
-> Expect breaking changes before the v1 release.
-> Also expect the removal of the **x86_64** architecture with the latest coming builds as Apple has officially discontinued the
-> architecture in favor of Apple Silicon hardware.
-
 ## Overview
 
 cutler aims to simplify your macOS setup experience into an "almost" one-command procedure. Define your settings once, then easily apply, track, and revert changes across your system—think of it as infrastructure-as-code for your Mac.
@@ -30,6 +25,9 @@ curl -fsSL https://cutlercli.github.io/scripts/install.sh | /bin/bash
 ```
 
 See ["Installation"](https://cutlercli.github.io/cookbook/installation.html) for other methods.
+
+> [!WARNING]
+> **DEPRECATION:** The x86_64 builds will soon be removed in favor of Apple Silicon, as Apple themselves have officially discontinued this timed architecture.
 
 ## Documentation
 
