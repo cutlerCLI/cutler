@@ -113,10 +113,12 @@ impl Runnable for ApplyCmd {
             for (key, toml_value) in table.into_iter() {
                 let (eff_dom, eff_key) = collector::effective(&dom, &key);
 
-                if !self.no_check && eff_dom != "NSGlobalDomain"
-                    && !domains_list.contains(&eff_dom.to_owned()) {
-                        bail!("Domain \"{}\" does not exist!", eff_dom)
-                    }
+                if !self.no_check
+                    && eff_dom != "NSGlobalDomain"
+                    && !domains_list.contains(&eff_dom.to_owned())
+                {
+                    bail!("Domain \"{}\" does not exist!", eff_dom)
+                }
 
                 // read the current value from the system
                 // then, check if changed

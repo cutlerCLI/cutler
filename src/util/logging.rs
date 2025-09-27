@@ -31,7 +31,7 @@ pub fn print_log(level: LogLevel, msg: &str) {
         return;
     }
 
-    if (level == LogLevel::Info || level == LogLevel::Exec) && !should_be_verbose() {
+    if level == LogLevel::Info && !should_be_verbose() {
         return;
     }
 
