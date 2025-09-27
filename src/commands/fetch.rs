@@ -7,11 +7,7 @@ use clap::Args;
 use crate::{
     cli::atomic::should_dry_run,
     commands::Runnable,
-    config::{
-        loader::load_config,
-        path::get_config_path,
-        remote::{REMOTE_CONFIG, RemoteConfig, fetch_remote_config, save_remote_config},
-    },
+    config::{loader::load_config, path::get_config_path, remote::RemoteConfigManager},
     util::{
         io::confirm_action,
         logging::{BOLD, LogLevel, RESET, print_log},
@@ -30,14 +26,14 @@ impl Runnable for FetchCmd {
         let local_doc = load_config(false).await?;
 
         // parse [remote] section
-        let remote = match RemoteConfig::from_toml(&local_doc) {
+        let remote_mgr = match RemoteConfigManager::from_toml(&local_doc) {
             Some(cfg) => cfg,
             None => bail!("No [remote] section found in config. Add one to use remote sync."),
         };
 
         // fetch remote config
-        fetch_remote_config(remote.url).await?;
-        let remote_doc = REMOTE_CONFIG
+        remote_mgr.fetch().await?;
+        let remote_doc = remote_mgr
             .get()
             .cloned()
             .expect("Could not load remote configuration.");
@@ -87,7 +83,7 @@ impl Runnable for FetchCmd {
                 &format!("Would overwrite {cfg_path:?} with remote config."),
             );
         } else {
-            save_remote_config(&cfg_path).await?;
+            remote_mgr.save(&cfg_path).await?;
 
             print_log(LogLevel::Fruitful, "Local config updated from remote!");
         }

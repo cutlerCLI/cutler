@@ -3,11 +3,7 @@
 use crate::{
     cli::atomic::should_dry_run,
     commands::{BrewInstallCmd, Runnable},
-    config::{
-        loader::load_config,
-        path::get_config_path,
-        remote::{fetch_remote_config, save_remote_config},
-    },
+    config::{loader::load_config, path::get_config_path, remote::RemoteConfigManager},
     domains::collector,
     exec::runner,
     snapshot::{
@@ -72,8 +68,9 @@ impl Runnable for ApplyCmd {
                 bail!("Aborted apply: --url is passed despite local config.")
             }
 
-            fetch_remote_config(url.to_string()).await?;
-            save_remote_config(&config_path).await?;
+            let remote_mgr = RemoteConfigManager::new(url.to_string());
+            remote_mgr.fetch().await?;
+            remote_mgr.save(&config_path).await?;
 
             print_log(
                 LogLevel::Info,

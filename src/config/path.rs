@@ -13,27 +13,41 @@ pub async fn get_config_path() -> PathBuf {
         return path.clone();
     }
 
+    let home = env::var_os("HOME");
+    let xdg = env::var_os("XDG_CONFIG_HOME");
+
     let mut candidates = Vec::new();
 
-    // decide candidates in order
-    let home = env::var_os("HOME");
-
+    // $HOME/.config/cutler/config.toml
     if let Some(ref home) = home {
-        let candidate1 = PathBuf::from(home)
-            .join(".config")
-            .join("cutler")
-            .join("config.toml");
-        candidates.push(candidate1);
-
-        let candidate2 = PathBuf::from(home).join(".config").join("cutler.toml");
-        candidates.push(candidate2);
+        candidates.push(
+            PathBuf::from(home)
+                .join(".config")
+                .join("cutler")
+                .join("config.toml"),
+        );
     }
 
-    // return the first candidate that exists
+    // $HOME/.config/cutler.toml
+    if let Some(ref home) = home {
+        candidates.push(PathBuf::from(home).join(".config").join("cutler.toml"));
+    }
+
+    // $XDG_CONFIG_HOME/cutler/config.toml
+    if let Some(ref xdg) = xdg {
+        candidates.push(PathBuf::from(xdg).join("cutler").join("config.toml"));
+    }
+
+    // $XDG_CONFIG_HOME/cutler.toml
+    if let Some(ref xdg) = xdg {
+        candidates.push(PathBuf::from(xdg).join("cutler.toml"));
+    }
+
+    // Find the first existing candidate
     let chosen = if let Some(existing) = {
         let mut found = None;
         for candidate in &candidates {
-            if fs::try_exists(candidate).await.unwrap() {
+            if fs::try_exists(candidate).await.unwrap_or(false) {
                 found = Some(candidate.to_owned());
                 break;
             }
@@ -41,16 +55,13 @@ pub async fn get_config_path() -> PathBuf {
         found
     } {
         existing
-    } else if let Some(home) = home {
-        PathBuf::from(home)
-            .join(".config")
-            .join("cutler")
-            .join("config.toml")
+    } else if !candidates.is_empty() {
+        candidates[0].clone()
     } else {
-        PathBuf::from("~")
-            .join(".config")
-            .join("cutler")
-            .join("config.toml")
+        // fallback if no $HOME or $XDG_CONFIG_HOME is set
+        let mut fallback = dirs::home_dir().unwrap_or_else(|| PathBuf::from("~"));
+        fallback = fallback.join(".config").join("cutler").join("config.toml");
+        fallback
     };
 
     CONFIG_PATH.set(chosen.clone()).ok();
