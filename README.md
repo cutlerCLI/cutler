@@ -12,11 +12,10 @@ Powerful, declarative settings management for your Mac, with speed.
 
 </div>
 
-> [!NOTE]
-> Consider starring the repository to support the development of cutler!
-
 > [!WARNING]
 > Expect breaking changes before the v1 release.
+> Also expect the removal of the **x86_64** architecture with the latest coming builds as Apple has officially discontinued the
+> architecture in favor of Apple Silicon hardware.
 
 ## Overview
 
