@@ -16,7 +16,8 @@ static CONFIG_CONTENT: OnceLock<String> = OnceLock::new();
 /// Read and cache the configuration file content for the process lifetime.
 async fn get_config_content() -> Result<(String, PathBuf)> {
     let path = get_config_path().await;
-    if !fs::try_exists(&path).await.unwrap() {
+
+    if path.try_exists()? {
         bail!("No config file found at {path:?}.\nPlease start by creating one with `cutler init`.")
     }
 
@@ -70,7 +71,8 @@ pub async fn load_config_mut(lock_check: bool) -> Result<DocumentMut> {
 /// Detached version of load_config: does not cache the result and does not interact with the OnceLock.
 pub async fn load_config_detached(lock_check: bool) -> Result<Table> {
     let path = get_config_path().await;
-    if !fs::try_exists(&path).await.unwrap() {
+
+    if path.try_exists()? {
         bail!("No config file found at {path:?}.\nPlease start by creating one with `cutler init`.")
     }
 
