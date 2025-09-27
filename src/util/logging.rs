@@ -27,11 +27,9 @@ pub enum LogLevel {
 /// Central logger.
 /// It is important that most, if not all, prints in cutler go through this function.
 pub fn print_log(level: LogLevel, msg: &str) {
-    if should_be_quiet() && level != LogLevel::Error && level != LogLevel::Warning {
-        return;
-    }
-
-    if level == LogLevel::Info && !should_be_verbose() {
+    if (should_be_quiet() && level != LogLevel::Error && level != LogLevel::Warning)
+        || (level == LogLevel::Info && !should_be_verbose())
+    {
         return;
     }
 
