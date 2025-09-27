@@ -13,7 +13,7 @@ use crate::{
     snapshot::state::{Snapshot, get_snapshot_path},
     util::{
         convert::{string_to_toml_value, toml_to_prefvalue},
-        io::{notify, restart_system_services},
+        io::{notify, restart_services},
         logging::{LogLevel, print_log},
     },
 };
@@ -160,7 +160,7 @@ impl Runnable for UnapplyCmd {
         }
 
         // Restart system services if requested
-        restart_system_services().await?;
+        restart_services().await?;
 
         print_log(LogLevel::Fruitful, "Unapply operation complete.");
         notify(

@@ -13,7 +13,7 @@ use crate::{
     domains::{collect, effective, read_current},
     snapshot::state::get_snapshot_path,
     util::{
-        io::{confirm_action, notify, restart_system_services},
+        io::{confirm_action, notify, restart_services},
         logging::{LogLevel, print_log},
     },
 };
@@ -113,7 +113,7 @@ impl Runnable for ResetCmd {
         );
 
         // restart system services if requested
-        restart_system_services().await?;
+        restart_services().await?;
 
         print_log(LogLevel::Fruitful, "Reset operation complete.");
         notify(

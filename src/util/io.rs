@@ -42,7 +42,7 @@ pub fn notify(title: &str, message: &str) -> Result<()> {
 }
 
 /// Restart Finder, Dock, SystemUIServer so defaults take effect.
-pub async fn restart_system_services() -> Result<()> {
+pub async fn restart_services() -> Result<()> {
     if should_not_restart_services() {
         return Ok(());
     }

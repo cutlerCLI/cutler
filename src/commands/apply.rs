@@ -12,7 +12,7 @@ use crate::{
     },
     util::{
         convert::{normalize, toml_to_prefvalue},
-        io::{confirm_action, notify, restart_system_services},
+        io::{confirm_action, notify, restart_services},
         logging::{GREEN, LogLevel, RESET, print_log},
     },
 };
@@ -193,7 +193,7 @@ impl Runnable for ApplyCmd {
             }
 
             // restart system services if requested
-            restart_system_services().await?;
+            restart_services().await?;
         } else {
             for job in &jobs {
                 print_log(
