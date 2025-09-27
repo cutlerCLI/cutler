@@ -386,6 +386,7 @@ dependencies = [
  "dirs",
  "mac-notification-sys",
  "nix",
+ "once_cell",
  "reqwest",
  "self_update",
  "semver",

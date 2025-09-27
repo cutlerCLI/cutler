@@ -40,9 +40,7 @@ pub async fn load_config(lock_check: bool) -> Result<Table, anyhow::Error> {
     let (content, path) = get_config_content().await?;
 
     let parsed: Table = content.parse::<Table>().with_context(|| {
-        format!(
-            "Failed to parse TOML at {path:?}. Please check for syntax errors or invalid structure."
-        )
+        format!("Failed to parse TOML at {path:?}. Please check for syntax errors.")
     })?;
 
     // handle optional locking
@@ -58,9 +56,7 @@ pub async fn load_config_mut(lock_check: bool) -> Result<DocumentMut, anyhow::Er
     let (content, path) = get_config_content().await?;
 
     let parsed: DocumentMut = content.parse::<DocumentMut>().with_context(|| {
-        format!(
-            "Failed to parse TOML at {path:?}. Please check for syntax errors or invalid structure."
-        )
+        format!("Failed to parse TOML at {path:?}. Please check for syntax errors.")
     })?;
 
     // handle optional locking
@@ -83,9 +79,7 @@ pub async fn load_config_detached(lock_check: bool) -> Result<Table, anyhow::Err
         .with_context(|| format!("Failed to read config file at {path:?}"))?;
 
     let parsed: Table = content.parse::<Table>().with_context(|| {
-        format!(
-            "Failed to parse TOML at {path:?}. Please check for syntax errors or invalid structure."
-        )
+        format!("Failed to parse TOML at {path:?}. Please check for syntax errors.")
     })?;
 
     // handle optional locking
