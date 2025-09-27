@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 
 use anstyle::{AnsiColor, Color::Ansi, Style};
 

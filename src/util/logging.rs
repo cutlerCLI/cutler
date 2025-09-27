@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 
 use crate::cli::atomic::{should_be_quiet, should_be_verbose};
 

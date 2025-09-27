@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 
 use clap::Parser;
 use cutler::autosync::try_auto_sync;

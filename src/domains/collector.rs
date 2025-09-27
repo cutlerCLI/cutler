@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 
 use defaults_rs::{Domain, PrefValue, ReadResult, preferences::Preferences};
 use std::collections::HashMap;

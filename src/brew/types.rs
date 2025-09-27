@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 
 /// Represents the type of software to list in Homebrew.
 #[derive(PartialEq)]

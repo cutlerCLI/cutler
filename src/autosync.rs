@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 
 use crate::cli::Command;
 use crate::config::remote::RemoteConfigManager;
