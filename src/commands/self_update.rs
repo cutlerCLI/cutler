@@ -28,12 +28,17 @@ impl Runnable for SelfUpdateCmd {
             format!("{cargo_home}/bin/cutler")
         } else if let Ok(home) = std::env::var("HOME") {
             format!("{home}/.cargo/bin/cutler")
+        } else if let Some(home_dir) = dirs::home_dir() {
+            format!("{}/.cargo/bin/cutler", home_dir.to_string_lossy())
         } else {
             String::new()
         };
         let is_cargo = exe_path_str == cargo_bin_path;
 
-        if is_homebrew || is_cargo {
+        // check for mise install
+        let is_mise = exe_path_str.contains(".local/share/mise/installs/cargo-cutler");
+
+        if is_homebrew || is_cargo || is_mise {
             print_log(
                 LogLevel::Warning,
                 "cutler was installed using a package manager, so cannot install updates manually.",
