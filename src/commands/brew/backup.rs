@@ -4,7 +4,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
 use tokio::fs;
-use toml_edit::{Array, DocumentMut, Item, Table, Value};
+use toml_edit::{Array, DocumentMut, Formatted, Item, Table, Value};
 
 use crate::{
     brew::{
@@ -16,7 +16,7 @@ use crate::{
     config::{loader::load_config_mut, path::get_config_path},
     util::{
         io::confirm_action,
-        logging::{GREEN, LogLevel, RESET, print_log},
+        logging::{LogLevel, print_log},
     },
 };
 
@@ -38,7 +38,7 @@ impl Runnable for BrewBackupCmd {
         ensure_brew().await?;
 
         // init config
-        let mut doc = if fs::try_exists(&cfg_path).await.unwrap() {
+        let mut doc = if cfg_path.try_exists()? {
             load_config_mut(true).await?
         } else {
             print_log(
@@ -62,7 +62,7 @@ impl Runnable for BrewBackupCmd {
                     LogLevel::Info,
                     "Setting no_deps to true in config for later reads.",
                 );
-                brew_tbl["no_deps"] = Item::Value(Value::Boolean(toml_edit::Formatted::new(true)));
+                brew_tbl["no_deps"] = Item::Value(Value::Boolean(Formatted::new(true)));
             } else {
                 print_log(
                     LogLevel::Info,
@@ -119,7 +119,7 @@ impl Runnable for BrewBackupCmd {
         }
         print_log(
             LogLevel::Info,
-            &format!("{}Pushed {} formulae.{}", GREEN, formula_arr.len(), RESET),
+            &format!("Pushed {} formulae.", formula_arr.len()),
         );
         brew_tbl["formulae"] = Item::Value(Value::Array(formula_arr));
 
@@ -147,10 +147,7 @@ impl Runnable for BrewBackupCmd {
                 cask_arr.push(cask.as_str());
             }
         }
-        print_log(
-            LogLevel::Info,
-            &format!("{}Pushed {} casks.{}", GREEN, cask_arr.len(), RESET),
-        );
+        print_log(LogLevel::Info, &format!("Pushed {} casks.", cask_arr.len()));
         brew_tbl["casks"] = Item::Value(Value::Array(cask_arr));
 
         // backup taps
@@ -163,10 +160,7 @@ impl Runnable for BrewBackupCmd {
                 taps_arr.push(tap.as_str());
             }
         }
-        print_log(
-            LogLevel::Info,
-            &format!("{}Pushed {} taps.{}", GREEN, taps_arr.len(), RESET),
-        );
+        print_log(LogLevel::Info, &format!("Pushed {} taps.", taps_arr.len()));
         brew_tbl["taps"] = Item::Value(Value::Array(taps_arr));
 
         // write backup
