@@ -5,7 +5,7 @@ use crate::{
     commands::{BrewInstallCmd, Runnable},
     config::{loader::load_config, path::get_config_path, remote::RemoteConfigManager},
     domains::collector,
-    exec::runner,
+    exec::runner::{self, ExecMode},
     snapshot::{
         get_snapshot_path,
         state::{SettingState, Snapshot},
@@ -30,15 +30,23 @@ pub struct ApplyCmd {
     pub url: Option<String>,
 
     /// Skip executing external commands.
-    #[arg(long)]
+    #[arg(long, conflicts_with_all = &["all_exec", "flagged"])]
     pub no_exec: bool,
+
+    /// Execute all external commands (even flagged ones).
+    #[arg(short, long, conflicts_with_all = &["no_exec", "flagged"])]
+    pub all_exec: bool,
+
+    /// Execute flagged external commands only.
+    #[arg(short, long, conflicts_with_all = &["all_exec", "no_exec"])]
+    pub flagged: bool,
 
     /// Risky: Disables check for domain existence before applying modification.
     #[arg(long)]
     pub no_check: bool,
 
     /// Invoke `brew install` after applying defaults.
-    #[arg(long)]
+    #[arg(short, long)]
     pub brew: bool,
 }
 
@@ -236,7 +244,15 @@ impl Runnable for ApplyCmd {
 
         // exec external commands
         if !self.no_exec {
-            runner::run_all(&toml).await?;
+            let mode = if self.all_exec {
+                ExecMode::All
+            } else if self.flagged {
+                ExecMode::Flagged
+            } else {
+                ExecMode::Regular
+            };
+
+            runner::run_all(&toml, mode).await?;
         }
 
         print_log(LogLevel::Fruitful, "Apply operation complete.");

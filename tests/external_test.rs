@@ -4,7 +4,7 @@
 mod tests {
     use cutler::{
         cli::atomic::set_dry_run,
-        exec::runner::{run_all, run_one},
+        exec::runner::{ExecMode, run_all, run_one},
     };
     use toml::{Value, value::Table};
 
@@ -28,7 +28,7 @@ mod tests {
         root.insert("vars".into(), Value::Table(vars));
         root.insert("commands".into(), Value::Table(commands));
 
-        assert!(run_all(&root).await.is_ok());
+        assert!(run_all(&root, ExecMode::Regular).await.is_ok());
     }
 
     #[tokio::test]
