@@ -7,11 +7,8 @@ use crate::{
     },
     commands::Runnable,
     config::loader::load_config,
-    domains::{collect, effective, read_current},
-    util::{
-        convert::normalize,
-        logging::{BOLD, GREEN, LogLevel, RED, RESET, print_log},
-    },
+    domains::{collect, convert::normalize, effective, read_current},
+    util::logging::{BOLD, GREEN, LogLevel, RED, RESET, print_log},
 };
 use anyhow::Result;
 use async_trait::async_trait;

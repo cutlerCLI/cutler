@@ -4,14 +4,16 @@ use crate::{
     cli::atomic::should_dry_run,
     commands::{BrewInstallCmd, Runnable},
     config::{loader::load_config, path::get_config_path, remote::RemoteConfigManager},
-    domains::collector,
-    exec::runner,
+    domains::{
+        collector,
+        convert::{normalize, toml_to_prefvalue},
+    },
+    exec::runner::{self, ExecMode},
     snapshot::{
         get_snapshot_path,
         state::{SettingState, Snapshot},
     },
     util::{
-        convert::{normalize, toml_to_prefvalue},
         io::{confirm_action, notify, restart_services},
         logging::{GREEN, LogLevel, RESET, print_log},
     },
@@ -30,21 +32,29 @@ pub struct ApplyCmd {
     pub url: Option<String>,
 
     /// Skip executing external commands.
-    #[arg(long)]
+    #[arg(long, conflicts_with_all = &["all_exec", "flagged"])]
     pub no_exec: bool,
+
+    /// Execute all external commands (even flagged ones).
+    #[arg(short, long, conflicts_with_all = &["no_exec", "flagged"])]
+    pub all_exec: bool,
+
+    /// Execute flagged external commands only.
+    #[arg(short, long, conflicts_with_all = &["all_exec", "no_exec"])]
+    pub flagged: bool,
 
     /// Risky: Disables check for domain existence before applying modification.
     #[arg(long)]
     pub no_check: bool,
 
     /// Invoke `brew install` after applying defaults.
-    #[arg(long)]
+    #[arg(short, long)]
     pub brew: bool,
 }
 
-/// Represents an apply command job.
+/// Represents a preference modification job.
 #[derive(Debug)]
-struct Job {
+struct PreferenceJob {
     domain: String,
     key: String,
     toml_value: Value,
@@ -103,7 +113,7 @@ impl Runnable for ApplyCmd {
             .map(|s| ((s.domain.clone(), s.key.clone()), s))
             .collect();
 
-        let mut jobs: Vec<Job> = Vec::new();
+        let mut jobs: Vec<PreferenceJob> = Vec::new();
 
         let domains_list = Preferences::list_domains().await.unwrap();
         for (dom, table) in domains.into_iter() {
@@ -140,7 +150,7 @@ impl Runnable for ApplyCmd {
                         "Applying"
                     };
 
-                    jobs.push(Job {
+                    jobs.push(PreferenceJob {
                         domain: eff_dom.clone(),
                         key: eff_key.clone(),
                         toml_value: toml_value.clone(),
@@ -236,7 +246,15 @@ impl Runnable for ApplyCmd {
 
         // exec external commands
         if !self.no_exec {
-            runner::run_all(&toml).await?;
+            let mode = if self.all_exec {
+                ExecMode::All
+            } else if self.flagged {
+                ExecMode::Flagged
+            } else {
+                ExecMode::Regular
+            };
+
+            runner::run_all(&toml, mode).await?;
         }
 
         print_log(LogLevel::Fruitful, "Apply operation complete.");

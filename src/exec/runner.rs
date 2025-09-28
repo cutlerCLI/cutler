@@ -15,7 +15,6 @@ pub fn extract_cmd(config: &Table, name: &str) -> Result<ExternalCommandState> {
 
     let cmd_table = config
         .get("command")
-        .or_else(|| config.get("commands"))
         .and_then(Value::as_table)
         .and_then(|m| m.get(name))
         .and_then(Value::as_table)
@@ -33,6 +32,10 @@ pub fn extract_cmd(config: &Table, name: &str) -> Result<ExternalCommandState> {
     // extra fields
     let sudo = cmd_table
         .get("sudo")
+        .and_then(Value::as_bool)
+        .unwrap_or(false);
+    let flag = cmd_table
+        .get("flag")
         .and_then(Value::as_bool)
         .unwrap_or(false);
     let ensure_first = cmd_table
@@ -54,17 +57,14 @@ pub fn extract_cmd(config: &Table, name: &str) -> Result<ExternalCommandState> {
         run,
         sudo,
         ensure_first,
+        flag,
         required,
     })
 }
 
 // Pull all external commands written in user config into state objects.
 pub fn extract_all_cmds(config: &Table) -> Vec<ExternalCommandState> {
-    if let Some(cmds) = config
-        .get("command")
-        .or_else(|| config.get("commands"))
-        .and_then(Value::as_table)
-    {
+    if let Some(cmds) = config.get("command").and_then(Value::as_table) {
         let output: Vec<ExternalCommandState> = cmds
             .iter()
             .filter_map(|(name, _)| extract_cmd(config, name).ok())
@@ -191,29 +191,33 @@ async fn execute_command(
 
 /// Helper for: run_all(), run_one()
 /// Checks if the binaries designated in `required` are found in $PATH and whether to skip command execution.
-fn should_skip_exec(required: &[String]) -> bool {
-    let mut skip_exec = false;
+fn all_bins_present(required: &[String]) -> bool {
+    let mut present = true;
 
     if required.is_empty() {
-        return skip_exec;
+        return present;
     }
 
     for bin in required {
         if which::which(bin).is_err() {
             print_log(LogLevel::Warning, &format!("{bin} not found in $PATH."));
-            skip_exec = true;
+            present = false;
         }
     }
 
-    skip_exec
+    present
+}
+
+/// Execution mode enum.
+#[derive(PartialEq)]
+pub enum ExecMode {
+    Regular,
+    All,
+    Flagged,
 }
 
 /// Run all extracted external commands via `sh -c` (or `sudo sh -c`) in parallel.
-pub async fn run_all(config: &Table) -> Result<()> {
-    print_log(
-        LogLevel::Warning,
-        "If you are using the [commands] table, switch to [command] as it will be deprecated soon.",
-    );
+pub async fn run_all(config: &Table, mode: ExecMode) -> Result<()> {
     let cmds = extract_all_cmds(config);
 
     // separate ensure_first commands from regular commands
@@ -221,7 +225,10 @@ pub async fn run_all(config: &Table) -> Result<()> {
     let mut regular_cmds = Vec::new();
 
     for state in cmds {
-        if should_skip_exec(&state.required) {
+        if !all_bins_present(&state.required)
+            || (mode == ExecMode::Regular && state.flag)
+            || (mode == ExecMode::Flagged && !state.flag)
+        {
             continue;
         } else if state.ensure_first {
             ensure_first_cmds.push(state);
@@ -272,12 +279,7 @@ pub async fn run_all(config: &Table) -> Result<()> {
 pub async fn run_one(config: &Table, which: &str) -> Result<()> {
     let state = extract_cmd(config, which)?;
 
-    print_log(
-        LogLevel::Warning,
-        "If you are using the [commands] table, switch to [command] as it will be deprecated soon.",
-    );
-
-    if should_skip_exec(&state.required) {
+    if !all_bins_present(&state.required) {
         bail!("Cannot execute command due to missing binaries.")
     }
 

@@ -21,6 +21,7 @@ pub struct ExternalCommandState {
     pub run: String,
     pub sudo: bool,
     pub ensure_first: bool,
+    pub flag: bool,
     pub required: Vec<String>,
 }
 

@@ -55,6 +55,7 @@ mod tests {
             run: "echo Hello World".to_string(),
             sudo: false,
             ensure_first: false,
+            flag: false,
             required: vec!["echo".to_string()],
         };
         assert_eq!(command.run, "echo Hello World");
@@ -94,6 +95,7 @@ mod tests {
             run: "echo Hello".to_string(),
             sudo: false,
             ensure_first: false,
+            flag: false,
             required: vec!["echo".to_string()],
         });
 
@@ -102,6 +104,7 @@ mod tests {
             run: "hostname -s macbook".to_string(),
             sudo: true,
             ensure_first: false,
+            flag: false,
             required: vec!["hostname".to_string()],
         });
 
