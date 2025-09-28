@@ -10,7 +10,7 @@ use crate::{
         types::BrewDiff,
         utils::{compare_brew_state, ensure_brew},
     },
-    cli::atomic::{should_be_verbose, should_dry_run},
+    cli::atomic::{should_be_quiet, should_dry_run},
     commands::Runnable,
     config::loader::load_config,
     util::logging::{LogLevel, print_log},
@@ -92,14 +92,8 @@ impl Runnable for BrewInstallCmd {
                     print_log(LogLevel::Dry, &format!("Would tap {tap}"));
                 } else {
                     print_log(LogLevel::Info, &format!("Tapping: {tap}"));
-                    let status = Command::new("brew")
-                        .arg("tap")
-                        .arg(tap)
-                        .stdout(std::process::Stdio::inherit())
-                        .stderr(std::process::Stdio::inherit())
-                        .stdin(std::process::Stdio::inherit())
-                        .status()
-                        .await?;
+                    let status = Command::new("brew").arg("tap").arg(tap).status().await?;
+
                     if !status.success() {
                         print_log(LogLevel::Error, &format!("Failed to tap: {tap}"));
                     }
@@ -127,18 +121,9 @@ impl Runnable for BrewInstallCmd {
 
         let fetched = fetch_all(&brew_diff.missing_formulae, &brew_diff.missing_casks).await;
 
-        // build install tasks only for successfully fetched items
-        let mut install_args: Vec<Vec<String>> = Vec::new();
-
-        for name in fetched.formulae {
-            install_args.push(vec!["--formula".to_string(), name]);
-        }
-        for name in fetched.casks {
-            install_args.push(vec!["--cask".to_string(), name]);
-        }
-
         // sequentially install only the successfully fetched items
-        install_all(install_args).await?;
+        install_all(fetched.formulae, false).await?;
+        install_all(fetched.casks, true).await?;
 
         Ok(())
     }
@@ -153,7 +138,7 @@ pub struct FetchedThings {
 /// Downloads all formulae/casks before installation, sequentially.
 /// Returns only the successfully fetched formulae and casks.
 async fn fetch_all(formulae: &[String], casks: &[String]) -> FetchedThings {
-    let verbose = should_be_verbose();
+    let quiet = should_be_quiet();
 
     // create new vectors
     let mut fetched_formulae = Vec::new();
@@ -166,7 +151,7 @@ async fn fetch_all(formulae: &[String], casks: &[String]) -> FetchedThings {
         let mut cmd = Command::new("brew");
         cmd.arg("fetch").arg(name);
 
-        if verbose {
+        if !quiet {
             print_log(LogLevel::Info, &format!("Fetching formula: {name}"));
         } else {
             cmd.arg("--quiet");
@@ -183,7 +168,7 @@ async fn fetch_all(formulae: &[String], casks: &[String]) -> FetchedThings {
         let mut cmd = Command::new("brew");
         cmd.arg("fetch").arg("--cask").arg(name);
 
-        if verbose {
+        if !quiet {
             print_log(LogLevel::Info, &format!("Fetching cask: {name}"));
         } else {
             cmd.arg("--quiet");
@@ -223,23 +208,18 @@ async fn fetch_all(formulae: &[String], casks: &[String]) -> FetchedThings {
 
 /// Install formulae/casks sequentially.
 /// The argument is a vector of argslices, representing the arguments to the `brew install` subcommand.
-async fn install_all(install_tasks: Vec<Vec<String>>) -> anyhow::Result<()> {
-    for args in install_tasks {
-        let display = format!("brew {}", args.join(" "));
-        print_log(LogLevel::Info, &format!("Installing: {display}"));
-        let arg_slices: Vec<&str> = args.iter().map(String::as_str).collect();
+async fn install_all(install_tasks: Vec<String>, cask: bool) -> anyhow::Result<()> {
+    for task in install_tasks {
+        print_log(LogLevel::Info, &format!("Installing: {task}"));
 
         let status = Command::new("brew")
             .arg("install")
-            .args(&arg_slices)
-            .stdout(std::process::Stdio::inherit())
-            .stderr(std::process::Stdio::inherit())
-            .stdin(std::process::Stdio::inherit())
+            .arg(if cask { "--cask" } else { "--formula" })
             .status()
             .await?;
 
         if !status.success() {
-            print_log(LogLevel::Error, &format!("Failed: {display}"));
+            print_log(LogLevel::Error, &format!("Failed to install: {task}"));
         }
     }
     Ok(())
