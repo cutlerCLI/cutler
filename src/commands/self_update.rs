@@ -11,7 +11,11 @@ use crate::commands::Runnable;
 use crate::util::logging::{LogLevel, print_log};
 
 #[derive(Args, Debug)]
-pub struct SelfUpdateCmd;
+pub struct SelfUpdateCmd {
+    /// Do not install/update manpage during the update procedure.
+    #[arg(long)]
+    pub no_man: bool,
+}
 
 #[async_trait]
 impl Runnable for SelfUpdateCmd {
@@ -80,29 +84,32 @@ impl Runnable for SelfUpdateCmd {
         .await??;
 
         if status.updated() {
-            print_log(LogLevel::Info, "Binary updated, updating manpage...");
+            if !self.no_man {
+                print_log(LogLevel::Info, "Binary updated, updating manpage...");
 
-            let manpage_url = "https://raw.githubusercontent.com/cutlerCLI/cutler/refs/heads/master/man/man1/cutler.1".to_string();
-            let client = reqwest::Client::builder()
-                .user_agent("cutler-self-update")
-                .build()?;
-            let resp = client
-                .get(&manpage_url)
-                .send()
-                .await
-                .map_err(|e| anyhow::anyhow!("Failed to fetch manpage: {}", e))?;
-            let manpage_content = resp.text().await?;
+                let manpage_url = "https://raw.githubusercontent.com/cutlerCLI/cutler/refs/heads/master/man/man1/cutler.1".to_string();
+                let client = reqwest::Client::builder()
+                    .user_agent("cutler-self-update")
+                    .build()?;
+                let resp = client
+                    .get(&manpage_url)
+                    .send()
+                    .await
+                    .map_err(|e| anyhow::anyhow!("Failed to fetch manpage: {}", e))?;
+                let manpage_content = resp.text().await?;
 
-            fs::create_dir_all("/usr/local/share/man/man1").await?;
-            fs::write("/usr/local/share/man/man1/cutler.1", manpage_content).await?;
-
-            print_log(
-                LogLevel::Fruitful,
-                &format!("cutler updated to: {}", status.version()),
-            );
+                fs::create_dir_all("/usr/local/share/man/man1").await?;
+                fs::write("/usr/local/share/man/man1/cutler.1", manpage_content).await?;
+            }
         } else {
             print_log(LogLevel::Fruitful, "cutler is already up to date.");
+            return Ok(());
         }
+
+        print_log(
+            LogLevel::Fruitful,
+            &format!("cutler updated to: {}", status.version()),
+        );
 
         Ok(())
     }
