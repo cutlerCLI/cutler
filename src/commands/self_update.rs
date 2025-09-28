@@ -46,6 +46,14 @@ impl Runnable for SelfUpdateCmd {
             return Ok(());
         }
 
+        // finally, check if cutler is where it is supposed to be
+        if exe_path_str != "/usr/local/bin/cutler" {
+            print_log(
+                LogLevel::Warning,
+                "cutler is currently installed in a custom path. Please note that the manpage will still be installed in: /usr/local/share/man/man1/cutler.1",
+            );
+        }
+
         // determine architecture for update target
         let arch = std::env::consts::ARCH;
         let target = match arch {
