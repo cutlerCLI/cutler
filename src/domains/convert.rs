@@ -60,6 +60,32 @@ pub fn string_to_toml_value(s: &str) -> toml::Value {
     }
 }
 
+/// Turns a PrefValue object to a string.
+pub fn prefvalue_to_string(val: &PrefValue) -> String {
+    match val {
+        PrefValue::Boolean(b) => b.to_string(),
+        PrefValue::Integer(i) => i.to_string(),
+        PrefValue::Float(f) => f.to_string(),
+        PrefValue::String(s) => s.clone(),
+        PrefValue::Array(arr) => {
+            let inner = arr
+                .iter()
+                .map(prefvalue_to_string)
+                .collect::<Vec<_>>()
+                .join(", ");
+            format!("[{inner}]")
+        }
+        PrefValue::Dictionary(dict) => {
+            let inner = dict
+                .iter()
+                .map(|(k, v)| format!("{}: {}", k, prefvalue_to_string(v)))
+                .collect::<Vec<_>>()
+                .join(", ");
+            format!("{{{inner}}}")
+        }
+    }
+}
+
 /// Normalize a toml::Value to a string.
 pub fn normalize(value: &Value) -> String {
     match value {

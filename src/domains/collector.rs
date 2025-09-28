@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use defaults_rs::{Domain, PrefValue, ReadResult, preferences::Preferences};
+use defaults_rs::{Domain, ReadResult, preferences::Preferences};
 use std::collections::HashMap;
 use toml::{Table, Value};
+
+use crate::domains::convert::prefvalue_to_string;
 
 /// Recursively flatten nested TOML tables into (domain, settings-table) pairs.
 fn flatten_domains(
@@ -96,34 +98,9 @@ pub async fn read_current(eff_domain: &str, eff_key: &str) -> Option<String> {
         Domain::User(eff_domain.to_string())
     };
 
-    fn prefvalue_to_cutler_string(val: &PrefValue) -> String {
-        match val {
-            PrefValue::Boolean(b) => b.to_string(),
-            PrefValue::Integer(i) => i.to_string(),
-            PrefValue::Float(f) => f.to_string(),
-            PrefValue::String(s) => s.clone(),
-            PrefValue::Array(arr) => {
-                let inner = arr
-                    .iter()
-                    .map(prefvalue_to_cutler_string)
-                    .collect::<Vec<_>>()
-                    .join(", ");
-                format!("[{inner}]")
-            }
-            PrefValue::Dictionary(dict) => {
-                let inner = dict
-                    .iter()
-                    .map(|(k, v)| format!("{}: {}", k, prefvalue_to_cutler_string(v)))
-                    .collect::<Vec<_>>()
-                    .join(", ");
-                format!("{{{inner}}}")
-            }
-        }
-    }
-
     match Preferences::read(domain_obj, Some(eff_key)).await {
         Ok(result) => match result {
-            ReadResult::Value(val) => Some(prefvalue_to_cutler_string(&val)),
+            ReadResult::Value(val) => Some(prefvalue_to_string(&val)),
             ReadResult::Plist(plist_val) => Some(format!("{plist_val:?}")),
         },
         Err(_) => None,

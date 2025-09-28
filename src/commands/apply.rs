@@ -4,14 +4,16 @@ use crate::{
     cli::atomic::should_dry_run,
     commands::{BrewInstallCmd, Runnable},
     config::{loader::load_config, path::get_config_path, remote::RemoteConfigManager},
-    domains::collector,
+    domains::{
+        collector,
+        convert::{normalize, toml_to_prefvalue},
+    },
     exec::runner::{self, ExecMode},
     snapshot::{
         get_snapshot_path,
         state::{SettingState, Snapshot},
     },
     util::{
-        convert::{normalize, toml_to_prefvalue},
         io::{confirm_action, notify, restart_services},
         logging::{GREEN, LogLevel, RESET, print_log},
     },
@@ -50,9 +52,9 @@ pub struct ApplyCmd {
     pub brew: bool,
 }
 
-/// Represents an apply command job.
+/// Represents a preference modification job.
 #[derive(Debug)]
-struct Job {
+struct PreferenceJob {
     domain: String,
     key: String,
     toml_value: Value,
@@ -111,7 +113,7 @@ impl Runnable for ApplyCmd {
             .map(|s| ((s.domain.clone(), s.key.clone()), s))
             .collect();
 
-        let mut jobs: Vec<Job> = Vec::new();
+        let mut jobs: Vec<PreferenceJob> = Vec::new();
 
         let domains_list = Preferences::list_domains().await.unwrap();
         for (dom, table) in domains.into_iter() {
@@ -148,7 +150,7 @@ impl Runnable for ApplyCmd {
                         "Applying"
                     };
 
-                    jobs.push(Job {
+                    jobs.push(PreferenceJob {
                         domain: eff_dom.clone(),
                         key: eff_key.clone(),
                         toml_value: toml_value.clone(),
