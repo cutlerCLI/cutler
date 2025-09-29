@@ -52,6 +52,8 @@ pub async fn restart_services() -> Result<()> {
     // services to restart
     const SERVICES: &[&str] = &["SystemUIServer", "Dock", "Finder"];
 
+    let mut failed: bool = false;
+
     for svc in SERVICES {
         if dry_run {
             print_log(LogLevel::Dry, &format!("Would restart {svc}"));
@@ -59,10 +61,18 @@ pub async fn restart_services() -> Result<()> {
             let out = Command::new("killall").arg(svc).output().await?;
             if !out.status.success() {
                 print_log(LogLevel::Error, &format!("Failed to restart {svc}"));
+                failed = true;
             } else {
                 print_log(LogLevel::Info, &format!("{svc} restarted"));
             }
         }
+    }
+
+    if failed {
+        print_log(
+            LogLevel::Warning,
+            "Being quick with `cutler apply` can cause your computer to run out of breath.",
+        );
     }
 
     Ok(())
