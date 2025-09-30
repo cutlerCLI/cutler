@@ -26,7 +26,7 @@ mod tests {
         // Top‐level config = { vars = {...}, commands = { foo = { … } } }
         let mut root = Table::new();
         root.insert("vars".into(), Value::Table(vars));
-        root.insert("commands".into(), Value::Table(commands));
+        root.insert("command".into(), Value::Table(commands));
 
         assert!(run_all(&root, ExecMode::Regular).await.is_ok());
     }
@@ -49,7 +49,7 @@ mod tests {
 
         let mut root = Table::new();
         root.insert("vars".into(), Value::Table(vars));
-        root.insert("commands".into(), Value::Table(commands));
+        root.insert("command".into(), Value::Table(commands));
 
         // Dry‑run single command
         assert!(run_one(&root, "whoami").await.is_ok());
