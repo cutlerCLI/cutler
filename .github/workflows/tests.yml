@@ -16,7 +16,6 @@ concurrency:
 
 jobs:
   tests:
-    if: github.actor != 'hitblast'
     runs-on: macos-latest
 
     steps:
