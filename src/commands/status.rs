@@ -70,15 +70,13 @@ impl Runnable for StatusCmd {
                     print_log(
                         LogLevel::Warning,
                         &format!(
-                            "{BOLD}{eff_dom} | {eff_key}: should be {desired} (currently {RED}{current}{RESET}){RESET}",
+                            "{BOLD}{eff_dom} | {eff_key}: should be {desired} {RED}(currently {current}){RESET}",
                         ),
                     );
                 } else {
                     print_log(
                         LogLevel::Info,
-                        &format!(
-                            "{GREEN}{eff_dom} | {eff_key}: {current} (matches desired){RESET}"
-                        ),
+                        &format!("{GREEN}[Matched]{RESET} {eff_dom} | {eff_key}: {current}"),
                     );
                 }
             }
