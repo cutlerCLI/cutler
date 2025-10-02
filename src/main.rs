@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
+use std::process::exit;
+
 use clap::Parser;
 use cutler::autosync::try_auto_sync;
 use cutler::cli::args::{BrewSubcmd, ConfigSubcmd};
@@ -33,13 +35,16 @@ async fn main() {
 
     // sudo protection
     let result = match &args.command {
-        Command::SelfUpdate(_) => run_with_root(),
+        Command::SelfUpdate(_)
+        | Command::Config {
+            command: ConfigSubcmd::Lock(..) | ConfigSubcmd::Unlock(..),
+        } => run_with_root().await,
         _ => run_with_noroot(),
     };
 
     if let Err(err) = result {
         print_log(LogLevel::Error, &format!("Invoke failure: {err}"));
-        std::process::exit(1);
+        exit(1);
     }
 
     // command invocation (for real this time)
@@ -69,6 +74,6 @@ async fn main() {
 
     if let Err(err) = result {
         print_log(LogLevel::Error, &err.to_string());
-        std::process::exit(1);
+        exit(1);
     }
 }
