@@ -11,7 +11,6 @@ pub struct SettingState {
     pub domain: String,
     pub key: String,
     pub original_value: Option<String>,
-    pub new_value: String,
 }
 
 /// One external command run.

@@ -141,7 +141,15 @@ impl Runnable for ApplyCmd {
 
                 if changed {
                     existing.remove(&(eff_dom.clone(), eff_key.clone()));
-                    let original = old_entry.as_ref().and_then(|e| e.original_value.clone());
+
+                    // Preserve existing non-null original; otherwise, for brand new keys, capture original from system
+                    let original = if let Some(e) = &old_entry {
+                        e.original_value.clone()
+                    } else if current.is_empty() {
+                        None
+                    } else {
+                        Some(current.clone())
+                    };
 
                     // decide “applying” vs “updating”
                     let action = if old_entry.is_some() {
@@ -217,19 +225,19 @@ impl Runnable for ApplyCmd {
         }
 
         let mut new_snap = Snapshot::new();
-        for ((_, _), mut old_entry) in existing.into_iter() {
-            old_entry.new_value = old_entry.new_value.clone();
+        for ((_, _), old_entry) in existing.into_iter() {
             new_snap.settings.push(old_entry);
         }
+
         // now append all the newly applied/updated settings
         for job in jobs {
             new_snap.settings.push(SettingState {
                 domain: job.domain,
                 key: job.key,
                 original_value: job.original.clone(),
-                new_value: job.new_value,
             });
         }
+
         new_snap.external = runner::extract_all_cmds(&toml);
 
         if !dry_run {

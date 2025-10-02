@@ -82,7 +82,7 @@ pub async fn restart_services() -> Result<()> {
     if failed {
         print_log(
             LogLevel::Warning,
-            "Being quick with `cutler apply` can cause your computer to run out of breath.",
+            "Being quick with commands can cause your computer to run out of breath.",
         );
     }
 

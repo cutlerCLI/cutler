@@ -42,12 +42,10 @@ mod tests {
             domain: "com.apple.dock".to_string(),
             key: "tilesize".to_string(),
             original_value: Some("36".to_string()),
-            new_value: "46".to_string(),
         };
         assert_eq!(setting.domain, "com.apple.dock");
         assert_eq!(setting.key, "tilesize");
         assert_eq!(setting.original_value, Some("36".to_string()));
-        assert_eq!(setting.new_value, "46");
 
         // Test external command state
         let command = ExternalCommandState {
@@ -72,21 +70,18 @@ mod tests {
             domain: "com.apple.dock".to_string(),
             key: "tilesize".to_string(),
             original_value: Some("36".to_string()),
-            new_value: "46".to_string(),
         });
 
         snapshot.settings.push(SettingState {
             domain: "com.apple.finder".to_string(),
             key: "ShowPathbar".to_string(),
             original_value: None, // Test null original value
-            new_value: "1".to_string(),
         });
 
         snapshot.settings.push(SettingState {
             domain: "NSGlobalDomain".to_string(),
             key: "ApplePressAndHoldEnabled".to_string(),
             original_value: Some("0".to_string()),
-            new_value: "1".to_string(),
         });
 
         // Add multiple external commands
@@ -140,14 +135,12 @@ mod tests {
             .get(&("com.apple.dock".to_string(), "tilesize".to_string()))
             .unwrap();
         assert_eq!(dock_setting.original_value, Some("36".to_string()));
-        assert_eq!(dock_setting.new_value, "46");
 
         // Check finder setting (null original)
         let finder_setting = settings_map
             .get(&("com.apple.finder".to_string(), "ShowPathbar".to_string()))
             .unwrap();
         assert_eq!(finder_setting.original_value, None);
-        assert_eq!(finder_setting.new_value, "1");
 
         // Check global setting
         let global_setting = settings_map
@@ -157,7 +150,6 @@ mod tests {
             ))
             .unwrap();
         assert_eq!(global_setting.original_value, Some("0".to_string()));
-        assert_eq!(global_setting.new_value, "1");
 
         // Check external commands
         let echo_cmd = &loaded_snapshot.external[0];
