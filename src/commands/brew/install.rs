@@ -215,6 +215,7 @@ async fn install_all(install_tasks: Vec<String>, cask: bool) -> anyhow::Result<(
         let status = Command::new("brew")
             .arg("install")
             .arg(if cask { "--cask" } else { "--formula" })
+            .arg(&task)
             .status()
             .await?;
 
