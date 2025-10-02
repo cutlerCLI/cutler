@@ -18,7 +18,7 @@ pub enum LogLevel {
     Error,
     Warning,
     Info,
-    Prompt, // only for io::confirm_action()
+    Prompt, // only for io::confirm()
     Exec,
     Dry,
     Fruitful, // 🍎

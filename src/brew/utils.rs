@@ -3,7 +3,7 @@
 use crate::brew::types::{BrewDiff, BrewListType};
 use crate::cli::atomic::should_dry_run;
 use crate::util::{
-    io::confirm_action,
+    io::confirm,
     logging::{LogLevel, print_log},
 };
 use anyhow::{Result, bail};
@@ -49,7 +49,7 @@ async fn ensure_xcode_clt() -> Result<()> {
         "Xcode Command Line Tools are not installed.",
     );
 
-    if confirm_action("Install Xcode Command Line Tools now?") {
+    if confirm("Install Xcode Command Line Tools now?") {
         print_log(
             LogLevel::Info,
             "Waiting to find Xcode Command Line Tools after installation...",
@@ -184,7 +184,7 @@ pub async fn ensure_brew() -> Result<()> {
 
         print_log(LogLevel::Warning, "Homebrew is not installed.");
 
-        if confirm_action("Install Homebrew now?") {
+        if confirm("Install Homebrew now?") {
             install_homebrew().await?;
 
             // set environment variables for `brew`

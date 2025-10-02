@@ -9,7 +9,7 @@ use crate::{
     commands::Runnable,
     config::{loader::load_config, path::get_config_path, remote::RemoteConfigManager},
     util::{
-        io::confirm_action,
+        io::confirm,
         logging::{BOLD, LogLevel, RESET, print_log},
     },
 };
@@ -72,7 +72,7 @@ impl Runnable for FetchCmd {
         }
 
         // prompt user to proceed (unless dry-run)
-        if !dry_run && !confirm_action("Apply remote config (overwrite local config)?") {
+        if !dry_run && !confirm("Apply remote config (overwrite local config)?") {
             print_log(LogLevel::Warning, "Sync aborted by user.");
             return Ok(());
         }

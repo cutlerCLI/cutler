@@ -14,7 +14,7 @@ use crate::{
         state::{SettingState, Snapshot},
     },
     util::{
-        io::{confirm_action, notify, restart_services},
+        io::{confirm, notify, restart_services},
         logging::{GREEN, LogLevel, RESET, print_log},
     },
 };
@@ -73,7 +73,7 @@ impl Runnable for ApplyCmd {
 
         if let Some(url) = &self.url {
             if fs::try_exists(&config_path).await.unwrap()
-                && !confirm_action("Local config exists but a URL was still passed. Proceed?")
+                && !confirm("Local config exists but a URL was still passed. Proceed?")
             {
                 bail!("Aborted apply: --url is passed despite local config.")
             }

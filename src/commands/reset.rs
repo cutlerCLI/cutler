@@ -13,7 +13,7 @@ use crate::{
     domains::{collect, effective, read_current},
     snapshot::state::get_snapshot_path,
     util::{
-        io::{confirm_action, notify, restart_services},
+        io::{confirm, notify, restart_services},
         logging::{LogLevel, print_log},
     },
 };
@@ -35,7 +35,7 @@ impl Runnable for ResetCmd {
             "Settings will be reset to macOS defaults, not to their previous values.",
         );
 
-        if !confirm_action("Are you sure you want to continue?") {
+        if !confirm("Are you sure you want to continue?") {
             return Ok(());
         }
 

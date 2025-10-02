@@ -10,7 +10,7 @@ use crate::{
     config::path::get_config_path,
     snapshot::{Snapshot, get_snapshot_path},
     util::{
-        io::confirm_action,
+        io::confirm,
         logging::{LogLevel, print_log},
     },
 };
@@ -42,7 +42,7 @@ impl Runnable for ConfigDeleteCmd {
                     Snapshot::load(&snapshot_path).await?.settings.len()
                 ),
             );
-            if confirm_action("Unapply all previously applied defaults?") {
+            if confirm("Unapply all previously applied defaults?") {
                 UnapplyCmd.run().await?;
             }
         }

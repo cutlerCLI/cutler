@@ -15,7 +15,7 @@ use crate::{
     commands::Runnable,
     config::{loader::load_config_mut, path::get_config_path},
     util::{
-        io::confirm_action,
+        io::confirm,
         logging::{LogLevel, print_log},
     },
 };
@@ -72,7 +72,7 @@ impl Runnable for BrewBackupCmd {
         } else if brew_tbl
             .get("no_deps")
             .is_some_and(|x| x.as_bool().unwrap())
-            && confirm_action("The previous backup was without dependencies. Do now too?")
+            && confirm("The previous backup was without dependencies. Do now too?")
         {
             backup_no_deps = true
         } else {

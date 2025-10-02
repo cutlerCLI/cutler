@@ -11,7 +11,7 @@ use crate::{
 use anyhow::Result;
 
 /// Ask "Y/N?"; returns true if accept_all is set or the user types "y" or "Y"
-pub fn confirm_action(prompt: &str) -> bool {
+pub fn confirm(prompt: &str) -> bool {
     if should_accept_all() {
         print_log(
             LogLevel::Prompt,

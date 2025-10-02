@@ -9,7 +9,7 @@ use crate::{
     commands::Runnable,
     config::path::get_config_path,
     util::{
-        io::confirm_action,
+        io::confirm,
         logging::{LogLevel, print_log},
     },
 };
@@ -27,7 +27,7 @@ impl Runnable for InitCmd {
                 LogLevel::Warning,
                 &format!("Configuration file already exists at {config_path:?}"),
             );
-            if !confirm_action("Do you want to overwrite it?") {
+            if !confirm("Do you want to overwrite it?") {
                 bail!("Configuration init aborted.")
             }
         }
