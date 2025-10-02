@@ -16,12 +16,12 @@ Powerful, declarative settings management for your Mac, with speed.
 
 cutler aims to simplify your Mac's setup process into a one-command procedure. It does so by automating these and more:
 
-1. The setup for system preferences (no more manual tinkering with the Settings app).
-2. The installation of apps and tools (through `brew` and other tools).
-3. The execution of custom commands (this is on you, but cutler makes it easier).
+1. **System preferences.** No more tinkering with the Settings app.
+2. Installation of **apps and tools** (through `brew` and other tools).
+3. The execution of **custom commands** (this is on you, but cutler makes it super convenient!).
 
 cutler splits a single TOML file into readable configuration which you can design as your desire, allowing you to
-later apply it with just one command.
+later apply it with just `cutler apply`!
 
 ## Installation
 
