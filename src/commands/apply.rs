@@ -190,8 +190,18 @@ impl Runnable for ApplyCmd {
                 print_log(
                     LogLevel::Info,
                     &format!(
-                        "{}{} {} | {} -> {}{}",
-                        GREEN, job.action, job.domain, job.key, job.new_value, RESET
+                        "{}{} {} | {} -> {}{} {}",
+                        GREEN,
+                        job.action,
+                        job.domain,
+                        job.key,
+                        job.new_value,
+                        RESET,
+                        if job.original.is_some() {
+                            &format!("(Restorable to {})", job.original.clone().unwrap())
+                        } else {
+                            ""
+                        }
                     ),
                 );
             }
