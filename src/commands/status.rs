@@ -22,23 +22,11 @@ pub struct StatusCmd {
     pub no_brew: bool,
 }
 
-#[derive(PartialEq)]
-enum StatusType {
-    BothGood,
-    BrewGoodOnly,
-    PrefsGood,
-    PrefsGoodOnly,
-    NoneGood,
-}
-
 #[async_trait]
 impl Runnable for StatusCmd {
     async fn run(&self) -> Result<()> {
         let toml = load_config(false).await?;
         let domains = collect(&toml)?;
-
-        // status var
-        let mut status: StatusType = StatusType::NoneGood;
 
         // flatten all settings into a list
         let entries: Vec<(String, String, toml::Value)> = domains
@@ -52,11 +40,11 @@ impl Runnable for StatusCmd {
 
         // preference check
         {
-            let entries_pref = entries.clone();
+            let mut outcomes = Vec::with_capacity(entries.len());
+            let mut domain_has_diff = std::collections::HashMap::new();
 
-            // collect results
-            let mut outcomes = Vec::with_capacity(entries_pref.len());
-            for (domain, key, value) in entries_pref.iter() {
+            // let the checks begin!
+            for (domain, key, value) in entries.iter() {
                 let (eff_dom, eff_key) = effective(domain, key);
 
                 let current = read_current(&eff_dom, &eff_key)
@@ -65,23 +53,38 @@ impl Runnable for StatusCmd {
                 let desired = normalize(value);
                 let is_diff = current != desired;
 
-                outcomes.push((eff_dom, eff_key, desired, current, is_diff));
+                outcomes.push((
+                    eff_dom.clone(),
+                    eff_key,
+                    desired.clone(),
+                    current.clone(),
+                    is_diff,
+                ));
+
+                // set to false only if it hasn't been set to true once
+                // we use it later for LogLevel::Warning over domains which have at least one diff
+                if is_diff {
+                    domain_has_diff.insert(eff_dom.clone(), true);
+                } else {
+                    domain_has_diff.entry(eff_dom.clone()).or_insert(false);
+                }
             }
 
+            // keep track of printed domains so that they're only printed once
+            // the iterable keeps the domain key-value pairs sequentially so this is a plus
             let mut printed_domains = HashSet::new();
-
             let mut any_diff = false;
+
             for (eff_dom, eff_key, desired, current, is_diff) in outcomes {
                 if !printed_domains.contains(&eff_dom) {
-                    let loglevel = if is_diff {
-                        LogLevel::Warning
+                    if *domain_has_diff.get(&eff_dom).unwrap_or(&false) {
+                        print_log(LogLevel::Warning, &format!("{BOLD}{eff_dom}{RESET}"));
                     } else {
-                        LogLevel::Info
-                    };
-
-                    print_log(loglevel, &format!("{BOLD}{eff_dom}{RESET}"));
+                        print_log(LogLevel::Info, &format!("{BOLD}{eff_dom}{RESET}"));
+                    }
                     printed_domains.insert(eff_dom.clone());
                 }
+
                 if is_diff {
                     if !any_diff {
                         any_diff = true
@@ -98,10 +101,6 @@ impl Runnable for StatusCmd {
                         &format!("  {GREEN}[Matched]{RESET} {eff_key}: {current}"),
                     );
                 }
-            }
-
-            if !any_diff {
-                status = StatusType::PrefsGood
             }
         }
 
@@ -129,74 +128,33 @@ impl Runnable for StatusCmd {
                             missing_taps,
                             extra_taps,
                         }) => {
-                            let mut any_brew_diff = false;
+                            let mut any_diff = false;
 
-                            if !missing_formulae.is_empty() {
-                                any_brew_diff = true;
-                                print_log(
-                                    LogLevel::Warning,
-                                    &format!(
-                                        "{BOLD}Formulae missing:{RESET} {}",
-                                        missing_formulae.join(", ")
-                                    ),
-                                );
-                            }
-                            if !extra_formulae.is_empty() {
-                                any_brew_diff = true;
-                                print_log(
-                                    LogLevel::Warning,
-                                    &format!(
-                                        "{BOLD}Extra formulae installed:{RESET} {}",
-                                        extra_formulae.join(", ")
-                                    ),
-                                );
-                            }
-                            if !missing_casks.is_empty() {
-                                any_brew_diff = true;
-                                print_log(
-                                    LogLevel::Warning,
-                                    &format!(
-                                        "{BOLD}Casks missing:{RESET} {}",
-                                        missing_casks.join(", ")
-                                    ),
-                                );
-                            }
-                            if !extra_casks.is_empty() {
-                                any_brew_diff = true;
-                                print_log(
-                                    LogLevel::Warning,
-                                    &format!(
-                                        "{BOLD}Extra casks installed:{RESET} {}",
-                                        extra_casks.join(", ")
-                                    ),
-                                );
-                            }
-                            if !missing_taps.is_empty() {
-                                any_brew_diff = true;
-                                print_log(
-                                    LogLevel::Warning,
-                                    &format!(
-                                        "{BOLD}Missing taps:{RESET} {}",
-                                        missing_taps.join(", ")
-                                    ),
-                                );
-                            }
-                            if !extra_taps.is_empty() {
-                                any_brew_diff = true;
-                                print_log(
-                                    LogLevel::Warning,
-                                    &format!("{BOLD}Extra taps:{RESET} {}", extra_taps.join(", ")),
-                                );
+                            // Use a single array of tuples to reduce repeated code
+                            let brew_checks = [
+                                ("Formulae missing", &missing_formulae),
+                                ("Extra formulae installed", &extra_formulae),
+                                ("Casks missing", &missing_casks),
+                                ("Extra casks installed", &extra_casks),
+                                ("Missing taps", &missing_taps),
+                                ("Extra taps", &extra_taps),
+                            ];
+
+                            for (label, items) in brew_checks.iter() {
+                                if !items.is_empty() {
+                                    any_diff = true;
+                                    print_log(
+                                        LogLevel::Warning,
+                                        &format!("{BOLD}{label}:{RESET} {}", items.join(", ")),
+                                    );
+                                }
                             }
 
-                            if !any_brew_diff {
-                                if status == StatusType::PrefsGood {
-                                    status = StatusType::BothGood
-                                } else {
-                                    status = StatusType::BrewGoodOnly
-                                };
-                            } else if status == StatusType::PrefsGood {
-                                status = StatusType::PrefsGoodOnly
+                            if any_diff {
+                                print_log(
+                                    LogLevel::Warning,
+                                    "Homebrew divergence found. Run the `cutler brew` command group to sync/install with/from config.",
+                                );
                             }
                         }
                         Err(e) => {
@@ -209,24 +167,6 @@ impl Runnable for StatusCmd {
                 }
             }
         }
-
-        // pretty-printing
-        match status {
-            StatusType::BothGood => print_log(LogLevel::Fruitful, "All preferences match!"),
-            StatusType::BrewGoodOnly => print_log(
-                LogLevel::Warning,
-                "Homebrew apps/tools are installed but system preferences do not match. Run `cutler apply` to set.",
-            ),
-            StatusType::PrefsGood => print_log(LogLevel::Fruitful, "All system preferences match!"),
-            StatusType::PrefsGoodOnly => print_log(
-                LogLevel::Warning,
-                "System preferences match but some Homebrew apps/tools are extra/missing. Run the `cutler brew` command group to sync/install.",
-            ),
-            StatusType::NoneGood => print_log(
-                LogLevel::Warning,
-                "System preferences and Homebrew apps/tools are diverged. Run `cutler apply` to apply the preferences and the `cutler brew` command group to backup/sync.",
-            ),
-        };
 
         Ok(())
     }
