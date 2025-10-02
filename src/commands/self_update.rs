@@ -56,6 +56,10 @@ impl Runnable for SelfUpdateCmd {
                 LogLevel::Warning,
                 "cutler is currently installed in a custom path. Please note that the manpage will still be installed in: /usr/local/share/man/man1/cutler.1",
             );
+            print_log(
+                LogLevel::Warning,
+                "If you wish to skip this behavior, use: cutler self-update --no-man",
+            );
         }
 
         // determine architecture for update target
