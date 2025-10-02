@@ -38,13 +38,14 @@ See ["Installation"](https://cutlercli.github.io/cookbook/installation.html) for
 
 ## Documentation
 
-**The Cookbook** should be a great starting point for anyone who wants to use cutler. If you have just installed it, simply run:
+Copy the command below and run it:
 
 ```bash
+# or, visit: https://cutlercli.github.io/cookbook
 cutler cookbook
 ```
 
-This will redirect you to the online copy in browser. Or, visit: https://cutlercli.github.io/cookbook/
+This can be a great starting point for in-depth syntax review and examples if you want to use this tool.
 
 ## Contributing
 
