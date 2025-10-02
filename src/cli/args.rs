@@ -5,8 +5,8 @@ use clap::{Parser, Subcommand};
 
 use crate::commands::{
     ApplyCmd, BrewBackupCmd, BrewInstallCmd, CheckUpdateCmd, CompletionCmd, ConfigDeleteCmd,
-    ConfigLockCmd, ConfigShowCmd, ConfigUnlockCmd, ExecCmd, FetchCmd, InitCmd, ResetCmd,
-    SelfUpdateCmd, StatusCmd, UnapplyCmd,
+    ConfigLockCmd, ConfigShowCmd, ConfigUnlockCmd, CookbookCmd, ExecCmd, FetchCmd, InitCmd,
+    ResetCmd, SelfUpdateCmd, StatusCmd, UnapplyCmd,
 };
 
 #[derive(Parser)]
@@ -45,6 +45,9 @@ pub enum Command {
     /// Apply preferences and more from config.
     #[command(visible_alias = "set")]
     Apply(ApplyCmd),
+    /// Open the cookbook for cutler in browser.
+    #[command(visible_alias = "doc")]
+    Cookbook(CookbookCmd),
     /// Run one/all external command(s).
     #[command(visible_alias = "x")]
     Exec(ExecCmd),

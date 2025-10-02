@@ -24,6 +24,17 @@ pub fn confirm(prompt: &str) -> bool {
     Confirm::new().with_prompt(prompt).interact().unwrap()
 }
 
+/// Run the `open` shell command on a given argument.
+pub async fn open(arg: &str) -> Result<()> {
+    let _ = Command::new("open")
+        .arg(arg)
+        .status()
+        .await
+        .expect("Failed to run `open`.");
+
+    Ok(())
+}
+
 /// Send a notification with a dedicated message.
 pub fn notify(title: &str, message: &str) -> Result<()> {
     send_notification(

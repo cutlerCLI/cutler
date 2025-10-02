@@ -8,6 +8,7 @@ pub mod brew;
 pub mod check_update;
 pub mod completion;
 pub mod config;
+pub mod cookbook;
 pub mod exec;
 pub mod fetch;
 pub mod init;
@@ -24,6 +25,7 @@ pub use completion::CompletionCmd;
 pub use config::{
     delete::ConfigDeleteCmd, lock::ConfigLockCmd, show::ConfigShowCmd, unlock::ConfigUnlockCmd,
 };
+pub use cookbook::CookbookCmd;
 pub use exec::ExecCmd;
 pub use fetch::FetchCmd;
 pub use init::InitCmd;
