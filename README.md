@@ -38,7 +38,13 @@ See ["Installation"](https://cutlercli.github.io/cookbook/installation.html) for
 
 ## Documentation
 
-[**"The cutler Cookbook"**](https://cutlercli.github.io/cookbook/) should be a great starting point for anyone who wants to use this project in their setup. It is strongly encouraged to read it.
+**The Cookbook** should be a great starting point for anyone who wants to use cutler. If you have just installed it, simply run:
+
+```bash
+cutler cookbook
+```
+
+This will redirect you to the online copy in browser. Or, visit: https://cutlercli.github.io/cookbook/
 
 ## Contributing
 
