@@ -40,9 +40,8 @@ Or, see ["Installation"](https://cutlercli.github.io/cookbook/installation.html)
 
 ["The cutler Cookbook"](https://cutlercli.github.io/cookbook) can be a great starting point for in-depth syntax review and examples if you want to use this tool.
 
-Run the command below to open it in your browser:
-
 ```bash
+# Run this command to open in browser.
 cutler cookbook
 ```
 
