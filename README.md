@@ -14,7 +14,14 @@ Powerful, declarative settings management for your Mac, with speed.
 
 ## Overview
 
-cutler aims to simplify your macOS setup experience into an "almost" one-command procedure. Define your settings once, then easily apply, track, and revert changes across your system—think of it as infrastructure-as-code for your Mac.
+cutler aims to simplify your Mac's setup process into a one-command procedure. It does so with the following goals in mind:
+
+1. Automating the setup for system preferences (no more manual tinkering with the Settings app).
+2. Automating the installation of apps and tools (through `brew` and other tools).
+3. Automating the execution of custom commands (this is on you, but cutler makes it easier).
+
+cutler splits a single TOML file into readable configuration which you can design as your desire, allowing you to
+later apply it with just one command.
 
 ## Installation
 
