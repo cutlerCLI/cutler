@@ -25,13 +25,13 @@ later apply it with just one command.
 
 ## Installation
 
-You can install cutler by running this command in the terminal:
+Copy and run the command below to install cutler:
 
 ```bash
 curl -fsSL https://cutlercli.github.io/scripts/install.sh | /bin/bash
 ```
 
-See ["Installation"](https://cutlercli.github.io/cookbook/installation.html) for other methods.
+Or, see ["Installation"](https://cutlercli.github.io/cookbook/installation.html) for other installation methods.
 
 > [!WARNING]
 > **DEPRECATION:** The x86_64 builds will soon be removed in favor of Apple Silicon, as Apple themselves have officially discontinued this timed architecture.
@@ -49,7 +49,7 @@ This can be a great starting point for in-depth syntax review and examples if yo
 
 ## Contributing
 
-View the [Contribution Guidelines](https://cutlercli.github.io/cookbook/contributing.html) to learn more about contributing to cutler.
+View the [Contribution Guidelines](https://cutlercli.github.io/cookbook/contributing.html) to learn more about contributing to cutler. It also contains resources such as code snippets to make your contribution workflow easier.
 
 ## License
 
