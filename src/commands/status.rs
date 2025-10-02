@@ -195,10 +195,8 @@ impl Runnable for StatusCmd {
                                 } else {
                                     status = StatusType::BrewGoodOnly
                                 };
-                            } else {
-                                if status == StatusType::PrefsGood {
-                                    status = StatusType::PrefsGoodOnly
-                                }
+                            } else if status == StatusType::PrefsGood {
+                                status = StatusType::PrefsGoodOnly
                             }
                         }
                         Err(e) => {
