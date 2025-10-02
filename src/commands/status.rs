@@ -102,6 +102,15 @@ impl Runnable for StatusCmd {
                     );
                 }
             }
+
+            if any_diff {
+                print_log(
+                    LogLevel::Warning,
+                    "Preferences diverged. Run `cutler apply` to apply the config onto the system.",
+                );
+            } else {
+                print_log(LogLevel::Fruitful, "System preferences are on sync.");
+            }
         }
 
         // brew status check
@@ -153,8 +162,10 @@ impl Runnable for StatusCmd {
                             if any_diff {
                                 print_log(
                                     LogLevel::Warning,
-                                    "Homebrew divergence found. Run the `cutler brew` command group to sync/install with/from config.",
+                                    "Homebrew diverged. Run the `cutler brew` command group to sync/install with/from config.",
                                 );
+                            } else {
+                                print_log(LogLevel::Fruitful, "Homebrew status on sync.");
                             }
                         }
                         Err(e) => {
