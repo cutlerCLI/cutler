@@ -37,6 +37,10 @@ pub async fn open(arg: &str) -> Result<()> {
 
 /// Send a notification with a dedicated message.
 pub fn notify(title: &str, message: &str) -> Result<()> {
+    if should_dry_run() {
+        return Ok(());
+    }
+
     send_notification(
         title,
         None,
