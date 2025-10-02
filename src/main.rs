@@ -45,7 +45,7 @@ async fn main() {
     // command invocation (for real this time)
     let result = match &args.command {
         Command::Apply(cmd) => cmd.run().await,
-        Command::Doc(cmd) => cmd.run().await,
+        Command::Cookbook(cmd) => cmd.run().await,
         Command::Exec(cmd) => cmd.run().await,
         Command::Fetch(cmd) => cmd.run().await,
         Command::Init(cmd) => cmd.run().await,
