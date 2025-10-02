@@ -38,7 +38,7 @@ Or, see ["Installation"](https://cutlercli.github.io/cookbook/installation.html)
 
 ## Documentation
 
-["The cutler Cookbook"](https://cutlercli.github.io/cookbook) can be a great starting point for in-depth syntax review and examples if you want to use this tool.
+["The cutler Cookbook"](https://cutlercli.github.io/cookbook) can be a a great starting point for in-depth review and examples to start using cutler.
 
 ```bash
 # Run this command to open in browser.
