@@ -97,4 +97,10 @@ impl RemoteConfigManager {
 
         Ok(config)
     }
+
+    /// Get a parsed version of the output of .get().
+    pub fn get_table(&self) -> Result<Table> {
+        let config = self.get()?.parse::<Table>()?;
+        Ok(config)
+    }
 }

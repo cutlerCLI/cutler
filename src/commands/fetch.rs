@@ -3,7 +3,6 @@
 use anyhow::{Result, bail};
 use async_trait::async_trait;
 use clap::Args;
-use toml::Table;
 
 use crate::{
     cli::atomic::should_dry_run,
@@ -40,7 +39,7 @@ impl Runnable for FetchCmd {
         remote_mgr.fetch().await?;
 
         if !self.force {
-            let remote_doc = remote_mgr.get().cloned()?.parse::<Table>()?;
+            let remote_doc = remote_mgr.get_table()?;
 
             // comparison begins
             let mut changes = Vec::new();
