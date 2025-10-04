@@ -15,7 +15,7 @@ use crate::util::logging::{LogLevel, print_log};
 pub struct RemoteConfigManager {
     pub url: String,
     pub autosync: bool,
-    config: OnceCell<Table>,
+    config: OnceCell<String>,
 }
 
 impl RemoteConfigManager {
@@ -65,11 +65,10 @@ impl RemoteConfigManager {
                 }
 
                 let text = resp.text().await?;
-                let parsed = text
-                    .parse::<Table>()
+                text.parse::<Table>()
                     .with_context(|| format!("Invalid TOML config fetched from {}", self.url))?;
 
-                Ok(parsed)
+                Ok(text)
             })
             .await?;
         Ok(())
@@ -77,15 +76,10 @@ impl RemoteConfigManager {
 
     /// Save the fetched remote config to the given path.
     pub async fn save(&self, config_path: &PathBuf) -> Result<()> {
-        let config = self
-            .config
-            .get()
-            .ok_or_else(|| anyhow::anyhow!("Remote config not fetched yet"))?;
-        let toml_string =
-            toml::to_string(config).with_context(|| "Failed to serialize remote config to TOML")?;
+        let config = self.get()?;
 
         fs::create_dir_all(config_path.parent().unwrap()).await?;
-        fs::write(config_path, toml_string).await?;
+        fs::write(config_path, config).await?;
 
         print_log(
             LogLevel::Info,
@@ -95,7 +89,18 @@ impl RemoteConfigManager {
     }
 
     /// Get a reference to the fetched remote config, if available.
-    pub fn get(&self) -> Option<&Table> {
-        self.config.get()
+    pub fn get(&self) -> Result<&String> {
+        let config = self
+            .config
+            .get()
+            .ok_or_else(|| anyhow::anyhow!("Remote config not fetched yet"))?;
+
+        Ok(config)
+    }
+
+    /// Get a parsed version of the output of .get().
+    pub fn get_table(&self) -> Result<Table> {
+        let config = self.get()?.parse::<Table>()?;
+        Ok(config)
     }
 }

@@ -14,8 +14,12 @@ use crate::{
     },
 };
 
-#[derive(Debug, Default, Args)]
-pub struct FetchCmd;
+#[derive(Debug, Args)]
+pub struct FetchCmd {
+    /// Fetches the configuration regardless of whether the configuration is equal value-wise..
+    #[arg(short, long)]
+    force: bool,
+}
 
 #[async_trait]
 impl Runnable for FetchCmd {
@@ -33,48 +37,48 @@ impl Runnable for FetchCmd {
 
         // fetch remote config
         remote_mgr.fetch().await?;
-        let remote_doc = remote_mgr
-            .get()
-            .cloned()
-            .expect("Could not load remote configuration.");
 
-        // comparison begins
-        let mut changes = Vec::new();
+        if !self.force {
+            let remote_doc = remote_mgr.get_table()?;
 
-        for (k, v) in remote_doc.iter() {
-            if !local_doc.contains_key(k) {
-                changes.push(format!("{BOLD}{k}{RESET}: (new)"));
-            } else if local_doc[k].to_string() != v.to_string() {
-                changes.push(format!("{BOLD}{k}{RESET}: (changed)"));
+            // comparison begins
+            let mut changes = Vec::new();
+
+            for (k, v) in remote_doc.iter() {
+                if !local_doc.contains_key(k) {
+                    changes.push(format!("{BOLD}{k}{RESET}: (new)"));
+                } else if local_doc[k].to_string() != v.to_string() {
+                    changes.push(format!("{BOLD}{k}{RESET}: (changed)"));
+                }
             }
-        }
 
-        for k in local_doc.keys() {
-            if !remote_doc.contains_key(k) {
-                changes.push(format!("{BOLD}{k}{RESET}: (removed in remote)"));
+            for k in local_doc.keys() {
+                if !remote_doc.contains_key(k) {
+                    changes.push(format!("{BOLD}{k}{RESET}: (removed in remote)"));
+                }
             }
-        }
 
-        if changes.is_empty() {
-            print_log(
-                LogLevel::Fruitful,
-                "No changes found between remote & local configs.",
-            );
-            return Ok(());
-        } else {
-            print_log(
-                LogLevel::Warning,
-                "Differences between local and remote config:",
-            );
-            for line in &changes {
-                print_log(LogLevel::Warning, &format!("  {line}"));
+            if changes.is_empty() {
+                print_log(
+                    LogLevel::Fruitful,
+                    "No changes found so skipping. Use -f to fetch forcefully.",
+                );
+                return Ok(());
+            } else {
+                print_log(
+                    LogLevel::Warning,
+                    "Differences between local and remote config:",
+                );
+                for line in &changes {
+                    print_log(LogLevel::Warning, &format!("  {line}"));
+                }
             }
-        }
 
-        // prompt user to proceed (unless dry-run)
-        if !dry_run && !confirm("Apply remote config (overwrite local config)?") {
-            print_log(LogLevel::Warning, "Sync aborted by user.");
-            return Ok(());
+            // prompt user to proceed (unless dry-run)
+            if !dry_run && !confirm("Apply remote config (overwrite local config)?")? {
+                print_log(LogLevel::Warning, "Sync aborted by user.");
+                return Ok(());
+            }
         }
 
         if dry_run {

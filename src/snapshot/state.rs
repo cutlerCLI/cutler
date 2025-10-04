@@ -14,7 +14,7 @@ pub struct SettingState {
 }
 
 /// One external command run.
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ExternalCommandState {
     pub name: String,
     pub run: String,

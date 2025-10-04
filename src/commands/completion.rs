@@ -26,7 +26,7 @@ pub enum Shell {
 pub struct CompletionCmd {
     /// Your shell type.
     #[arg(value_enum)]
-    pub shell: Shell,
+    shell: Shell,
 }
 
 #[async_trait]

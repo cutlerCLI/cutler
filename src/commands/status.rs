@@ -19,7 +19,7 @@ use std::collections::HashSet;
 pub struct StatusCmd {
     // Disables Homebrew state check.
     #[arg(long)]
-    pub no_brew: bool,
+    no_brew: bool,
 }
 
 #[async_trait]

@@ -17,14 +17,13 @@ use toml::Value;
 /// If not, prompts the user to install them (unless dry_run).
 async fn ensure_xcode_clt() -> Result<()> {
     async fn check_installed() -> Result<bool> {
-        let output = Command::new("xcode-select").arg("-p").output().await;
+        let output = Command::new("xcode-select").arg("-p").output().await?;
 
-        let clt_installed = match output {
-            Ok(out) if out.status.success() => {
-                let path = String::from_utf8_lossy(&out.stdout).trim().to_string();
-                !path.is_empty()
-            }
-            _ => false,
+        let clt_installed = if output.status.success() {
+            let path = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            !path.is_empty()
+        } else {
+            false
         };
 
         Ok(clt_installed)
@@ -49,7 +48,7 @@ async fn ensure_xcode_clt() -> Result<()> {
         "Xcode Command Line Tools are not installed.",
     );
 
-    if confirm("Install Xcode Command Line Tools now?") {
+    if confirm("Install Xcode Command Line Tools now?")? {
         print_log(
             LogLevel::Info,
             "Waiting to find Xcode Command Line Tools after installation...",
@@ -75,7 +74,7 @@ async fn ensure_xcode_clt() -> Result<()> {
         for _ in 0..720 {
             tokio::time::sleep(Duration::from_millis(5000)).await;
 
-            if check_installed().await.unwrap() {
+            if check_installed().await? {
                 print_log(LogLevel::Info, "Xcode Command Line Tools installed.");
                 return Ok(());
             }
@@ -92,13 +91,10 @@ async fn ensure_xcode_clt() -> Result<()> {
 }
 
 /// Sets the required environment variables for cutler to interact with Homebrew.
-async fn set_homebrew_env_vars() {
-    let existing_path = std::env::var("PATH").unwrap_or_default();
+async fn set_homebrew_env_vars() -> Result<()> {
+    let existing_path = std::env::var("PATH")?;
 
-    if fs::try_exists(Path::new("/opt/homebrew/bin/brew"))
-        .await
-        .unwrap()
-    {
+    if fs::try_exists(Path::new("/opt/homebrew/bin/brew")).await? {
         let bin = "/opt/homebrew/bin";
         let sbin = "/opt/homebrew/sbin";
         let mut new_path = existing_path.clone();
@@ -109,10 +105,7 @@ async fn set_homebrew_env_vars() {
             new_path = format!("{sbin}:{new_path}");
         }
         unsafe { env::set_var("PATH", &new_path) };
-    } else if fs::try_exists(Path::new("/usr/local/bin/brew"))
-        .await
-        .unwrap()
-    {
+    } else if fs::try_exists(Path::new("/usr/local/bin/brew")).await? {
         let bin = "/usr/local/bin";
         let sbin = "/usr/local/sbin";
         let mut new_path = existing_path.clone();
@@ -124,7 +117,7 @@ async fn set_homebrew_env_vars() {
         }
         unsafe { env::set_var("PATH", &new_path) };
     } else {
-        return print_log(
+        print_log(
             LogLevel::Warning,
             "Brew binary not found in standard directories; PATH not updated.",
         );
@@ -136,6 +129,8 @@ async fn set_homebrew_env_vars() {
         LogLevel::Info,
         "Updated PATH with Homebrew for this process.",
     );
+
+    Ok(())
 }
 
 /// Helper for: ensure_brew()
@@ -184,11 +179,11 @@ pub async fn ensure_brew() -> Result<()> {
 
         print_log(LogLevel::Warning, "Homebrew is not installed.");
 
-        if confirm("Install Homebrew now?") {
+        if confirm("Install Homebrew now?")? {
             install_homebrew().await?;
 
             // set environment variables for `brew`
-            set_homebrew_env_vars().await;
+            set_homebrew_env_vars().await?;
 
             // re-check that Homebrew is now installed and in $PATH
             let is_installed_after = Command::new("brew")

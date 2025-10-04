@@ -14,7 +14,7 @@ use crate::util::logging::{LogLevel, print_log};
 pub struct SelfUpdateCmd {
     /// Do not install/update manpage during the update procedure.
     #[arg(long)]
-    pub no_man: bool,
+    no_man: bool,
 }
 
 #[async_trait]

@@ -20,11 +20,11 @@ use crate::{
     },
 };
 
-#[derive(Debug, Default, Args)]
+#[derive(Debug, Args)]
 pub struct BrewBackupCmd {
     /// Exclude dependencies from backup.
     #[arg(long)]
-    pub no_deps: bool,
+    no_deps: bool,
 }
 
 #[async_trait]
@@ -38,7 +38,7 @@ impl Runnable for BrewBackupCmd {
         ensure_brew().await?;
 
         // init config
-        let mut doc = if cfg_path.try_exists()? {
+        let mut doc = if fs::try_exists(&cfg_path).await? {
             load_config_mut(true).await?
         } else {
             print_log(
@@ -72,7 +72,7 @@ impl Runnable for BrewBackupCmd {
         } else if brew_tbl
             .get("no_deps")
             .is_some_and(|x| x.as_bool().unwrap())
-            && confirm("The previous backup was without dependencies. Do now too?")
+            && confirm("The previous backup was without dependencies. Do now too?")?
         {
             backup_no_deps = true
         } else {

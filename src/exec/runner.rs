@@ -259,7 +259,7 @@ pub async fn run_all(config: &Table, mode: ExecMode) -> Result<()> {
     }
 
     for handle in handles {
-        if handle.await.unwrap().is_err() {
+        if handle.await?.is_err() {
             failures += 1;
         }
     }

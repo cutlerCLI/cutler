@@ -14,7 +14,7 @@ use crate::{
     util::logging::{LogLevel, print_log},
 };
 
-#[derive(Debug, Default, Args)]
+#[derive(Debug, Args)]
 pub struct ConfigLockCmd;
 
 #[async_trait]
@@ -22,7 +22,7 @@ impl Runnable for ConfigLockCmd {
     async fn run(&self) -> Result<()> {
         let cfg_path = get_config_path().await;
 
-        if !fs::try_exists(&cfg_path).await.unwrap() {
+        if !fs::try_exists(&cfg_path).await? {
             bail!("Cannot find a configuration to lock in the first place.")
         }
 

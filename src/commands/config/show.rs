@@ -15,7 +15,7 @@ use crate::{
     util::logging::{LogLevel, print_log},
 };
 
-#[derive(Debug, Default, Args)]
+#[derive(Debug, Args)]
 pub struct ConfigShowCmd {
     /// Show your configuration in $EDITOR.
     #[arg(short, long)]
@@ -27,7 +27,7 @@ impl Runnable for ConfigShowCmd {
     async fn run(&self) -> Result<()> {
         let config_path = get_config_path().await;
 
-        if !fs::try_exists(&config_path).await.unwrap() {
+        if !fs::try_exists(&config_path).await? {
             bail!("Configuration file does not exist at {:?}", config_path);
         }
 
