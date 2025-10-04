@@ -24,7 +24,7 @@ use crate::{
 pub struct BrewBackupCmd {
     /// Exclude dependencies from backup.
     #[arg(long)]
-    pub no_deps: bool,
+    no_deps: bool,
 }
 
 #[async_trait]

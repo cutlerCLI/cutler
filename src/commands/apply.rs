@@ -29,27 +29,27 @@ use toml::Value;
 pub struct ApplyCmd {
     /// The URL to the remote config file.
     #[arg(short, long)]
-    pub url: Option<String>,
+    url: Option<String>,
 
     /// Skip executing external commands.
     #[arg(long, conflicts_with_all = &["all_exec", "flagged"])]
-    pub no_exec: bool,
+    no_exec: bool,
 
     /// Execute all external commands (even flagged ones).
     #[arg(short, long, conflicts_with_all = &["no_exec", "flagged"])]
-    pub all_exec: bool,
+    all_exec: bool,
 
     /// Execute flagged external commands only.
     #[arg(short, long, conflicts_with_all = &["all_exec", "no_exec"])]
-    pub flagged: bool,
+    flagged: bool,
 
     /// Risky: Disables check for domain existence before applying modification.
     #[arg(long)]
-    pub no_check: bool,
+    no_check: bool,
 
     /// Invoke `brew install` after applying defaults.
     #[arg(short, long)]
-    pub brew: bool,
+    brew: bool,
 }
 
 /// Represents a preference modification job.

@@ -12,15 +12,15 @@ use clap::Args;
 pub struct ExecCmd {
     /// The command to execute. Defaults to 'all' if not passed.
     #[arg(value_name = "NAME")]
-    pub name: Option<String>,
+    name: Option<String>,
 
     /// Execute all commands.
     #[arg(short, long, conflicts_with = "flagged")]
-    pub all: bool,
+    all: bool,
 
     /// Execute flagged commands only.
     #[arg(short, long, conflicts_with = "all")]
-    pub flagged: bool,
+    flagged: bool,
 }
 
 #[async_trait]

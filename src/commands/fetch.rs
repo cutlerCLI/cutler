@@ -16,7 +16,10 @@ use crate::{
 };
 
 #[derive(Debug, Default, Args)]
-pub struct FetchCmd;
+pub struct FetchCmd {
+    #[arg(short, long)]
+    force: bool,
+}
 
 #[async_trait]
 impl Runnable for FetchCmd {
