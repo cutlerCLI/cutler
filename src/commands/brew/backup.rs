@@ -20,7 +20,7 @@ use crate::{
     },
 };
 
-#[derive(Debug, Default, Args)]
+#[derive(Debug, Args)]
 pub struct BrewBackupCmd {
     /// Exclude dependencies from backup.
     #[arg(long)]

@@ -15,7 +15,7 @@ use crate::{
     util::logging::{LogLevel, print_log},
 };
 
-#[derive(Debug, Default, Args)]
+#[derive(Debug, Args)]
 pub struct ConfigShowCmd {
     /// Show your configuration in $EDITOR.
     #[arg(short, long)]

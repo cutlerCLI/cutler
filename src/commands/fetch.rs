@@ -14,7 +14,7 @@ use crate::{
     },
 };
 
-#[derive(Debug, Default, Args)]
+#[derive(Debug, Args)]
 pub struct FetchCmd {
     /// Fetches the configuration regardless of
     #[arg(short, long)]

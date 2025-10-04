@@ -16,7 +16,7 @@ use crate::{
 };
 use anyhow::Result;
 
-#[derive(Debug, Default, Args)]
+#[derive(Debug, Args)]
 pub struct ConfigDeleteCmd;
 
 #[async_trait]

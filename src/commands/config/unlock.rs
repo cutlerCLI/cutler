@@ -14,7 +14,7 @@ use crate::{
     util::logging::{LogLevel, print_log},
 };
 
-#[derive(Debug, Default, Args)]
+#[derive(Debug, Args)]
 pub struct ConfigUnlockCmd;
 
 #[async_trait]
