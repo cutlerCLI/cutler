@@ -3,6 +3,7 @@
 use anyhow::{Result, bail};
 use async_trait::async_trait;
 use clap::Args;
+use toml::Table;
 
 use crate::{
     cli::atomic::should_dry_run,
@@ -33,10 +34,7 @@ impl Runnable for FetchCmd {
 
         // fetch remote config
         remote_mgr.fetch().await?;
-        let remote_doc = remote_mgr
-            .get()
-            .cloned()
-            .expect("Could not load remote configuration.");
+        let remote_doc = remote_mgr.get().cloned()?.parse::<Table>()?;
 
         // comparison begins
         let mut changes = Vec::new();
