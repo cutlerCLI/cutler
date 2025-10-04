@@ -16,7 +16,7 @@ use crate::{
 
 #[derive(Debug, Args)]
 pub struct FetchCmd {
-    /// Fetches the configuration regardless of
+    /// Fetches the configuration regardless of whether the configuration is equal value-wise..
     #[arg(short, long)]
     force: bool,
 }
