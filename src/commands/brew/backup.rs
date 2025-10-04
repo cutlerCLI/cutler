@@ -38,7 +38,7 @@ impl Runnable for BrewBackupCmd {
         ensure_brew().await?;
 
         // init config
-        let mut doc = if cfg_path.try_exists()? {
+        let mut doc = if fs::try_exists(&cfg_path).await? {
             load_config_mut(true).await?
         } else {
             print_log(

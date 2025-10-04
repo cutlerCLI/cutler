@@ -17,7 +17,7 @@ static CONFIG_CONTENT: OnceLock<String> = OnceLock::new();
 async fn get_config_content() -> Result<(String, PathBuf)> {
     let path = get_config_path().await;
 
-    if !path.try_exists()? {
+    if !fs::try_exists(&path).await? {
         bail!("No config file found at {path:?}.\nPlease start by creating one with `cutler init`.")
     }
 
@@ -72,7 +72,7 @@ pub async fn load_config_mut(lock_check: bool) -> Result<DocumentMut> {
 pub async fn load_config_detached(lock_check: bool) -> Result<Table> {
     let path = get_config_path().await;
 
-    if !path.try_exists()? {
+    if !fs::try_exists(&path).await? {
         bail!("No config file found at {path:?}.\nPlease start by creating one with `cutler init`.")
     }
 
