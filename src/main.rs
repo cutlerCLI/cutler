@@ -37,7 +37,7 @@ async fn main() {
     let result = match &args.command {
         Command::SelfUpdate(_)
         | Command::Config {
-            command: ConfigSubcmd::Lock(..) | ConfigSubcmd::Unlock(..),
+            command: ConfigSubcmd::Lock(_) | ConfigSubcmd::Unlock(_),
         } => run_with_root().await,
         _ => run_with_noroot(),
     };

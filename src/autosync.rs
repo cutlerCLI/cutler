@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::cli::Command;
+use crate::cli::args::BrewSubcmd;
 use crate::config::remote::RemoteConfigManager;
 use crate::{
     config::{loader::load_config_detached, path::get_config_path},
@@ -12,8 +13,12 @@ use crate::{
 pub async fn try_auto_sync(command: &crate::cli::Command) {
     match command {
         Command::Fetch(_)
+        | Command::Brew {
+            command: BrewSubcmd::Backup(_),
+        }
         | Command::SelfUpdate(_)
         | Command::CheckUpdate(_)
+        | Command::Cookbook(_)
         | Command::Completion(_)
         | Command::Reset(_)
         | Command::Init(_)
