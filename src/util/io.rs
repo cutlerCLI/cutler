@@ -13,11 +13,7 @@ use anyhow::Result;
 /// Ask "Y/N?"; returns true if accept_all is set or the user types "y" or "Y"
 pub fn confirm(prompt: &str) -> bool {
     if should_accept_all() {
-        print_log(
-            LogLevel::Prompt,
-            &format!("{prompt} [y/N]: y (auto-accepted)"),
-        );
-
+        print_log(LogLevel::Prompt, &format!("{prompt} (auto-accepted)"));
         return true;
     }
 
