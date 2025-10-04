@@ -22,12 +22,12 @@ impl Runnable for InitCmd {
     async fn run(&self) -> Result<()> {
         let config_path = get_config_path().await;
 
-        if config_path.try_exists().unwrap() {
+        if fs::try_exists(&config_path).await? {
             print_log(
                 LogLevel::Warning,
                 &format!("Configuration file already exists at {config_path:?}"),
             );
-            if !confirm("Do you want to overwrite it?") {
+            if !confirm("Do you want to overwrite it?")? {
                 bail!("Configuration init aborted.")
             }
         }

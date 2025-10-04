@@ -72,7 +72,7 @@ impl Runnable for BrewBackupCmd {
         } else if brew_tbl
             .get("no_deps")
             .is_some_and(|x| x.as_bool().unwrap())
-            && confirm("The previous backup was without dependencies. Do now too?")
+            && confirm("The previous backup was without dependencies. Do now too?")?
         {
             backup_no_deps = true
         } else {

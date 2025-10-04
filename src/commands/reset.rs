@@ -35,7 +35,7 @@ impl Runnable for ResetCmd {
             "Settings will be reset to macOS defaults, not to their previous values.",
         );
 
-        if !confirm("Are you sure you want to continue?") {
+        if !confirm("Are you sure you want to continue?")? {
             return Ok(());
         }
 
@@ -88,7 +88,7 @@ impl Runnable for ResetCmd {
 
         // remove snapshot if present
         let snap_path = get_snapshot_path();
-        if fs::try_exists(&snap_path).await.unwrap() {
+        if fs::try_exists(&snap_path).await? {
             if dry_run {
                 print_log(
                     LogLevel::Dry,
@@ -118,8 +118,8 @@ impl Runnable for ResetCmd {
         print_log(LogLevel::Fruitful, "Reset operation complete.");
         notify(
             "All settings reset!",
-            "You may start reconfiguring now. Only the preferences that were applied by cutler were reset."
-        ).unwrap();
+            "You may start reconfiguring now. Only the preferences that were applied by cutler were reset.",
+        )?;
 
         Ok(())
     }

@@ -11,13 +11,13 @@ use crate::{
 use anyhow::Result;
 
 /// Ask "Y/N?"; returns true if accept_all is set or the user types "y" or "Y"
-pub fn confirm(prompt: &str) -> bool {
+pub fn confirm(prompt: &str) -> Result<bool> {
     if should_accept_all() {
         print_log(LogLevel::Prompt, &format!("{prompt} (auto-accepted)"));
-        return true;
+        return Ok(true);
     }
 
-    Confirm::new().with_prompt(prompt).interact().unwrap()
+    Ok(Confirm::new().with_prompt(prompt).interact()?)
 }
 
 /// Run the `open` shell command on a given argument.
@@ -37,7 +37,7 @@ pub fn notify(title: &str, message: &str) -> Result<()> {
         return Ok(());
     }
 
-    send_notification(
+    let _ = send_notification(
         title,
         None,
         message,
@@ -47,8 +47,7 @@ pub fn notify(title: &str, message: &str) -> Result<()> {
                 .close_button("I'm good!")
                 .sound("Blow"),
         ),
-    )
-    .unwrap();
+    );
     Ok(())
 }
 

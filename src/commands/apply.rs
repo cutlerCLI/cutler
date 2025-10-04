@@ -72,8 +72,8 @@ impl Runnable for ApplyCmd {
         let config_path = get_config_path().await;
 
         if let Some(url) = &self.url {
-            if fs::try_exists(&config_path).await.unwrap()
-                && !confirm("Local config exists but a URL was still passed. Proceed?")
+            if fs::try_exists(&config_path).await?
+                && !confirm("Local config exists but a URL was still passed. Proceed?")?
             {
                 bail!("Aborted apply: --url is passed despite local config.")
             }
@@ -94,7 +94,7 @@ impl Runnable for ApplyCmd {
 
         // load the old snapshot (if any), otherwise create a new instance
         let snap_path = get_snapshot_path();
-        let snap = if fs::try_exists(&snap_path).await.unwrap() {
+        let snap = if fs::try_exists(&snap_path).await? {
             Snapshot::load(&snap_path).await.unwrap_or_else(|e| {
                 print_log(
                     LogLevel::Warning,
@@ -115,7 +115,7 @@ impl Runnable for ApplyCmd {
 
         let mut jobs: Vec<PreferenceJob> = Vec::new();
 
-        let domains_list = Preferences::list_domains().await.unwrap();
+        let domains_list = Preferences::list_domains().await?;
         for (dom, table) in domains.into_iter() {
             for (key, toml_value) in table.into_iter() {
                 let (eff_dom, eff_key) = collector::effective(&dom, &key);
@@ -279,8 +279,7 @@ impl Runnable for ApplyCmd {
         notify(
             "Settings applied!",
             "You may need to log out and back in to allow your Mac some time.",
-        )
-        .unwrap();
+        )?;
 
         Ok(())
     }
