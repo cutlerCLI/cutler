@@ -1,6 +1,5 @@
 use crate::cli::atomic::should_dry_run;
 use crate::config::loader::Config;
-use crate::snapshot::state::ExternalCommandState;
 use crate::util::logging::{BOLD, LogLevel, RESET, print_log};
 use anyhow::{Error, Result, anyhow, bail};
 use std::collections::HashMap;
@@ -8,8 +7,18 @@ use std::env;
 use tokio::process::Command;
 use tokio::task;
 
+/// Represents an external command job.
+pub struct ExecJob {
+    pub name: String,
+    pub run: String,
+    pub sudo: bool,
+    pub ensure_first: bool,
+    pub flag: bool,
+    pub required: Vec<String>,
+}
+
 /// Extract a single command by name from the user config.
-pub fn extract_cmd(config: &Config, name: &str) -> Result<ExternalCommandState> {
+pub fn extract_cmd(config: &Config, name: &str) -> Result<ExecJob> {
     let command_map = config
         .command
         .as_ref()
@@ -29,7 +38,7 @@ pub fn extract_cmd(config: &Config, name: &str) -> Result<ExternalCommandState> 
     let ensure_first = command.ensure_first.unwrap_or_default();
     let required = command.required.clone().unwrap_or_default();
 
-    Ok(ExternalCommandState {
+    Ok(ExecJob {
         name: name.to_string(),
         run,
         sudo,
@@ -40,18 +49,18 @@ pub fn extract_cmd(config: &Config, name: &str) -> Result<ExternalCommandState> 
 }
 
 // Pull all external commands written in user config into state objects.
-pub fn extract_all_cmds(config: &Config) -> Vec<ExternalCommandState> {
-    let mut output = Vec::new();
+pub fn extract_all_cmds(config: &Config) -> Vec<ExecJob> {
+    let mut jobs = Vec::new();
 
     if let Some(command_map) = config.command.as_ref() {
         for (name, _) in command_map.iter() {
-            if let Ok(cmd_state) = extract_cmd(config, name) {
-                output.push(cmd_state);
+            if let Ok(job) = extract_cmd(config, name) {
+                jobs.push(job);
             }
         }
     }
 
-    output
+    jobs
 }
 
 /// Perform variable substitution (env + `[external.variables]`) in a text.
@@ -124,23 +133,20 @@ fn substitute(text: &str, vars: Option<HashMap<String, String>>) -> String {
 
 /// Helper for: run_one(), run_all()
 /// Execute a single command with the given template and sudo flag.
-async fn execute_command(state: ExternalCommandState, dry_run: bool) -> Result<()> {
+async fn execute_command(job: ExecJob, dry_run: bool) -> Result<()> {
     // build the actual runner
-    let (bin, args) = if state.sudo {
-        ("sudo", vec!["sh", "-c", &state.run])
+    let (bin, args) = if job.sudo {
+        ("sudo", vec!["sh", "-c", &job.run])
     } else {
-        ("sh", vec!["-c", &state.run])
+        ("sh", vec!["-c", &job.run])
     };
 
     if dry_run {
-        print_log(
-            LogLevel::Dry,
-            &format!("Would execute: {bin} {}", state.run),
-        );
+        print_log(LogLevel::Dry, &format!("Would execute: {bin} {}", job.run));
         return Ok(());
     }
 
-    print_log(LogLevel::Exec, &format!("{BOLD}{}{RESET}", state.name));
+    print_log(LogLevel::Exec, &format!("{BOLD}{}{RESET}", job.name));
 
     let mut child = Command::new(bin).args(&args).spawn()?;
     let status = child.wait().await?;
@@ -148,7 +154,7 @@ async fn execute_command(state: ExternalCommandState, dry_run: bool) -> Result<(
     if !status.success() {
         print_log(
             LogLevel::Error,
-            &format!("External command failed: {}", state.name),
+            &format!("External command failed: {}", job.name),
         );
         return Err(Error::msg("cmd failed"));
     }
@@ -184,48 +190,54 @@ pub enum ExecMode {
 }
 
 /// Run all extracted external commands via `sh -c` (or `sudo sh -c`) in parallel.
-pub async fn run_all(config: Config, mode: ExecMode) -> Result<()> {
+/// Returns the amount of successfully executed commmands.
+pub async fn run_all(config: Config, mode: ExecMode) -> Result<i32> {
     let cmds = extract_all_cmds(&config);
 
     // separate ensure_first commands from regular commands
     let mut ensure_first_cmds = Vec::new();
     let mut regular_cmds = Vec::new();
 
-    for state in cmds {
-        if !all_bins_present(&state.required)
-            || (mode == ExecMode::Regular && state.flag)
-            || (mode == ExecMode::Flagged && !state.flag)
+    for job in cmds {
+        if !all_bins_present(&job.required)
+            || (mode == ExecMode::Regular && job.flag)
+            || (mode == ExecMode::Flagged && !job.flag)
         {
             continue;
-        } else if state.ensure_first {
-            ensure_first_cmds.push(state);
+        } else if job.ensure_first {
+            ensure_first_cmds.push(job);
         } else {
-            regular_cmds.push(state);
+            regular_cmds.push(job);
         }
     }
 
     let dry_run = should_dry_run();
 
     let mut failures = 0;
+    let mut successes = 0;
 
     // run all ensure_first commands sequentially first
-    for state in ensure_first_cmds {
-        if (execute_command(state, dry_run).await).is_err() {
+    for job in ensure_first_cmds {
+        if (execute_command(job, dry_run).await).is_err() {
             failures += 1;
+        } else {
+            successes += 1;
         }
     }
 
     // then run all regular commands concurrently
     let mut handles = Vec::new();
-    for state in regular_cmds {
+    for job in regular_cmds {
         handles.push(task::spawn(
-            async move { execute_command(state, dry_run).await },
+            async move { execute_command(job, dry_run).await },
         ));
     }
 
     for handle in handles {
         if handle.await?.is_err() {
             failures += 1;
+        } else {
+            successes += 1;
         }
     }
 
@@ -237,7 +249,7 @@ pub async fn run_all(config: Config, mode: ExecMode) -> Result<()> {
         );
     }
 
-    Ok(())
+    Ok(successes)
 }
 
 /// Run exactly one command entry, given its name.

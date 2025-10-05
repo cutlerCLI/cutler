@@ -13,22 +13,11 @@ pub struct SettingState {
     pub original_value: Option<String>,
 }
 
-/// One external command run.
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ExternalCommandState {
-    pub name: String,
-    pub run: String,
-    pub sudo: bool,
-    pub ensure_first: bool,
-    pub flag: bool,
-    pub required: Vec<String>,
-}
-
 /// The full snapshot on disk.
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Snapshot {
     pub settings: Vec<SettingState>,
-    pub external: Vec<ExternalCommandState>,
+    pub exec_run_count: i32,
     pub version: String,
     #[serde(skip)]
     pub snapshot_path: PathBuf,
@@ -38,9 +27,9 @@ impl Snapshot {
     pub fn new() -> Self {
         Snapshot {
             settings: Vec::new(),
-            external: Vec::new(),
             version: env!("CARGO_PKG_VERSION").into(),
             snapshot_path: get_snapshot_path(),
+            exec_run_count: 0,
         }
     }
 

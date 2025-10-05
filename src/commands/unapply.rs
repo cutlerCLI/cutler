@@ -135,11 +135,14 @@ impl Runnable for UnapplyCmd {
             }
         }
 
-        // warn about external commands (not automatically reverted)
-        if !snapshot.external.is_empty() {
+        // warn about external command execution
+        if snapshot.exec_run_count > 0 {
             print_log(
                 LogLevel::Warning,
-                "External commands were executed previously; please revert them manually if needed.",
+                &format!(
+                    "{} External commands were executed previously; please revert them manually if needed.",
+                    snapshot.exec_run_count
+                ),
             );
         }
 

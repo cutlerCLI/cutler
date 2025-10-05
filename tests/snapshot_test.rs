@@ -2,8 +2,9 @@
 
 #[cfg(test)]
 mod tests {
-    use cutler::snapshot::state::{
-        ExternalCommandState, SettingState, Snapshot, get_snapshot_path,
+    use cutler::{
+        exec::runner::ExecJob,
+        snapshot::state::{SettingState, Snapshot, get_snapshot_path},
     };
     use std::{collections::HashMap, env, path::PathBuf};
     use tempfile::TempDir;
@@ -24,7 +25,7 @@ mod tests {
         // Test creation
         let snapshot = Snapshot::new();
         assert_eq!(snapshot.settings.len(), 0);
-        assert_eq!(snapshot.external.len(), 0);
+        assert_eq!(snapshot.exec_run_count, 0);
         assert_eq!(snapshot.version, env!("CARGO_PKG_VERSION"));
 
         // Test setting state
@@ -38,7 +39,7 @@ mod tests {
         assert_eq!(setting.original_value, Some("36".to_string()));
 
         // Test external command state
-        let command = ExternalCommandState {
+        let command = ExecJob {
             name: "echo".to_string(),
             run: "echo Hello World".to_string(),
             sudo: false,
@@ -74,25 +75,6 @@ mod tests {
             original_value: Some("0".to_string()),
         });
 
-        // Add multiple external commands
-        snapshot.external.push(ExternalCommandState {
-            name: "echo".to_string(),
-            run: "echo Hello".to_string(),
-            sudo: false,
-            ensure_first: false,
-            flag: false,
-            required: vec!["echo".to_string()],
-        });
-
-        snapshot.external.push(ExternalCommandState {
-            name: "hostname".to_string(),
-            run: "hostname -s macbook".to_string(),
-            sudo: true,
-            ensure_first: false,
-            flag: false,
-            required: vec!["hostname".to_string()],
-        });
-
         // Create a temporary file to store the snapshot
         let temp_dir = TempDir::new().unwrap();
         let snapshot_path = temp_dir.path().join("test_snapshot.json");
@@ -112,7 +94,6 @@ mod tests {
 
         // Verify contents match
         assert_eq!(loaded_snapshot.settings.len(), 3);
-        assert_eq!(loaded_snapshot.external.len(), 2);
 
         // Convert to HashMap for easier testing
         let settings_map: HashMap<_, _> = loaded_snapshot
@@ -141,15 +122,6 @@ mod tests {
             ))
             .unwrap();
         assert_eq!(global_setting.original_value, Some("0".to_string()));
-
-        // Check external commands
-        let echo_cmd = &loaded_snapshot.external[0];
-        assert_eq!(echo_cmd.run, "echo Hello");
-        assert!(!echo_cmd.sudo);
-
-        let hostname_cmd = &loaded_snapshot.external[1];
-        assert_eq!(hostname_cmd.run, "hostname -s macbook");
-        assert!(hostname_cmd.sudo);
     }
 
     #[tokio::test]

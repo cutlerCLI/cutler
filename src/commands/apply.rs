@@ -252,13 +252,17 @@ impl Runnable for ApplyCmd {
             });
         }
 
-        new_snap.external = runner::extract_all_cmds(&config);
-
         if !dry_run {
             new_snap.save().await?;
-            print_log(LogLevel::Info, &format!("Snapshot saved: {snap_path:?}"));
+            print_log(
+                LogLevel::Info,
+                &format!("Logged system preferences change in snapshot."),
+            );
         } else {
-            print_log(LogLevel::Dry, "Would save snapshot");
+            print_log(
+                LogLevel::Dry,
+                "Would save snapshot with system preferences.",
+            );
         }
 
         // run brew
@@ -276,7 +280,24 @@ impl Runnable for ApplyCmd {
                 ExecMode::Regular
             };
 
-            runner::run_all(config, mode).await?;
+            let exec_run_count = runner::run_all(config, mode).await?;
+
+            if !dry_run {
+                if exec_run_count > 0 {
+                    new_snap.exec_run_count = exec_run_count;
+                    new_snap.save().await?;
+
+                    print_log(
+                        LogLevel::Info,
+                        &format!("Logged command execution in snapshot."),
+                    );
+                }
+            } else {
+                print_log(
+                    LogLevel::Dry,
+                    "Would save snapshot with external command execution.",
+                );
+            }
         }
 
         print_log(LogLevel::Fruitful, "Apply operation complete.");
