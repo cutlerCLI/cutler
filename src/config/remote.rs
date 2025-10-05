@@ -6,42 +6,29 @@ use anyhow::{Context, Result, bail};
 use reqwest::Client;
 use tokio::fs;
 use tokio::sync::OnceCell;
-use toml::Table;
 
+use crate::config::loader::{Config, Remote};
 use crate::util::logging::{LogLevel, print_log};
 
 /// Manages fetching and storing the remote config.
 #[derive(Debug, Clone)]
 pub struct RemoteConfigManager {
-    pub url: String,
-    pub autosync: bool,
+    pub remote: Remote,
     config: OnceCell<String>,
 }
 
 impl RemoteConfigManager {
-    /// Create a new RemoteConfigManager with a URL.
-    pub fn new(url: String) -> Self {
+    /// Create a new RemoteConfigManager with a Remote struct.
+    pub fn new(remote: Remote) -> Self {
         Self {
-            url,
-            autosync: false,
+            remote,
             config: OnceCell::const_new(),
         }
     }
 
-    /// Parse the [remote] section from a TOML config and create a manager.
-    pub fn from_toml(config: &Table) -> Option<Self> {
-        let tbl = config.get("remote")?.as_table()?;
-        let url = tbl.get("url")?.as_str()?.to_string();
-        let autosync = tbl
-            .get("autosync")
-            .and_then(|v| v.as_bool())
-            .unwrap_or(false);
-
-        Some(Self {
-            url,
-            autosync,
-            config: OnceCell::const_new(),
-        })
+    /// Parse the [remote] section from a serde-based Config and create a manager.
+    pub fn from_config(config: &Config) -> Option<Self> {
+        config.remote.clone().map(|remote| Self::new(remote))
     }
 
     /// Fetch the remote config file as TOML, only once per instance.
@@ -50,23 +37,24 @@ impl RemoteConfigManager {
             .get_or_try_init(|| async {
                 print_log(
                     LogLevel::Info,
-                    &format!("Fetching remote config from {}", self.url),
+                    &format!("Fetching remote config from {}", self.remote.url),
                 );
                 let client = Client::builder()
                     .user_agent("cutler-remote-config")
                     .build()?;
-                let resp =
-                    client.get(&self.url).send().await.with_context(|| {
-                        format!("Failed to fetch remote config from {}", self.url)
-                    })?;
+                let resp = client.get(&self.remote.url).send().await.with_context(|| {
+                    format!("Failed to fetch remote config from {}", self.remote.url)
+                })?;
 
                 if !resp.status().is_success() {
                     bail!("Failed to fetch remote config: HTTP {}", resp.status());
                 }
 
                 let text = resp.text().await?;
-                text.parse::<Table>()
-                    .with_context(|| format!("Invalid TOML config fetched from {}", self.url))?;
+
+                toml::from_str::<Config>(&text).with_context(|| {
+                    format!("Invalid TOML config fetched from {}", self.remote.url)
+                })?;
 
                 Ok(text)
             })
@@ -98,9 +86,10 @@ impl RemoteConfigManager {
         Ok(config)
     }
 
-    /// Get a parsed version of the output of .get().
-    pub fn get_table(&self) -> Result<Table> {
-        let config = self.get()?.parse::<Table>()?;
+    /// Get a parsed version of the output of .get() as serde-based Config.
+    pub fn get_config(&self) -> Result<Config> {
+        let config_str = self.get()?;
+        let config = toml::from_str::<Config>(config_str)?;
         Ok(config)
     }
 }

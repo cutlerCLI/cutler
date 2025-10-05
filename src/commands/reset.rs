@@ -9,7 +9,7 @@ use tokio::fs;
 use crate::{
     cli::atomic::should_dry_run,
     commands::Runnable,
-    config::loader::load_config,
+    config::loader::Config,
     domains::{collect, effective, read_current},
     snapshot::state::get_snapshot_path,
     util::{
@@ -39,8 +39,8 @@ impl Runnable for ResetCmd {
             return Ok(());
         }
 
-        let toml = load_config(true).await?;
-        let domains = collect(&toml)?;
+        let config = Config::load().await?;
+        let domains = collect(&config)?;
 
         for (domain, table) in domains {
             for (key, _) in table {

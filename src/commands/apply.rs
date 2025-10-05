@@ -3,7 +3,7 @@
 use crate::{
     cli::atomic::should_dry_run,
     commands::{BrewInstallCmd, Runnable},
-    config::{loader::load_config, path::get_config_path, remote::RemoteConfigManager},
+    config::{loader::Config, path::get_config_path, remote::RemoteConfigManager},
     domains::{
         collector,
         convert::{normalize, toml_to_prefvalue},
@@ -78,7 +78,11 @@ impl Runnable for ApplyCmd {
                 bail!("Aborted apply: --url is passed despite local config.")
             }
 
-            let remote_mgr = RemoteConfigManager::new(url.to_string());
+            let remote = crate::config::loader::Remote {
+                url: url.to_string(),
+                autosync: None,
+            };
+            let remote_mgr = RemoteConfigManager::new(remote);
             remote_mgr.fetch().await?;
             remote_mgr.save(&config_path).await?;
 
@@ -89,8 +93,8 @@ impl Runnable for ApplyCmd {
         }
 
         // parse + flatten domains
-        let toml = load_config(true).await?;
-        let domains = collector::collect(&toml)?;
+        let config = Config::load().await?;
+        let domains = collector::collect(&config)?;
 
         // load the old snapshot (if any), otherwise create a new instance
         let snap_path = get_snapshot_path();
@@ -248,10 +252,10 @@ impl Runnable for ApplyCmd {
             });
         }
 
-        new_snap.external = runner::extract_all_cmds(&toml);
+        new_snap.external = runner::extract_all_cmds(&config);
 
         if !dry_run {
-            new_snap.save(&snap_path).await?;
+            new_snap.save().await?;
             print_log(LogLevel::Info, &format!("Snapshot saved: {snap_path:?}"));
         } else {
             print_log(LogLevel::Dry, "Would save snapshot");
@@ -272,7 +276,7 @@ impl Runnable for ApplyCmd {
                 ExecMode::Regular
             };
 
-            runner::run_all(&toml, mode).await?;
+            runner::run_all(config, mode).await?;
         }
 
         print_log(LogLevel::Fruitful, "Apply operation complete.");

@@ -1,56 +1,33 @@
-// SPDX-License-Identifier: Apache-2.0
-
 use crate::cli::atomic::should_dry_run;
+use crate::config::loader::Config;
 use crate::snapshot::state::ExternalCommandState;
 use crate::util::logging::{BOLD, LogLevel, RESET, print_log};
 use anyhow::{Error, Result, anyhow, bail};
+use std::collections::HashMap;
 use std::env;
 use tokio::process::Command;
 use tokio::task;
-use toml::{Table, Value};
 
 /// Extract a single command by name from the user config.
-pub fn extract_cmd(config: &Table, name: &str) -> Result<ExternalCommandState> {
-    let vars = config.get("vars").and_then(Value::as_table).cloned();
-
-    let cmd_table = config
-        .get("command")
-        .and_then(Value::as_table)
-        .and_then(|m| m.get(name))
-        .and_then(Value::as_table)
-        .ok_or_else(|| anyhow!("No such command '{}'", name))?;
-
-    let template = cmd_table
-        .get("run")
-        .and_then(Value::as_str)
-        .ok_or_else(|| anyhow!("Command '{}': missing `run` field", name))?;
+pub fn extract_cmd(config: &Config, name: &str) -> Result<ExternalCommandState> {
+    let command_map = config
+        .command
+        .as_ref()
+        .ok_or_else(|| anyhow!("no command exists"))?;
+    let command = command_map
+        .get(name)
+        .cloned()
+        .ok_or_else(|| anyhow!("no such command {}", name))?;
 
     // substitute to get possible variables
     // ultimately turning it into the final command to run
-    let run = substitute(template, vars.as_ref());
+    let run = substitute(&command.run, config.vars.as_ref().cloned());
 
     // extra fields
-    let sudo = cmd_table
-        .get("sudo")
-        .and_then(Value::as_bool)
-        .unwrap_or(false);
-    let flag = cmd_table
-        .get("flag")
-        .and_then(Value::as_bool)
-        .unwrap_or(false);
-    let ensure_first = cmd_table
-        .get("ensure_first")
-        .and_then(Value::as_bool)
-        .unwrap_or(false);
-    let required: Vec<String> = cmd_table
-        .get("required")
-        .and_then(Value::as_array)
-        .map(|arr| {
-            arr.iter()
-                .filter_map(|s| s.as_str().map(|s| s.to_string()))
-                .collect()
-        })
-        .unwrap_or_default();
+    let sudo = command.sudo.clone().unwrap_or_default();
+    let flag = command.flag.clone().unwrap_or_default();
+    let ensure_first = command.ensure_first.clone().unwrap_or_default();
+    let required = command.required.clone().unwrap_or_default();
 
     Ok(ExternalCommandState {
         name: name.to_string(),
@@ -63,21 +40,22 @@ pub fn extract_cmd(config: &Table, name: &str) -> Result<ExternalCommandState> {
 }
 
 // Pull all external commands written in user config into state objects.
-pub fn extract_all_cmds(config: &Table) -> Vec<ExternalCommandState> {
-    if let Some(cmds) = config.get("command").and_then(Value::as_table) {
-        let output: Vec<ExternalCommandState> = cmds
-            .iter()
-            .filter_map(|(name, _)| extract_cmd(config, name).ok())
-            .collect();
+pub fn extract_all_cmds(config: &Config) -> Vec<ExternalCommandState> {
+    let mut output = Vec::new();
 
-        return output;
+    if let Some(command_map) = config.command.as_ref() {
+        for (name, _) in command_map.iter() {
+            if let Ok(cmd_state) = extract_cmd(config, name) {
+                output.push(cmd_state);
+            }
+        }
     }
 
-    Vec::new()
+    output
 }
 
 /// Perform variable substitution (env + `[external.variables]`) in a text.
-fn substitute(text: &str, vars: Option<&toml::value::Table>) -> String {
+fn substitute(text: &str, vars: Option<HashMap<String, String>>) -> String {
     let mut result = text.to_string();
     let mut var_positions = Vec::new();
     let mut i = 0;
@@ -130,16 +108,9 @@ fn substitute(text: &str, vars: Option<&toml::value::Table>) -> String {
 
         // first try custom vars
         let replacement = vars
+            .as_ref()
             .and_then(|map| map.get(var_name))
-            .map(|v| match v {
-                Value::String(s) => s.clone(),
-                Value::Array(arr) => arr
-                    .iter()
-                    .filter_map(|x| x.as_str())
-                    .collect::<Vec<_>>()
-                    .join(" "),
-                other => other.to_string(),
-            })
+            .cloned()
             // else try env
             .or_else(|| env::var(var_name).ok())
             // else keep literal
@@ -153,23 +124,19 @@ fn substitute(text: &str, vars: Option<&toml::value::Table>) -> String {
 
 /// Helper for: run_one(), run_all()
 /// Execute a single command with the given template and sudo flag.
-async fn execute_command(
-    state: ExternalCommandState,
-    vars: Option<&toml::value::Table>,
-    dry_run: bool,
-) -> Result<()> {
-    // command execution logic starts here
-    let final_cmd = substitute(&state.run, vars).trim().to_string();
-
+async fn execute_command(state: ExternalCommandState, dry_run: bool) -> Result<()> {
     // build the actual runner
     let (bin, args) = if state.sudo {
-        ("sudo", vec!["sh", "-c", &final_cmd])
+        ("sudo", vec!["sh", "-c", &state.run])
     } else {
-        ("sh", vec!["-c", &final_cmd])
+        ("sh", vec!["-c", &state.run])
     };
 
     if dry_run {
-        print_log(LogLevel::Dry, &format!("Would execute: {bin} {final_cmd}"));
+        print_log(
+            LogLevel::Dry,
+            &format!("Would execute: {bin} {}", state.run),
+        );
         return Ok(());
     }
 
@@ -217,8 +184,8 @@ pub enum ExecMode {
 }
 
 /// Run all extracted external commands via `sh -c` (or `sudo sh -c`) in parallel.
-pub async fn run_all(config: &Table, mode: ExecMode) -> Result<()> {
-    let cmds = extract_all_cmds(config);
+pub async fn run_all(config: Config, mode: ExecMode) -> Result<()> {
+    let cmds = extract_all_cmds(&config);
 
     // separate ensure_first commands from regular commands
     let mut ensure_first_cmds = Vec::new();
@@ -238,13 +205,12 @@ pub async fn run_all(config: &Table, mode: ExecMode) -> Result<()> {
     }
 
     let dry_run = should_dry_run();
-    let vars: Option<toml::value::Table> = config.get("vars").and_then(Value::as_table).cloned();
 
     let mut failures = 0;
 
     // run all ensure_first commands sequentially first
     for state in ensure_first_cmds {
-        if (execute_command(state, vars.as_ref(), dry_run).await).is_err() {
+        if (execute_command(state, dry_run).await).is_err() {
             failures += 1;
         }
     }
@@ -252,10 +218,9 @@ pub async fn run_all(config: &Table, mode: ExecMode) -> Result<()> {
     // then run all regular commands concurrently
     let mut handles = Vec::new();
     for state in regular_cmds {
-        let vars = vars.clone();
-        handles.push(task::spawn(async move {
-            execute_command(state, vars.as_ref(), dry_run).await
-        }));
+        handles.push(task::spawn(
+            async move { execute_command(state, dry_run).await },
+        ));
     }
 
     for handle in handles {
@@ -276,14 +241,13 @@ pub async fn run_all(config: &Table, mode: ExecMode) -> Result<()> {
 }
 
 /// Run exactly one command entry, given its name.
-pub async fn run_one(config: &Table, which: &str) -> Result<()> {
-    let state = extract_cmd(config, which)?;
+pub async fn run_one(config: Config, name: &str) -> Result<()> {
+    let state = extract_cmd(&config, name)?;
 
     if !all_bins_present(&state.required) {
         bail!("Cannot execute command due to missing binaries.")
     }
 
     let dry_run = should_dry_run();
-    let vars = config.get("vars").and_then(Value::as_table).cloned();
-    execute_command(state, vars.as_ref(), dry_run).await
+    execute_command(state, dry_run).await
 }

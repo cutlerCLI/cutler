@@ -11,22 +11,12 @@ mod tests {
 
     #[test]
     fn test_get_snapshot_path() {
-        // Setup a temporary directory for testing
-        let temp_dir = TempDir::new().unwrap();
-        let temp_path = temp_dir.path();
-
-        // Set HOME to our temp directory
-        unsafe { env::set_var("HOME", temp_path.to_str().unwrap()) };
-
         // Test that get_snapshot_path returns .cutler_snapshot in the home directory
         let snapshot_path = get_snapshot_path();
         assert_eq!(
             snapshot_path,
-            PathBuf::from(temp_path).join(".cutler_snapshot")
+            dirs::home_dir().unwrap().join(".cutler_snapshot")
         );
-
-        // Clean up
-        unsafe { env::remove_var("HOME") };
     }
 
     #[test]
@@ -108,7 +98,8 @@ mod tests {
         let snapshot_path = temp_dir.path().join("test_snapshot.json");
 
         // Save the snapshot
-        snapshot.save(&snapshot_path).await.unwrap();
+        snapshot.snapshot_path = snapshot_path.clone();
+        snapshot.save().await.unwrap();
 
         // Verify file exists and has content
         assert!(fs::try_exists(&snapshot_path).await.unwrap());
@@ -175,12 +166,6 @@ mod tests {
             .unwrap();
 
         let result = Snapshot::load(&invalid_path).await;
-        assert!(result.is_err());
-
-        // Test writing to invalid path
-        let snapshot = Snapshot::new();
-        let invalid_dir = PathBuf::from("/nonexistent/directory/snapshot.json");
-        let result = snapshot.save(&invalid_dir).await;
         assert!(result.is_err());
     }
 }

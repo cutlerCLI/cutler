@@ -2,6 +2,7 @@
 
 use crate::brew::types::{BrewDiff, BrewListType};
 use crate::cli::atomic::should_dry_run;
+use crate::config::loader::Brew;
 use crate::util::{
     io::confirm,
     logging::{LogLevel, print_log},
@@ -10,7 +11,6 @@ use anyhow::{Result, bail};
 use std::{env, path::Path, time::Duration};
 use tokio::fs;
 use tokio::process::Command;
-use toml::Value;
 
 /// Helper for: ensure_brew()
 /// Ensures Xcode Command Line Tools are installed.
@@ -233,52 +233,19 @@ pub async fn brew_list(list_type: BrewListType) -> Result<Vec<String>> {
         .collect())
 }
 
-/// Compare the [brew] config table with the actual Homebrew state.
+/// Compare the Brew config struct with the actual Homebrew state.
 /// Returns a BrewDiff struct with missing/extra formulae, casks, and taps.
-/// `brew_cfg` should be a reference to the [brew] table as toml::value::Table.
-pub async fn compare_brew_state(brew_cfg: &toml::value::Table) -> Result<BrewDiff> {
+pub async fn compare_brew_state(brew_cfg: Brew) -> Result<BrewDiff> {
     print_log(
         LogLevel::Info,
         "Starting comparison of Homebrew state with config...",
     );
 
-    let no_deps = brew_cfg
-        .get("no_deps")
-        .and_then(Value::as_bool)
-        .unwrap_or(false);
+    let no_deps = brew_cfg.no_deps.unwrap_or(false);
 
-    let config_formulae: Vec<String> = brew_cfg
-        .get("formulae")
-        .and_then(Value::as_array)
-        .map(|arr| {
-            arr.iter()
-                .filter_map(|x| x.as_str())
-                .map(|s| s.to_string())
-                .collect()
-        })
-        .unwrap_or_default();
-
-    let config_casks: Vec<String> = brew_cfg
-        .get("casks")
-        .and_then(Value::as_array)
-        .map(|arr| {
-            arr.iter()
-                .filter_map(|x| x.as_str())
-                .map(|s| s.to_string())
-                .collect()
-        })
-        .unwrap_or_default();
-
-    let config_taps: Vec<String> = brew_cfg
-        .get("taps")
-        .and_then(Value::as_array)
-        .map(|arr| {
-            arr.iter()
-                .filter_map(|x| x.as_str())
-                .map(|s| s.to_string())
-                .collect()
-        })
-        .unwrap_or_default();
+    let config_formulae: Vec<String> = brew_cfg.formulae.clone().unwrap_or_default();
+    let config_casks: Vec<String> = brew_cfg.casks.clone().unwrap_or_default();
+    let config_taps: Vec<String> = brew_cfg.taps.clone().unwrap_or_default();
 
     // fetch installed state
     let mut installed_formulae = brew_list(BrewListType::Formula).await?;

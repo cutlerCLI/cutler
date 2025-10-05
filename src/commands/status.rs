@@ -6,7 +6,7 @@ use crate::{
         utils::{compare_brew_state, is_brew_installed},
     },
     commands::Runnable,
-    config::loader::load_config,
+    config::loader::Config,
     domains::{collect, convert::normalize, effective, read_current},
     util::logging::{BOLD, GREEN, LogLevel, RED, RESET, print_log},
 };
@@ -25,8 +25,8 @@ pub struct StatusCmd {
 #[async_trait]
 impl Runnable for StatusCmd {
     async fn run(&self) -> Result<()> {
-        let toml = load_config(false).await?;
-        let domains = collect(&toml)?;
+        let config = Config::load().await?;
+        let domains = collect(&config)?;
 
         // flatten all settings into a list
         let entries: Vec<(String, String, toml::Value)> = domains
@@ -115,10 +115,10 @@ impl Runnable for StatusCmd {
 
         // brew status check
         {
-            let toml_brew = toml.clone();
+            let toml_brew = config.clone();
             let no_brew = self.no_brew;
 
-            if !no_brew && let Some(brew_val) = toml_brew.get("brew").and_then(|v| v.as_table()) {
+            if !no_brew && let Some(brew_val) = toml_brew.brew {
                 print_log(LogLevel::Info, "Homebrew status:");
 
                 // ensure homebrew is installed (skip if not)

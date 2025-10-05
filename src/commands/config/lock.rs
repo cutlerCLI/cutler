@@ -5,12 +5,11 @@ use clap::Args;
 
 use anyhow::{Result, bail};
 use tokio::fs;
-use toml_edit::Item;
 
 use crate::{
     cli::atomic::should_dry_run,
     commands::Runnable,
-    config::{loader::load_config_mut, path::get_config_path},
+    config::{loader::Config, path::get_config_path},
     util::logging::{LogLevel, print_log},
 };
 
@@ -27,19 +26,17 @@ impl Runnable for ConfigLockCmd {
         }
 
         let dry_run = should_dry_run();
+        let mut config = Config::load().await?;
 
-        let mut doc = load_config_mut(false).await?;
-        let is_locked = doc.get("lock").and_then(Item::as_bool).unwrap_or(false);
-
-        if is_locked {
+        if config.lock.is_some_and(|val| val) {
             bail!("Already locked.");
         } else if dry_run {
             print_log(LogLevel::Dry, "Would lock config file.");
             return Ok(());
         }
 
-        doc["lock"] = true.into();
-        fs::write(&cfg_path, doc.to_string()).await?;
+        config.lock = Some(true);
+        config.save().await?;
 
         Ok(())
     }

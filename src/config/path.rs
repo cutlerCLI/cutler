@@ -9,8 +9,8 @@ static CONFIG_PATH: OnceLock<PathBuf> = OnceLock::new();
 
 /// Returns the path to the configuration file by checking several candidate locations.
 pub async fn get_config_path() -> PathBuf {
-    if let Some(path) = CONFIG_PATH.get() {
-        return path.clone();
+    if let Some(path) = CONFIG_PATH.get().cloned() {
+        return path;
     }
 
     let home = env::var_os("HOME");

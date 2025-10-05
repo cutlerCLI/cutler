@@ -2,8 +2,9 @@
 
 use crate::commands::Runnable;
 
+use crate::config::loader::Config;
+use crate::exec::runner;
 use crate::exec::runner::ExecMode;
-use crate::{config::loader::load_config, exec::runner};
 use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
@@ -27,7 +28,7 @@ pub struct ExecCmd {
 impl Runnable for ExecCmd {
     async fn run(&self) -> Result<()> {
         // load & parse config
-        let toml = load_config(true).await?;
+        let config = Config::load().await?;
 
         let mode = if self.all {
             ExecMode::All
@@ -38,9 +39,9 @@ impl Runnable for ExecCmd {
         };
 
         if let Some(cmd_name) = &self.name {
-            runner::run_one(&toml, cmd_name).await?;
+            runner::run_one(config, cmd_name).await?;
         } else {
-            runner::run_all(&toml, mode).await?;
+            runner::run_all(config, mode).await?;
         }
 
         Ok(())

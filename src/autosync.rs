@@ -4,7 +4,7 @@ use crate::cli::Command;
 use crate::cli::args::BrewSubcmd;
 use crate::config::remote::RemoteConfigManager;
 use crate::{
-    config::{loader::load_config_detached, path::get_config_path},
+    config::{loader::Config, path::get_config_path},
     util::logging::{LogLevel, print_log},
 };
 
@@ -33,10 +33,8 @@ pub async fn try_auto_sync(command: &crate::cli::Command) {
         return;
     }
 
-    // use raw-reading, bypassing loader.rs
-    // this is to avoid caching a possible 'old' config scenario
-    let local_doc = match load_config_detached(false).await {
-        Ok(doc) => doc,
+    let local_config = match Config::load().await {
+        Ok(cfg) => cfg,
         Err(e) => {
             print_log(
                 LogLevel::Warning,
@@ -47,10 +45,10 @@ pub async fn try_auto_sync(command: &crate::cli::Command) {
     };
 
     // start
-    let remote_mgr = RemoteConfigManager::from_toml(&local_doc);
+    let remote_mgr = RemoteConfigManager::from_config(&local_config);
 
     if let Some(remote_mgr) = remote_mgr {
-        if remote_mgr.autosync {
+        if remote_mgr.remote.autosync.unwrap_or_default() {
             match remote_mgr.fetch().await {
                 Ok(()) => {
                     if let Err(e) = remote_mgr.save(&cfg_path).await {

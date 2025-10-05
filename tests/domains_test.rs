@@ -2,21 +2,35 @@
 
 #[cfg(test)]
 mod tests {
+    use cutler::config::loader::Config;
     use cutler::domains::{collect, effective};
+    use std::collections::HashMap;
     use toml::{Value, value::Table};
+
+    fn config_with_set(set: HashMap<String, HashMap<String, Value>>) -> Config {
+        Config {
+            lock: None,
+            set: Some(set),
+            vars: None,
+            command: None,
+            brew: None,
+            remote: None,
+            config_path: Default::default(),
+        }
+    }
 
     #[test]
     fn test_collect_domains_simple() {
         // [set.domain]
         //   key1 = "value1"
-        let mut table = Table::new();
-        table.insert("key1".into(), Value::String("value1".into()));
-        let mut set_table = Table::new();
-        set_table.insert("domain".into(), Value::Table(table));
-        let mut root = Table::new();
-        root.insert("set".into(), Value::Table(set_table));
+        let mut domain_map = HashMap::new();
+        domain_map.insert("key1".into(), Value::String("value1".into()));
+        let mut set_map = HashMap::new();
+        set_map.insert("domain".into(), domain_map);
 
-        let domains = collect(&root).unwrap();
+        let config = config_with_set(set_map);
+
+        let domains = collect(&config).unwrap();
         assert_eq!(domains.len(), 1);
         let got = domains.get("domain").unwrap();
         assert_eq!(got.get("key1").unwrap().as_str().unwrap(), "value1");
@@ -27,16 +41,23 @@ mod tests {
         // [set.root]
         //   [set.root.nested]
         //   inner_key = "inner_value"
-        let mut inner = Table::new();
+        let mut inner: HashMap<String, Value> = HashMap::new();
         inner.insert("inner_key".into(), Value::String("inner_value".into()));
-        let mut nested = Table::new();
-        nested.insert("nested".into(), Value::Table(inner));
-        let mut set_table = Table::new();
-        set_table.insert("root".into(), Value::Table(nested));
-        let mut root = Table::new();
-        root.insert("set".into(), Value::Table(set_table));
+        let mut nested = HashMap::new();
+        nested.insert(
+            "nested".into(),
+            Value::Table({
+                let mut tbl = Table::new();
+                tbl.insert("inner_key".into(), Value::String("inner_value".into()));
+                tbl
+            }),
+        );
+        let mut set_map = HashMap::new();
+        set_map.insert("root".into(), nested);
 
-        let domains = collect(&root).unwrap();
+        let config = config_with_set(set_map);
+
+        let domains = collect(&config).unwrap();
         assert_eq!(domains.len(), 1);
         let got = domains.get("root.nested").unwrap();
         assert_eq!(
@@ -59,16 +80,18 @@ mod tests {
 
     #[test]
     fn test_collect_domains_set() {
-        let parsed: Table = r#"
+        let parsed: Config = toml::from_str(
+            r#"
 [set.dock]
 tilesize = "50"
 autohide = true
 
 [set.NSGlobalDomain.com.apple.keyboard]
 fnState = false
-"#
-        .parse()
+"#,
+        )
         .unwrap();
+
         let domains = collect(&parsed).unwrap();
         assert_eq!(domains.len(), 2);
         let dock = domains.get("dock").unwrap();

@@ -11,9 +11,9 @@ use crate::domains::convert::prefvalue_to_string;
 fn flatten_domains(
     prefix: Option<String>,
     table: &toml::value::Table,
-    dest: &mut Vec<(String, toml::value::Table)>,
+    dest: &mut Vec<(String, Table)>,
 ) {
-    let mut flat = toml::value::Table::new();
+    let mut flat = Table::new();
 
     for (k, v) in table {
         if let Value::Table(inner) = v {
@@ -34,25 +34,22 @@ fn flatten_domains(
 }
 
 /// Collect all tables in `[set]`, flatten them, and return a map domain → settings.
-pub fn collect(parsed: &Table) -> Result<HashMap<String, toml::value::Table>> {
+pub fn collect(config: &crate::config::loader::Config) -> Result<HashMap<String, Table>> {
     let mut out = HashMap::new();
 
-    for (key, val) in parsed {
-        if key == "set" {
-            if let Value::Table(set_inner) = val {
-                for (domain_key, domain_val) in set_inner {
-                    if let Value::Table(inner) = domain_val {
-                        let mut flat = Vec::with_capacity(inner.len());
-
-                        flatten_domains(Some(domain_key.clone()), inner, &mut flat);
-
-                        for (domain, tbl) in flat {
-                            out.insert(domain, tbl);
-                        }
-                    }
-                }
+    if let Some(set) = &config.set {
+        for (domain_key, domain_val) in set {
+            // domain_val: HashMap<String, Value>
+            let mut inner_table = Table::new();
+            for (k, v) in domain_val {
+                inner_table.insert(k.clone(), v.clone());
             }
-            continue;
+            let mut flat = Vec::with_capacity(inner_table.len());
+            flatten_domains(Some(domain_key.clone()), &inner_table, &mut flat);
+
+            for (domain, tbl) in flat {
+                out.insert(domain, tbl);
+            }
         }
     }
     Ok(out)

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
 use tokio::process::Command;
@@ -12,7 +12,7 @@ use crate::{
     },
     cli::atomic::{should_be_quiet, should_dry_run},
     commands::Runnable,
-    config::loader::load_config,
+    config::loader::Config,
     util::logging::{LogLevel, print_log},
 };
 
@@ -24,11 +24,11 @@ impl Runnable for BrewInstallCmd {
     async fn run(&self) -> Result<()> {
         let dry_run = should_dry_run();
 
-        let config = load_config(true).await?;
+        let config = Config::load().await?;
         let brew_cfg = config
-            .get("brew")
-            .and_then(|i| i.as_table())
-            .context("No [brew] table found in config")?;
+            .brew
+            .clone()
+            .ok_or_else(|| anyhow::anyhow!("No [brew] section found in config"))?;
 
         // ensure homebrew installation
         ensure_brew().await?;

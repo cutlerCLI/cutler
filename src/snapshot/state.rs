@@ -2,7 +2,7 @@
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use std::{env, path::PathBuf};
+use std::{env, path::PathBuf, sync::OnceLock};
 use tokio::fs;
 
 /// A single defaults‑setting change.
@@ -30,6 +30,8 @@ pub struct Snapshot {
     pub settings: Vec<SettingState>,
     pub external: Vec<ExternalCommandState>,
     pub version: String,
+    #[serde(skip)]
+    pub snapshot_path: PathBuf,
 }
 
 impl Snapshot {
@@ -38,15 +40,16 @@ impl Snapshot {
             settings: Vec::new(),
             external: Vec::new(),
             version: env!("CARGO_PKG_VERSION").into(),
+            snapshot_path: get_snapshot_path(),
         }
     }
 
-    pub async fn save(&self, path: &PathBuf) -> Result<()> {
-        if let Some(dir) = path.parent() {
+    pub async fn save(&self) -> Result<()> {
+        if let Some(dir) = self.snapshot_path.parent() {
             fs::create_dir_all(dir).await?;
         }
         let json = serde_json::to_string(self)?;
-        fs::write(path, json).await?;
+        fs::write(&self.snapshot_path, json).await?;
         Ok(())
     }
 
@@ -57,11 +60,24 @@ impl Snapshot {
     }
 }
 
+/// The static snapshot path to use throughout each command run.
+/// This is to make sure that accidental variable changes don't alter the snapshot being written.
+static SNAP_PATH: OnceLock<PathBuf> = OnceLock::new();
+
 /// Where on disk the snapshot lives (`~/.cutler_snapshot`).
 pub fn get_snapshot_path() -> PathBuf {
-    if let Some(home) = env::var_os("HOME") {
-        PathBuf::from(home).join(".cutler_snapshot")
-    } else {
-        PathBuf::from(".cutler_snapshot")
+    if let Some(path) = SNAP_PATH.get().cloned() {
+        return path;
     }
+
+    let path: PathBuf;
+
+    if let Some(home) = dirs::home_dir() {
+        path = PathBuf::from(home).join(".cutler_snapshot");
+    } else {
+        path = PathBuf::from(".cutler_snapshot");
+    }
+
+    SNAP_PATH.set(path.clone()).ok();
+    path
 }
