@@ -44,7 +44,30 @@ impl Runnable for ConfigShowCmd {
         let editor = env::var("EDITOR");
 
         if let Ok(editor_cmd) = editor {
-            let status = Command::new(editor_cmd).arg(&config_path).status();
+            print_log(
+                LogLevel::Info,
+                &format!("Executing: {} {:?}", editor_cmd, config_path),
+            );
+
+            // Split the editor command into program and args, respecting quoted arguments
+            let parsed = shell_words::split(&editor_cmd);
+            let (program, args) = match parsed {
+                Ok(mut parts) if !parts.is_empty() => {
+                    let prog = parts.remove(0);
+                    (prog, parts)
+                }
+                Ok(_) => {
+                    bail!("EDITOR environment variable is empty.");
+                }
+                Err(e) => {
+                    bail!("Failed to parse EDITOR: {}", e);
+                }
+            };
+
+            let mut command = Command::new(program);
+            command.args(&args).arg(&config_path);
+
+            let status = command.status();
             match status {
                 Ok(s) if s.success() => {
                     print_log(LogLevel::Info, "Opened configuration file in editor.");
