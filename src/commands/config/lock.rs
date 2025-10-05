@@ -26,7 +26,7 @@ impl Runnable for ConfigLockCmd {
 
         let dry_run = should_dry_run();
 
-        if config.lock.is_some_and(|val| val) {
+        if matches!(config.lock, Some(true)) {
             bail!("Already locked.");
         } else if dry_run {
             print_log(LogLevel::Dry, "Would lock config file.");

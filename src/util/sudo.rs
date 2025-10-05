@@ -13,10 +13,6 @@ pub async fn run_with_root() -> Result<()> {
         let args: Vec<String> = env::args().collect();
         let status = Command::new("sudo").args(&args).status().await?;
 
-        if !status.success() {
-            bail!("You must use sudo for this command.");
-        }
-
         exit(status.code().unwrap_or(1));
     }
 
