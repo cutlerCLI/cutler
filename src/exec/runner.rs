@@ -3,7 +3,8 @@
 use crate::cli::atomic::should_dry_run;
 use crate::config::loader::Config;
 use crate::util::logging::{BOLD, LogLevel, RESET, print_log};
-use anyhow::{Error, Result, anyhow, bail};
+use anyhow::{Result, anyhow, bail};
+use regex::Regex;
 use std::collections::HashMap;
 use std::env;
 use tokio::process::Command;
@@ -66,71 +67,34 @@ pub fn extract_all_cmds(config: &Config) -> Vec<ExecJob> {
 }
 
 /// Perform variable substitution (env + `[external.variables]`) in a text.
+/// Uses regex to find $var and ${var} patterns.
 fn substitute(text: &str, vars: Option<HashMap<String, String>>) -> String {
-    let mut result = text.to_string();
-    let mut var_positions = Vec::new();
-    let mut i = 0;
+    // regex to match $var or ${var}
+    // $VAR_NAME or ${VAR_NAME}
+    // note: $ followed by [A-Za-z_][A-Za-z0-9_]* or ${...}
+    let re = Regex::new(r"\$([A-Za-z_][A-Za-z0-9_]*)|\$\{([A-Za-z_][A-Za-z0-9_]*)\}").unwrap();
 
-    // find $… or ${…} spans
-    while i < result.len() {
-        if result[i..].starts_with('$') {
-            let start = i;
-            i += 1;
-
-            // ${var}
-            let is_braced = i < result.len() && result[i..].starts_with('{');
-            if is_braced {
-                i += 1;
-                while i < result.len() && result.chars().nth(i) != Some('}') {
-                    i += 1;
-                }
-                if i < result.len() {
-                    i += 1;
-                }
-            } else {
-                // $var
-                while i < result.len()
-                    && result
-                        .chars()
-                        .nth(i)
-                        .map(|c| c.is_alphanumeric() || c == '_')
-                        .unwrap_or(false)
-                {
-                    i += 1;
-                }
-            }
-
-            var_positions.push((start, i));
-        } else {
-            i += 1;
-        }
-    }
-
-    // replace it from back to front
-    for (start, end) in var_positions.into_iter().rev() {
-        let var_ref = &result[start..end];
-
-        // extract variable name
-        let var_name = if var_ref.starts_with("${") && var_ref.ends_with('}') {
-            &var_ref[2..var_ref.len() - 1]
-        } else {
-            &var_ref[1..]
-        };
-
-        // first try custom vars
-        let replacement = vars
-            .as_ref()
+    // clusure to resolve variable name
+    let resolve_var = |var_name: &str| {
+        vars.as_ref()
             .and_then(|map| map.get(var_name))
             .cloned()
-            // else try env
             .or_else(|| env::var(var_name).ok())
-            // else keep literal
-            .unwrap_or_else(|| var_ref.to_string());
+            .unwrap_or_else(|| format!("${{{}}}", var_name))
+    };
 
-        result.replace_range(start..end, &replacement);
-    }
+    // replace all matches
+    let result = re.replace_all(text, |caps: &regex::Captures| {
+        // caps[1] is for $var, caps[2] is for ${var}
+        let var_name = caps
+            .get(1)
+            .or_else(|| caps.get(2))
+            .map(|m| m.as_str())
+            .unwrap_or("");
+        resolve_var(var_name)
+    });
 
-    result
+    result.into_owned()
 }
 
 /// Helper for: run_one(), run_all()
@@ -154,11 +118,7 @@ async fn execute_command(job: ExecJob, dry_run: bool) -> Result<()> {
     let status = child.wait().await?;
 
     if !status.success() {
-        print_log(
-            LogLevel::Error,
-            &format!("External command failed: {}", job.name),
-        );
-        return Err(Error::msg("cmd failed"));
+        bail!(format!("Command {} failed to execute.", job.name))
     }
 
     Ok(())

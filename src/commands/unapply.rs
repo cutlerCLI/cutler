@@ -163,13 +163,13 @@ impl Runnable for UnapplyCmd {
         }
 
         // Restart system services if requested
-        restart_services().await?;
+        restart_services().await;
 
         print_log(LogLevel::Fruitful, "Unapply operation complete.");
         notify(
             "Undoed changes.",
             "For a complete reset of your preferred domains, run `cutler reset`.",
-        )?;
+        );
 
         Ok(())
     }

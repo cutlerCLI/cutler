@@ -11,13 +11,16 @@ use crate::{
 use anyhow::Result;
 
 /// Ask "Y/N?"; returns true if accept_all is set or the user types "y" or "Y"
-pub fn confirm(prompt: &str) -> Result<bool> {
+pub fn confirm(prompt: &str) -> bool {
     if should_accept_all() {
         print_log(LogLevel::Prompt, &format!("{prompt} (auto-accepted)"));
-        return Ok(true);
+        return true;
     }
 
-    Ok(Confirm::new().with_prompt(prompt).interact()?)
+    match Confirm::new().with_prompt(prompt).interact() {
+        Ok(val) => val,
+        Err(_) => false,
+    }
 }
 
 /// Run the `open` shell command on a given argument.
@@ -32,9 +35,9 @@ pub async fn open(arg: &str) -> Result<()> {
 }
 
 /// Send a notification with a dedicated message.
-pub fn notify(title: &str, message: &str) -> Result<()> {
+pub fn notify(title: &str, message: &str) {
     if should_dry_run() {
-        return Ok(());
+        return;
     }
 
     let _ = send_notification(
@@ -48,13 +51,12 @@ pub fn notify(title: &str, message: &str) -> Result<()> {
                 .sound("Blow"),
         ),
     );
-    Ok(())
 }
 
 /// Restart Finder, Dock, SystemUIServer so defaults take effect.
-pub async fn restart_services() -> Result<()> {
+pub async fn restart_services() {
     if should_not_restart_services() {
-        return Ok(());
+        return;
     }
 
     let dry_run = should_dry_run();
@@ -68,12 +70,19 @@ pub async fn restart_services() -> Result<()> {
         if dry_run {
             print_log(LogLevel::Dry, &format!("Would restart {svc}"));
         } else {
-            let out = Command::new("killall").arg(svc).output().await?;
-            if !out.status.success() {
-                print_log(LogLevel::Error, &format!("Failed to restart {svc}"));
-                failed = true;
-            } else {
-                print_log(LogLevel::Info, &format!("{svc} restarted"));
+            match Command::new("killall").arg(svc).output().await {
+                Ok(out) => {
+                    if !out.status.success() {
+                        print_log(LogLevel::Error, &format!("Failed to restart {svc}"));
+                        failed = true;
+                    } else {
+                        print_log(LogLevel::Info, &format!("{svc} restarted"));
+                    }
+                }
+                Err(_) => {
+                    print_log(LogLevel::Error, &format!("Could not restart {svc}"));
+                    continue;
+                }
             }
         }
     }
@@ -84,6 +93,4 @@ pub async fn restart_services() -> Result<()> {
             "Being quick with commands can cause your computer to run out of breath.",
         );
     }
-
-    Ok(())
 }

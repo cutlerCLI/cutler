@@ -71,7 +71,7 @@ impl Runnable for ApplyCmd {
         // remote download logic
         if let Some(url) = &self.url {
             if Config::is_loadable().await
-                && !confirm("Local config exists but a URL was still passed. Proceed?")?
+                && !confirm("Local config exists but a URL was still passed. Proceed?")
             {
                 bail!("Aborted apply: --url is passed despite local config.")
             }
@@ -226,7 +226,7 @@ impl Runnable for ApplyCmd {
             }
 
             // restart system services if requested
-            restart_services().await?;
+            restart_services().await;
         } else {
             for job in &jobs {
                 print_log(
@@ -302,7 +302,7 @@ impl Runnable for ApplyCmd {
         notify(
             "Settings applied!",
             "You may need to log out and back in to allow your Mac some time.",
-        )?;
+        );
 
         Ok(())
     }

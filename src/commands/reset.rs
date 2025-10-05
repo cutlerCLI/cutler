@@ -35,7 +35,7 @@ impl Runnable for ResetCmd {
             "Settings will be reset to macOS defaults, not to their previous values.",
         );
 
-        if !confirm("Are you sure you want to continue?")? {
+        if !confirm("Are you sure you want to continue?") {
             return Ok(());
         }
 
@@ -113,13 +113,13 @@ impl Runnable for ResetCmd {
         );
 
         // restart system services if requested
-        restart_services().await?;
+        restart_services().await;
 
         print_log(LogLevel::Fruitful, "Reset operation complete.");
         notify(
             "All settings reset!",
             "You may start reconfiguring now. Only the preferences that were applied by cutler were reset.",
-        )?;
+        );
 
         Ok(())
     }

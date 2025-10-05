@@ -90,7 +90,7 @@ impl Runnable for FetchCmd {
             }
 
             // prompt user to proceed (unless dry-run)
-            if !dry_run && !confirm("Apply remote config (overwrite local config)?")? {
+            if !dry_run && !confirm("Apply remote config (overwrite local config)?") {
                 print_log(LogLevel::Warning, "Sync aborted by user.");
                 return Ok(());
             }

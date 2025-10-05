@@ -29,6 +29,8 @@ async fn ensure_xcode_clt() -> Result<()> {
         Ok(clt_installed)
     }
 
+    // first round check
+    // if not, continue to installation process
     let clt_installed = check_installed().await?;
 
     if clt_installed {
@@ -48,7 +50,7 @@ async fn ensure_xcode_clt() -> Result<()> {
         "Xcode Command Line Tools are not installed.",
     );
 
-    if confirm("Install Xcode Command Line Tools now?")? {
+    if confirm("Install Xcode Command Line Tools now?") {
         print_log(
             LogLevel::Info,
             "Waiting to find Xcode Command Line Tools after installation...",
@@ -74,6 +76,7 @@ async fn ensure_xcode_clt() -> Result<()> {
         for _ in 0..720 {
             tokio::time::sleep(Duration::from_millis(5000)).await;
 
+            // loop checks here
             if check_installed().await? {
                 print_log(LogLevel::Info, "Xcode Command Line Tools installed.");
                 return Ok(());
@@ -179,7 +182,7 @@ pub async fn ensure_brew() -> Result<()> {
 
         print_log(LogLevel::Warning, "Homebrew is not installed.");
 
-        if confirm("Install Homebrew now?")? {
+        if confirm("Install Homebrew now?") {
             install_homebrew().await?;
 
             // set environment variables for `brew`

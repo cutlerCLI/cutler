@@ -63,7 +63,7 @@ impl Runnable for BrewBackupCmd {
                 );
             }
         } else if brew.no_deps == Some(true)
-            && confirm("The previous backup was without dependencies. Do now too?")?
+            && confirm("The previous backup was without dependencies. Do now too?")
         {
             backup_no_deps = true
         } else {

@@ -27,7 +27,7 @@ impl Runnable for InitCmd {
                 LogLevel::Warning,
                 &format!("Configuration file already exists at {config_path:?}"),
             );
-            if !confirm("Do you want to overwrite it?")? {
+            if !confirm("Do you want to overwrite it?") {
                 bail!("Configuration init aborted.")
             }
         }
