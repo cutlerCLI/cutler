@@ -257,7 +257,7 @@ impl Runnable for ApplyCmd {
             new_snap.save().await?;
             print_log(
                 LogLevel::Info,
-                &format!("Logged system preferences change in snapshot."),
+                "Logged system preferences change in snapshot.",
             );
         } else {
             print_log(
@@ -290,7 +290,7 @@ impl Runnable for ApplyCmd {
 
                     print_log(
                         LogLevel::Info,
-                        &format!("Logged command execution in snapshot."),
+                        "Logged command execution in snapshot.",
                     );
                 }
             } else {

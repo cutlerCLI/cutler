@@ -52,10 +52,9 @@ pub struct Brew {
 
 impl Config {
     pub async fn is_loadable() -> bool {
-        match fs::try_exists(get_config_path().await).await {
-            Ok(exists) => exists,
-            Err(_) => false,
-        }
+        fs::try_exists(get_config_path().await)
+            .await
+            .unwrap_or_default()
     }
 
     pub async fn load() -> Result<Self> {
