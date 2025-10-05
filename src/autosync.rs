@@ -35,11 +35,9 @@ pub async fn try_auto_sync(command: &crate::cli::Command) {
 
     let local_config = match Config::load().await {
         Ok(cfg) => cfg,
-        Err(e) => {
-            print_log(
-                LogLevel::Warning,
-                &format!("Failed to load config for auto-sync: {e}"),
-            );
+        Err(_) => {
+            // Loading error handling is managed by later loads.
+            // Skipped for this one, otherwise the error would double.
             return;
         }
     };
