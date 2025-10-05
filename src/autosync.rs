@@ -4,7 +4,7 @@ use crate::cli::Command;
 use crate::cli::args::BrewSubcmd;
 use crate::config::remote::RemoteConfigManager;
 use crate::{
-    config::{loader::Config, path::get_config_path},
+    config::loader::Config,
     util::logging::{LogLevel, print_log},
 };
 
@@ -28,8 +28,7 @@ pub async fn try_auto_sync(command: &crate::cli::Command) {
         _ => {}
     }
 
-    let cfg_path = get_config_path().await;
-    if !cfg_path.exists() {
+    if !Config::is_loadable().await {
         return;
     }
 
@@ -49,7 +48,7 @@ pub async fn try_auto_sync(command: &crate::cli::Command) {
         if remote_mgr.remote.autosync.unwrap_or_default() {
             match remote_mgr.fetch().await {
                 Ok(()) => {
-                    if let Err(e) = remote_mgr.save(&cfg_path).await {
+                    if let Err(e) = remote_mgr.save().await {
                         print_log(
                             LogLevel::Warning,
                             &format!("Failed to save remote config after auto-sync: {e}"),

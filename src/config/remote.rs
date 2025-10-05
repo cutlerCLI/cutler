@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
-use std::path::PathBuf;
-
 use anyhow::{Context, Result, bail};
 use reqwest::Client;
 use tokio::fs;
 use tokio::sync::OnceCell;
 
 use crate::config::loader::{Config, Remote};
+use crate::config::path::get_config_path;
 use crate::util::logging::{LogLevel, print_log};
 
 /// Manages fetching and storing the remote config.
@@ -63,9 +62,10 @@ impl RemoteConfigManager {
     }
 
     /// Save the fetched remote config to the given path.
-    pub async fn save(&self, config_path: &PathBuf) -> Result<()> {
+    pub async fn save(&self) -> Result<()> {
         let config = self.get()?;
 
+        let config_path = get_config_path().await;
         fs::create_dir_all(config_path.parent().unwrap()).await?;
         fs::write(config_path, config).await?;
 

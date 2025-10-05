@@ -49,6 +49,13 @@ pub struct Brew {
 }
 
 impl Config {
+    pub async fn is_loadable() -> bool {
+        match fs::try_exists(get_config_path().await).await {
+            Ok(exists) => exists,
+            Err(_) => false,
+        }
+    }
+
     pub async fn load() -> Result<Self> {
         let config_path = get_config_path().await;
         let data = fs::read_to_string(&config_path).await?;
