@@ -4,12 +4,11 @@ use async_trait::async_trait;
 use clap::Args;
 
 use anyhow::{Result, bail};
-use tokio::fs;
 
 use crate::{
     cli::atomic::should_dry_run,
     commands::Runnable,
-    config::{loader::Config, path::get_config_path},
+    config::loader::Config,
     util::logging::{LogLevel, print_log},
 };
 
@@ -19,15 +18,13 @@ pub struct ConfigUnlockCmd;
 #[async_trait]
 impl Runnable for ConfigUnlockCmd {
     async fn run(&self) -> Result<()> {
-        let cfg_path = get_config_path().await;
+        let mut config = Config::load().await?;
 
-        if !fs::try_exists(&cfg_path).await? {
+        if !Config::is_loadable().await {
             bail!("Cannot find a configuration to unlock in the first place.")
         }
 
         let dry_run = should_dry_run();
-
-        let mut config = Config::load().await?;
 
         if config.lock.is_none_or(|val| !val) {
             bail!("Already unlocked.")

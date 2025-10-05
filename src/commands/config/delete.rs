@@ -7,7 +7,7 @@ use tokio::fs;
 use crate::{
     cli::atomic::should_dry_run,
     commands::{Runnable, UnapplyCmd},
-    config::path::get_config_path,
+    config::{loader::Config, path::get_config_path},
     snapshot::{Snapshot, get_snapshot_path},
     util::{
         io::confirm,
@@ -22,10 +22,9 @@ pub struct ConfigDeleteCmd;
 #[async_trait]
 impl Runnable for ConfigDeleteCmd {
     async fn run(&self) -> Result<()> {
-        let config_path = get_config_path().await;
         let dry_run = should_dry_run();
 
-        if !fs::try_exists(&config_path).await? {
+        if !Config::is_loadable().await {
             print_log(LogLevel::Info, "No config file to delete.");
             return Ok(());
         }
@@ -48,6 +47,8 @@ impl Runnable for ConfigDeleteCmd {
         }
 
         // finally, delete config and snapshot
+        let config_path = get_config_path().await;
+
         if dry_run {
             print_log(LogLevel::Dry, &format!("Would delete {config_path:?}"));
             if fs::try_exists(&snapshot_path).await? {

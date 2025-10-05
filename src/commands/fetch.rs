@@ -102,7 +102,7 @@ impl Runnable for FetchCmd {
                 &format!("Would overwrite {cfg_path:?} with remote config."),
             );
         } else {
-            remote_mgr.save(&cfg_path).await?;
+            remote_mgr.save().await?;
 
             print_log(LogLevel::Fruitful, "Local config updated from remote!");
         }

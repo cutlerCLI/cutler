@@ -69,10 +69,8 @@ impl Runnable for ApplyCmd {
         let dry_run = should_dry_run();
 
         // remote download logic
-        let config_path = get_config_path().await;
-
         if let Some(url) = &self.url {
-            if fs::try_exists(&config_path).await?
+            if Config::is_loadable().await
                 && !confirm("Local config exists but a URL was still passed. Proceed?")?
             {
                 bail!("Aborted apply: --url is passed despite local config.")
@@ -84,11 +82,14 @@ impl Runnable for ApplyCmd {
             };
             let remote_mgr = RemoteConfigManager::new(remote);
             remote_mgr.fetch().await?;
-            remote_mgr.save(&config_path).await?;
+            remote_mgr.save().await?;
 
             print_log(
                 LogLevel::Info,
-                &format!("Remote config downloaded at path: {config_path:?}"),
+                &format!(
+                    "Remote config downloaded at path: {:?}",
+                    get_config_path().await
+                ),
             );
         }
 

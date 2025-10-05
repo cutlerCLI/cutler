@@ -3,7 +3,6 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
-use tokio::fs;
 
 use crate::{
     brew::{
@@ -12,7 +11,7 @@ use crate::{
     },
     cli::atomic::should_dry_run,
     commands::Runnable,
-    config::{loader::Config, path::get_config_path},
+    config::loader::Config,
     util::{
         io::confirm,
         logging::{LogLevel, print_log},
@@ -29,7 +28,6 @@ pub struct BrewBackupCmd {
 #[async_trait]
 impl Runnable for BrewBackupCmd {
     async fn run(&self) -> Result<()> {
-        let cfg_path = get_config_path().await;
         let dry_run = should_dry_run();
         let mut backup_no_deps = self.no_deps;
 
@@ -37,7 +35,7 @@ impl Runnable for BrewBackupCmd {
         ensure_brew().await?;
 
         // init config
-        let mut config = if fs::try_exists(&cfg_path).await? {
+        let mut config = if Config::is_loadable().await {
             Config::load().await?
         } else {
             print_log(
@@ -163,15 +161,21 @@ impl Runnable for BrewBackupCmd {
         if !dry_run {
             config.save().await?;
 
-            print_log(LogLevel::Info, &format!("Backup saved to {cfg_path:?}"));
+            print_log(
+                LogLevel::Info,
+                &format!("Backup saved to {:?}", config.config_path),
+            );
             print_log(
                 LogLevel::Fruitful,
-                &format!("Done! You can find the backup in your config file location {cfg_path:?}"),
+                &format!(
+                    "Done! You can find the backup in your config file location {:?}",
+                    config.config_path
+                ),
             );
         } else {
             print_log(
                 LogLevel::Info,
-                &format!("Backup would be saved to {cfg_path:?}"),
+                &format!("Backup would be saved to {:?}", config.config_path),
             );
         }
 
