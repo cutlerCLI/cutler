@@ -288,10 +288,7 @@ impl Runnable for ApplyCmd {
                     new_snap.exec_run_count = exec_run_count;
                     new_snap.save().await?;
 
-                    print_log(
-                        LogLevel::Info,
-                        "Logged command execution in snapshot.",
-                    );
+                    print_log(LogLevel::Info, "Logged command execution in snapshot.");
                 }
             } else {
                 print_log(
