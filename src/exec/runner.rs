@@ -129,14 +129,12 @@ async fn execute_command(job: ExecJob, dry_run: bool) -> Result<()> {
 fn all_bins_present(required: &[String]) -> bool {
     let mut present = true;
 
-    if required.is_empty() {
-        return present;
-    }
-
-    for bin in required {
-        if which::which(bin).is_err() {
-            print_log(LogLevel::Warning, &format!("{bin} not found in $PATH."));
-            present = false;
+    if !required.is_empty() {
+        for bin in required {
+            if which::which(bin).is_err() {
+                print_log(LogLevel::Warning, &format!("{bin} not found in $PATH."));
+                present = false;
+            }
         }
     }
 
