@@ -17,7 +17,10 @@ pub fn confirm(prompt: &str) -> bool {
         return true;
     }
 
-    Confirm::new().with_prompt(prompt).interact().unwrap_or_default()
+    Confirm::new()
+        .with_prompt(prompt)
+        .interact()
+        .unwrap_or_default()
 }
 
 /// Run the `open` shell command on a given argument.
