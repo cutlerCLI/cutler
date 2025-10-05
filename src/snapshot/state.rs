@@ -73,7 +73,7 @@ pub fn get_snapshot_path() -> PathBuf {
     let path: PathBuf;
 
     if let Some(home) = dirs::home_dir() {
-        path = PathBuf::from(home).join(".cutler_snapshot");
+        path = home.join(".cutler_snapshot");
     } else {
         path = PathBuf::from(".cutler_snapshot");
     }

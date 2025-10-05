@@ -24,9 +24,9 @@ pub fn extract_cmd(config: &Config, name: &str) -> Result<ExternalCommandState> 
     let run = substitute(&command.run, config.vars.as_ref().cloned());
 
     // extra fields
-    let sudo = command.sudo.clone().unwrap_or_default();
-    let flag = command.flag.clone().unwrap_or_default();
-    let ensure_first = command.ensure_first.clone().unwrap_or_default();
+    let sudo = command.sudo.unwrap_or_default();
+    let flag = command.flag.unwrap_or_default();
+    let ensure_first = command.ensure_first.unwrap_or_default();
     let required = command.required.clone().unwrap_or_default();
 
     Ok(ExternalCommandState {

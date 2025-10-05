@@ -29,7 +29,7 @@ impl Runnable for ConfigUnlockCmd {
 
         let mut config = Config::load().await?;
 
-        if config.lock.is_none_or(|val| val == false) {
+        if config.lock.is_none_or(|val| !val) {
             bail!("Already unlocked.")
         } else if dry_run {
             print_log(LogLevel::Dry, "Would unlock config file.");

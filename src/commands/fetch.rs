@@ -39,7 +39,7 @@ impl Runnable for FetchCmd {
         remote_mgr.fetch().await?;
 
         if !self.force {
-            let remote_config = remote_mgr.get_config()?;
+            let remote_config = remote_mgr.get_parsed()?;
 
             // comparison begins
             let mut changes = Vec::new();

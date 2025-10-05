@@ -28,7 +28,7 @@ impl RemoteConfigManager {
 
     /// Parse the [remote] section from a serde-based Config and create a manager.
     pub fn from_config(config: &Config) -> Option<Self> {
-        config.remote.clone().map(|remote| Self::new(remote))
+        config.remote.clone().map(Self::new)
     }
 
     /// Fetch the remote config file as TOML, only once per instance.
@@ -87,7 +87,7 @@ impl RemoteConfigManager {
     }
 
     /// Get a parsed version of the output of .get() as serde-based Config.
-    pub fn get_config(&self) -> Result<Config> {
+    pub fn get_parsed(&self) -> Result<Config> {
         let config_str = self.get()?;
         let config = toml::from_str::<Config>(config_str)?;
         Ok(config)
