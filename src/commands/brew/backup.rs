@@ -161,7 +161,6 @@ impl Runnable for BrewBackupCmd {
 
         // write backup
         if !dry_run {
-            fs::create_dir_all(cfg_path.parent().unwrap()).await?;
             config.save().await?;
 
             print_log(LogLevel::Info, &format!("Backup saved to {cfg_path:?}"));

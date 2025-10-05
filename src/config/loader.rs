@@ -72,6 +72,11 @@ impl Config {
 
     pub async fn save(&self) -> Result<()> {
         let data = toml::to_string(self)?;
+
+        if let Some(dir) = self.config_path.parent() {
+            fs::create_dir_all(dir).await?;
+        }
+
         fs::write(&self.config_path, data).await?;
         Ok(())
     }
