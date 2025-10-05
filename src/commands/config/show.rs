@@ -16,11 +16,7 @@ use crate::{
 };
 
 #[derive(Debug, Args)]
-pub struct ConfigShowCmd {
-    /// Show your configuration in $EDITOR.
-    #[arg(short, long)]
-    pub editor: bool,
-}
+pub struct ConfigShowCmd {}
 
 #[async_trait]
 impl Runnable for ConfigShowCmd {
@@ -44,11 +40,6 @@ impl Runnable for ConfigShowCmd {
         let editor = env::var("EDITOR");
 
         if let Ok(editor_cmd) = editor {
-            print_log(
-                LogLevel::Info,
-                &format!("Executing: {} {:?}", editor_cmd, config_path),
-            );
-
             // Split the editor command into program and args, respecting quoted arguments
             let parsed = shell_words::split(&editor_cmd);
             let (program, args) = match parsed {
@@ -64,6 +55,14 @@ impl Runnable for ConfigShowCmd {
                 }
             };
 
+            print_log(
+                LogLevel::Info,
+                &format!("Executing: {} {:?}", editor_cmd, config_path),
+            );
+            print_log(
+                LogLevel::Fruitful,
+                "Opening configuration in editor. Close editor to quit.",
+            );
             let mut command = Command::new(program);
             command.args(&args).arg(&config_path);
 
@@ -71,7 +70,6 @@ impl Runnable for ConfigShowCmd {
             match status {
                 Ok(s) if s.success() => {
                     print_log(LogLevel::Info, "Opened configuration file in editor.");
-                    return Ok(());
                 }
                 Ok(s) => {
                     bail!("Editor exited with status: {}", s);
@@ -80,15 +78,17 @@ impl Runnable for ConfigShowCmd {
                     bail!("Failed to launch editor: {}", e);
                 }
             }
+        } else {
+            print_log(
+                LogLevel::Info,
+                "Editor could not be found, opening normally:\n",
+            );
+            // read and print the file
+            let content = fs::read_to_string(&config_path).await?;
+            if !should_be_quiet() {
+                println!("{content}");
+            }
         }
-
-        // read and print the file
-        let content = fs::read_to_string(&config_path).await?;
-        if !should_be_quiet() {
-            println!("{content}");
-        }
-
-        print_log(LogLevel::Info, "Displayed configuration file.");
 
         Ok(())
     }
