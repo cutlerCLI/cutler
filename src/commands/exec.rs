@@ -20,7 +20,7 @@ pub struct ExecCmd {
     regular: bool,
 
     /// Execute flagged commands only.
-    #[arg(short, long, conflicts_with = "all")]
+    #[arg(short, long, conflicts_with = "regular")]
     flagged: bool,
 }
 
