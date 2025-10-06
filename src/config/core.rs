@@ -14,6 +14,7 @@ use crate::config::path::get_config_path;
 /// This is a fully serde-compatible struct primarily meant to be used within cutler's source code
 /// to pass around information related to the config file.
 #[derive(Deserialize, Serialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct Config {
     pub lock: Option<bool>,
     pub set: Option<HashMap<String, HashMap<String, Value>>>,
@@ -27,6 +28,7 @@ pub struct Config {
 
 /// Represents the [remote] table.
 #[derive(Deserialize, PartialEq, Serialize, Clone, Debug)]
+#[serde(deny_unknown_fields)]
 pub struct Remote {
     pub url: String,
     pub autosync: Option<bool>,
@@ -34,6 +36,7 @@ pub struct Remote {
 
 /// Represents [command.***] tables.
 #[derive(Deserialize, Serialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct Command {
     pub run: String,
     pub ensure_first: Option<bool>,
@@ -44,6 +47,7 @@ pub struct Command {
 
 /// Represents the [brew] table.
 #[derive(Deserialize, Serialize, PartialEq, Clone, Debug, Default)]
+#[serde(deny_unknown_fields)]
 pub struct Brew {
     pub formulae: Option<Vec<String>>,
     pub casks: Option<Vec<String>>,

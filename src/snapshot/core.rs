@@ -9,6 +9,7 @@ use crate::snapshot::get_snapshot_path;
 
 /// A single defaults‑setting change.
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct SettingState {
     pub domain: String,
     pub key: String,
@@ -20,6 +21,7 @@ pub struct SettingState {
 /// This struct has also implemented I/O operations and functions for using across cutler's codebase,
 /// in order to properly interact with the snapshot file without much hassle.
 #[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(deny_unknown_fields)]
 pub struct Snapshot {
     pub settings: Vec<SettingState>,
     pub exec_run_count: i32,
