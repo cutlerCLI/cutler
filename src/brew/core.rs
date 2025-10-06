@@ -16,22 +16,20 @@ use tokio::process::Command;
 /// Ensures Xcode Command Line Tools are installed.
 /// If not, prompts the user to install them (unless dry_run).
 async fn ensure_xcode_clt() -> Result<()> {
-    async fn check_installed() -> Result<bool> {
-        let output = Command::new("xcode-select").arg("-p").output().await?;
-
-        let clt_installed = if output.status.success() {
-            let path = String::from_utf8_lossy(&output.stdout).trim().to_string();
-            !path.is_empty()
-        } else {
-            false
-        };
-
-        Ok(clt_installed)
+    async fn check_installed() -> bool {
+        let output = Command::new("xcode-select").arg("-p").output().await;
+        match output {
+            Ok(out) if out.status.success() => {
+                let path = String::from_utf8_lossy(&out.stdout).trim().to_string();
+                !path.is_empty()
+            }
+            _ => false,
+        }
     }
 
     // first round check
     // if not, continue to installation process
-    let clt_installed = check_installed().await?;
+    let clt_installed = check_installed().await;
 
     if clt_installed {
         return Ok(());
@@ -77,7 +75,7 @@ async fn ensure_xcode_clt() -> Result<()> {
             tokio::time::sleep(Duration::from_millis(5000)).await;
 
             // loop checks here
-            if check_installed().await? {
+            if check_installed().await {
                 print_log(LogLevel::Info, "Xcode Command Line Tools installed.");
                 return Ok(());
             }
