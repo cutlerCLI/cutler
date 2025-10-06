@@ -66,14 +66,14 @@ impl Snapshot {
 
     /// Loads the snapshot from the given path.
     pub async fn load(path: &PathBuf) -> Result<Self> {
-        if Self::is_loadable().await {
+        if fs::try_exists(path).await.unwrap_or_default() {
             let txt = fs::read_to_string(path).await?;
             let mut snap: Snapshot = serde_json::from_str(&txt)?;
 
             snap.path = path.clone();
             Ok(snap)
         } else {
-            bail!("Snapshot path could not be decided, so cannot load.")
+            bail!("Invalid path, cannot load.")
         }
     }
 
