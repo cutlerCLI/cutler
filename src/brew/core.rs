@@ -223,9 +223,12 @@ pub async fn brew_list(list_type: BrewListType) -> Result<Vec<String>> {
         vec!["list", "--installed-as-dependency"]
     };
 
-    let output = Command::new("brew").args(args).output().await?;
+    let output = Command::new("brew").args(&args).output().await?;
 
-    print_log(LogLevel::Info, "Running `brew list` command for listing...");
+    print_log(
+        LogLevel::Info,
+        &format!("{list_type} listing: brew {}", args.join(" ")),
+    );
 
     if !output.status.success() {
         return Ok(vec![]);
