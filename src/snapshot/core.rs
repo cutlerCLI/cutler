@@ -33,8 +33,8 @@ pub struct Snapshot {
 
 impl Snapshot {
     /// Checks if the snapshot exists.
-    /// This is a more tinified approach for regular fs::try_exists() calls as get_snapshot_path() returns a Result
-    /// and could be cumbersome to implement everywhere in the codebase.
+    /// This is a more tinified approach for regular `fs::try_exists()` calls as `get_snapshot_path()`
+    /// returns a Result and could be cumbersome to implement everywhere in the codebase.
     pub async fn is_loadable() -> bool {
         if let Ok(snap_path) = get_snapshot_path() {
             fs::try_exists(snap_path).await.unwrap_or_default()
@@ -44,7 +44,7 @@ impl Snapshot {
     }
 
     /// Creates a new snapshot.
-    /// NOTE: Snapshot.path is decided by get_snapshot_path().
+    /// Note that the path field is decided by `get_snapshot_path()`.
     pub fn new() -> Self {
         Snapshot {
             settings: Vec::new(),
