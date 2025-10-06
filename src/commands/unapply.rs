@@ -9,11 +9,13 @@ use std::collections::HashMap;
 use crate::{
     cli::atomic::should_dry_run,
     commands::Runnable,
+    config::core::Config,
     domains::convert::{string_to_toml_value, toml_to_prefvalue},
     snapshot::{core::Snapshot, get_snapshot_path},
     util::{
         io::{notify, restart_services},
         logging::{LogLevel, print_log},
+        sha::get_digest,
     },
 };
 
@@ -26,7 +28,7 @@ impl Runnable for UnapplyCmd {
         if !Snapshot::is_loadable().await {
             bail!(
                 "No snapshot found. Please run `cutler apply` first before unapplying.\n\
-                            As a fallback, you can use `cutler reset` to reset settings to their defaults."
+                As a fallback, you can use `cutler reset` to reset settings to their defaults."
             );
         }
 
@@ -35,6 +37,19 @@ impl Runnable for UnapplyCmd {
         // load snapshot from disk
         let snap_path = get_snapshot_path()?;
         let snapshot = Snapshot::load(&snap_path).await?;
+
+        let config = Config::load().await?;
+
+        if snapshot.digest != get_digest(config.path)? {
+            print_log(
+                LogLevel::Warning,
+                "Config has been modified since last application.",
+            );
+            print_log(
+                LogLevel::Warning,
+                "Please note that only the applied modifications will be unapplied.",
+            );
+        }
 
         // prepare undo operations, grouping by domain for efficiency
         let mut batch_restores: HashMap<Domain, Vec<(String, defaults_rs::PrefValue)>> =

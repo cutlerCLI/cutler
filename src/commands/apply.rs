@@ -16,12 +16,13 @@ use crate::{
     util::{
         io::{confirm, notify, restart_services},
         logging::{GREEN, LogLevel, RESET, print_log},
+        sha::get_digest,
     },
 };
 use anyhow::{Result, bail};
 use async_trait::async_trait;
 use clap::Args;
-use defaults_rs::{Domain, preferences::Preferences};
+use defaults_rs::{Domain, PrefValue, preferences::Preferences};
 use toml::Value;
 
 #[derive(Args, Debug)]
@@ -94,6 +95,7 @@ impl Runnable for ApplyCmd {
 
         // parse + flatten domains
         let config = Config::load().await?;
+        let digest = get_digest(config.path.clone())?;
         let domains = collector::collect(&config)?;
 
         // load the old snapshot (if any), otherwise create a new instance
@@ -181,7 +183,7 @@ impl Runnable for ApplyCmd {
 
         // use defaults-rs batch write API for all changed settings
         // collect jobs into a Vec<(Domain, String, PrefValue)>
-        let mut batch: Vec<(Domain, String, defaults_rs::PrefValue)> = Vec::new();
+        let mut batch: Vec<(Domain, String, PrefValue)> = Vec::new();
 
         for job in &jobs {
             let domain_obj = if job.domain == "NSGlobalDomain" {
@@ -251,6 +253,9 @@ impl Runnable for ApplyCmd {
                 original_value: job.original.clone(),
             });
         }
+
+        // save config digest to snapshot
+        new_snap.digest = digest;
 
         if !dry_run {
             new_snap.save().await?;

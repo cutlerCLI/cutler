@@ -11,7 +11,7 @@ use tokio::fs;
 use crate::{
     cli::atomic::{should_be_quiet, should_dry_run},
     commands::Runnable,
-    config::{core::Config, path::get_config_path},
+    config::path::get_config_path,
     util::logging::{LogLevel, print_log},
 };
 
@@ -21,11 +21,7 @@ pub struct ConfigShowCmd {}
 #[async_trait]
 impl Runnable for ConfigShowCmd {
     async fn run(&self) -> Result<()> {
-        if !Config::is_loadable().await {
-            bail!("Cannot show a configuration that doesn't exist.");
-        }
-
-        let config_path = get_config_path().await;
+        let config_path = get_config_path().await?;
 
         // handle dry‑run
         if should_dry_run() {

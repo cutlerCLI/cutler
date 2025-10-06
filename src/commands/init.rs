@@ -7,7 +7,7 @@ use tokio::fs;
 
 use crate::{
     commands::Runnable,
-    config::path::get_config_path,
+    config::{core::Config, path::get_config_path},
     util::{
         io::confirm,
         logging::{LogLevel, print_log},
@@ -20,9 +20,9 @@ pub struct InitCmd;
 #[async_trait]
 impl Runnable for InitCmd {
     async fn run(&self) -> Result<()> {
-        let config_path = get_config_path().await;
+        let config_path = get_config_path().await?;
 
-        if fs::try_exists(&config_path).await? {
+        if Config::is_loadable().await {
             print_log(
                 LogLevel::Warning,
                 &format!("Configuration file already exists at {config_path:?}"),

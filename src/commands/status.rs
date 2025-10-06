@@ -13,7 +13,7 @@ use crate::{
 use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Args, Debug)]
 pub struct StatusCmd {
@@ -41,7 +41,7 @@ impl Runnable for StatusCmd {
         // preference check
         {
             let mut outcomes = Vec::with_capacity(entries.len());
-            let mut domain_has_diff = std::collections::HashMap::new();
+            let mut domain_has_diff = HashMap::new();
 
             // let the checks begin!
             for (domain, key, value) in entries.iter() {

@@ -15,7 +15,7 @@ mod tests {
             command: None,
             brew: None,
             remote: None,
-            config_path: Default::default(),
+            path: Default::default(),
         }
     }
 

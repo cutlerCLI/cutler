@@ -163,19 +163,19 @@ impl Runnable for BrewBackupCmd {
 
             print_log(
                 LogLevel::Info,
-                &format!("Backup saved to {:?}", config.config_path),
+                &format!("Backup saved to {:?}", config.path),
             );
             print_log(
                 LogLevel::Fruitful,
                 &format!(
                     "Done! You can find the backup in your config file location {:?}",
-                    config.config_path
+                    config.path
                 ),
             );
         } else {
             print_log(
                 LogLevel::Info,
-                &format!("Backup would be saved to {:?}", config.config_path),
+                &format!("Backup would be saved to {:?}", config.path),
             );
         }
 

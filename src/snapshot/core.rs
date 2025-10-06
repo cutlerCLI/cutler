@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 use std::{env, path::PathBuf};
 use tokio::fs;
@@ -24,6 +24,7 @@ pub struct Snapshot {
     pub settings: Vec<SettingState>,
     pub exec_run_count: i32,
     pub version: String,
+    pub digest: String,
     #[serde(skip)]
     pub path: PathBuf,
 }
@@ -33,9 +34,11 @@ impl Snapshot {
     /// This is a more tinified approach for regular fs::try_exists() calls as get_snapshot_path() returns a Result
     /// and could be cumbersome to implement everywhere in the codebase.
     pub async fn is_loadable() -> bool {
-        fs::try_exists(get_snapshot_path().unwrap_or_default())
-            .await
-            .unwrap_or_default()
+        if let Ok(snap_path) = get_snapshot_path() {
+            fs::try_exists(snap_path).await.unwrap_or_default()
+        } else {
+            false
+        }
     }
 
     /// Creates a new snapshot.
@@ -44,35 +47,34 @@ impl Snapshot {
         Snapshot {
             settings: Vec::new(),
             version: env!("CARGO_PKG_VERSION").into(),
-            path: get_snapshot_path().expect("Failed to get snapshot path"),
+            path: get_snapshot_path().expect("Failed to get snapshot path."),
             exec_run_count: 0,
+            digest: String::new(),
         }
     }
 
     /// Saves the snapshot into the designated path for the instance.
     pub async fn save(&self) -> Result<()> {
         if let Some(dir) = self.path.parent() {
-            fs::create_dir_all(dir)
-                .await
-                .context("Failed to create snapshot directory")?;
+            fs::create_dir_all(dir).await?;
         }
-        let json = serde_json::to_string(self).context("Failed to serialize Snapshot to JSON")?;
-        fs::write(&self.path, json)
-            .await
-            .with_context(|| format!("Failed to write snapshot to {:?}", &self.path))?;
+
+        let json = serde_json::to_string_pretty(self)?;
+        fs::write(&self.path, json).await?;
         Ok(())
     }
 
     /// Loads the snapshot from the given path.
     pub async fn load(path: &PathBuf) -> Result<Self> {
-        let txt = fs::read_to_string(path)
-            .await
-            .with_context(|| format!("Failed to read snapshot file {:?}", path))?;
-        let mut snap: Snapshot =
-            serde_json::from_str(&txt).context("Failed to deserialize Snapshot from JSON")?;
+        if Self::is_loadable().await {
+            let txt = fs::read_to_string(path).await?;
+            let mut snap: Snapshot = serde_json::from_str(&txt)?;
 
-        snap.path = path.clone();
-        Ok(snap)
+            snap.path = path.clone();
+            Ok(snap)
+        } else {
+            bail!("Snapshot path could not be decided, so cannot load.")
+        }
     }
 
     /// Deletes the snapshot.

@@ -47,7 +47,7 @@ impl Runnable for ConfigDeleteCmd {
         }
 
         // finally, delete config and snapshot
-        let config_path = get_config_path().await;
+        let config_path = get_config_path().await?;
 
         if dry_run {
             print_log(LogLevel::Dry, &format!("Would delete {config_path:?}"));

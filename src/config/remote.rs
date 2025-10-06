@@ -64,11 +64,10 @@ impl RemoteConfigManager {
     /// Save the fetched remote config to the given path.
     pub async fn save(&self) -> Result<()> {
         let config = self.get()?;
+        let config_path = get_config_path().await?;
 
-        let config_path = get_config_path().await;
         fs::create_dir_all(config_path.parent().unwrap()).await?;
         fs::write(config_path, config).await?;
-
         print_log(
             LogLevel::Info,
             "Successfully saved remote config to destination.",

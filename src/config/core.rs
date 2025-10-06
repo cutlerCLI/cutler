@@ -2,7 +2,7 @@
 
 use std::{collections::HashMap, path::PathBuf};
 
-use anyhow::Result;
+use anyhow::{Result, bail};
 use serde::{Deserialize, Serialize};
 use tokio::fs;
 use toml::Value;
@@ -21,7 +21,7 @@ pub struct Config {
     pub brew: Option<Brew>,
     pub remote: Option<Remote>,
     #[serde(skip)]
-    pub config_path: PathBuf,
+    pub path: PathBuf,
 }
 
 /// Represents the [remote] table.
@@ -52,18 +52,24 @@ pub struct Brew {
 
 impl Config {
     pub async fn is_loadable() -> bool {
-        fs::try_exists(get_config_path().await)
-            .await
-            .unwrap_or_default()
+        if let Ok(path) = get_config_path().await {
+            fs::try_exists(path).await.unwrap_or_default()
+        } else {
+            false
+        }
     }
 
     pub async fn load() -> Result<Self> {
-        let config_path = get_config_path().await;
-        let data = fs::read_to_string(&config_path).await?;
-        let mut config: Config = toml::from_str(&data)?;
+        if Self::is_loadable().await {
+            let config_path = get_config_path().await.unwrap();
+            let data = fs::read_to_string(&config_path).await?;
+            let mut config: Config = toml::from_str(&data)?;
 
-        config.config_path = config_path;
-        Ok(config)
+            config.path = config_path;
+            Ok(config)
+        } else {
+            bail!("Config path could not be decided, so cannot load.")
+        }
     }
 
     pub async fn new() -> Self {
@@ -74,18 +80,18 @@ impl Config {
             command: None,
             brew: None,
             remote: None,
-            config_path: get_config_path().await,
+            path: get_config_path().await.unwrap_or_default(),
         }
     }
 
     pub async fn save(&self) -> Result<()> {
-        let data = toml::to_string(self)?;
-
-        if let Some(dir) = self.config_path.parent() {
+        if let Some(dir) = self.path.parent() {
             fs::create_dir_all(dir).await?;
         }
 
-        fs::write(&self.config_path, data).await?;
+        let data = toml::to_string(self)?;
+        fs::write(&self.path, data).await?;
+
         Ok(())
     }
 }

@@ -7,7 +7,7 @@ use clap::Args;
 use crate::{
     cli::atomic::should_dry_run,
     commands::Runnable,
-    config::{core::Config, path::get_config_path, remote::RemoteConfigManager},
+    config::{core::Config, remote::RemoteConfigManager},
     util::{
         io::confirm,
         logging::{BOLD, LogLevel, RESET, print_log},
@@ -24,9 +24,7 @@ pub struct FetchCmd {
 #[async_trait]
 impl Runnable for FetchCmd {
     async fn run(&self) -> Result<()> {
-        let cfg_path = get_config_path().await;
         let dry_run = should_dry_run();
-
         let local_config = Config::load().await?;
 
         // parse [remote] section
@@ -99,7 +97,10 @@ impl Runnable for FetchCmd {
         if dry_run {
             print_log(
                 LogLevel::Dry,
-                &format!("Would overwrite {cfg_path:?} with remote config."),
+                &format!(
+                    "Would overwrite {:?} with remote config.",
+                    local_config.path
+                ),
             );
         } else {
             remote_mgr.save().await?;

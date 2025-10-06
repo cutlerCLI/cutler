@@ -38,7 +38,7 @@ mod tests {
             command: Some(command_map),
             brew: None,
             remote: None,
-            config_path: Default::default(),
+            path: Default::default(),
         };
 
         assert!(run_all(config, ExecMode::Regular).await.is_ok());
@@ -73,7 +73,7 @@ mod tests {
             command: Some(command_map),
             brew: None,
             remote: None,
-            config_path: Default::default(),
+            path: Default::default(),
         };
 
         // Dry‑run single command
