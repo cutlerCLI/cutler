@@ -51,6 +51,9 @@ pub struct Brew {
 }
 
 impl Config {
+    /// If the configuration file can be loaded.
+    /// Since this is an independent function, it is generally encouraged over manually
+    /// checking the existence of the path derived from `get_config_path()`.
     pub async fn is_loadable() -> bool {
         if let Ok(path) = get_config_path().await {
             fs::try_exists(path).await.unwrap_or_default()
@@ -59,6 +62,8 @@ impl Config {
         }
     }
 
+    /// Loads the configuration. Errors out if the configuration is not loadable
+    /// (decided by `Self::is_loadable()`).
     pub async fn load() -> Result<Self> {
         if Self::is_loadable().await {
             let config_path = get_config_path().await.unwrap();
@@ -72,6 +77,9 @@ impl Config {
         }
     }
 
+    /// Creates a new `Config` instance.
+    /// Note that the path field is pre-initialized with `get_config_path()`,
+    /// which can also be an empty `PathBuf`.
     pub async fn new() -> Self {
         Config {
             lock: None,
@@ -84,12 +92,14 @@ impl Config {
         }
     }
 
+    /// Saves the configuration instance onto disk.
+    /// If the parent directories do not exist, they are also created in the process.
     pub async fn save(&self) -> Result<()> {
         if let Some(dir) = self.path.parent() {
             fs::create_dir_all(dir).await?;
         }
 
-        let data = toml::to_string(self)?;
+        let data = toml::to_string_pretty(self)?;
         fs::write(&self.path, data).await?;
 
         Ok(())
