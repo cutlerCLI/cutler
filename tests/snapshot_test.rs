@@ -13,7 +13,7 @@ mod tests {
     #[test]
     fn test_get_snapshot_path() {
         // Test that get_snapshot_path returns .cutler_snapshot in the home directory
-        let snapshot_path = get_snapshot_path();
+        let snapshot_path = get_snapshot_path().unwrap();
         assert_eq!(
             snapshot_path,
             dirs::home_dir().unwrap().join(".cutler_snapshot")

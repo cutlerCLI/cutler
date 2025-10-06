@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result, bail};
+use anyhow::{Result, bail};
 use async_trait::async_trait;
 use clap::Args;
 use defaults_rs::{Domain, preferences::Preferences};
 use std::collections::HashMap;
-use tokio::fs;
 
 use crate::{
     cli::atomic::should_dry_run,
@@ -24,21 +23,18 @@ pub struct UnapplyCmd;
 #[async_trait]
 impl Runnable for UnapplyCmd {
     async fn run(&self) -> Result<()> {
-        let snap_path = get_snapshot_path();
-
-        if !fs::try_exists(&snap_path).await? {
+        if !Snapshot::is_loadable().await {
             bail!(
                 "No snapshot found. Please run `cutler apply` first before unapplying.\n\
-                As a fallback, you can use `cutler reset` to reset settings to their defaults."
+                            As a fallback, you can use `cutler reset` to reset settings to their defaults."
             );
         }
 
         let dry_run = should_dry_run();
 
         // load snapshot from disk
-        let snapshot = Snapshot::load(&snap_path)
-            .await
-            .context(format!("Failed to load snapshot from {snap_path:?}"))?;
+        let snap_path = get_snapshot_path()?;
+        let snapshot = Snapshot::load(&snap_path).await?;
 
         // prepare undo operations, grouping by domain for efficiency
         let mut batch_restores: HashMap<Domain, Vec<(String, defaults_rs::PrefValue)>> =
@@ -46,7 +42,7 @@ impl Runnable for UnapplyCmd {
         let mut batch_deletes: HashMap<Domain, Vec<String>> = HashMap::new();
 
         // reverse order to undo in correct sequence
-        for s in snapshot.settings.into_iter().rev() {
+        for s in snapshot.settings.clone().into_iter().rev() {
             let domain_obj = if s.domain == "NSGlobalDomain" {
                 Domain::Global
             } else {
@@ -153,9 +149,7 @@ impl Runnable for UnapplyCmd {
                 &format!("Would remove snapshot file at {snap_path:?}"),
             );
         } else {
-            fs::remove_file(&snap_path)
-                .await
-                .context(format!("Failed to remove snapshot file at {snap_path:?}"))?;
+            snapshot.delete().await?;
             print_log(
                 LogLevel::Info,
                 &format!("Removed snapshot file at {snap_path:?}"),

@@ -31,14 +31,14 @@ impl Runnable for ConfigDeleteCmd {
 
         // offer user to unapply settings if any had been previously applied
         // (use snapshot to detect)
-        let snapshot_path = get_snapshot_path();
-        if fs::try_exists(&snapshot_path).await? {
+        let snap_path = get_snapshot_path()?;
+        if Snapshot::is_loadable().await {
             print_log(
                 LogLevel::Info,
                 &format!(
                     "Found a snapshot at {:?}. It contains {} settings.",
-                    snapshot_path,
-                    Snapshot::load(&snapshot_path).await?.settings.len()
+                    snap_path,
+                    Snapshot::load(&snap_path).await?.settings.len()
                 ),
             );
             if confirm("Unapply all previously applied defaults?") {
@@ -51,8 +51,8 @@ impl Runnable for ConfigDeleteCmd {
 
         if dry_run {
             print_log(LogLevel::Dry, &format!("Would delete {config_path:?}"));
-            if fs::try_exists(&snapshot_path).await? {
-                print_log(LogLevel::Dry, &format!("Would delete {snapshot_path:?}"));
+            if fs::try_exists(&snap_path).await? {
+                print_log(LogLevel::Dry, &format!("Would delete {snap_path:?}"));
             }
         } else {
             fs::remove_file(&config_path).await?;
@@ -60,11 +60,11 @@ impl Runnable for ConfigDeleteCmd {
                 LogLevel::Fruitful,
                 &format!("Deleted config at {config_path:?}"),
             );
-            if fs::try_exists(&snapshot_path).await? {
-                fs::remove_file(&snapshot_path).await?;
+            if fs::try_exists(&snap_path).await? {
+                fs::remove_file(&snap_path).await?;
                 print_log(
                     LogLevel::Info,
-                    &format!("Deleted snapshot at {snapshot_path:?}"),
+                    &format!("Deleted snapshot at {snap_path:?}"),
                 );
             }
         }
