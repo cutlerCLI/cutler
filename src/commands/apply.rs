@@ -22,7 +22,6 @@ use anyhow::{Result, bail};
 use async_trait::async_trait;
 use clap::Args;
 use defaults_rs::{Domain, preferences::Preferences};
-use tokio::fs;
 use toml::Value;
 
 #[derive(Args, Debug)]
@@ -98,8 +97,8 @@ impl Runnable for ApplyCmd {
         let domains = collector::collect(&config)?;
 
         // load the old snapshot (if any), otherwise create a new instance
-        let snap_path = get_snapshot_path();
-        let snap = if fs::try_exists(&snap_path).await? {
+        let snap_path = get_snapshot_path()?;
+        let snap = if Snapshot::is_loadable().await {
             Snapshot::load(&snap_path).await.unwrap_or_else(|e| {
                 print_log(
                     LogLevel::Warning,

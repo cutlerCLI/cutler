@@ -4,7 +4,10 @@
 mod tests {
     use cutler::{
         exec::runner::ExecJob,
-        snapshot::state::{SettingState, Snapshot, get_snapshot_path},
+        snapshot::{
+            get_snapshot_path,
+            state::{SettingState, Snapshot},
+        },
     };
     use std::{collections::HashMap, env, path::PathBuf};
     use tempfile::TempDir;
@@ -13,7 +16,7 @@ mod tests {
     #[test]
     fn test_get_snapshot_path() {
         // Test that get_snapshot_path returns .cutler_snapshot in the home directory
-        let snapshot_path = get_snapshot_path();
+        let snapshot_path = get_snapshot_path().unwrap();
         assert_eq!(
             snapshot_path,
             dirs::home_dir().unwrap().join(".cutler_snapshot")
@@ -80,7 +83,7 @@ mod tests {
         let snapshot_path = temp_dir.path().join("test_snapshot.json");
 
         // Save the snapshot
-        snapshot.snapshot_path = snapshot_path.clone();
+        snapshot.path = snapshot_path.clone();
         snapshot.save().await.unwrap();
 
         // Verify file exists and has content

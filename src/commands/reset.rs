@@ -11,7 +11,7 @@ use crate::{
     commands::Runnable,
     config::loader::Config,
     domains::{collect, effective, read_current},
-    snapshot::state::get_snapshot_path,
+    snapshot::{Snapshot, get_snapshot_path},
     util::{
         io::{confirm, notify, restart_services},
         logging::{LogLevel, print_log},
@@ -87,8 +87,8 @@ impl Runnable for ResetCmd {
         }
 
         // remove snapshot if present
-        let snap_path = get_snapshot_path();
-        if fs::try_exists(&snap_path).await? {
+        let snap_path = get_snapshot_path()?;
+        if Snapshot::is_loadable().await {
             if dry_run {
                 print_log(
                     LogLevel::Dry,
