@@ -213,14 +213,11 @@ pub async fn ensure_brew() -> Result<()> {
 
 /// Lists Homebrew things (formulae/casks/taps/deps) and separates them based on newline.
 pub async fn brew_list(list_type: BrewListType) -> Result<Vec<String>> {
-    let args = if list_type == BrewListType::Cask {
-        vec!["list", "--casks"]
-    } else if list_type == BrewListType::Formula {
-        vec!["list", "--formulae"]
-    } else if list_type == BrewListType::Tap {
-        vec!["tap"]
-    } else {
-        vec!["list", "--installed-as-dependency"]
+    let args = match list_type {
+        BrewListType::Cask => vec!["list", "--cask"],
+        BrewListType::Formula => vec!["list", "--formula"],
+        BrewListType::Dependency => vec!["list", "--installed-as-dependency"],
+        BrewListType::Tap => vec!["tap"],
     };
 
     let output = Command::new("brew").args(&args).output().await?;
