@@ -100,12 +100,14 @@ impl Runnable for ApplyCmd {
 
         // load the old snapshot (if any), otherwise create a new instance
         let snap_path = get_snapshot_path()?;
+        let mut is_bad_snap: bool = false;
         let snap = if Snapshot::is_loadable().await {
             Snapshot::load(&snap_path).await.unwrap_or_else(|e| {
                 print_log(
                     LogLevel::Warning,
                     &format!("Bad snapshot: {e}; starting new"),
                 );
+                is_bad_snap = true;
                 Snapshot::new()
             })
         } else {
@@ -169,7 +171,7 @@ impl Runnable for ApplyCmd {
                         key: eff_key.clone(),
                         toml_value: toml_value.clone(),
                         action,
-                        original,
+                        original: if is_bad_snap { None } else { original },
                         new_value: desired.clone(),
                     });
                 } else {
