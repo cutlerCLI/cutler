@@ -92,10 +92,13 @@ async fn ensure_xcode_clt() -> Result<()> {
 }
 
 /// Sets the required environment variables for cutler to interact with Homebrew.
-async fn set_homebrew_env_vars() -> Result<()> {
-    let existing_path = std::env::var("PATH")?;
+async fn set_homebrew_env_vars() {
+    let existing_path = std::env::var("PATH").unwrap_or_default();
 
-    if fs::try_exists(Path::new("/opt/homebrew/bin/brew")).await? {
+    if fs::try_exists(Path::new("/opt/homebrew/bin/brew"))
+        .await
+        .unwrap_or_default()
+    {
         let bin = "/opt/homebrew/bin";
         let sbin = "/opt/homebrew/sbin";
         let mut new_path = existing_path.clone();
@@ -106,7 +109,10 @@ async fn set_homebrew_env_vars() -> Result<()> {
             new_path = format!("{sbin}:{new_path}");
         }
         unsafe { env::set_var("PATH", &new_path) };
-    } else if fs::try_exists(Path::new("/usr/local/bin/brew")).await? {
+    } else if fs::try_exists(Path::new("/usr/local/bin/brew"))
+        .await
+        .unwrap_or_default()
+    {
         let bin = "/usr/local/bin";
         let sbin = "/usr/local/sbin";
         let mut new_path = existing_path.clone();
@@ -130,8 +136,6 @@ async fn set_homebrew_env_vars() -> Result<()> {
         LogLevel::Info,
         "Updated PATH with Homebrew for this process.",
     );
-
-    Ok(())
 }
 
 /// Helper for: ensure_brew()
@@ -184,7 +188,7 @@ pub async fn ensure_brew() -> Result<()> {
             install_homebrew().await?;
 
             // set environment variables for `brew`
-            set_homebrew_env_vars().await?;
+            set_homebrew_env_vars().await;
 
             // re-check that Homebrew is now installed and in $PATH
             let is_installed_after = Command::new("brew")
