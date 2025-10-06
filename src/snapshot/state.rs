@@ -2,8 +2,10 @@
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use std::{env, path::PathBuf, sync::OnceLock};
+use std::{env, path::PathBuf};
 use tokio::fs;
+
+use crate::snapshot::get_snapshot_path;
 
 /// A single defaults‑setting change.
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -20,7 +22,7 @@ pub struct Snapshot {
     pub exec_run_count: i32,
     pub version: String,
     #[serde(skip)]
-    pub snapshot_path: PathBuf,
+    pub path: PathBuf,
 }
 
 impl Snapshot {
@@ -34,21 +36,21 @@ impl Snapshot {
         Snapshot {
             settings: Vec::new(),
             version: env!("CARGO_PKG_VERSION").into(),
-            snapshot_path: get_snapshot_path().expect("Failed to get snapshot path"),
+            path: get_snapshot_path().expect("Failed to get snapshot path"),
             exec_run_count: 0,
         }
     }
 
     pub async fn save(&self) -> Result<()> {
-        if let Some(dir) = self.snapshot_path.parent() {
+        if let Some(dir) = self.path.parent() {
             fs::create_dir_all(dir)
                 .await
                 .context("Failed to create snapshot directory")?;
         }
         let json = serde_json::to_string(self).context("Failed to serialize Snapshot to JSON")?;
-        fs::write(&self.snapshot_path, json)
+        fs::write(&self.path, json)
             .await
-            .with_context(|| format!("Failed to write snapshot to {:?}", &self.snapshot_path))?;
+            .with_context(|| format!("Failed to write snapshot to {:?}", &self.path))?;
         Ok(())
     }
 
@@ -62,24 +64,8 @@ impl Snapshot {
     }
 
     pub async fn delete(&self) -> Result<()> {
-        fs::remove_file(&self.snapshot_path)
+        fs::remove_file(&self.path)
             .await
-            .with_context(|| format!("Could not delete snapshot file {:?}.", &self.snapshot_path))
+            .with_context(|| format!("Could not delete snapshot file {:?}.", &self.path))
     }
-}
-
-/// The static snapshot path to use throughout each command run.
-/// This is to make sure that accidental variable changes don't alter the snapshot being written.
-static SNAP_PATH: OnceLock<PathBuf> = OnceLock::new();
-
-/// Where on disk the snapshot lives (`~/.cutler_snapshot`).
-pub fn get_snapshot_path() -> Result<PathBuf> {
-    if let Some(cached) = SNAP_PATH.get().cloned() {
-        return Ok(cached);
-    }
-
-    let home = dirs::home_dir().context("Could not determine home directory")?;
-    let path = home.join(".cutler_snapshot");
-    SNAP_PATH.set(path.clone()).ok();
-    Ok(path)
 }

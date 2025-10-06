@@ -11,7 +11,7 @@ use crate::{
     commands::Runnable,
     config::loader::Config,
     domains::{collect, effective, read_current},
-    snapshot::{Snapshot, state::get_snapshot_path},
+    snapshot::{Snapshot, get_snapshot_path},
     util::{
         io::{confirm, notify, restart_services},
         logging::{LogLevel, print_log},

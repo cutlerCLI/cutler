@@ -10,7 +10,7 @@ use crate::{
     cli::atomic::should_dry_run,
     commands::Runnable,
     domains::convert::{string_to_toml_value, toml_to_prefvalue},
-    snapshot::state::{Snapshot, get_snapshot_path},
+    snapshot::{get_snapshot_path, state::Snapshot},
     util::{
         io::{notify, restart_services},
         logging::{LogLevel, print_log},
