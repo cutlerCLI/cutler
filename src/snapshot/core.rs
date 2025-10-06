@@ -15,7 +15,10 @@ pub struct SettingState {
     pub original_value: Option<String>,
 }
 
-/// The full snapshot on disk.
+/// Represents a snapshot.
+///
+/// This struct has also implemented I/O operations and functions for using across cutler's codebase,
+/// in order to properly interact with the snapshot file without much hassle.
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Snapshot {
     pub settings: Vec<SettingState>,
@@ -26,12 +29,17 @@ pub struct Snapshot {
 }
 
 impl Snapshot {
+    /// Checks if the snapshot exists.
+    /// This is a more tinified approach for regular fs::try_exists() calls as get_snapshot_path() returns a Result
+    /// and could be cumbersome to implement everywhere in the codebase.
     pub async fn is_loadable() -> bool {
         fs::try_exists(get_snapshot_path().unwrap_or_default())
             .await
             .unwrap_or_default()
     }
 
+    /// Creates a new snapshot.
+    /// NOTE: Snapshot.path is decided by get_snapshot_path().
     pub fn new() -> Self {
         Snapshot {
             settings: Vec::new(),
@@ -41,6 +49,7 @@ impl Snapshot {
         }
     }
 
+    /// Saves the snapshot into the designated path for the instance.
     pub async fn save(&self) -> Result<()> {
         if let Some(dir) = self.path.parent() {
             fs::create_dir_all(dir)
@@ -54,15 +63,19 @@ impl Snapshot {
         Ok(())
     }
 
+    /// Loads the snapshot from the given path.
     pub async fn load(path: &PathBuf) -> Result<Self> {
         let txt = fs::read_to_string(path)
             .await
             .with_context(|| format!("Failed to read snapshot file {:?}", path))?;
-        let snap: Snapshot =
+        let mut snap: Snapshot =
             serde_json::from_str(&txt).context("Failed to deserialize Snapshot from JSON")?;
+
+        snap.path = path.clone();
         Ok(snap)
     }
 
+    /// Deletes the snapshot.
     pub async fn delete(&self) -> Result<()> {
         fs::remove_file(&self.path)
             .await
