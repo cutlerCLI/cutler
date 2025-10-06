@@ -228,6 +228,10 @@ pub async fn brew_list(list_type: BrewListType) -> Result<Vec<String>> {
     );
 
     if !output.status.success() {
+        print_log(
+            LogLevel::Error,
+            &format!("{list_type} listing failed, will return empty."),
+        );
         return Ok(vec![]);
     }
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -241,11 +245,6 @@ pub async fn brew_list(list_type: BrewListType) -> Result<Vec<String>> {
 /// Compare the Brew config struct with the actual Homebrew state.
 /// Returns a BrewDiff struct with missing/extra formulae, casks, and taps.
 pub async fn compare_brew_state(brew_cfg: Brew) -> Result<BrewDiff> {
-    print_log(
-        LogLevel::Info,
-        "Starting comparison of Homebrew state with config...",
-    );
-
     let no_deps = brew_cfg.no_deps.unwrap_or(false);
 
     let config_formulae: Vec<String> = brew_cfg.formulae.clone().unwrap_or_default();
