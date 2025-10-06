@@ -9,7 +9,8 @@ use toml::Value;
 
 use crate::config::path::get_config_path;
 
-/// Struct representing a cutler configuration
+/// Struct representing a cutler configuration.
+///
 /// This is a fully serde-compatible struct primarily meant to be used within cutler's source code
 /// to pass around information related to the config file.
 #[derive(Deserialize, Serialize, Clone)]
