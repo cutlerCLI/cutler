@@ -7,12 +7,12 @@ use tokio::process::Command;
 
 use crate::{
     brew::{
+        core::{compare_brew_state, ensure_brew},
         types::BrewDiff,
-        utils::{compare_brew_state, ensure_brew},
     },
     cli::atomic::{should_be_quiet, should_dry_run},
     commands::Runnable,
-    config::loader::Config,
+    config::core::Config,
     util::logging::{LogLevel, print_log},
 };
 

@@ -7,7 +7,7 @@ use tokio::fs;
 use crate::{
     cli::atomic::should_dry_run,
     commands::{Runnable, UnapplyCmd},
-    config::{loader::Config, path::get_config_path},
+    config::{core::Config, path::get_config_path},
     snapshot::{Snapshot, get_snapshot_path},
     util::{
         io::confirm,

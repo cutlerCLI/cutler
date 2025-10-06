@@ -6,12 +6,12 @@ use clap::Args;
 
 use crate::{
     brew::{
+        core::{brew_list, ensure_brew},
         types::BrewListType,
-        utils::{brew_list, ensure_brew},
     },
     cli::atomic::should_dry_run,
     commands::Runnable,
-    config::loader::Config,
+    config::core::Config,
     util::{
         io::confirm,
         logging::{LogLevel, print_log},

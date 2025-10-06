@@ -2,7 +2,7 @@
 
 #[cfg(test)]
 mod tests {
-    use cutler::config::loader::Config;
+    use cutler::config::core::Config;
     use cutler::domains::{collect, effective};
     use std::collections::HashMap;
     use toml::{Value, value::Table};

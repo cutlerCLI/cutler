@@ -34,7 +34,7 @@ fn flatten_domains(
 }
 
 /// Collect all tables in `[set]`, flatten them, and return a map domain → settings.
-pub fn collect(config: &crate::config::loader::Config) -> Result<HashMap<String, Table>> {
+pub fn collect(config: &crate::config::core::Config) -> Result<HashMap<String, Table>> {
     let mut out = HashMap::new();
 
     if let Some(set) = &config.set {

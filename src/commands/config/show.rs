@@ -11,7 +11,7 @@ use tokio::fs;
 use crate::{
     cli::atomic::{should_be_quiet, should_dry_run},
     commands::Runnable,
-    config::{loader::Config, path::get_config_path},
+    config::{core::Config, path::get_config_path},
     util::logging::{LogLevel, print_log},
 };
 

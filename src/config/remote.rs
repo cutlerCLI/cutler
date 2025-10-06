@@ -5,7 +5,7 @@ use reqwest::Client;
 use tokio::fs;
 use tokio::sync::OnceCell;
 
-use crate::config::loader::{Config, Remote};
+use crate::config::core::{Config, Remote};
 use crate::config::path::get_config_path;
 use crate::util::logging::{LogLevel, print_log};
 

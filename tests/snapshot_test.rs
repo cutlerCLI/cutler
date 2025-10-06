@@ -3,10 +3,10 @@
 #[cfg(test)]
 mod tests {
     use cutler::{
-        exec::runner::ExecJob,
+        exec::core::ExecJob,
         snapshot::{
+            core::{SettingState, Snapshot},
             get_snapshot_path,
-            state::{SettingState, Snapshot},
         },
     };
     use std::{collections::HashMap, env, path::PathBuf};

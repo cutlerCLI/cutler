@@ -3,15 +3,15 @@
 use crate::{
     cli::atomic::should_dry_run,
     commands::{BrewInstallCmd, Runnable},
-    config::{loader::Config, path::get_config_path, remote::RemoteConfigManager},
+    config::{core::Config, path::get_config_path, remote::RemoteConfigManager},
     domains::{
         collector,
         convert::{normalize, toml_to_prefvalue},
     },
-    exec::runner::{self, ExecMode},
+    exec::core::{self, ExecMode},
     snapshot::{
+        core::{SettingState, Snapshot},
         get_snapshot_path,
-        state::{SettingState, Snapshot},
     },
     util::{
         io::{confirm, notify, restart_services},
@@ -75,7 +75,7 @@ impl Runnable for ApplyCmd {
                 bail!("Aborted apply: --url is passed despite local config.")
             }
 
-            let remote = crate::config::loader::Remote {
+            let remote = crate::config::core::Remote {
                 url: url.to_string(),
                 autosync: None,
             };
@@ -280,7 +280,7 @@ impl Runnable for ApplyCmd {
                 ExecMode::Regular
             };
 
-            let exec_run_count = runner::run_all(config, mode).await?;
+            let exec_run_count = core::run_all(config, mode).await?;
 
             if !dry_run {
                 if exec_run_count > 0 {

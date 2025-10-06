@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::cli::atomic::should_dry_run;
-use crate::config::loader::Config;
+use crate::config::core::Config;
 use crate::util::logging::{BOLD, LogLevel, RESET, print_log};
 use anyhow::{Result, anyhow, bail};
 use regex::Regex;

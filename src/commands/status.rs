@@ -2,11 +2,11 @@
 
 use crate::{
     brew::{
+        core::{compare_brew_state, is_brew_installed},
         types::BrewDiff,
-        utils::{compare_brew_state, is_brew_installed},
     },
     commands::Runnable,
-    config::loader::Config,
+    config::core::Config,
     domains::{collect, convert::normalize, effective, read_current},
     util::logging::{BOLD, GREEN, LogLevel, RED, RESET, print_log},
 };

@@ -4,7 +4,7 @@ use crate::cli::Command;
 use crate::cli::args::BrewSubcmd;
 use crate::config::remote::RemoteConfigManager;
 use crate::{
-    config::loader::Config,
+    config::core::Config,
     util::logging::{LogLevel, print_log},
 };
 

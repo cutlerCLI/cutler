@@ -2,7 +2,7 @@
 
 use crate::brew::types::{BrewDiff, BrewListType};
 use crate::cli::atomic::should_dry_run;
-use crate::config::loader::Brew;
+use crate::config::core::Brew;
 use crate::util::{
     io::confirm,
     logging::{LogLevel, print_log},
