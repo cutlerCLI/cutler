@@ -25,6 +25,8 @@ pub struct UnapplyCmd;
 #[async_trait]
 impl Runnable for UnapplyCmd {
     async fn run(&self) -> Result<()> {
+        let config = Config::load(true).await?;
+
         if !Snapshot::is_loadable().await {
             bail!(
                 "No snapshot found. Please run `cutler apply` first before unapplying.\n\
@@ -37,8 +39,6 @@ impl Runnable for UnapplyCmd {
         // load snapshot from disk
         let snap_path = get_snapshot_path()?;
         let snapshot = Snapshot::load(&snap_path).await?;
-
-        let config = Config::load().await?;
 
         if snapshot.digest != get_digest(config.path)? {
             print_log(

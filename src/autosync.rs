@@ -32,7 +32,7 @@ pub async fn try_auto_sync(command: &crate::cli::Command) {
         return;
     }
 
-    let local_config = match Config::load().await {
+    let local_config = match Config::load(true).await {
         Ok(cfg) => cfg,
         Err(_) => {
             // Loading error handling is managed by later loads.

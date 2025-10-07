@@ -25,7 +25,7 @@ pub struct StatusCmd {
 #[async_trait]
 impl Runnable for StatusCmd {
     async fn run(&self) -> Result<()> {
-        let config = Config::load().await?;
+        let config = Config::load(false).await?;
         let domains = collect(&config)?;
 
         // flatten all settings into a list

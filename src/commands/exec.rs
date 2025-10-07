@@ -28,7 +28,7 @@ pub struct ExecCmd {
 impl Runnable for ExecCmd {
     async fn run(&self) -> Result<()> {
         // load & parse config
-        let config = Config::load().await?;
+        let config = Config::load(true).await?;
 
         let mode = if self.flagged {
             ExecMode::Flagged

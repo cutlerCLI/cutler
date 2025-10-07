@@ -25,7 +25,7 @@ pub struct FetchCmd {
 impl Runnable for FetchCmd {
     async fn run(&self) -> Result<()> {
         let dry_run = should_dry_run();
-        let local_config = Config::load().await?;
+        let local_config = Config::load(true).await?;
 
         // parse [remote] section
         let remote_mgr = match RemoteConfigManager::from_config(&local_config) {

@@ -67,6 +67,7 @@ struct PreferenceJob {
 impl Runnable for ApplyCmd {
     async fn run(&self) -> Result<()> {
         let dry_run = should_dry_run();
+        let config = Config::load(true).await?;
 
         // remote download logic
         if let Some(url) = &self.url {
@@ -94,7 +95,6 @@ impl Runnable for ApplyCmd {
         }
 
         // parse + flatten domains
-        let config = Config::load().await?;
         let digest = get_digest(config.path.clone())?;
         let domains = collector::collect(&config)?;
 

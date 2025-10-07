@@ -69,11 +69,15 @@ impl Config {
 
     /// Loads the configuration. Errors out if the configuration is not loadable
     /// (decided by `Self::is_loadable()`).
-    pub async fn load() -> Result<Self> {
+    pub async fn load(not_if_locked: bool) -> Result<Self> {
         if Self::is_loadable().await {
             let config_path = get_config_path().await.unwrap();
             let data = fs::read_to_string(&config_path).await?;
             let mut config: Config = toml::from_str(&data)?;
+
+            if config.lock.unwrap_or_default() && not_if_locked {
+                bail!("Config is locked. Run `cutler unlock` to unlock.")
+            }
 
             config.path = config_path;
             Ok(config)

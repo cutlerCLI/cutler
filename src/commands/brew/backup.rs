@@ -36,7 +36,7 @@ impl Runnable for BrewBackupCmd {
 
         // init config
         let mut config = if Config::is_loadable().await {
-            Config::load().await?
+            Config::load(true).await?
         } else {
             print_log(
                 LogLevel::Warning,

@@ -25,6 +25,7 @@ pub struct ResetCmd;
 impl Runnable for ResetCmd {
     async fn run(&self) -> Result<()> {
         let dry_run = should_dry_run();
+        let config = Config::load(true).await?;
 
         print_log(
             LogLevel::Warning,
@@ -39,7 +40,6 @@ impl Runnable for ResetCmd {
             return Ok(());
         }
 
-        let config = Config::load().await?;
         let domains = collect(&config)?;
 
         for (domain, table) in domains {

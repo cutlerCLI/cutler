@@ -24,7 +24,7 @@ impl Runnable for BrewInstallCmd {
     async fn run(&self) -> Result<()> {
         let dry_run = should_dry_run();
 
-        let config = Config::load().await?;
+        let config = Config::load(true).await?;
         let brew_cfg = config
             .brew
             .clone()
