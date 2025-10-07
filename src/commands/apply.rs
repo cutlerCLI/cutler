@@ -105,7 +105,7 @@ impl Runnable for ApplyCmd {
             Snapshot::load(&snap_path).await.unwrap_or_else(|e| {
                 print_log(
                     LogLevel::Warning,
-                    &format!("Bad snapshot: {e}; starting new"),
+                    &format!("Bad snapshot: {e}; starting new. Note that when unapplying, all your settings will reset to factory defaults."),
                 );
                 is_bad_snap = true;
                 Snapshot::new()
@@ -171,7 +171,7 @@ impl Runnable for ApplyCmd {
                         key: eff_key.clone(),
                         toml_value: toml_value.clone(),
                         action,
-                        original: original,
+                        original: if is_bad_snap { None } else { original },
                         new_value: desired.clone(),
                     });
                 } else {

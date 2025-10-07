@@ -6,6 +6,7 @@ use std::{
     path::PathBuf,
 };
 
+/// Gets the SHA256 digest of a file, given its path.
 pub fn get_digest(path: PathBuf) -> Result<String> {
     let file = File::open(path)?;
     let mut reader = BufReader::new(file);
