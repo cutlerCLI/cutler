@@ -4,9 +4,8 @@ use super::get_styles;
 use clap::{Parser, Subcommand};
 
 use crate::commands::{
-    ApplyCmd, BrewBackupCmd, BrewInstallCmd, CheckUpdateCmd, CompletionCmd, ConfigDeleteCmd,
-    ConfigLockCmd, ConfigShowCmd, ConfigUnlockCmd, CookbookCmd, ExecCmd, FetchCmd, InitCmd,
-    ResetCmd, SelfUpdateCmd, StatusCmd, UnapplyCmd,
+    ApplyCmd, BrewBackupCmd, BrewInstallCmd, CheckUpdateCmd, CompletionCmd, ConfigCmd, CookbookCmd,
+    ExecCmd, FetchCmd, InitCmd, LockCmd, ResetCmd, SelfUpdateCmd, StatusCmd, UnapplyCmd, UnlockCmd,
 };
 
 #[derive(Parser)]
@@ -53,6 +52,10 @@ pub enum Command {
     Exec(ExecCmd),
     /// Initialize a new config file.
     Init(InitCmd),
+    /// Lock the config.
+    Lock(LockCmd),
+    /// Unlock the config.
+    Unlock(UnlockCmd),
     /// Unapply previously applied modifications(s).
     #[command(visible_alias = "undo")]
     Unapply(UnapplyCmd),
@@ -66,12 +69,9 @@ pub enum Command {
         #[command(subcommand)]
         command: BrewSubcmd,
     },
-    /// Configuration-related commands.
+    /// Shows the configuration.
     #[command(visible_alias = "conf")]
-    Config {
-        #[command(subcommand)]
-        command: ConfigSubcmd,
-    },
+    Config(ConfigCmd),
     /// Check for version updates.
     #[command(visible_alias = "cup")]
     CheckUpdate(CheckUpdateCmd),
@@ -93,17 +93,4 @@ pub enum BrewSubcmd {
     /// Install formulae/casks/taps from config.
     #[command(visible_alias = "apply")]
     Install(BrewInstallCmd),
-}
-
-#[derive(Subcommand, Debug)]
-pub enum ConfigSubcmd {
-    /// Display config contents.
-    Show(ConfigShowCmd),
-    /// Delete config file.
-    #[command(visible_alias = "del")]
-    Delete(ConfigDeleteCmd),
-    /// Lock config file.
-    Lock(ConfigLockCmd),
-    /// Unlock config file.
-    Unlock(ConfigUnlockCmd),
 }

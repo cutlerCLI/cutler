@@ -13,10 +13,10 @@ use crate::{
 };
 
 #[derive(Debug, Args)]
-pub struct ConfigUnlockCmd;
+pub struct UnlockCmd;
 
 #[async_trait]
-impl Runnable for ConfigUnlockCmd {
+impl Runnable for UnlockCmd {
     async fn run(&self) -> Result<()> {
         let mut config = Config::load().await?;
 

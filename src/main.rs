@@ -4,7 +4,7 @@ use std::process::exit;
 
 use clap::Parser;
 use cutler::autosync::try_auto_sync;
-use cutler::cli::args::{BrewSubcmd, ConfigSubcmd};
+use cutler::cli::args::BrewSubcmd;
 
 use cutler::cli::atomic::{
     set_accept_all, set_dry_run, set_no_restart_services, set_quiet, set_verbose,
@@ -35,10 +35,7 @@ async fn main() {
 
     // sudo protection
     let result = match &args.command {
-        Command::SelfUpdate(_)
-        | Command::Config {
-            command: ConfigSubcmd::Lock(_) | ConfigSubcmd::Unlock(_),
-        } => run_with_root().await,
+        Command::SelfUpdate(_) | Command::Lock(_) | Command::Unlock(_) => run_with_root().await,
         _ => run_with_noroot(),
     };
 
@@ -50,6 +47,7 @@ async fn main() {
     // command invocation (for real this time)
     let result = match &args.command {
         Command::Apply(cmd) => cmd.run().await,
+        Command::Config(cmd) => cmd.run().await,
         Command::Cookbook(cmd) => cmd.run().await,
         Command::Exec(cmd) => cmd.run().await,
         Command::Fetch(cmd) => cmd.run().await,
@@ -57,12 +55,8 @@ async fn main() {
         Command::Unapply(cmd) => cmd.run().await,
         Command::Reset(cmd) => cmd.run().await,
         Command::Status(cmd) => cmd.run().await,
-        Command::Config { command } => match command {
-            ConfigSubcmd::Show(cmd) => cmd.run().await,
-            ConfigSubcmd::Delete(cmd) => cmd.run().await,
-            ConfigSubcmd::Lock(cmd) => cmd.run().await,
-            ConfigSubcmd::Unlock(cmd) => cmd.run().await,
-        },
+        Command::Lock(cmd) => cmd.run().await,
+        Command::Unlock(cmd) => cmd.run().await,
         Command::Brew { command } => match command {
             BrewSubcmd::Backup(cmd) => cmd.run().await,
             BrewSubcmd::Install(cmd) => cmd.run().await,

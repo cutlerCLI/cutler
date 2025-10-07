@@ -16,10 +16,10 @@ use crate::{
 };
 
 #[derive(Debug, Args)]
-pub struct ConfigShowCmd {}
+pub struct ConfigCmd {}
 
 #[async_trait]
-impl Runnable for ConfigShowCmd {
+impl Runnable for ConfigCmd {
     async fn run(&self) -> Result<()> {
         let config_path = get_config_path().await?;
 
