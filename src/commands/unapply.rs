@@ -38,7 +38,14 @@ impl Runnable for UnapplyCmd {
 
         // load snapshot from disk
         let snap_path = get_snapshot_path()?;
-        let snapshot = Snapshot::load(&snap_path).await?;
+        let snapshot = match Snapshot::load(&snap_path).await {
+            Ok(snap) => snap,
+            Err(_) => {
+                bail!(
+                    "Could not read snapshot since it might be corrupt. Consider using `cutler reset` instead."
+                )
+            }
+        };
 
         if snapshot.digest != get_digest(config.path)? {
             print_log(

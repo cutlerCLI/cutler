@@ -102,14 +102,19 @@ impl Runnable for ApplyCmd {
         let snap_path = get_snapshot_path()?;
         let mut is_bad_snap: bool = false;
         let snap = if Snapshot::is_loadable().await {
-            Snapshot::load(&snap_path).await.unwrap_or_else(|e| {
-                print_log(
-                    LogLevel::Warning,
-                    &format!("Bad snapshot: {e}; starting new. Note that when unapplying, all your settings will reset to factory defaults."),
-                );
-                is_bad_snap = true;
-                Snapshot::new()
-            })
+            match Snapshot::load(&snap_path).await {
+                Ok(snap) => snap,
+                Err(e) => {
+                    print_log(
+                        LogLevel::Warning,
+                        &format!(
+                            "Bad snapshot: {e}; starting new. Note that when unapplying, all your settings will reset to factory defaults."
+                        ),
+                    );
+                    is_bad_snap = true;
+                    Snapshot::new()
+                }
+            }
         } else {
             Snapshot::new()
         };
