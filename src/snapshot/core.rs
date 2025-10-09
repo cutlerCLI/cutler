@@ -67,13 +67,37 @@ impl Snapshot {
     }
 
     /// Loads the snapshot from the given path.
+    /// If deserialization of the full Snapshot fails, try to deserialize only the `settings` field.
     pub async fn load(path: &PathBuf) -> Result<Self> {
         if fs::try_exists(path).await.unwrap_or_default() {
             let txt = fs::read_to_string(path).await?;
-            let mut snap: Snapshot = serde_json::from_str(&txt)?;
+            let snap_result: Result<Snapshot, _> = serde_json::from_str(&txt);
 
-            snap.path = path.clone();
-            Ok(snap)
+            match snap_result {
+                Ok(mut snap) => {
+                    snap.path = path.clone();
+                    Ok(snap)
+                }
+                Err(e) => {
+                    // Try to deserialize only the settings field if everything else fails.
+                    #[derive(Deserialize)]
+                    struct SettingsOnly {
+                        settings: Vec<SettingState>,
+                    }
+                    let settings_only_result: Result<SettingsOnly, _> = serde_json::from_str(&txt);
+                    match settings_only_result {
+                        Ok(settings_only) => {
+                            let mut snap = Snapshot::new();
+                            snap.settings = settings_only.settings;
+                            snap.path = path.clone();
+                            Ok(snap)
+                        }
+                        Err(_) => {
+                            bail!("Failed to deserialize snapshot: {e}")
+                        }
+                    }
+                }
+            }
         } else {
             bail!("Invalid path, cannot load.")
         }
