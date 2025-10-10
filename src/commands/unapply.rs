@@ -29,8 +29,8 @@ impl Runnable for UnapplyCmd {
 
         if !Snapshot::is_loadable().await {
             bail!(
-                "No snapshot found. Please run `cutler apply` first before unapplying.\n\
-                As a fallback, you can use `cutler reset` to reset settings to their defaults."
+                "No snapshot found. \n\
+                Use `cutler reset` to return System Settings to factory defaults."
             );
         }
 
@@ -42,7 +42,8 @@ impl Runnable for UnapplyCmd {
             Ok(snap) => snap,
             Err(_) => {
                 bail!(
-                    "Could not read snapshot since it might be corrupt. Consider using `cutler reset` instead."
+                    "Could not read snapshot since it might be corrupt. \n\
+                    Use `cutler reset` instead to return System Settings to factory defaults."
                 )
             }
         };
@@ -85,27 +86,17 @@ impl Runnable for UnapplyCmd {
         if dry_run {
             for (domain, restores) in &batch_restores {
                 for (key, _) in restores {
-                    let domain_str = match domain {
-                        Domain::Global => "NSGlobalDomain",
-                        Domain::User(s) => s,
-                        _ => unreachable!(),
-                    };
                     print_log(
                         LogLevel::Dry,
-                        &format!("Would restore setting '{key}' for {domain_str}"),
+                        &format!("Would restore setting '{key}' for {domain}"),
                     );
                 }
             }
             for (domain, deletes) in &batch_deletes {
                 for key in deletes {
-                    let domain_str = match domain {
-                        Domain::Global => "NSGlobalDomain",
-                        Domain::User(s) => s,
-                        _ => unreachable!(),
-                    };
                     print_log(
                         LogLevel::Dry,
-                        &format!("Would remove setting '{key}' for {domain_str}"),
+                        &format!("Would remove setting '{key}' for {domain}"),
                     );
                 }
             }
@@ -115,19 +106,12 @@ impl Runnable for UnapplyCmd {
                 let mut batch_vec = Vec::new();
                 for (domain, entries) in batch_restores {
                     for (key, value) in entries {
+                        print_log(LogLevel::Info, &format!("Restoring: {domain} | {key}"));
                         batch_vec.push((domain.clone(), key, value));
                     }
                 }
-                match Preferences::write_batch(batch_vec.clone()).await {
-                    Ok(_) => {
-                        print_log(
-                            LogLevel::Info,
-                            &format!("{} preferences restored.", batch_vec.len()),
-                        );
-                    }
-                    Err(e) => {
-                        print_log(LogLevel::Error, &format!("Batch restore failed: {e}"));
-                    }
+                if let Err(e) = Preferences::write_batch(batch_vec.clone()).await {
+                    print_log(LogLevel::Error, &format!("Batch restore failed: {e}"));
                 }
             }
 
@@ -136,19 +120,12 @@ impl Runnable for UnapplyCmd {
                 let mut delete_vec = Vec::new();
                 for (domain, keys) in batch_deletes {
                     for key in keys {
+                        print_log(LogLevel::Info, &format!("Deleting: {domain} | {key}"));
                         delete_vec.push((domain.clone(), Some(key)));
                     }
                 }
-                match Preferences::delete_batch(delete_vec.clone()).await {
-                    Ok(_) => {
-                        print_log(
-                            LogLevel::Info,
-                            &format!("{} preferences removed.", delete_vec.len()),
-                        );
-                    }
-                    Err(e) => {
-                        print_log(LogLevel::Error, &format!("Batch delete failed: {e}"));
-                    }
+                if let Err(e) = Preferences::delete_batch(delete_vec.clone()).await {
+                    print_log(LogLevel::Error, &format!("Batch delete failed: {e}"));
                 }
             }
         }
