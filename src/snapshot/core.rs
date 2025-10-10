@@ -36,7 +36,7 @@ impl Snapshot {
     /// This is a more tinified approach for regular `fs::try_exists()` calls as `get_snapshot_path()`
     /// returns a Result and could be cumbersome to implement everywhere in the codebase.
     pub async fn is_loadable() -> bool {
-        if let Ok(snap_path) = get_snapshot_path() {
+        if let Ok(snap_path) = get_snapshot_path().await {
             fs::try_exists(snap_path).await.unwrap_or_default()
         } else {
             false
@@ -45,11 +45,13 @@ impl Snapshot {
 
     /// Creates a new snapshot.
     /// Note that the path field is decided by `get_snapshot_path()`.
-    pub fn new() -> Self {
+    pub async fn new() -> Self {
         Snapshot {
             settings: Vec::new(),
             version: env!("CARGO_PKG_VERSION").into(),
-            path: get_snapshot_path().expect("Failed to get snapshot path."),
+            path: get_snapshot_path()
+                .await
+                .expect("Failed to get snapshot path."),
             exec_run_count: 0,
             digest: String::new(),
         }
@@ -87,7 +89,7 @@ impl Snapshot {
                     let settings_only_result: Result<SettingsOnly, _> = serde_json::from_str(&txt);
                     match settings_only_result {
                         Ok(settings_only) => {
-                            let mut snap = Snapshot::new();
+                            let mut snap = Snapshot::new().await;
                             snap.settings = settings_only.settings;
                             snap.path = path.clone();
                             Ok(snap)
