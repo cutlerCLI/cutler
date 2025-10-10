@@ -85,10 +85,10 @@ impl Runnable for UnapplyCmd {
         // in dry-run mode, just print what would be done
         if dry_run {
             for (domain, restores) in &batch_restores {
-                for (key, _) in restores {
+                for (key, value) in restores {
                     print_log(
                         LogLevel::Dry,
-                        &format!("Would restore setting '{key}' for {domain}"),
+                        &format!("Would restore: {domain} | {key} -> {value}"),
                     );
                 }
             }
@@ -96,7 +96,7 @@ impl Runnable for UnapplyCmd {
                 for key in deletes {
                     print_log(
                         LogLevel::Dry,
-                        &format!("Would remove setting '{key}' for {domain}"),
+                        &format!("Would delete setting: {domain} | {key}"),
                     );
                 }
             }
