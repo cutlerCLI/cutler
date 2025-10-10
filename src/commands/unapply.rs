@@ -8,12 +8,12 @@ use std::collections::HashMap;
 
 use crate::{
     cli::atomic::should_dry_run,
-    commands::Runnable,
+    commands::{ResetCmd, Runnable},
     config::core::Config,
     domains::convert::{string_to_toml_value, toml_to_prefvalue},
     snapshot::{core::Snapshot, get_snapshot_path},
     util::{
-        io::{notify, restart_services},
+        io::{confirm, notify, restart_services},
         logging::{LogLevel, print_log},
         sha::get_digest,
     },
@@ -28,10 +28,13 @@ impl Runnable for UnapplyCmd {
         let config = Config::load(true).await?;
 
         if !Snapshot::is_loadable().await {
-            bail!(
-                "No snapshot found. \n\
-                Use `cutler reset` to return System Settings to factory defaults."
-            );
+            print_log(LogLevel::Warning, "No snapshot found to revert.");
+
+            if confirm("Reset all System Settings instead?") {
+                return ResetCmd.run().await;
+            } else {
+                bail!("Abort operation.")
+            }
         }
 
         let dry_run = should_dry_run();
@@ -85,10 +88,10 @@ impl Runnable for UnapplyCmd {
         // in dry-run mode, just print what would be done
         if dry_run {
             for (domain, restores) in &batch_restores {
-                for (key, _) in restores {
+                for (key, value) in restores {
                     print_log(
                         LogLevel::Dry,
-                        &format!("Would restore setting '{key}' for {domain}"),
+                        &format!("Would restore: {domain} | {key} -> {value}"),
                     );
                 }
             }
@@ -96,7 +99,7 @@ impl Runnable for UnapplyCmd {
                 for key in deletes {
                     print_log(
                         LogLevel::Dry,
-                        &format!("Would remove setting '{key}' for {domain}"),
+                        &format!("Would delete setting: {domain} | {key}"),
                     );
                 }
             }
@@ -106,7 +109,10 @@ impl Runnable for UnapplyCmd {
                 let mut batch_vec = Vec::new();
                 for (domain, entries) in batch_restores {
                     for (key, value) in entries {
-                        print_log(LogLevel::Info, &format!("Restoring: {domain} | {key}"));
+                        print_log(
+                            LogLevel::Info,
+                            &format!("Restoring: {domain} | {key} -> {value}"),
+                        );
                         batch_vec.push((domain.clone(), key, value));
                     }
                 }
@@ -135,7 +141,7 @@ impl Runnable for UnapplyCmd {
             print_log(
                 LogLevel::Warning,
                 &format!(
-                    "{} External commands were executed previously; please revert them manually if needed.",
+                    "{} commands were executed previously; revert them manually.",
                     snapshot.exec_run_count
                 ),
             );
