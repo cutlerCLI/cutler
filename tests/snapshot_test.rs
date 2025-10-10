@@ -13,20 +13,20 @@ mod tests {
     use tempfile::TempDir;
     use tokio::fs;
 
-    #[test]
-    fn test_get_snapshot_path() {
+    #[tokio::test]
+    async fn test_get_snapshot_path() {
         // Test that get_snapshot_path returns .cutler_snapshot in the home directory
-        let snapshot_path = get_snapshot_path().unwrap();
+        let snapshot_path = get_snapshot_path().await.unwrap();
         assert_eq!(
             snapshot_path,
             dirs::home_dir().unwrap().join(".cutler_snapshot")
         );
     }
 
-    #[test]
-    fn test_snapshot_basic() {
+    #[tokio::test]
+    async fn test_snapshot_basic() {
         // Test creation
-        let snapshot = Snapshot::new();
+        let snapshot = Snapshot::new().await;
         assert_eq!(snapshot.settings.len(), 0);
         assert_eq!(snapshot.exec_run_count, 0);
         assert_eq!(snapshot.version, env!("CARGO_PKG_VERSION"));
@@ -57,7 +57,7 @@ mod tests {
     #[tokio::test]
     async fn test_snapshot_serialization() {
         // Create a comprehensive snapshot with test data
-        let mut snapshot = Snapshot::new();
+        let mut snapshot = Snapshot::new().await;
 
         // Add multiple settings with different patterns
         snapshot.settings.push(SettingState {
