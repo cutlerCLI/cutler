@@ -106,7 +106,10 @@ impl Runnable for UnapplyCmd {
                 let mut batch_vec = Vec::new();
                 for (domain, entries) in batch_restores {
                     for (key, value) in entries {
-                        print_log(LogLevel::Info, &format!("Restoring: {domain} | {key}"));
+                        print_log(
+                            LogLevel::Info,
+                            &format!("Restoring: {domain} | {key} -> {value}"),
+                        );
                         batch_vec.push((domain.clone(), key, value));
                     }
                 }
