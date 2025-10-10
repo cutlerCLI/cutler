@@ -1,5 +1,6 @@
 use anyhow::{Context, Result};
 use std::{path::PathBuf, sync::OnceLock};
+use tokio::fs;
 
 use crate::config::path::get_config_path;
 
@@ -30,10 +31,11 @@ pub async fn get_snapshot_path() -> Result<PathBuf> {
     if old_path.exists() {
         // If the new path already exists, remove it before moving
         if new_path.exists() {
-            std::fs::remove_file(&new_path)
+            fs::remove_file(&new_path)
+                .await
                 .with_context(|| format!("Failed to remove existing snapshot at {:?}", new_path))?;
         }
-        std::fs::rename(&old_path, &new_path).with_context(|| {
+        fs::rename(&old_path, &new_path).await.with_context(|| {
             format!(
                 "Failed to move snapshot from {:?} to {:?}",
                 old_path, new_path
