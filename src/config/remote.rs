@@ -5,29 +5,24 @@ use reqwest::Client;
 use tokio::fs;
 use tokio::sync::OnceCell;
 
-use crate::config::core::{Config, Remote};
+use crate::config::core::Config;
 use crate::config::path::get_config_path;
 use crate::util::logging::{LogLevel, print_log};
 
 /// Manages fetching and storing the remote config.
 #[derive(Debug, Clone)]
 pub struct RemoteConfigManager {
-    pub remote: Remote,
+    url: String,
     config: OnceCell<String>,
 }
 
 impl RemoteConfigManager {
     /// Create a new RemoteConfigManager with a Remote struct.
-    pub fn new(remote: Remote) -> Self {
+    pub fn new(url: String) -> Self {
         Self {
-            remote,
+            url,
             config: OnceCell::const_new(),
         }
-    }
-
-    /// Parse the [remote] section from a serde-based Config and create a manager.
-    pub fn from_config(config: &Config) -> Option<Self> {
-        config.remote.clone().map(Self::new)
     }
 
     /// Fetch the remote config file as TOML, only once per instance.
@@ -36,14 +31,15 @@ impl RemoteConfigManager {
             .get_or_try_init(|| async {
                 print_log(
                     LogLevel::Info,
-                    &format!("Fetching remote config from {}", self.remote.url),
+                    &format!("Fetching remote config from {}", self.url),
                 );
                 let client = Client::builder()
                     .user_agent("cutler-remote-config")
                     .build()?;
-                let resp = client.get(&self.remote.url).send().await.with_context(|| {
-                    format!("Failed to fetch remote config from {}", self.remote.url)
-                })?;
+                let resp =
+                    client.get(&self.url).send().await.with_context(|| {
+                        format!("Failed to fetch remote config from {}", self.url)
+                    })?;
 
                 if !resp.status().is_success() {
                     bail!("Failed to fetch remote config: HTTP {}", resp.status());
@@ -51,9 +47,8 @@ impl RemoteConfigManager {
 
                 let text = resp.text().await?;
 
-                toml::from_str::<Config>(&text).with_context(|| {
-                    format!("Invalid TOML config fetched from {}", self.remote.url)
-                })?;
+                toml::from_str::<Config>(&text)
+                    .with_context(|| format!("Invalid TOML config fetched from {}", self.url))?;
 
                 Ok(text)
             })

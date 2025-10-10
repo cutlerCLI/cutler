@@ -27,7 +27,7 @@ pub struct Config {
 }
 
 /// Represents the [remote] table.
-#[derive(Deserialize, PartialEq, Serialize, Clone, Debug)]
+#[derive(Deserialize, PartialEq, Serialize, Default, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct Remote {
     pub url: String,

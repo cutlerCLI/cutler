@@ -42,31 +42,30 @@ pub async fn try_auto_sync(command: &crate::cli::Command) {
     };
 
     // start
-    let remote_mgr = RemoteConfigManager::from_config(&local_config);
+    let remote = local_config.remote.unwrap_or_default();
+    let remote_mgr = RemoteConfigManager::new(remote.url);
 
-    if let Some(remote_mgr) = remote_mgr {
-        if remote_mgr.remote.autosync.unwrap_or_default() {
-            match remote_mgr.fetch().await {
-                Ok(()) => {
-                    if let Err(e) = remote_mgr.save().await {
-                        print_log(
-                            LogLevel::Warning,
-                            &format!("Failed to save remote config after auto-sync: {e}"),
-                        );
-                    }
-                }
-                Err(e) => {
+    if remote.autosync.unwrap_or_default() {
+        match remote_mgr.fetch().await {
+            Ok(()) => {
+                if let Err(e) = remote_mgr.save().await {
                     print_log(
                         LogLevel::Warning,
-                        &format!("Remote config auto-sync failed: {e}"),
+                        &format!("Failed to save remote config after auto-sync: {e}"),
                     );
                 }
             }
-        } else {
-            print_log(
-                LogLevel::Info,
-                "Skipping auto-sync since disabled in config.",
-            );
+            Err(e) => {
+                print_log(
+                    LogLevel::Warning,
+                    &format!("Remote config auto-sync failed: {e}"),
+                );
+            }
         }
+    } else {
+        print_log(
+            LogLevel::Info,
+            "Skipping auto-sync since disabled in config.",
+        );
     }
 }

@@ -77,11 +77,7 @@ impl Runnable for ApplyCmd {
                 bail!("Aborted apply: --url is passed despite local config.")
             }
 
-            let remote = crate::config::core::Remote {
-                url: url.to_string(),
-                autosync: None,
-            };
-            let remote_mgr = RemoteConfigManager::new(remote);
+            let remote_mgr = RemoteConfigManager::new(url.to_owned());
             remote_mgr.fetch().await?;
             remote_mgr.save().await?;
 
