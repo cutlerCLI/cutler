@@ -398,9 +398,9 @@ dependencies = [
 
 [[package]]
 name = "defaults-rs"
-version = "0.3.3"
+version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "65ec74e92c2426452dafaa144562b57e2645a3d28ad4222619b15776fc512960"
+checksum = "b9ba76546215eb940b2b1695d7b0a219e15e9bb08527f9d3ddbeee424a15241b"
 dependencies = [
  "clap",
  "core-foundation",

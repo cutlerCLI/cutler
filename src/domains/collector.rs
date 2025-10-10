@@ -5,8 +5,6 @@ use defaults_rs::{Domain, ReadResult, preferences::Preferences};
 use std::collections::HashMap;
 use toml::{Table, Value};
 
-use crate::domains::convert::prefvalue_to_string;
-
 /// Recursively flatten nested TOML tables into (domain, settings-table) pairs.
 fn flatten_domains(
     prefix: Option<String>,
@@ -97,7 +95,7 @@ pub async fn read_current(eff_domain: &str, eff_key: &str) -> Option<String> {
 
     match Preferences::read(domain_obj, Some(eff_key)).await {
         Ok(result) => match result {
-            ReadResult::Value(val) => Some(prefvalue_to_string(&val)),
+            ReadResult::Value(val) => Some(val.to_string()),
             ReadResult::Plist(plist_val) => Some(format!("{plist_val:?}")),
         },
         Err(_) => None,
