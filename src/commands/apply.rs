@@ -15,7 +15,7 @@ use crate::{
     },
     util::{
         io::{confirm, notify, restart_services},
-        logging::{GREEN, LogLevel, RESET, print_log},
+        logging::{LogLevel, print_log},
         sha::get_digest,
     },
 };
@@ -203,13 +203,11 @@ impl Runnable for ApplyCmd {
                 print_log(
                     LogLevel::Info,
                     &format!(
-                        "{}{} {} | {} -> {}{} {}",
-                        GREEN,
+                        "{} {} | {} -> {} {}",
                         job.action,
                         job.domain,
                         job.key,
                         job.new_value,
-                        RESET,
                         if job.original.is_some() {
                             &format!("(Restorable to {})", job.original.clone().unwrap())
                         } else {
