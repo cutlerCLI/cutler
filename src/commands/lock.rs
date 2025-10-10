@@ -18,12 +18,11 @@ pub struct LockCmd;
 #[async_trait]
 impl Runnable for LockCmd {
     async fn run(&self) -> Result<()> {
-        let mut config = Config::load(false).await?;
-
         if !Config::is_loadable().await {
             bail!("Cannot find a configuration to lock in the first place.")
         }
 
+        let mut config = Config::load(false).await?;
         let dry_run = should_dry_run();
 
         if matches!(config.lock, Some(true)) {

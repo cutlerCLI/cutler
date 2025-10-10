@@ -18,12 +18,11 @@ pub struct UnlockCmd;
 #[async_trait]
 impl Runnable for UnlockCmd {
     async fn run(&self) -> Result<()> {
-        let mut config = Config::load(false).await?;
-
         if !Config::is_loadable().await {
             bail!("Cannot find a configuration to unlock in the first place.")
         }
 
+        let mut config = Config::load(false).await?;
         let dry_run = should_dry_run();
 
         if config.lock.is_none_or(|val| !val) {
