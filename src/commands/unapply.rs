@@ -8,12 +8,12 @@ use std::collections::HashMap;
 
 use crate::{
     cli::atomic::should_dry_run,
-    commands::Runnable,
+    commands::{ResetCmd, Runnable},
     config::core::Config,
     domains::convert::{string_to_toml_value, toml_to_prefvalue},
     snapshot::{core::Snapshot, get_snapshot_path},
     util::{
-        io::{notify, restart_services},
+        io::{confirm, notify, restart_services},
         logging::{LogLevel, print_log},
         sha::get_digest,
     },
@@ -28,10 +28,13 @@ impl Runnable for UnapplyCmd {
         let config = Config::load(true).await?;
 
         if !Snapshot::is_loadable().await {
-            bail!(
-                "No snapshot found. \n\
-                Use `cutler reset` to return System Settings to factory defaults."
-            );
+            print_log(LogLevel::Warning, "No snapshot found to revert.");
+
+            if confirm("Reset all System Settings instead?") {
+                return ResetCmd.run().await;
+            } else {
+                bail!("Abort operation.")
+            }
         }
 
         let dry_run = should_dry_run();
