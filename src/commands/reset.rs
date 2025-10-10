@@ -87,7 +87,7 @@ impl Runnable for ResetCmd {
         }
 
         // remove snapshot if present
-        let snap_path = get_snapshot_path()?;
+        let snap_path = get_snapshot_path().await?;
         if Snapshot::is_loadable().await {
             if dry_run {
                 print_log(
