@@ -138,7 +138,7 @@ impl Runnable for UnapplyCmd {
             print_log(
                 LogLevel::Warning,
                 &format!(
-                    "{} External commands were executed previously; please revert them manually if needed.",
+                    "{} commands were executed previously; revert them manually.",
                     snapshot.exec_run_count
                 ),
             );
