@@ -95,7 +95,7 @@ impl Runnable for ApplyCmd {
         let domains = collector::collect(&config)?;
 
         // load the old snapshot (if any), otherwise create a new instance
-        let snap_path = get_snapshot_path()?;
+        let snap_path = get_snapshot_path().await?;
         let mut is_bad_snap: bool = false;
         let snap = if Snapshot::is_loadable().await {
             match Snapshot::load(&snap_path).await {
@@ -108,11 +108,11 @@ impl Runnable for ApplyCmd {
                         ),
                     );
                     is_bad_snap = true;
-                    Snapshot::new()
+                    Snapshot::new().await
                 }
             }
         } else {
-            Snapshot::new()
+            Snapshot::new().await
         };
 
         // turn the old snapshot into a hashmap for a quick lookup
@@ -241,7 +241,7 @@ impl Runnable for ApplyCmd {
             }
         }
 
-        let mut new_snap = Snapshot::new();
+        let mut new_snap = Snapshot::new().await;
         for ((_, _), old_entry) in existing.into_iter() {
             new_snap.settings.push(old_entry);
         }

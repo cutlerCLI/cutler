@@ -40,7 +40,7 @@ impl Runnable for UnapplyCmd {
         let dry_run = should_dry_run();
 
         // load snapshot from disk
-        let snap_path = get_snapshot_path()?;
+        let snap_path = get_snapshot_path().await?;
         let snapshot = match Snapshot::load(&snap_path).await {
             Ok(snap) => snap,
             Err(_) => {
