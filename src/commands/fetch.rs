@@ -31,7 +31,7 @@ impl Runnable for FetchCmd {
         let remote_mgr = if let Some(ref remote) = local_config.remote {
             RemoteConfigManager::new(remote.clone().url)
         } else {
-            bail!("No remote section found in configuration.")
+            bail!("No URL found in [remote] of config. Add one to use remote sync.")
         };
 
         // fetch remote config
