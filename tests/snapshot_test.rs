@@ -3,6 +3,7 @@
 #[cfg(test)]
 mod tests {
     use cutler::{
+        config::path::get_config_path,
         exec::core::ExecJob,
         snapshot::{
             core::{SettingState, Snapshot},
@@ -19,7 +20,12 @@ mod tests {
         let snapshot_path = get_snapshot_path().await.unwrap();
         assert_eq!(
             snapshot_path,
-            dirs::home_dir().unwrap().join(".cutler_snapshot")
+            get_config_path()
+                .await
+                .unwrap()
+                .parent()
+                .unwrap()
+                .join("snapshot.json")
         );
     }
 
