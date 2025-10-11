@@ -1,0 +1,7 @@
+*.md text encoding=utf-8
+*.rs text encoding=utf-8
+*.png binary encoding=binary
+
+* text eol=lf
+
+* text=auto !casesensitive
