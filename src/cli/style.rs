@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
-use anstyle::{AnsiColor, Color::Ansi, Style};
+use anstyle::{AnsiColor, Color::Ansi, Effects, Style};
 
 /// Style attributes for cutler CLI.
 pub fn get_styles() -> clap::builder::Styles {
     clap::builder::Styles::styled()
         .usage(
             Style::new()
+                .effects(Effects::CURLY_UNDERLINE)
                 .bold()
-                .fg_color(Some(Ansi(AnsiColor::Black)))
-                .bg_color(Some(Ansi(AnsiColor::White))),
+                .fg_color(Some(Ansi(AnsiColor::White))),
         )
         .header(
             Style::new()
