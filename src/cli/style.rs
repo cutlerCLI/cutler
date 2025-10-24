@@ -8,14 +8,14 @@ pub fn get_styles() -> clap::builder::Styles {
         .usage(
             Style::new()
                 .bold()
-                .underline()
-                .fg_color(Some(Ansi(AnsiColor::Red))),
+                .fg_color(Some(Ansi(AnsiColor::Black)))
+                .bg_color(Some(Ansi(AnsiColor::White))),
         )
         .header(
             Style::new()
                 .bold()
-                .underline()
-                .fg_color(Some(Ansi(AnsiColor::Red))),
+                .bg_color(Some(Ansi(AnsiColor::White)))
+                .fg_color(Some(Ansi(AnsiColor::Black))),
         )
         .literal(Style::new().bold())
         .invalid(Style::new().bold().fg_color(Some(Ansi(AnsiColor::Red))))
