@@ -17,13 +17,13 @@ pub enum BrewListType {
 
 impl Display for BrewListType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let s = match self {
-            BrewListType::Cask => "Cask",
-            BrewListType::Formula => "Formula",
-            BrewListType::Dependency => "Dependency",
-            BrewListType::Tap => "Tap",
+        let flag = match self {
+            BrewListType::Cask => "--cask",
+            BrewListType::Formula => "--formula",
+            BrewListType::Dependency => "--installed-as-dependency",
+            BrewListType::Tap => "tap",
         };
-        write!(f, "{}", s)
+        write!(f, "{}", flag)
     }
 }
 

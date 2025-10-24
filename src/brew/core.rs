@@ -9,8 +9,8 @@ use crate::util::{
 };
 use anyhow::{Result, bail};
 use std::{env, path::Path, time::Duration};
-use tokio::fs;
 use tokio::process::Command;
+use tokio::{fs, try_join};
 
 /// Helper for: ensure_brew()
 /// Ensures Xcode Command Line Tools are installed.
@@ -213,27 +213,35 @@ pub async fn ensure_brew() -> Result<()> {
 
 /// Lists Homebrew things (formulae/casks/taps/deps) and separates them based on newline.
 pub async fn brew_list(list_type: BrewListType) -> Result<Vec<String>> {
-    let args = match list_type {
-        BrewListType::Cask => vec!["list", "--cask"],
-        BrewListType::Formula => vec!["list", "--formula"],
-        BrewListType::Dependency => vec!["list", "--installed-as-dependency"],
-        BrewListType::Tap => vec!["tap"],
+    let args: Vec<String> = match list_type {
+        BrewListType::Tap => vec!["tap".to_string()],
+        _ => {
+            let lt_str = list_type.to_string();
+            vec![
+                "list".to_string(),
+                "--quiet".to_string(),
+                "--full-name".to_string(),
+                "-1".to_string(),
+                lt_str,
+            ]
+        }
     };
 
     let output = Command::new("brew").args(&args).output().await?;
 
     print_log(
         LogLevel::Info,
-        &format!("{list_type} listing: brew {}", args.join(" ")),
+        &format!("Running {list_type} list command..."),
     );
 
     if !output.status.success() {
         print_log(
             LogLevel::Error,
-            &format!("{list_type} listing failed, will return empty."),
+            &format!("Failed to list {list_type}, will return empty."),
         );
         return Ok(vec![]);
     }
+
     let stdout = String::from_utf8_lossy(&output.stdout);
     Ok(stdout
         .lines()
@@ -251,10 +259,13 @@ pub async fn compare_brew_state(brew_cfg: Brew) -> Result<BrewDiff> {
     let config_casks: Vec<String> = brew_cfg.casks.clone().unwrap_or_default();
     let config_taps: Vec<String> = brew_cfg.taps.clone().unwrap_or_default();
 
-    // fetch installed state
-    let mut installed_formulae = brew_list(BrewListType::Formula).await?;
-    let installed_casks = brew_list(BrewListType::Cask).await?;
-    let installed_taps = brew_list(BrewListType::Tap).await?;
+    // fetch installed state in parallel
+    let (installed_formulae, installed_casks, installed_taps) = try_join!(
+        brew_list(BrewListType::Formula),
+        brew_list(BrewListType::Cask),
+        brew_list(BrewListType::Tap)
+    )?;
+    let mut installed_formulae = installed_formulae;
 
     // omit installed as dependency
     if no_deps {
