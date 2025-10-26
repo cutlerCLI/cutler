@@ -13,7 +13,7 @@ use crate::{
     domains::{collect, effective, read_current},
     snapshot::{Snapshot, get_snapshot_path},
     util::{
-        io::{confirm, notify, restart_services},
+        io::{confirm, restart_services},
         logging::{LogLevel, print_log},
     },
 };
@@ -116,10 +116,6 @@ impl Runnable for ResetCmd {
         restart_services().await;
 
         print_log(LogLevel::Fruitful, "Reset operation complete.");
-        notify(
-            "All settings reset!",
-            "You may start reconfiguring now. Only the preferences that were applied by cutler were reset.",
-        );
 
         Ok(())
     }

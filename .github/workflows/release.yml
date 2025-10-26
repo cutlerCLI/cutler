@@ -13,6 +13,7 @@ jobs:
     runs-on: macos-latest
 
     env:
+      MACOSX_DEPLOYMENT_TARGET: 11
       FILE_NAME: cutler-${{ github.event.release.name }}-darwin-arm64.zip
 
     steps:

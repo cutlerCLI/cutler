@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use dialoguer::Confirm;
-use mac_notification_sys::*;
 use tokio::process::Command;
 
 use crate::{
@@ -32,25 +31,6 @@ pub async fn open(arg: &str) -> Result<()> {
         .expect("Failed to run `open`.");
 
     Ok(())
-}
-
-/// Send a notification with a dedicated message.
-pub fn notify(title: &str, message: &str) {
-    if should_dry_run() {
-        return;
-    }
-
-    let _ = send_notification(
-        title,
-        None,
-        message,
-        Some(
-            Notification::new()
-                .asynchronous(true)
-                .close_button("I'm good!")
-                .sound("Blow"),
-        ),
-    );
 }
 
 /// Restart Finder, Dock, SystemUIServer so defaults take effect.

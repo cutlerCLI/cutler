@@ -14,7 +14,7 @@ use crate::{
         get_snapshot_path,
     },
     util::{
-        io::{confirm, notify, restart_services},
+        io::{confirm, restart_services},
         logging::{LogLevel, print_log},
         sha::get_digest,
     },
@@ -304,10 +304,6 @@ impl Runnable for ApplyCmd {
         }
 
         print_log(LogLevel::Fruitful, "Apply operation complete.");
-        notify(
-            "Settings applied!",
-            "You may need to log out and back in to allow your Mac some time.",
-        );
 
         Ok(())
     }

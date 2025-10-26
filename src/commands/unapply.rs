@@ -13,7 +13,7 @@ use crate::{
     domains::convert::{string_to_toml_value, toml_to_prefvalue},
     snapshot::{core::Snapshot, get_snapshot_path},
     util::{
-        io::{confirm, notify, restart_services},
+        io::{confirm, restart_services},
         logging::{LogLevel, print_log},
         sha::get_digest,
     },
@@ -165,10 +165,6 @@ impl Runnable for UnapplyCmd {
         restart_services().await;
 
         print_log(LogLevel::Fruitful, "Unapply operation complete.");
-        notify(
-            "Undoed changes.",
-            "For a complete reset of your preferred domains, run `cutler reset`.",
-        );
 
         Ok(())
     }
