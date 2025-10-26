@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
+use std::env;
 use std::process::exit;
 
 use clap::Parser;
@@ -44,10 +45,16 @@ async fn main() {
         exit(1);
     }
 
-    print_log(
-        LogLevel::Warning,
-        "If you are backing up your Homebrew apps with cutler, be sure to run `cutler brew backup` again since this release introduces some breaking changes to the core.",
-    );
+    if env::var("CUTLER_NO_HINTS").is_err() {
+        print_log(
+            LogLevel::Warning,
+            "Run `cutler brew backup` if you are using Homebrew backups in cutler as new release contains breaking changes.",
+        );
+        print_log(
+            LogLevel::Warning,
+            "Suppress this warning by exporting `CUTLER_NO_HINTS=1` in your shell.",
+        );
+    }
 
     // command invocation (for real this time)
     let result = match &args.command {
