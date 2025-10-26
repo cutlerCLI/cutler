@@ -131,10 +131,12 @@ async fn set_homebrew_env_vars() {
     }
 
     unsafe { env::set_var("HOMEBREW_NO_AUTO_UPDATE", "1") };
+    unsafe { env::set_var("HOMEBREW_NO_ANALYTICS", "1") };
+    unsafe { env::set_var("HOMEBREW_NO_ENV_HINTS", "1") };
 
     print_log(
         LogLevel::Info,
-        "Updated PATH with Homebrew for this process.",
+        "Homebrew environment configured for this process.",
     );
 }
 

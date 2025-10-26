@@ -44,6 +44,11 @@ async fn main() {
         exit(1);
     }
 
+    print_log(
+        LogLevel::Warning,
+        "If you are backing up your Homebrew apps with cutler, be sure to run `cutler brew backup` again since this release introduces some breaking changes to the core.",
+    );
+
     // command invocation (for real this time)
     let result = match &args.command {
         Command::Apply(cmd) => cmd.run().await,
