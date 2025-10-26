@@ -48,7 +48,7 @@ jobs:
           cd release && zip -r ../${{ env.FILE_NAME }} bin man README.md LICENSE.md && cd ..
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: cutler-darwin-arm64
           path: ${{ env.FILE_NAME }}
@@ -108,7 +108,7 @@ jobs:
           cd release && zip -r ../${{ env.FILE_NAME }} bin man README.md LICENSE.md && cd ..
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: cutler-darwin-x86_64
           path: ${{ env.FILE_NAME }}
