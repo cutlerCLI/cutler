@@ -216,7 +216,7 @@ pub async fn ensure_brew() -> Result<()> {
 /// Lists Homebrew things (formulae/casks/taps/deps) and separates them based on newline.
 pub async fn brew_list(list_type: BrewListType) -> Result<Vec<String>> {
     let args: Vec<String> = match list_type {
-        BrewListType::Tap => vec!["tap".to_string()],
+        BrewListType::Tap => vec![list_type.to_string()],
         _ => {
             let lt_str = list_type.to_string();
             vec![
