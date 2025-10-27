@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use defaults_rs::{Domain, ReadResult, preferences::Preferences};
+use defaults_rs::{Domain, Preferences, ReadResult};
 use std::collections::HashMap;
 use toml::{Table, Value};
 

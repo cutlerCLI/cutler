@@ -22,7 +22,7 @@ use crate::{
 use anyhow::{Result, bail};
 use async_trait::async_trait;
 use clap::Args;
-use defaults_rs::{Domain, PrefValue, preferences::Preferences};
+use defaults_rs::{Domain, PrefValue, Preferences};
 use toml::Value;
 
 #[derive(Args, Debug)]

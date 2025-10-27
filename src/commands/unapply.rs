@@ -3,7 +3,7 @@
 use anyhow::{Result, bail};
 use async_trait::async_trait;
 use clap::Args;
-use defaults_rs::{Domain, preferences::Preferences};
+use defaults_rs::{Domain, Preferences};
 use std::collections::HashMap;
 
 use crate::{

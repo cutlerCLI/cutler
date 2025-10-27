@@ -3,7 +3,7 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
-use defaults_rs::{Domain, preferences::Preferences};
+use defaults_rs::{Domain, Preferences};
 use tokio::fs;
 
 use crate::{
