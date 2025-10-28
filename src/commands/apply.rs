@@ -32,15 +32,15 @@ pub struct ApplyCmd {
     url: Option<String>,
 
     /// Skip executing external commands.
-    #[arg(long, conflicts_with_all = &["all_exec", "flagged"])]
+    #[arg(long, conflicts_with_all = &["all_cmd", "flagged_cmd"])]
     no_cmd: bool,
 
     /// Execute all external commands (even flagged ones).
-    #[arg(short, long, conflicts_with_all = &["no_exec", "flagged"])]
+    #[arg(short, long, conflicts_with_all = &["no_cmd", "flagged_cmd"])]
     all_cmd: bool,
 
     /// Execute flagged external commands only.
-    #[arg(short, long, conflicts_with_all = &["all_exec", "no_exec"])]
+    #[arg(short, long, conflicts_with_all = &["all_cmd", "no_cmd"])]
     flagged_cmd: bool,
 
     /// Risky: Disables check for domain existence before applying modification.
