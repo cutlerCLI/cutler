@@ -33,19 +33,19 @@ pub struct ApplyCmd {
 
     /// Skip executing external commands.
     #[arg(long, conflicts_with_all = &["all_exec", "flagged"])]
-    no_exec: bool,
+    no_cmd: bool,
 
     /// Execute all external commands (even flagged ones).
     #[arg(short, long, conflicts_with_all = &["no_exec", "flagged"])]
-    all_exec: bool,
+    all_cmd: bool,
 
     /// Execute flagged external commands only.
     #[arg(short, long, conflicts_with_all = &["all_exec", "no_exec"])]
-    flagged: bool,
+    flagged_cmd: bool,
 
     /// Risky: Disables check for domain existence before applying modification.
     #[arg(long)]
-    no_check: bool,
+    no_domain_check: bool,
 
     /// Invoke `brew install` after applying defaults.
     #[arg(short, long)]
@@ -129,7 +129,7 @@ impl Runnable for ApplyCmd {
             for (key, toml_value) in table.into_iter() {
                 let (eff_dom, eff_key) = collector::effective(&dom, &key);
 
-                if !self.no_check
+                if !self.no_domain_check
                     && eff_dom != "NSGlobalDomain"
                     && !domains_list.contains(&eff_dom.to_owned())
                 {
@@ -277,10 +277,10 @@ impl Runnable for ApplyCmd {
         }
 
         // exec external commands
-        if !self.no_exec {
-            let mode = if self.all_exec {
+        if !self.no_cmd {
+            let mode = if self.all_cmd {
                 ExecMode::All
-            } else if self.flagged {
+            } else if self.flagged_cmd {
                 ExecMode::Flagged
             } else {
                 ExecMode::Regular

@@ -15,12 +15,12 @@ pub struct ExecCmd {
     #[arg(value_name = "NAME")]
     name: Option<String>,
 
-    /// Execute in regular mode (no flagged commands).
+    /// Executes all declared commands.
     #[arg(short, long, conflicts_with = "flagged")]
-    regular: bool,
+    all: bool,
 
     /// Execute flagged commands only.
-    #[arg(short, long, conflicts_with = "regular")]
+    #[arg(short, long, conflicts_with = "all")]
     flagged: bool,
 }
 
@@ -30,12 +30,12 @@ impl Runnable for ExecCmd {
         // load & parse config
         let config = Config::load(true).await?;
 
-        let mode = if self.flagged {
-            ExecMode::Flagged
-        } else if self.regular {
-            ExecMode::Regular
-        } else {
+        let mode = if self.all {
             ExecMode::All
+        } else if self.flagged {
+            ExecMode::Flagged
+        } else {
+            ExecMode::Regular
         };
 
         if let Some(cmd_name) = &self.name {

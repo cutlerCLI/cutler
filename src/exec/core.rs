@@ -201,11 +201,16 @@ pub async fn run_all(config: Config, mode: ExecMode) -> Result<i32> {
         }
     }
 
-    // inspect failures count
+    // inspect count
     if failures > 0 {
         print_log(
             LogLevel::Warning,
             &format!("{failures} external commands failed"),
+        );
+    } else if successes == 0 {
+        print_log(
+            LogLevel::Warning,
+            "No regular external commands found. Maybe you meant flagged or all?",
         );
     }
 
