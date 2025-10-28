@@ -89,7 +89,7 @@ impl Runnable for SelfUpdateCmd {
 
         if status.updated() {
             if !self.no_man {
-                print_log(LogLevel::Info, "Binary updated, updating manpage...");
+                println!("Binary updated, updating manpage...");
 
                 let manpage_url = "https://raw.githubusercontent.com/cutlerCLI/cutler/refs/heads/master/man/man1/cutler.1".to_string();
                 let client = reqwest::Client::builder()
