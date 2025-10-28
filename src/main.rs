@@ -34,17 +34,6 @@ async fn main() {
         print_log(LogLevel::Info, "Skipping remote config auto-sync.");
     }
 
-    // sudo protection
-    let result = match &args.command {
-        Command::SelfUpdate(_) | Command::Lock(_) | Command::Unlock(_) => run_with_root().await,
-        _ => run_with_noroot(),
-    };
-
-    if let Err(err) = result {
-        print_log(LogLevel::Error, &format!("Invoke failure: {err}"));
-        exit(1);
-    }
-
     if env::var("CUTLER_NO_HINTS").is_err() {
         print_log(
             LogLevel::Warning,
@@ -56,27 +45,39 @@ async fn main() {
         );
     }
 
-    // command invocation (for real this time)
+    // sudo protection
     let result = match &args.command {
-        Command::Apply(cmd) => cmd.run().await,
-        Command::Config(cmd) => cmd.run().await,
-        Command::Cookbook(cmd) => cmd.run().await,
-        Command::Exec(cmd) => cmd.run().await,
-        Command::Fetch(cmd) => cmd.run().await,
-        Command::Init(cmd) => cmd.run().await,
-        Command::Unapply(cmd) => cmd.run().await,
-        Command::Reset(cmd) => cmd.run().await,
-        Command::Status(cmd) => cmd.run().await,
-        Command::Lock(cmd) => cmd.run().await,
-        Command::Unlock(cmd) => cmd.run().await,
-        Command::Brew { command } => match command {
-            BrewSubcmd::Backup(cmd) => cmd.run().await,
-            BrewSubcmd::Install(cmd) => cmd.run().await,
-        },
-        Command::CheckUpdate(cmd) => cmd.run().await,
-        Command::SelfUpdate(cmd) => cmd.run().await,
-        Command::Completion(cmd) => cmd.run().await,
+        Command::SelfUpdate(_) | Command::Lock(_) | Command::Unlock(_) => run_with_root().await,
+        _ => run_with_noroot(),
     };
+
+    if let Err(err) = result {
+        print_log(LogLevel::Error, &err.to_string());
+        exit(1);
+    }
+
+    // command invocation (for real this time)
+    let runnable: &dyn Runnable = match &args.command {
+        Command::Apply(cmd) => cmd,
+        Command::Config(cmd) => cmd,
+        Command::Cookbook(cmd) => cmd,
+        Command::Exec(cmd) => cmd,
+        Command::Fetch(cmd) => cmd,
+        Command::Init(cmd) => cmd,
+        Command::Unapply(cmd) => cmd,
+        Command::Reset(cmd) => cmd,
+        Command::Status(cmd) => cmd,
+        Command::Lock(cmd) => cmd,
+        Command::Unlock(cmd) => cmd,
+        Command::Brew { command } => match command {
+            BrewSubcmd::Backup(cmd) => cmd,
+            BrewSubcmd::Install(cmd) => cmd,
+        },
+        Command::CheckUpdate(cmd) => cmd,
+        Command::SelfUpdate(cmd) => cmd,
+        Command::Completion(cmd) => cmd,
+    };
+    let result = runnable.run().await;
 
     if let Err(err) = result {
         print_log(LogLevel::Error, &err.to_string());
