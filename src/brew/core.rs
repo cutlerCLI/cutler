@@ -8,6 +8,7 @@ use crate::util::{
     logging::{LogLevel, print_log},
 };
 use anyhow::{Result, bail};
+use nix::NixPath;
 use std::{env, path::Path, time::Duration};
 use tokio::process::Command;
 use tokio::{fs, try_join};
@@ -162,12 +163,7 @@ async fn install_homebrew() -> Result<()> {
 
 /// Checks if Homebrew is actually installed.
 pub async fn is_brew_installed() -> bool {
-    Command::new("brew")
-        .arg("--version")
-        .output()
-        .await
-        .map(|o| o.status.success())
-        .unwrap_or(false)
+    !which::which("brew").unwrap_or_default().is_empty()
 }
 
 /// Ensures that Homebrew is installed on the machine.
@@ -237,11 +233,7 @@ pub async fn brew_list(list_type: BrewListType) -> Result<Vec<String>> {
     );
 
     if !output.status.success() {
-        print_log(
-            LogLevel::Error,
-            &format!("Failed to list {list_type}, will return empty."),
-        );
-        return Ok(vec![]);
+        bail!("Failed to list {list_type}, bailing.")
     }
 
     let stdout = String::from_utf8_lossy(&output.stdout);

@@ -14,6 +14,7 @@ mod tests {
             vars: None,
             command: None,
             brew: None,
+            mas: None,
             remote: None,
             path: Default::default(),
         }

@@ -21,6 +21,7 @@ pub struct Config {
     pub vars: Option<HashMap<String, String>>,
     pub command: Option<HashMap<String, Command>>,
     pub brew: Option<Brew>,
+    pub mas: Option<Mas>,
     pub remote: Option<Remote>,
     #[serde(skip)]
     pub path: PathBuf,
@@ -43,6 +44,13 @@ pub struct Command {
     pub required: Option<Vec<String>>,
     pub flag: Option<bool>,
     pub sudo: Option<bool>,
+}
+
+/// Represents the [mas] table.
+#[derive(Deserialize, Serialize, Clone)]
+#[serde(deny_unknown_fields)]
+pub struct Mas {
+    pub ids: HashMap<String, String>,
 }
 
 /// Represents the [brew] table.
@@ -97,6 +105,7 @@ impl Config {
             command: None,
             brew: None,
             remote: None,
+            mas: None,
             path: get_config_path().await.unwrap_or_default(),
         }
     }

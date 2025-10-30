@@ -37,6 +37,7 @@ mod tests {
             vars: Some(vars),
             command: Some(command_map),
             brew: None,
+            mas: None,
             remote: None,
             path: Default::default(),
         };
@@ -72,6 +73,7 @@ mod tests {
             vars: Some(vars),
             command: Some(command_map),
             brew: None,
+            mas: None,
             remote: None,
             path: Default::default(),
         };
