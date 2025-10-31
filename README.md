@@ -54,3 +54,5 @@ View the [Contribution Guidelines](https://cutlercli.github.io/cookbook/guidelin
 ## License
 
 This project is licensed under the [Apache 2.0 License](https://github.com/cutlerCLI/cutler/blob/master/LICENSE.md).
+
+For commercial or enterprise usage, a commercial license is available and must be acquired. Refer to [COMMERCIAL_LICENSE.md](https://github.com/cutlerCLI/cutler/blob/master/COMMERCIAL_LICENSE.md)
