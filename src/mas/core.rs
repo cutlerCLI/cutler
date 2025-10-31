@@ -30,7 +30,14 @@ pub async fn list_apps() -> Result<Vec<MasApplication>> {
             let mut parts = line.splitn(2, ' ');
 
             let id = parts.next()?.to_string();
-            let name = parts.next()?.split_whitespace().next().unwrap().to_string();
+            let name = parts
+                .next()?
+                .split_whitespace()
+                .collect::<Vec<_>>()
+                .split_last()
+                .map(|(_, rest)| rest.join(" "))
+                .unwrap_or_default();
+
             Some(MasApplication { id, name })
         })
         .collect();

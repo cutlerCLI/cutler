@@ -8,7 +8,7 @@ use cutler::autosync::try_auto_sync;
 use cutler::cli::args::{BrewSubcmd, MasSubcmd};
 
 use cutler::cli::atomic::{
-    set_accept_all, set_debug_mode, set_dry_run, set_no_restart_services, set_quiet, set_verbose,
+    set_accept_all, set_dry_run, set_no_restart_services, set_quiet, set_verbose,
 };
 use cutler::cli::{Args, Command};
 use cutler::commands::Runnable;
@@ -22,7 +22,6 @@ async fn main() {
 
     // set some of them atomically
     // (described why in util/globals.rs)
-    set_debug_mode(args.debug);
     set_accept_all(args.accept_all);
     set_quiet(args.quiet);
     set_verbose(args.verbose);

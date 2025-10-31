@@ -9,15 +9,6 @@ use std::sync::atomic::{AtomicBool, Ordering};
  * "just in case".
  */
 
-// --debug
-static DEBUG: AtomicBool = AtomicBool::new(false);
-pub fn set_debug_mode(value: bool) {
-    DEBUG.store(value, Ordering::SeqCst);
-}
-pub fn should_debug() -> bool {
-    DEBUG.load(Ordering::SeqCst)
-}
-
 // --accept-all
 static ACCEPT_ALL: AtomicBool = AtomicBool::new(false);
 pub fn set_accept_all(value: bool) {
