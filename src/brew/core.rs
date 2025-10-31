@@ -151,7 +151,12 @@ async fn install_homebrew() -> Result<()> {
 
 /// Checks if Homebrew is actually installed.
 pub async fn is_brew_installed() -> bool {
-    !which::which("brew").unwrap_or_default().is_empty()
+    Command::new("brew")
+        .arg("--version")
+        .output()
+        .await
+        .map(|op| op.status.success())
+        .unwrap_or(false)
 }
 
 /// Ensures that Homebrew is installed on the machine.

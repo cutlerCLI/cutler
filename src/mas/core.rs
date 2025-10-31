@@ -12,9 +12,19 @@ pub struct MasApplication {
     pub name: String,
 }
 
+/// Returns a boolean value based on whether `mas` is installed on the current Mac.
+async fn mas_is_installed() -> bool {
+    Command::new("mas")
+        .arg("version")
+        .output()
+        .await
+        .map(|op| op.status.success())
+        .unwrap_or(false)
+}
+
 /// Returns a list of MasApplication struct instances.
 pub async fn list_apps() -> Result<Vec<MasApplication>> {
-    if which::which("mas").is_err() {
+    if !mas_is_installed().await {
         bail!("mas was not found in $PATH, so cannot check for installed apps.");
     }
 
