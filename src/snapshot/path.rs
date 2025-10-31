@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 use anyhow::{Context, Result};
 use std::{path::PathBuf, sync::OnceLock};
 use tokio::fs;
