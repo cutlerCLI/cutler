@@ -2,7 +2,7 @@
 
 use crate::{
     brew::{
-        core::{compare_brew_state, is_brew_installed},
+        core::{brew_is_installed, compare_brew_state},
         types::BrewDiff,
     },
     commands::Runnable,
@@ -121,10 +121,10 @@ impl Runnable for StatusCmd {
                 log!(LogLevel::Info, "Homebrew status:");
 
                 // ensure homebrew is installed (skip if not)
-                if !is_brew_installed().await {
+                if !brew_is_installed().await {
                     log!(
                         LogLevel::Warning,
-                        "Homebrew not available in PATH, skipping status check for it.",
+                        "Homebrew not available in $PATH, skipping status check for it.",
                     );
                 } else {
                     match compare_brew_state(brew_val).await {

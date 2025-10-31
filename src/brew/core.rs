@@ -114,7 +114,7 @@ async fn set_homebrew_env_vars() {
     } else {
         log!(
             LogLevel::Warning,
-            "Brew binary not found in standard directories; PATH not updated."
+            "Brew binary not found in standard directories; $PATH not updated."
         );
     }
 
@@ -133,6 +133,7 @@ async fn set_homebrew_env_vars() {
 async fn install_homebrew() -> Result<()> {
     let install_command =
         "curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | /bin/bash";
+
     let status = Command::new("/bin/bash")
         .arg("-c")
         .arg(install_command)
@@ -142,14 +143,14 @@ async fn install_homebrew() -> Result<()> {
     log!(LogLevel::Info, "Installing Homebrew...");
 
     if !status.success() {
-        bail!("Failed to install Homebrew.");
+        bail!("Homebrew install script failed: {status}");
     }
 
     Ok(())
 }
 
 /// Checks if Homebrew is actually installed.
-pub async fn is_brew_installed() -> bool {
+pub async fn brew_is_installed() -> bool {
     Command::new("brew")
         .arg("--version")
         .output()
@@ -163,7 +164,7 @@ pub async fn ensure_brew() -> Result<()> {
     // ensure xcode command-line tools first
     ensure_xcode_clt().await?;
 
-    if !is_brew_installed().await {
+    if !brew_is_installed().await {
         if should_dry_run() {
             log!(
                 LogLevel::Dry,
@@ -181,18 +182,8 @@ pub async fn ensure_brew() -> Result<()> {
             // set environment variables for `brew`
             set_homebrew_env_vars().await;
 
-            // re-check that Homebrew is now installed and in $PATH
-            let is_installed_after = Command::new("brew")
-                .arg("--version")
-                .output()
-                .await
-                .map(|o| o.status.success())
-                .unwrap_or(false);
-
-            if !is_installed_after {
-                bail!(
-                    "Homebrew installation seems to have failed or brew is still not in PATH. Please update your PATH accordingly."
-                );
+            if !brew_is_installed().await {
+                bail!("Homebrew installation seems to have failed or brew is still not in $PATH.");
             }
         } else {
             bail!("Homebrew is required for brew operations, but was not found.");
