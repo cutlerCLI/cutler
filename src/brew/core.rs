@@ -222,7 +222,11 @@ pub async fn brew_list(list_type: BrewListType) -> Result<Vec<String>> {
     log!(LogLevel::Info, "Running {list_type} list command...");
 
     if !output.status.success() {
-        bail!("Failed to list {list_type}, bailing.")
+        log!(
+            LogLevel::Warning,
+            "{list_type} listing failed, will return empty."
+        );
+        return Ok(vec![]);
     }
 
     let stdout = String::from_utf8_lossy(&output.stdout);
