@@ -31,7 +31,7 @@ pub async fn list_apps() -> Result<Vec<MasApplication>> {
     let output = Command::new("mas").arg("list").output().await?;
 
     if !output.status.success() {
-        bail!("Could not fetch app list from mas.");
+        bail!("Failed to check app list using `mas list`.");
     }
 
     let list = String::from_utf8_lossy(&output.stdout)

@@ -6,7 +6,6 @@ use crate::config::core::Brew;
 use crate::log;
 use crate::util::{io::confirm, logging::LogLevel};
 use anyhow::{Result, bail};
-use nix::NixPath;
 use std::{env, path::Path, time::Duration};
 use tokio::process::Command;
 use tokio::{fs, try_join};
