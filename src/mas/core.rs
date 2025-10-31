@@ -1,12 +1,19 @@
 use anyhow::{Result, bail};
 use tokio::process::Command;
 
-pub struct AppStoreApplication {
+/// Represents an app installed from the Apple App Store.
+///
+/// The full list is fetched from mas and contains the first two properties;
+/// - id: The identifier for the app.
+/// - name: The name for the app.
+#[derive(Debug)]
+pub struct MasApplication {
     pub id: String,
     pub name: String,
 }
 
-pub async fn get_appstore_pkgs() -> Result<Vec<AppStoreApplication>> {
+/// Returns a list of MasApplication struct instances.
+pub async fn list_apps() -> Result<Vec<MasApplication>> {
     if which::which("mas").is_err() {
         bail!("mas was not found in $PATH, so cannot check for installed apps.");
     }
@@ -21,9 +28,10 @@ pub async fn get_appstore_pkgs() -> Result<Vec<AppStoreApplication>> {
         .lines()
         .filter_map(|line| {
             let mut parts = line.splitn(2, ' ');
+
             let id = parts.next()?.to_string();
-            let name = parts.next()?.trim().to_string();
-            Some(AppStoreApplication { id, name })
+            let name = parts.next()?.split_whitespace().next().unwrap().to_string();
+            Some(MasApplication { id, name })
         })
         .collect();
 

@@ -47,7 +47,7 @@ pub struct Command {
 }
 
 /// Represents the [mas] table.
-#[derive(Deserialize, Serialize, Clone)]
+#[derive(Deserialize, Serialize, Clone, Default)]
 #[serde(deny_unknown_fields)]
 pub struct Mas {
     pub ids: HashMap<String, String>,

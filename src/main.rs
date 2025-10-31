@@ -5,7 +5,7 @@ use std::process::exit;
 
 use clap::Parser;
 use cutler::autosync::try_auto_sync;
-use cutler::cli::args::BrewSubcmd;
+use cutler::cli::args::{BrewSubcmd, MasSubcmd};
 
 use cutler::cli::atomic::{
     set_accept_all, set_dry_run, set_no_restart_services, set_quiet, set_verbose,
@@ -72,6 +72,9 @@ async fn main() {
         Command::Brew { command } => match command {
             BrewSubcmd::Backup(cmd) => cmd,
             BrewSubcmd::Install(cmd) => cmd,
+        },
+        Command::Mas { command } => match command {
+            MasSubcmd::List(cmd) => cmd,
         },
         Command::CheckUpdate(cmd) => cmd,
         Command::SelfUpdate(cmd) => cmd,

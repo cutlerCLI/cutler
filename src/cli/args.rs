@@ -5,7 +5,8 @@ use clap::{Parser, Subcommand};
 
 use crate::commands::{
     ApplyCmd, BrewBackupCmd, BrewInstallCmd, CheckUpdateCmd, CompletionCmd, ConfigCmd, CookbookCmd,
-    ExecCmd, FetchCmd, InitCmd, LockCmd, ResetCmd, SelfUpdateCmd, StatusCmd, UnapplyCmd, UnlockCmd,
+    ExecCmd, FetchCmd, InitCmd, LockCmd, MasListCmd, ResetCmd, SelfUpdateCmd, StatusCmd,
+    UnapplyCmd, UnlockCmd,
 };
 
 #[derive(Parser)]
@@ -69,6 +70,11 @@ pub enum Command {
         #[command(subcommand)]
         command: BrewSubcmd,
     },
+    /// Mas-related commands.
+    Mas {
+        #[command(subcommand)]
+        command: MasSubcmd,
+    },
     /// Shows the configuration.
     #[command(visible_alias = "conf")]
     Config(ConfigCmd),
@@ -84,6 +90,12 @@ pub enum Command {
     /// Sync the local config with remote (if any in [remote])
     #[command(visible_alias = "get")]
     Fetch(FetchCmd),
+}
+
+#[derive(Subcommand, Debug)]
+pub enum MasSubcmd {
+    /// Lists all App Store apps using mas backend.
+    List(MasListCmd),
 }
 
 #[derive(Subcommand, Debug)]
