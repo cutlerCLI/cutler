@@ -3,10 +3,8 @@
 use crate::brew::types::{BrewDiff, BrewListType};
 use crate::cli::atomic::should_dry_run;
 use crate::config::core::Brew;
-use crate::util::{
-    io::confirm,
-    logging::{LogLevel, print_log},
-};
+use crate::log;
+use crate::util::{io::confirm, logging::LogLevel};
 use anyhow::{Result, bail};
 use nix::NixPath;
 use std::{env, path::Path, time::Duration};
@@ -37,23 +35,16 @@ async fn ensure_xcode_clt() -> Result<()> {
     }
 
     if should_dry_run() {
-        print_log(
+        log!(
             LogLevel::Dry,
-            "Would install Xcode Command Line Tools (not detected)",
+            "Would install Xcode Command Line Tools (not detected)"
         );
         return Ok(());
     }
 
-    print_log(
-        LogLevel::Warning,
-        "Xcode Command Line Tools are not installed.",
-    );
+    log!(LogLevel::Warning, "Xcode CLT is not installed.");
 
     if confirm("Install Xcode Command Line Tools now?") {
-        print_log(
-            LogLevel::Info,
-            "Waiting to find Xcode Command Line Tools after installation...",
-        );
         let status = Command::new("xcode-select")
             .arg("--install")
             .status()
@@ -65,10 +56,7 @@ async fn ensure_xcode_clt() -> Result<()> {
             );
         }
 
-        print_log(
-            LogLevel::Info,
-            "Xcode Command Line Tools installer launched. Waiting for installation to complete...",
-        );
+        log!(LogLevel::Warning, "Waiting for installation to complete...");
 
         // wait for 60 minutes for the user to finish installation
         // otherwise, bail out
@@ -77,7 +65,7 @@ async fn ensure_xcode_clt() -> Result<()> {
 
             // loop checks here
             if check_installed().await {
-                print_log(LogLevel::Info, "Xcode Command Line Tools installed.");
+                log!(LogLevel::Fruitful, "Xcode Command Line tools installed.");
                 return Ok(());
             }
         }
@@ -125,9 +113,9 @@ async fn set_homebrew_env_vars() {
         }
         unsafe { env::set_var("PATH", &new_path) };
     } else {
-        print_log(
+        log!(
             LogLevel::Warning,
-            "Brew binary not found in standard directories; PATH not updated.",
+            "Brew binary not found in standard directories; PATH not updated."
         );
     }
 
@@ -135,9 +123,9 @@ async fn set_homebrew_env_vars() {
     unsafe { env::set_var("HOMEBREW_NO_ANALYTICS", "1") };
     unsafe { env::set_var("HOMEBREW_NO_ENV_HINTS", "1") };
 
-    print_log(
+    log!(
         LogLevel::Info,
-        "Homebrew environment configured for this process.",
+        "Homebrew environment configuredfor this process."
     );
 }
 
@@ -152,7 +140,7 @@ async fn install_homebrew() -> Result<()> {
         .status()
         .await?;
 
-    print_log(LogLevel::Info, "Installing Homebrew...");
+    log!(LogLevel::Info, "Installing Homebrew...");
 
     if !status.success() {
         bail!("Failed to install Homebrew.");
@@ -173,14 +161,15 @@ pub async fn ensure_brew() -> Result<()> {
 
     if !is_brew_installed().await {
         if should_dry_run() {
-            print_log(
+            log!(
                 LogLevel::Dry,
-                "Would install Homebrew since not found in $PATH",
+                "Would install Homebrew since not found in $PATH."
             );
-            return Ok(());
-        }
 
-        print_log(LogLevel::Warning, "Homebrew is not installed.");
+            return Ok(());
+        } else {
+            log!(LogLevel::Warning, "Homebrew is not installed.");
+        }
 
         if confirm("Install Homebrew now?") {
             install_homebrew().await?;
@@ -226,11 +215,7 @@ pub async fn brew_list(list_type: BrewListType) -> Result<Vec<String>> {
     };
 
     let output = Command::new("brew").args(&args).output().await?;
-
-    print_log(
-        LogLevel::Info,
-        &format!("Running {list_type} list command..."),
-    );
+    log!(LogLevel::Info, "Running {list_type} list command...");
 
     if !output.status.success() {
         bail!("Failed to list {list_type}, bailing.")
@@ -263,7 +248,7 @@ pub async fn compare_brew_state(brew_cfg: Brew) -> Result<BrewDiff> {
 
     // omit installed as dependency
     if no_deps {
-        print_log(LogLevel::Info, "--no-deps used, proceeding with checks...");
+        log!(LogLevel::Info, "--no-deps used, proceeding with checks...");
         let installed_as_deps = brew_list(BrewListType::Dependency).await?;
 
         installed_formulae = installed_formulae

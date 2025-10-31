@@ -6,10 +6,8 @@ use clap::Args;
 use anyhow::{Result, bail};
 
 use crate::{
-    cli::atomic::should_dry_run,
-    commands::Runnable,
-    config::core::Config,
-    util::logging::{LogLevel, print_log},
+    cli::atomic::should_dry_run, commands::Runnable, config::core::Config, log,
+    util::logging::LogLevel,
 };
 
 #[derive(Debug, Args)]
@@ -28,7 +26,7 @@ impl Runnable for LockCmd {
         if matches!(config.lock, Some(true)) {
             bail!("Already locked.");
         } else if dry_run {
-            print_log(LogLevel::Dry, "Would lock config file.");
+            log!(LogLevel::Dry, "Would lock config file.");
             return Ok(());
         }
 

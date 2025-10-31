@@ -2,12 +2,7 @@ use anyhow::{Result, bail};
 use async_trait::async_trait;
 use clap::Args;
 
-use crate::{
-    commands::Runnable,
-    config::core::Config,
-    mas,
-    util::logging::{LogLevel, print_log},
-};
+use crate::{commands::Runnable, config::core::Config, log, mas, util::logging::LogLevel};
 
 #[derive(Args, Debug)]
 pub struct MasListCmd;
@@ -22,7 +17,7 @@ impl Runnable for MasListCmd {
         let mas_table = mas::list_apps().await?;
 
         for item in mas_table {
-            print_log(LogLevel::Info, &format!("{item:?}"));
+            log!(LogLevel::Info, "{item:?}");
         }
 
         Ok(())

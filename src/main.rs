@@ -8,11 +8,12 @@ use cutler::autosync::try_auto_sync;
 use cutler::cli::args::{BrewSubcmd, MasSubcmd};
 
 use cutler::cli::atomic::{
-    set_accept_all, set_dry_run, set_no_restart_services, set_quiet, set_verbose,
+    set_accept_all, set_debug_mode, set_dry_run, set_no_restart_services, set_quiet, set_verbose,
 };
 use cutler::cli::{Args, Command};
 use cutler::commands::Runnable;
-use cutler::util::logging::{LogLevel, print_log};
+use cutler::log;
+use cutler::util::logging::LogLevel;
 use cutler::util::sudo::{run_with_noroot, run_with_root};
 
 #[tokio::main(flavor = "multi_thread")]
@@ -21,6 +22,7 @@ async fn main() {
 
     // set some of them atomically
     // (described why in util/globals.rs)
+    set_debug_mode(args.debug);
     set_accept_all(args.accept_all);
     set_quiet(args.quiet);
     set_verbose(args.verbose);
@@ -31,17 +33,17 @@ async fn main() {
     if !args.no_sync {
         try_auto_sync(&args.command).await;
     } else {
-        print_log(LogLevel::Info, "Skipping remote config auto-sync.");
+        log!(LogLevel::Info, "Skipping remote config autosync.");
     }
 
     if env::var("CUTLER_NO_HINTS").is_err() {
-        print_log(
+        log!(
             LogLevel::Warning,
-            "Run `cutler brew backup` if you are using Homebrew backups in cutler as new release contains breaking changes.",
+            "Run `cutler brew backup` if you are using Homebrew backups in cutler as new release contains breaking changes."
         );
-        print_log(
+        log!(
             LogLevel::Warning,
-            "Suppress this warning by exporting `CUTLER_NO_HINTS=1` in your shell.",
+            "Suppress this warning by exporting `CUTLER_NO_HINTS=1` in your shell."
         );
     }
 
@@ -52,7 +54,7 @@ async fn main() {
     };
 
     if let Err(err) = result {
-        print_log(LogLevel::Error, &err.to_string());
+        log!(LogLevel::Error, "{err}");
         exit(1);
     }
 
@@ -83,7 +85,7 @@ async fn main() {
     let result = runnable.run().await;
 
     if let Err(err) = result {
-        print_log(LogLevel::Error, &err.to_string());
+        log!(LogLevel::Error, "{err}");
         exit(1);
     }
 }

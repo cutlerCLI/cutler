@@ -8,7 +8,8 @@ use crate::{
     commands::Runnable,
     config::core::Config,
     domains::{collect, convert::normalize, effective, read_current},
-    util::logging::{BOLD, GREEN, LogLevel, RED, RESET, print_log},
+    log,
+    util::logging::{BOLD, GREEN, LogLevel, RED, RESET},
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -78,9 +79,9 @@ impl Runnable for StatusCmd {
             for (eff_dom, eff_key, desired, current, is_diff) in outcomes {
                 if !printed_domains.contains(&eff_dom) {
                     if *domain_has_diff.get(&eff_dom).unwrap_or(&false) {
-                        print_log(LogLevel::Warning, &format!("{BOLD}{eff_dom}{RESET}"));
+                        log!(LogLevel::Warning, "{BOLD}{eff_dom}{RESET}");
                     } else {
-                        print_log(LogLevel::Info, &format!("{BOLD}{eff_dom}{RESET}"));
+                        log!(LogLevel::Info, "{BOLD}{eff_dom}{RESET}");
                     }
                     printed_domains.insert(eff_dom.clone());
                 }
@@ -89,27 +90,25 @@ impl Runnable for StatusCmd {
                     if !any_diff {
                         any_diff = true
                     }
-                    print_log(
+                    log!(
                         LogLevel::Warning,
-                        &format!(
-                            "  {eff_key}: should be {RED}{desired}{RESET} (now: {RED}{current}{RESET})",
-                        ),
+                        "  {eff_key}: should be {RED}{desired}{RESET} (now: {RED}{current}{RESET})",
                     );
                 } else {
-                    print_log(
+                    log!(
                         LogLevel::Info,
-                        &format!("  {GREEN}[Matched]{RESET} {eff_key}: {current}"),
+                        "  {GREEN}[Matched]{RESET} {eff_key}: {current}",
                     );
                 }
             }
 
             if any_diff {
-                print_log(
+                log!(
                     LogLevel::Warning,
                     "Preferences diverged. Run `cutler apply` to apply the config onto the system.",
                 );
             } else {
-                print_log(LogLevel::Fruitful, "System preferences are on sync.");
+                log!(LogLevel::Fruitful, "System preferences are on sync.");
             }
         }
 
@@ -119,11 +118,11 @@ impl Runnable for StatusCmd {
             let no_brew = self.no_brew;
 
             if !no_brew && let Some(brew_val) = toml_brew.brew {
-                print_log(LogLevel::Info, "Homebrew status:");
+                log!(LogLevel::Info, "Homebrew status:");
 
                 // ensure homebrew is installed (skip if not)
                 if !is_brew_installed().await {
-                    print_log(
+                    log!(
                         LogLevel::Warning,
                         "Homebrew not available in PATH, skipping status check for it.",
                     );
@@ -152,27 +151,25 @@ impl Runnable for StatusCmd {
                             for (label, items) in brew_checks.iter() {
                                 if !items.is_empty() {
                                     any_diff = true;
-                                    print_log(
+                                    log!(
                                         LogLevel::Warning,
-                                        &format!("{BOLD}{label}:{RESET} {}", items.join(", ")),
+                                        "{BOLD}{label}:{RESET} {}",
+                                        items.join(", "),
                                     );
                                 }
                             }
 
                             if any_diff {
-                                print_log(
+                                log!(
                                     LogLevel::Warning,
                                     "Homebrew diverged. Run the `cutler brew` command group to sync/install with/from config.",
                                 );
                             } else {
-                                print_log(LogLevel::Fruitful, "Homebrew status on sync.");
+                                log!(LogLevel::Fruitful, "Homebrew status on sync.");
                             }
                         }
                         Err(e) => {
-                            print_log(
-                                LogLevel::Error,
-                                &format!("Could not check Homebrew status: {e}"),
-                            );
+                            log!(LogLevel::Error, "Could not check Homebrew status: {e}",);
                         }
                     }
                 }

@@ -8,10 +8,8 @@ use tokio::fs;
 use crate::{
     commands::Runnable,
     config::{core::Config, path::get_config_path},
-    util::{
-        io::confirm,
-        logging::{LogLevel, print_log},
-    },
+    log,
+    util::{io::confirm, logging::LogLevel},
 };
 
 #[derive(Args, Debug)]
@@ -23,9 +21,9 @@ impl Runnable for InitCmd {
         let config_path = get_config_path().await?;
 
         if Config::is_loadable().await {
-            print_log(
+            log!(
                 LogLevel::Warning,
-                &format!("Configuration file already exists at {config_path:?}"),
+                "Configuration file already exists at {config_path:?}",
             );
             if !confirm("Do you want to overwrite it?") {
                 bail!("Configuration init aborted.")
@@ -39,9 +37,9 @@ impl Runnable for InitCmd {
         fs::create_dir_all(config_path.parent().unwrap()).await?;
         fs::write(&config_path, default_cfg).await?;
 
-        print_log(
+        log!(
             LogLevel::Fruitful,
-            &format!("Config created at {config_path:?}, Review and customize it before applying."),
+            "Config created at {config_path:?}, Review and customize it before applying.",
         );
 
         Ok(())

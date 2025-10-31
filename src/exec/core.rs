@@ -2,7 +2,8 @@
 
 use crate::cli::atomic::should_dry_run;
 use crate::config::core::Config;
-use crate::util::logging::{BOLD, LogLevel, RESET, print_log};
+use crate::log;
+use crate::util::logging::{BOLD, LogLevel, RESET};
 use anyhow::{Result, anyhow, bail};
 use regex::Regex;
 use std::collections::HashMap;
@@ -108,11 +109,11 @@ async fn execute_command(job: ExecJob, dry_run: bool) -> Result<()> {
     };
 
     if dry_run {
-        print_log(LogLevel::Dry, &format!("Would execute: {bin} {}", job.run));
+        log!(LogLevel::Dry, "Would execute: {bin} {}", job.run);
         return Ok(());
     }
 
-    print_log(LogLevel::Exec, &format!("{BOLD}{}{RESET}", job.name));
+    log!(LogLevel::Exec, "{BOLD}{}{RESET}", job.name);
 
     let mut child = Command::new(bin).args(&args).spawn()?;
     let status = child.wait().await?;
@@ -132,7 +133,7 @@ fn all_bins_present(required: &[String]) -> bool {
     if !required.is_empty() {
         for bin in required {
             if which::which(bin).is_err() {
-                print_log(LogLevel::Warning, &format!("{bin} not found in $PATH."));
+                log!(LogLevel::Warning, "{bin} not found in $PATH.");
                 present = false;
             }
         }
@@ -203,12 +204,9 @@ pub async fn run_all(config: Config, mode: ExecMode) -> Result<i32> {
 
     // inspect count
     if failures > 0 {
-        print_log(
-            LogLevel::Warning,
-            &format!("{failures} external commands failed"),
-        );
+        log!(LogLevel::Warning, "{failures} external commands failed",);
     } else if successes == 0 {
-        print_log(
+        log!(
             LogLevel::Warning,
             "No regular external commands found. Maybe you meant flagged or all?",
         );

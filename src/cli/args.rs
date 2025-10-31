@@ -12,6 +12,10 @@ use crate::commands::{
 #[derive(Parser)]
 #[command(name = "cutler", styles = get_styles(), version, about)]
 pub struct Args {
+    /// Debug mode (shows all possible output).
+    #[arg(long, global = true)]
+    pub debug: bool,
+
     /// Increase output verbosity.
     #[arg(short, long, global = true)]
     pub verbose: bool,

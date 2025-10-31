@@ -9,13 +9,14 @@ use crate::{
         convert::{normalize, toml_to_prefvalue},
     },
     exec::core::{self, ExecMode},
+    log,
     snapshot::{
         core::{SettingState, Snapshot},
         get_snapshot_path,
     },
     util::{
         io::{confirm, restart_services},
-        logging::{LogLevel, print_log},
+        logging::LogLevel,
         sha::get_digest,
     },
 };
@@ -81,12 +82,10 @@ impl Runnable for ApplyCmd {
             remote_mgr.fetch().await?;
             remote_mgr.save().await?;
 
-            print_log(
+            log!(
                 LogLevel::Info,
-                &format!(
-                    "Remote config downloaded at path: {:?}",
-                    get_config_path().await
-                ),
+                "Remote config downloaded at path: {:?}",
+                get_config_path().await
             );
         }
 
@@ -101,11 +100,9 @@ impl Runnable for ApplyCmd {
             match Snapshot::load(&snap_path).await {
                 Ok(snap) => snap,
                 Err(e) => {
-                    print_log(
+                    log!(
                         LogLevel::Warning,
-                        &format!(
-                            "Bad snapshot: {e}; starting new. Note that when unapplying, all your settings will reset to factory defaults."
-                        ),
+                        "Bad snapshot: {e}; starting new. Note that when unapplying, all your settings will reset to factory defaults."
                     );
                     is_bad_snap = true;
                     Snapshot::new().await
@@ -176,10 +173,7 @@ impl Runnable for ApplyCmd {
                         new_value: desired.clone(),
                     });
                 } else {
-                    print_log(
-                        LogLevel::Info,
-                        &format!("Skipping unchanged {eff_dom} | {eff_key}"),
-                    );
+                    log!(LogLevel::Info, "Skipping unchanged {eff_dom} | {eff_key}",);
                 }
             }
         }
@@ -196,20 +190,18 @@ impl Runnable for ApplyCmd {
             };
 
             if !dry_run {
-                print_log(
+                log!(
                     LogLevel::Info,
-                    &format!(
-                        "{} {} | {} -> {} {}",
-                        job.action,
-                        job.domain,
-                        job.key,
-                        job.new_value,
-                        if job.original.is_some() {
-                            &format!("(Restorable to {})", job.original.clone().unwrap())
-                        } else {
-                            ""
-                        }
-                    ),
+                    "{} {} | {} -> {} {}",
+                    job.action,
+                    job.domain,
+                    job.key,
+                    job.new_value,
+                    if job.original.is_some() {
+                        format!("[Restorable to {}]", job.original.clone().unwrap())
+                    } else {
+                        "".to_string()
+                    }
                 );
             }
             let pref_value = toml_to_prefvalue(&job.toml_value)?;
@@ -220,10 +212,10 @@ impl Runnable for ApplyCmd {
         if !dry_run {
             match Preferences::write_batch(batch).await {
                 Ok(_) => {
-                    print_log(LogLevel::Info, "All preferences applied.");
+                    log!(LogLevel::Info, "All preferences applied.");
                 }
                 Err(e) => {
-                    print_log(LogLevel::Error, &format!("Batch write failed: {e}"));
+                    log!(LogLevel::Error, "Batch write failed: {e}");
                 }
             }
 
@@ -231,12 +223,12 @@ impl Runnable for ApplyCmd {
             restart_services().await;
         } else {
             for job in &jobs {
-                print_log(
+                log!(
                     LogLevel::Dry,
-                    &format!(
-                        "Would {} setting '{}' for {}",
-                        job.action, job.key, job.domain
-                    ),
+                    "Would {} setting '{}' for {}",
+                    job.action,
+                    job.key,
+                    job.domain
                 );
             }
         }
@@ -260,12 +252,12 @@ impl Runnable for ApplyCmd {
 
         if !dry_run {
             new_snap.save().await?;
-            print_log(
+            log!(
                 LogLevel::Info,
                 "Logged system preferences change in snapshot.",
             );
         } else {
-            print_log(
+            log!(
                 LogLevel::Dry,
                 "Would save snapshot with system preferences.",
             );
@@ -293,17 +285,17 @@ impl Runnable for ApplyCmd {
                     new_snap.exec_run_count = exec_run_count;
                     new_snap.save().await?;
 
-                    print_log(LogLevel::Info, "Logged command execution in snapshot.");
+                    log!(LogLevel::Info, "Logged command execution in snapshot.");
                 }
             } else {
-                print_log(
+                log!(
                     LogLevel::Dry,
                     "Would save snapshot with external command execution.",
                 );
             }
         }
 
-        print_log(LogLevel::Fruitful, "Apply operation complete.");
+        log!(LogLevel::Fruitful, "Apply operation complete.");
 
         Ok(())
     }

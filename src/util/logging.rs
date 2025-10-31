@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::cli::atomic::{should_be_quiet, should_be_verbose};
+use crate::cli::atomic::{should_be_quiet, should_be_verbose, should_debug};
 
 // ANSI color codes.
 pub const RED: &str = "\x1b[31m";
@@ -26,12 +26,13 @@ pub enum LogLevel {
 
 /// Central logger.
 /// It is important that most, if not all, prints in cutler go through this function.
-pub fn print_log(level: LogLevel, msg: &str) {
-    if (should_be_quiet() && level != LogLevel::Error && level != LogLevel::Warning)
-        || (level == LogLevel::Info && !should_be_verbose())
-    {
-        return;
-    }
+pub fn _print_log(level: LogLevel, msg: &str) {
+    if !should_debug()
+        && ((should_be_quiet() && level != LogLevel::Error && level != LogLevel::Warning)
+            || (level == LogLevel::Info && !should_be_verbose()))
+        {
+            return;
+        }
 
     let (tag, color) = match level {
         LogLevel::Error => ("ERR  ", RED),
@@ -54,4 +55,12 @@ pub fn print_log(level: LogLevel, msg: &str) {
     } else {
         println!("{line}");
     }
+}
+
+#[macro_export]
+macro_rules! log {
+    ($level:expr, $($arg:tt)*) => {{
+        let msg = format!($($arg)*);
+        $crate::util::logging::_print_log($level, &msg);
+    }};
 }

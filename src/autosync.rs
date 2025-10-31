@@ -3,10 +3,8 @@
 use crate::cli::Command;
 use crate::cli::args::BrewSubcmd;
 use crate::config::remote::RemoteConfigManager;
-use crate::{
-    config::core::Config,
-    util::logging::{LogLevel, print_log},
-};
+use crate::log;
+use crate::{config::core::Config, util::logging::LogLevel};
 
 /// Perform remote config auto-sync if enabled in [remote] and internet is available.
 /// This should be called early in main().
@@ -49,21 +47,18 @@ pub async fn try_auto_sync(command: &crate::cli::Command) {
         match remote_mgr.fetch().await {
             Ok(()) => {
                 if let Err(e) = remote_mgr.save().await {
-                    print_log(
-                        LogLevel::Warning,
-                        &format!("Failed to save remote config after auto-sync: {e}"),
+                    log!(
+                        LogLevel::Error,
+                        "Failed to save remote config after auto-sync: {e}"
                     );
                 }
             }
             Err(e) => {
-                print_log(
-                    LogLevel::Warning,
-                    &format!("Remote config auto-sync failed: {e}"),
-                );
+                log!(LogLevel::Warning, "Remote config auto-sync failed: {e}",);
             }
         }
     } else {
-        print_log(
+        log!(
             LogLevel::Info,
             "Skipping auto-sync since disabled in config.",
         );

@@ -11,10 +11,11 @@ use crate::{
     commands::Runnable,
     config::core::Config,
     domains::{collect, effective, read_current},
+    log,
     snapshot::{Snapshot, get_snapshot_path},
     util::{
         io::{confirm, restart_services},
-        logging::{LogLevel, print_log},
+        logging::LogLevel,
     },
 };
 
@@ -27,11 +28,11 @@ impl Runnable for ResetCmd {
         let dry_run = should_dry_run();
         let config = Config::load(true).await?;
 
-        print_log(
+        log!(
             LogLevel::Warning,
             "This will DELETE all settings defined in your config file.",
         );
-        print_log(
+        log!(
             LogLevel::Warning,
             "Settings will be reset to macOS defaults, not to their previous values.",
         );
@@ -57,31 +58,25 @@ impl Runnable for ResetCmd {
                     };
 
                     if dry_run {
-                        print_log(
+                        log!(
                             LogLevel::Dry,
-                            &format!("Would reset {eff_dom}.{eff_key} to system default"),
+                            "Would reset {eff_dom}.{eff_key} to system default",
                         );
                     } else {
                         match Preferences::delete(domain_obj, Some(&eff_key)).await {
                             Ok(_) => {
-                                print_log(
+                                log!(
                                     LogLevel::Info,
-                                    &format!("Reset {eff_dom}.{eff_key} to system default"),
+                                    "Reset {eff_dom}.{eff_key} to system default",
                                 );
                             }
                             Err(e) => {
-                                print_log(
-                                    LogLevel::Error,
-                                    &format!("Failed to reset {eff_dom}.{eff_key}: {e}"),
-                                );
+                                log!(LogLevel::Error, "Failed to reset {eff_dom}.{eff_key}: {e}",);
                             }
                         }
                     }
                 } else {
-                    print_log(
-                        LogLevel::Info,
-                        &format!("Skipping {eff_dom}.{eff_key} (not set)"),
-                    );
+                    log!(LogLevel::Info, "Skipping {eff_dom}.{eff_key} (not set)",);
                 }
             }
         }
@@ -90,24 +85,15 @@ impl Runnable for ResetCmd {
         let snap_path = get_snapshot_path().await?;
         if Snapshot::is_loadable().await {
             if dry_run {
-                print_log(
-                    LogLevel::Dry,
-                    &format!("Would remove snapshot at {snap_path:?}"),
-                );
+                log!(LogLevel::Dry, "Would remove snapshot at {snap_path:?}",);
             } else if let Err(e) = fs::remove_file(&snap_path).await {
-                print_log(
-                    LogLevel::Warning,
-                    &format!("Failed to remove snapshot: {e}"),
-                );
+                log!(LogLevel::Warning, "Failed to remove snapshot: {e}",);
             } else {
-                print_log(
-                    LogLevel::Info,
-                    &format!("Removed snapshot at {snap_path:?}"),
-                );
+                log!(LogLevel::Info, "Removed snapshot at {snap_path:?}",);
             }
         }
 
-        print_log(
+        log!(
             LogLevel::Fruitful,
             "Reset complete. All configured settings have been removed.",
         );
@@ -115,7 +101,7 @@ impl Runnable for ResetCmd {
         // restart system services if requested
         restart_services().await;
 
-        print_log(LogLevel::Fruitful, "Reset operation complete.");
+        log!(LogLevel::Fruitful, "Reset operation complete.");
 
         Ok(())
     }
