@@ -1,6 +1,6 @@
 <img src="assets/logo.png" width="180px" align="right">
 
-# cutler
+# 🍎 cutler
 
 #### Setup automation for your Mac
 
@@ -37,6 +37,7 @@ cutler apply
 ## Resources
 
 - [**Complete Documentation (Cookbook)**](https://cutlercli.github.io/cookbook)
+- [macOS defaults list](https://macos-defaults.com) (useful if you're starting out with declaring bare-metal system preferences and have not previously used `defaults`)
 
 ## Installation
 
