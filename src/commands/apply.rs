@@ -9,14 +9,13 @@ use crate::{
         convert::{normalize, toml_to_prefvalue},
     },
     exec::core::{self, ExecMode},
-    log,
+    log_cute, log_dry, log_err, log_info, log_warn,
     snapshot::{
         core::{SettingState, Snapshot},
         get_snapshot_path,
     },
     util::{
         io::{confirm, restart_services},
-        logging::LogLevel,
         sha::get_digest,
     },
 };
@@ -82,8 +81,7 @@ impl Runnable for ApplyCmd {
             remote_mgr.fetch().await?;
             remote_mgr.save().await?;
 
-            log!(
-                LogLevel::Info,
+            log_info!(
                 "Remote config downloaded at path: {:?}",
                 get_config_path().await
             );
@@ -100,8 +98,7 @@ impl Runnable for ApplyCmd {
             match Snapshot::load(&snap_path).await {
                 Ok(snap) => snap,
                 Err(e) => {
-                    log!(
-                        LogLevel::Warning,
+                    log_warn!(
                         "Bad snapshot: {e}; starting new. Note that when unapplying, all your settings will reset to factory defaults."
                     );
                     is_bad_snap = true;
@@ -173,7 +170,7 @@ impl Runnable for ApplyCmd {
                         new_value: desired.clone(),
                     });
                 } else {
-                    log!(LogLevel::Info, "Skipping unchanged {eff_dom} | {eff_key}",);
+                    log_info!("Skipping unchanged {eff_dom} | {eff_key}",);
                 }
             }
         }
@@ -190,8 +187,7 @@ impl Runnable for ApplyCmd {
             };
 
             if !dry_run {
-                log!(
-                    LogLevel::Info,
+                log_info!(
                     "{} {} | {} -> {} {}",
                     job.action,
                     job.domain,
@@ -212,10 +208,10 @@ impl Runnable for ApplyCmd {
         if !dry_run {
             match Preferences::write_batch(batch).await {
                 Ok(_) => {
-                    log!(LogLevel::Info, "All preferences applied.");
+                    log_info!("All preferences applied.");
                 }
                 Err(e) => {
-                    log!(LogLevel::Error, "Batch write failed: {e}");
+                    log_err!("Batch write failed: {e}");
                 }
             }
 
@@ -223,8 +219,7 @@ impl Runnable for ApplyCmd {
             restart_services().await;
         } else {
             for job in &jobs {
-                log!(
-                    LogLevel::Dry,
+                log_dry!(
                     "Would {} setting '{}' for {}",
                     job.action,
                     job.key,
@@ -252,15 +247,9 @@ impl Runnable for ApplyCmd {
 
         if !dry_run {
             new_snap.save().await?;
-            log!(
-                LogLevel::Info,
-                "Logged system preferences change in snapshot.",
-            );
+            log_info!("Logged system preferences change in snapshot.",);
         } else {
-            log!(
-                LogLevel::Dry,
-                "Would save snapshot with system preferences.",
-            );
+            log_dry!("Would save snapshot with system preferences.",);
         }
 
         // run brew
@@ -285,17 +274,14 @@ impl Runnable for ApplyCmd {
                     new_snap.exec_run_count = exec_run_count;
                     new_snap.save().await?;
 
-                    log!(LogLevel::Info, "Logged command execution in snapshot.");
+                    log_info!("Logged command execution in snapshot.");
                 }
             } else {
-                log!(
-                    LogLevel::Dry,
-                    "Would save snapshot with external command execution.",
-                );
+                log_dry!("Would save snapshot with external command execution.",);
             }
         }
 
-        log!(LogLevel::Fruitful, "Apply operation complete.");
+        log_cute!("Apply operation complete.");
 
         Ok(())
     }

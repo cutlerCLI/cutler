@@ -7,8 +7,7 @@ use clap::Args;
 use crate::{
     commands::Runnable,
     config::core::{Config, Mas},
-    log, mas,
-    util::logging::LogLevel,
+    log_cute, log_info, mas,
 };
 
 #[derive(Args, Debug)]
@@ -27,20 +26,17 @@ impl Runnable for MasBackupCmd {
             .await?
             .into_iter()
             .map(|item| {
-                log!(LogLevel::Info, "Pushing app: {} ({})", item.id, item.name);
+                log_info!("Pushing app: {} ({})", item.id, item.name);
                 item.id
             })
             .collect();
 
         if listed_apps.is_empty() {
-            log!(LogLevel::Warning, "Nothing to backup!");
+            log_cute!("Nothing to backup!");
         }
 
         let mas_table = Mas { ids: listed_apps };
-        log!(
-            LogLevel::Info,
-            "Modifying table for existing configuration with backup: {mas_table:?}"
-        );
+        log_info!("Modifying table for existing configuration with backup: {mas_table:?}");
         config.mas = Some(mas_table);
 
         config.save().await?;

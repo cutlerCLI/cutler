@@ -56,10 +56,65 @@ pub fn _print_log(level: LogLevel, msg: &str) {
     }
 }
 
+/// Logs with LogLevel::Info.
 #[macro_export]
-macro_rules! log {
-    ($level:expr, $($arg:tt)*) => {{
+macro_rules! log_info {
+    ($($arg:tt)*) => {{
         let msg = format!($($arg)*);
-        $crate::util::logging::_print_log($level, &msg);
+        $crate::util::logging::_print_log($crate::util::logging::LogLevel::Info, &msg);
+    }};
+}
+
+/// Logs with LogLevel::Error.
+#[macro_export]
+macro_rules! log_err {
+    ($($arg:tt)*) => {{
+        let msg = format!($($arg)*);
+        $crate::util::logging::_print_log($crate::util::logging::LogLevel::Error, &msg);
+    }};
+}
+
+/// Logs with LogLevel::Warning.
+#[macro_export]
+macro_rules! log_warn {
+    ($($arg:tt)*) => {{
+        let msg = format!($($arg)*);
+        $crate::util::logging::_print_log($crate::util::logging::LogLevel::Warning, &msg);
+    }};
+}
+
+/// Logs with LogLevel::Fruitful.
+#[macro_export]
+macro_rules! log_cute {
+    ($($arg:tt)*) => {{
+        let msg = format!($($arg)*);
+        $crate::util::logging::_print_log($crate::util::logging::LogLevel::Fruitful, &msg);
+    }};
+}
+
+/// Logs with LogLevel::Dry.
+#[macro_export]
+macro_rules! log_dry {
+    ($($arg:tt)*) => {{
+        let msg = format!($($arg)*);
+        $crate::util::logging::_print_log($crate::util::logging::LogLevel::Dry, &msg);
+    }};
+}
+
+/// Logs with LogLevel::Exec.
+#[macro_export]
+macro_rules! log_exec {
+    ($($arg:tt)*) => {{
+        let msg = format!($($arg)*);
+        $crate::util::logging::_print_log($crate::util::logging::LogLevel::Exec, &msg);
+    }};
+}
+
+/// Logs with LogLevel::Prompt.
+#[macro_export]
+macro_rules! log_prompt {
+    ($($arg:tt)*) => {{
+        let msg = format!($($arg)*);
+        $crate::util::logging::_print_log($crate::util::logging::LogLevel::Prompt, &msg);
     }};
 }

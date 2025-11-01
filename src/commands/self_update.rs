@@ -7,9 +7,7 @@ use self_update::{backends::github::Update, cargo_crate_version};
 use std::env;
 use tokio::fs;
 
-use crate::commands::Runnable;
-use crate::log;
-use crate::util::logging::LogLevel;
+use crate::{commands::Runnable, log_cute, log_warn};
 
 #[derive(Args, Debug)]
 pub struct SelfUpdateCmd {
@@ -44,8 +42,7 @@ impl Runnable for SelfUpdateCmd {
         let is_mise = exe_path_str.contains(".local/share/mise/installs/cargo-cutler");
 
         if is_homebrew || is_cargo || is_mise {
-            log!(
-                LogLevel::Warning,
+            log_warn!(
                 "cutler was installed using a package manager, so cannot install updates manually.",
             );
             return Ok(());
@@ -53,14 +50,10 @@ impl Runnable for SelfUpdateCmd {
 
         // finally, check if cutler is where it is supposed to be
         if exe_path_str != "/usr/local/bin/cutler" {
-            log!(
-                LogLevel::Warning,
+            log_warn!(
                 "cutler is currently installed in a custom path. Please note that the manpage will still be installed in: /usr/local/share/man/man1/cutler.1",
             );
-            log!(
-                LogLevel::Warning,
-                "If you wish to skip this behavior, use: cutler self-update --no-man",
-            );
+            log_warn!("If you wish to skip this behavior, use: cutler self-update --no-man",);
         }
 
         // determine architecture for update target
@@ -107,15 +100,11 @@ impl Runnable for SelfUpdateCmd {
                 fs::write("/usr/local/share/man/man1/cutler.1", manpage_content).await?;
             }
         } else {
-            log!(LogLevel::Fruitful, "cutler is already up to date.");
+            log_cute!("cutler is already up to date.");
             return Ok(());
         }
 
-        log!(
-            LogLevel::Fruitful,
-            "cutler updated to: {}",
-            status.version(),
-        );
+        log_cute!("cutler updated to: {}", status.version(),);
 
         Ok(())
     }

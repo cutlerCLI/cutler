@@ -7,8 +7,7 @@ use tokio::sync::OnceCell;
 
 use crate::config::core::Config;
 use crate::config::path::get_config_path;
-use crate::log;
-use crate::util::logging::LogLevel;
+use crate::log_info;
 
 /// Manages fetching and storing the remote config.
 #[derive(Debug, Clone)]
@@ -30,7 +29,7 @@ impl RemoteConfigManager {
     pub async fn fetch(&self) -> Result<()> {
         self.config
             .get_or_try_init(|| async {
-                log!(LogLevel::Info, "Fetching remote config from {}", self.url,);
+                log_info!("Fetching remote config from {}", self.url,);
                 let client = Client::builder()
                     .user_agent("cutler-remote-config")
                     .build()?;
@@ -61,10 +60,7 @@ impl RemoteConfigManager {
 
         fs::create_dir_all(config_path.parent().unwrap()).await?;
         fs::write(config_path, config).await?;
-        log!(
-            LogLevel::Info,
-            "Successfully saved remote config to destination.",
-        );
+        log_info!("Successfully saved remote config to destination.",);
         Ok(())
     }
 

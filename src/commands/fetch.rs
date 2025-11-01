@@ -8,10 +8,10 @@ use crate::{
     cli::atomic::should_dry_run,
     commands::Runnable,
     config::{core::Config, remote::RemoteConfigManager},
-    log,
+    log_cute, log_dry, log_warn,
     util::{
         io::confirm,
-        logging::{BOLD, LogLevel, RESET},
+        logging::{BOLD, RESET},
     },
 };
 
@@ -58,54 +58,41 @@ impl Runnable for FetchCmd {
             // Add more comparisons as needed for your config structure
 
             if changes.is_empty() {
-                log!(
-                    LogLevel::Fruitful,
-                    "No changes found so skipping. Use -f to fetch forcefully.",
-                );
+                log_cute!("No changes found so skipping. Use -f to fetch forcefully.",);
                 return Ok(());
             } else {
-                log!(
-                    LogLevel::Warning,
-                    "Differences between local and remote config:",
-                );
+                log_warn!("Differences between local and remote config:",);
                 for line in &changes {
-                    log!(LogLevel::Warning, "  {line}");
+                    log_warn!("  {line}");
                 }
             }
 
             if changes.is_empty() {
-                log!(
-                    LogLevel::Fruitful,
-                    "No changes found so skipping. Use -f to fetch forcefully.",
-                );
+                log_cute!("No changes found so skipping. Use -f to fetch forcefully.",);
                 return Ok(());
             } else {
-                log!(
-                    LogLevel::Warning,
-                    "Differences between local and remote config:",
-                );
+                log_warn!("Differences between local and remote config:",);
                 for line in &changes {
-                    log!(LogLevel::Warning, "  {line}");
+                    log_warn!("  {line}");
                 }
             }
 
             // prompt user to proceed (unless dry-run)
             if !dry_run && !confirm("Apply remote config (overwrite local config)?") {
-                log!(LogLevel::Warning, "Sync aborted by user.");
+                log_warn!("Sync aborted by user.");
                 return Ok(());
             }
         }
 
         if dry_run {
-            log!(
-                LogLevel::Dry,
+            log_dry!(
                 "Would overwrite {:?} with remote config.",
                 local_config.path
             );
         } else {
             remote_mgr.save().await?;
 
-            log!(LogLevel::Fruitful, "Local config updated from remote!");
+            log_cute!("Local config updated from remote!");
         }
 
         Ok(())

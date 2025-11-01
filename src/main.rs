@@ -12,9 +12,8 @@ use cutler::cli::atomic::{
 };
 use cutler::cli::{Args, Command};
 use cutler::commands::Runnable;
-use cutler::log;
-use cutler::util::logging::LogLevel;
 use cutler::util::sudo::{run_with_noroot, run_with_root};
+use cutler::{log_err, log_info, log_warn};
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() {
@@ -32,18 +31,14 @@ async fn main() {
     if !args.no_sync {
         try_auto_sync(&args.command).await;
     } else {
-        log!(LogLevel::Info, "Skipping remote config autosync.");
+        log_info!("Skipping remote config autosync.");
     }
 
     if env::var("CUTLER_NO_HINTS").is_err() {
-        log!(
-            LogLevel::Warning,
+        log_warn!(
             "Run `cutler brew backup` if you are using Homebrew backups in cutler as new release contains breaking changes."
         );
-        log!(
-            LogLevel::Warning,
-            "Suppress this warning by exporting `CUTLER_NO_HINTS=1` in your shell."
-        );
+        log_warn!("Suppress this warning by exporting `CUTLER_NO_HINTS=1` in your shell.");
     }
 
     // sudo protection
@@ -53,7 +48,7 @@ async fn main() {
     };
 
     if let Err(err) = result {
-        log!(LogLevel::Error, "{err}");
+        log_err!("{err}");
         exit(1);
     }
 
@@ -84,7 +79,7 @@ async fn main() {
     let result = runnable.run().await;
 
     if let Err(err) = result {
-        log!(LogLevel::Error, "{err}");
+        log_err!("{err}");
         exit(1);
     }
 }

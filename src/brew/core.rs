@@ -3,8 +3,8 @@
 use crate::brew::types::{BrewDiff, BrewListType};
 use crate::cli::atomic::should_dry_run;
 use crate::config::core::Brew;
-use crate::log;
-use crate::util::{io::confirm, logging::LogLevel};
+use crate::util::io::confirm;
+use crate::{log_cute, log_dry, log_info, log_warn};
 use anyhow::{Result, bail};
 use std::{env, path::Path, time::Duration};
 use tokio::process::Command;
@@ -34,14 +34,11 @@ async fn ensure_xcode_clt() -> Result<()> {
     }
 
     if should_dry_run() {
-        log!(
-            LogLevel::Dry,
-            "Would install Xcode Command Line Tools (not detected)"
-        );
+        log_dry!("Would install Xcode Command Line Tools (not detected)");
         return Ok(());
     }
 
-    log!(LogLevel::Warning, "Xcode CLT is not installed.");
+    log_warn!("Xcode CLT is not installed.");
 
     if confirm("Install Xcode Command Line Tools now?") {
         let status = Command::new("xcode-select")
@@ -55,7 +52,7 @@ async fn ensure_xcode_clt() -> Result<()> {
             );
         }
 
-        log!(LogLevel::Warning, "Waiting for installation to complete...");
+        log_warn!("Waiting for installation to complete...");
 
         // wait for 60 minutes for the user to finish installation
         // otherwise, bail out
@@ -64,7 +61,7 @@ async fn ensure_xcode_clt() -> Result<()> {
 
             // loop checks here
             if check_installed().await {
-                log!(LogLevel::Fruitful, "Xcode Command Line tools installed.");
+                log_cute!("Xcode Command Line tools installed.");
                 return Ok(());
             }
         }
@@ -112,20 +109,14 @@ async fn set_homebrew_env_vars() {
         }
         unsafe { env::set_var("PATH", &new_path) };
     } else {
-        log!(
-            LogLevel::Warning,
-            "Brew binary not found in standard directories; $PATH not updated."
-        );
+        log_warn!("Brew binary not found in standard directories; $PATH not updated.");
     }
 
     unsafe { env::set_var("HOMEBREW_NO_AUTO_UPDATE", "1") };
     unsafe { env::set_var("HOMEBREW_NO_ANALYTICS", "1") };
     unsafe { env::set_var("HOMEBREW_NO_ENV_HINTS", "1") };
 
-    log!(
-        LogLevel::Info,
-        "Homebrew environment configuredfor this process."
-    );
+    log_info!("Homebrew environment has been configured for this process.");
 }
 
 /// Helper for: ensure_brew()
@@ -140,7 +131,7 @@ async fn install_homebrew() -> Result<()> {
         .status()
         .await?;
 
-    log!(LogLevel::Info, "Installing Homebrew...");
+    log_info!("Installing Homebrew...");
 
     if !status.success() {
         bail!("Homebrew install script failed: {status}");
@@ -166,14 +157,11 @@ pub async fn ensure_brew() -> Result<()> {
 
     if !brew_is_installed().await {
         if should_dry_run() {
-            log!(
-                LogLevel::Dry,
-                "Would install Homebrew since not found in $PATH."
-            );
+            log_dry!("Would install Homebrew since not found in $PATH.");
 
             return Ok(());
         } else {
-            log!(LogLevel::Warning, "Homebrew is not installed.");
+            log_warn!("Homebrew is not installed.");
         }
 
         if confirm("Install Homebrew now?") {
@@ -210,13 +198,10 @@ pub async fn brew_list(list_type: BrewListType) -> Result<Vec<String>> {
     };
 
     let output = Command::new("brew").args(&args).output().await?;
-    log!(LogLevel::Info, "Running {list_type} list command...");
+    log_info!("Running {list_type} list command...");
 
     if !output.status.success() {
-        log!(
-            LogLevel::Warning,
-            "{list_type} listing failed, will return empty."
-        );
+        log_warn!("{list_type} listing failed, will return empty.");
         return Ok(vec![]);
     }
 
@@ -247,7 +232,7 @@ pub async fn compare_brew_state(brew_cfg: Brew) -> Result<BrewDiff> {
 
     // omit installed as dependency
     if no_deps {
-        log!(LogLevel::Info, "--no-deps used, proceeding with checks...");
+        log_info!("--no-deps used, proceeding with checks...");
         let installed_as_deps = brew_list(BrewListType::Dependency).await?;
 
         installed_formulae = installed_formulae

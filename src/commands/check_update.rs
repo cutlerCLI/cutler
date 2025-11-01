@@ -11,8 +11,8 @@ use semver::Version;
 use crate::{
     cli::atomic::should_be_quiet,
     commands::Runnable,
-    log,
-    util::logging::{BOLD, LogLevel, RESET},
+    log_cute, log_info,
+    util::logging::{BOLD, RESET},
 };
 
 #[derive(Args, Debug)]
@@ -23,7 +23,7 @@ impl Runnable for CheckUpdateCmd {
     async fn run(&self) -> Result<()> {
         let current_version = env!("CARGO_PKG_VERSION");
 
-        log!(LogLevel::Info, "Current version: {current_version}",);
+        log_info!("Current version: {current_version}",);
 
         // fetch latest release tag from GitHub API
         let url = "https://api.github.com/repos/cutlerCLI/cutler/releases/latest";
@@ -49,7 +49,7 @@ impl Runnable for CheckUpdateCmd {
             .map(|s| s.trim_start_matches('v').to_string())
             .ok_or_else(|| anyhow!("Could not find latest version tag in GitHub API response"))?;
 
-        log!(LogLevel::Info, "Latest version: {latest_version}");
+        log_info!("Latest version: {latest_version}");
 
         // let the comparison begin!
         let current = Version::parse(current_version).context("Could not parse current version")?;
@@ -73,15 +73,14 @@ Or download the latest release from:
   https://github.com/cutlerCLI/cutler/releases"#
                     );
                 } else {
-                    println!("Update available!")
+                    log_cute!("Update available!")
                 }
             }
             Ordering::Equal => {
-                log!(LogLevel::Fruitful, "You are using the latest version.");
+                log_cute!("You are using the latest version.");
             }
             Ordering::Greater => {
-                log!(
-                    LogLevel::Fruitful,
+                log_cute!(
                     "You are on a development version ({current_version}) ahead of latest release ({latest_version})."
                 );
             }
