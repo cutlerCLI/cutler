@@ -53,8 +53,10 @@ View the [Contribution Guidelines](https://cutlercli.github.io/cookbook/guidelin
 
 ## License
 
-This project is licensed under [GNU General Public License v3.0 (GPLv3)](https://github.com/cutlerCLI/cutler/blob/master/LICENSE.md).
+This project is dual-licensed:
 
-For organizations that prefer not to comply with GNU GPLv3 terms
-(e.g. attribution, source distribution) or need commercial support,
-a commercial license is available — refer to [COMMERCIAL_LICENSE.md](https://github.com/cutlerCLI/cutler/blob/master/COMMERCIAL_LICENSE.md).
+- **Open Source License:** [GNU General Public License v3.0 or later (GPLv3)](https://github.com/cutlerCLI/cutler/blob/master/LICENSE.md)
+- **Commercial License:** See [COMMERCIAL_LICENSE.md](https://github.com/cutlerCLI/cutler/blob/master/COMMERCIAL_LICENSE.md) for terms
+
+You may choose either license for your use case.
+For commercial licensing or support, contact **Anindya Shiddhartha** at [hitblastlive@gmail.com](mailto:hitblastlive@gmail.com).
