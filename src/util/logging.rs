@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+//! Logging module for cutler.
+//!
+//! Use the log_*! macros for pretty-printing text inside cutler.
+
 use crate::cli::atomic::{should_be_quiet, should_be_verbose};
 
 // ANSI color codes.
@@ -12,7 +16,7 @@ pub const CYAN: &str = "\x1b[36m";
 pub const RESET: &str = "\x1b[0m";
 pub const BOLD: &str = "\x1b[1m";
 
-/// Logging level based on what action cutler is performing.
+#[doc(hidden)]
 #[derive(PartialEq)]
 pub enum LogLevel {
     Error,
@@ -24,8 +28,7 @@ pub enum LogLevel {
     Fruitful, // 🍎
 }
 
-/// Central logger.
-/// It is important that most, if not all, prints in cutler go through this function.
+#[doc(hidden)]
 pub fn _print_log(level: LogLevel, msg: &str) {
     if (should_be_quiet() && level != LogLevel::Error && level != LogLevel::Warning)
         || (level == LogLevel::Info && !should_be_verbose())
