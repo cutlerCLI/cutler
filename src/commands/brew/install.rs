@@ -98,7 +98,7 @@ impl Runnable for BrewInstallCmd {
         // handle all of dry-run in this single block
         if dry_run {
             brew_diff.missing_formulae.iter().for_each(|formula| {
-                log_info!("Would fetch formula: {formula}");
+                log_dry!("Would fetch formula: {formula}");
             });
             brew_diff.missing_casks.iter().for_each(|cask| {
                 log_dry!("Would fetch cask: {cask}");

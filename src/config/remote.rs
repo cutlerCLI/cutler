@@ -29,7 +29,7 @@ impl RemoteConfigManager {
     pub async fn fetch(&self) -> Result<()> {
         self.config
             .get_or_try_init(|| async {
-                log_info!("Fetching remote config from {}", self.url,);
+                log_info!("Fetching remote config from {}", self.url);
                 let client = Client::builder()
                     .user_agent("cutler-remote-config")
                     .build()?;
@@ -60,7 +60,7 @@ impl RemoteConfigManager {
 
         fs::create_dir_all(config_path.parent().unwrap()).await?;
         fs::write(config_path, config).await?;
-        log_info!("Successfully saved remote config to destination.",);
+        log_info!("Successfully saved remote config to destination.");
         Ok(())
     }
 

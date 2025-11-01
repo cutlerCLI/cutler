@@ -68,6 +68,6 @@ pub async fn restart_services() {
     }
 
     if failed {
-        log_warn!("Being quick with commands can cause your computer to run out of breath.",);
+        log_warn!("Being quick with commands can cause your computer to run out of breath.");
     }
 }

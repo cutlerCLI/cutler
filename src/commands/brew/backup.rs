@@ -88,7 +88,7 @@ impl Runnable for BrewBackupCmd {
             } else if dry_run {
                 log_dry!("Would push {formula}");
             } else {
-                log_dry!("Pushing {formula}");
+                log_info!("Pushing {formula}");
                 formula_arr.push(formula.clone());
             }
         }
