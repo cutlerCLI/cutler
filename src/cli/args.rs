@@ -5,7 +5,7 @@ use clap::{Parser, Subcommand};
 
 use crate::commands::{
     ApplyCmd, BrewBackupCmd, BrewInstallCmd, CheckUpdateCmd, CompletionCmd, ConfigCmd, CookbookCmd,
-    ExecCmd, FetchCmd, InitCmd, LockCmd, MasListCmd, ResetCmd, SelfUpdateCmd, StatusCmd,
+    ExecCmd, FetchCmd, InitCmd, LockCmd, MasBackupCmd, ResetCmd, SelfUpdateCmd, StatusCmd,
     UnapplyCmd, UnlockCmd,
 };
 
@@ -95,7 +95,7 @@ pub enum Command {
 #[derive(Subcommand, Debug)]
 pub enum MasSubcmd {
     /// Lists all App Store apps using mas backend.
-    List(MasListCmd),
+    Backup(MasBackupCmd),
 }
 
 #[derive(Subcommand, Debug)]

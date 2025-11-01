@@ -75,7 +75,7 @@ async fn main() {
             BrewSubcmd::Install(cmd) => cmd,
         },
         Command::Mas { command } => match command {
-            MasSubcmd::List(cmd) => cmd,
+            MasSubcmd::Backup(cmd) => cmd,
         },
         Command::CheckUpdate(cmd) => cmd,
         Command::SelfUpdate(cmd) => cmd,

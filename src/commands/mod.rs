@@ -31,7 +31,7 @@ pub use exec::ExecCmd;
 pub use fetch::FetchCmd;
 pub use init::InitCmd;
 pub use lock::LockCmd;
-pub use mas::list::MasListCmd;
+pub use mas::backup::MasBackupCmd;
 pub use reset::ResetCmd;
 pub use self_update::SelfUpdateCmd;
 pub use status::StatusCmd;

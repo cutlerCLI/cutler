@@ -47,10 +47,10 @@ pub struct Command {
 }
 
 /// Represents the [mas] table.
-#[derive(Deserialize, Serialize, Clone, Default)]
+#[derive(Deserialize, Serialize, Debug, Clone, Default)]
 #[serde(deny_unknown_fields)]
 pub struct Mas {
-    pub ids: HashMap<String, String>,
+    pub ids: Vec<String>,
 }
 
 /// Represents the [brew] table.
