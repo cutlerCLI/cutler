@@ -26,7 +26,7 @@ cutler init
 # Modify using your preferred editor.
 nano ~/.config/cutler/config.toml
 
-# Apply your preferences
+# Apply your preferences.
 cutler apply
 ```
 
