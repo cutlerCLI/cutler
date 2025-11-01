@@ -1,4 +1,4 @@
-name: Rust Tests
+name: Tests CI
 
 on:
   push:
@@ -44,7 +44,7 @@ jobs:
         run: cargo clippy --all-targets -- -D warnings
 
       - name: Run unit tests
-        run: cargo test --verbose
+        run: cargo test
 
       - name: Check formatting
         run: cargo fmt --all -- --check

@@ -1,4 +1,4 @@
-name: Release Builds
+name: Release CI
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build-arm64-publish:
+  ci:
     runs-on: macos-latest
 
     env:
@@ -36,7 +36,7 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo-
 
       - name: Build release artifact
-        run: cargo build --release --verbose --locked
+        run: cargo build --release --quiet --locked
 
       - name: Package release
         run: |
@@ -69,55 +69,3 @@ jobs:
         env:
           CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
         run: cargo publish --token $CRATES_TOKEN --allow-dirty
-
-  build-x86_64:
-    runs-on: macos-15-intel
-
-    env:
-      FILE_NAME: cutler-${{ github.event.release.name }}-darwin-x86_64.zip
-
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-
-      - name: Cache Cargo registry and build
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-cargo-
-
-      - name: Build release artifact
-        run: cargo build --release --verbose --locked
-
-      - name: Package release
-        run: |
-          mkdir -p release/bin release/man/man1
-          cp target/release/cutler release/bin/
-          cp man/man1/cutler.1 release/man/man1/
-          cp LICENSE.md release/
-          cp README.md release/
-          cd release && zip -r ../${{ env.FILE_NAME }} bin man README.md LICENSE.md && cd ..
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v5
-        with:
-          name: cutler-darwin-x86_64
-          path: ${{ env.FILE_NAME }}
-          retention-days: 90
-
-      - name: Upload binary to release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ env.FILE_NAME }}
-          tag: ${{ github.ref }}
-          overwrite: true
