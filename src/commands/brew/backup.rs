@@ -62,15 +62,16 @@ impl Runnable for BrewBackupCmd {
         // load deps into memory for comparison
         // this will also be reused for later comparisons
         let deps = if backup_no_deps {
-            brew_list(BrewListType::Dependency).await?
+            brew_list(BrewListType::Dependency, false).await?
         } else {
             vec![]
         };
 
         // load the formulae, casks and taps list from the `brew` command
-        let formulas = brew_list(BrewListType::Formula).await?;
-        let casks = brew_list(BrewListType::Cask).await?;
-        let taps = brew_list(BrewListType::Tap).await?;
+        // flattening is `false` since we want all names to be forced to --full-name
+        let formulas = brew_list(BrewListType::Formula, false).await?;
+        let casks = brew_list(BrewListType::Cask, false).await?;
+        let taps = brew_list(BrewListType::Tap, false).await?;
 
         // build formulae and casks arrays
         let mut formula_arr = Vec::new();

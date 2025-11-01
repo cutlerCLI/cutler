@@ -120,7 +120,8 @@ fn flatten_tap_prefix(lines: Vec<String>) -> Vec<String> {
 }
 
 /// Lists Homebrew things (formulae/casks/taps/deps) and separates them based on newline.
-pub async fn brew_list(list_type: BrewListType) -> Result<Vec<String>> {
+/// Note that `flatten` will be ignored if `list_type` is `BrewListType::Tap`.
+pub async fn brew_list(list_type: BrewListType, flatten: bool) -> Result<Vec<String>> {
     let args: Vec<String> = match list_type {
         BrewListType::Tap => vec![list_type.to_string()],
         _ => {
@@ -150,7 +151,7 @@ pub async fn brew_list(list_type: BrewListType) -> Result<Vec<String>> {
         .filter(|l| !l.is_empty())
         .collect();
 
-    if BrewListType::Tap != list_type {
+    if flatten {
         lines = flatten_tap_prefix(lines);
     }
 
@@ -169,15 +170,15 @@ pub async fn diff_brew(brew_cfg: Brew) -> Result<BrewDiff> {
 
     // fetch installed state in parallel
     let (mut installed_formulae, installed_casks, installed_taps) = try_join!(
-        brew_list(BrewListType::Formula),
-        brew_list(BrewListType::Cask),
-        brew_list(BrewListType::Tap)
+        brew_list(BrewListType::Formula, true),
+        brew_list(BrewListType::Cask, true),
+        brew_list(BrewListType::Tap, false) // no need for flattening here
     )?;
 
     // omit installed as dependency
     if no_deps {
         log_info!("--no-deps used, proceeding with checks...");
-        let installed_as_deps = brew_list(BrewListType::Dependency).await?;
+        let installed_as_deps = brew_list(BrewListType::Dependency, true).await?;
 
         installed_formulae = installed_formulae
             .iter()
