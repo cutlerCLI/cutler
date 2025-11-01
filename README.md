@@ -1,50 +1,90 @@
-<!-- SPDX-License-Identifier: Apache-2.0 -->
+<img src="assets/logo.png" width="180px" align="right">
 
-<div align="center">
+# 🍎 cutler
 
-<img src="assets/logo.png" width="200px">
-
-# <a href="https://cutlercli.github.io/">cutler</a> <sup>/kŭt′lər/</sup>
-
-Powerful, declarative settings management for your Mac, with speed.
+#### Setup automation for your Mac
 
 [![Crates.io Downloads](https://img.shields.io/crates/d/cutler?style=social&logo=Rust)](https://crates.io/crates/cutler)
-[![Release Builds](https://github.com/cutlerCLI/cutler/actions/workflows/release.yml/badge.svg)](https://github.com/cutlerCLI/cutler/actions/workflows/release.yml)
 [![Rust Tests](https://github.com/cutlerCLI/cutler/actions/workflows/tests.yml/badge.svg)](https://github.com/cutlerCLI/cutler/actions/workflows/tests.yml)
 
-</div>
+Pre-built binaries support **macOS Big Sur (11.0) or later** versions.
 
-## Overview
+> [!WARNING]
+> Expect breaking changes before v1.0.0 release.
 
-cutler aims to simplify your Mac's setup process into a one-command procedure. It does so by automating these and more:
+## Quick Start
 
-1. **System preferences.** No more tinkering with the Settings app.
-2. Installation of **apps and tools** (through `brew` and other tools).
-3. The execution of **custom commands** (this is on you, but cutler makes it super convenient!).
+```bash
+# Self-installing script
+# See below sections for other methods.
+curl -fsSL https://cutlercli.github.io/scripts/install.sh | /bin/bash
 
-cutler splits a single TOML file into readable configuration which you can design as your desire, allowing you to
-later apply it with just `cutler apply`!
+# Initialize a configuration file.
+# Basic template includes preferences, Homebrew and external commands.
+cutler init
+
+# Modify using your preferred editor.
+nano ~/.config/cutler/config.toml
+
+# Apply your preferences
+cutler apply
+```
+
+## What is cutler?
+
+cutler simplifies the macOS setup pipeline by:
+
+- providing a declarative way to set system settings, without touching the Settings app,
+- wrapping around package managers for easy apps/tooling installation, and
+- by providing first-class support for external commands to ensure easy extensibility.
+
+All of this happens with a single `cutler.toml` file in your config directory.
+
+## How it works
+
+For backend functionality over system preferences, cutler wraps around the preferences APIs exposed by macOS. This allows for direct and instant feedback by just restarting the corresponding services related to the preference.
+
+For wrapping around tooling, cutler includes mature implementations for extracting the data from the selected package managers.
+Sensitive actions (e.g. installing) are currently outsourced to remain as close to the original functionality as possible.
+
+cutler is still in development and changes in functionality may be common during this stage.
+
+## Useful Links
+
+- [Resources](#resources)
+- [Installation](#installation)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Resources
+
+- [**Complete Documentation (Cookbook)**](https://cutlercli.github.io/cookbook)
+- [macOS defaults list](https://macos-defaults.com) (useful if you're starting out with declaring bare-metal system preferences and have not previously used `defaults`)
 
 ## Installation
 
-Copy and run the command below to install cutler:
+### Self-install (recommended)
 
 ```bash
 curl -fsSL https://cutlercli.github.io/scripts/install.sh | /bin/bash
 ```
 
-Or, see ["Installation"](https://cutlercli.github.io/cookbook/installation/installation-methods.html) for other installation methods.
-
-> [!WARNING]
-> **DEPRECATION:** The x86_64 builds will soon be removed in favor of Apple Silicon, as Apple themselves have officially discontinued this timed architecture.
-
-## Documentation
-
-["The cutler Cookbook"](https://cutlercli.github.io/cookbook) can be a a great starting point for in-depth review and examples to start using cutler.
+### Using Homebrew
 
 ```bash
-# Run this command to open in browser.
-cutler cookbook
+brew install hitblast/tap/cutler
+```
+
+### Using cargo
+
+```bash
+cargo install cutler
+```
+
+### Using mise
+
+```bash
+mise use -g cargo:cutler
 ```
 
 ## Contributing
