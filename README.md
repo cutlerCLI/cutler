@@ -7,8 +7,6 @@
 [![Crates.io Downloads](https://img.shields.io/crates/d/cutler?style=social&logo=Rust)](https://crates.io/crates/cutler)
 [![Rust Tests](https://github.com/cutlerCLI/cutler/actions/workflows/tests.yml/badge.svg)](https://github.com/cutlerCLI/cutler/actions/workflows/tests.yml)
 
-Turn your macOS setup workflow into a one-command procedure and a single TOML file.
-
 > [!WARNING]
 > Expect breaking changes before v1.0.0 release.
 
