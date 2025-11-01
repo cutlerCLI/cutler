@@ -1,8 +1,4 @@
-<!-- SPDX-License-Identifier: Apache-2.0 -->
-
-<div align="center">
-
-<img src="assets/logo.png" width="200px">
+<img src="assets/logo.png" width="200px" align="right">
 
 # <a href="https://cutlercli.github.io/">cutler</a> <sup>/kŭt′lər/</sup>
 
@@ -11,8 +7,6 @@ Powerful, declarative settings management for your Mac, with speed.
 [![Crates.io Downloads](https://img.shields.io/crates/d/cutler?style=social&logo=Rust)](https://crates.io/crates/cutler)
 [![Release Builds](https://github.com/cutlerCLI/cutler/actions/workflows/release.yml/badge.svg)](https://github.com/cutlerCLI/cutler/actions/workflows/release.yml)
 [![Rust Tests](https://github.com/cutlerCLI/cutler/actions/workflows/tests.yml/badge.svg)](https://github.com/cutlerCLI/cutler/actions/workflows/tests.yml)
-
-</div>
 
 ## Overview
 
