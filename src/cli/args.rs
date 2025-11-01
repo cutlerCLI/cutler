@@ -5,8 +5,8 @@ use clap::{Parser, Subcommand};
 
 use crate::commands::{
     ApplyCmd, BrewBackupCmd, BrewInstallCmd, CheckUpdateCmd, CompletionCmd, ConfigCmd, CookbookCmd,
-    ExecCmd, FetchCmd, InitCmd, LockCmd, MasBackupCmd, ResetCmd, SelfUpdateCmd, StatusCmd,
-    UnapplyCmd, UnlockCmd,
+    ExecCmd, FetchCmd, InitCmd, LockCmd, MasBackupCmd, ResetCmd, Runnable, SelfUpdateCmd,
+    StatusCmd, UnapplyCmd, UnlockCmd,
 };
 
 #[derive(Parser)]
@@ -105,4 +105,34 @@ pub enum BrewSubcmd {
     /// Install formulae/casks/taps from config.
     #[command(visible_alias = "apply")]
     Install(BrewInstallCmd),
+}
+
+impl Command {
+    /// Returns a trait object reference for a given command so that it can
+    /// be run using the .run() implementation of that particular command.
+    pub fn as_runnable(&self) -> &dyn Runnable {
+        match self {
+            Command::Apply(cmd) => cmd,
+            Command::Config(cmd) => cmd,
+            Command::Cookbook(cmd) => cmd,
+            Command::Exec(cmd) => cmd,
+            Command::Fetch(cmd) => cmd,
+            Command::Init(cmd) => cmd,
+            Command::Unapply(cmd) => cmd,
+            Command::Reset(cmd) => cmd,
+            Command::Status(cmd) => cmd,
+            Command::Lock(cmd) => cmd,
+            Command::Unlock(cmd) => cmd,
+            Command::CheckUpdate(cmd) => cmd,
+            Command::SelfUpdate(cmd) => cmd,
+            Command::Completion(cmd) => cmd,
+            Command::Brew { command } => match command {
+                BrewSubcmd::Backup(cmd) => cmd as &dyn Runnable,
+                BrewSubcmd::Install(cmd) => cmd as &dyn Runnable,
+            },
+            Command::Mas { command } => match command {
+                MasSubcmd::Backup(cmd) => cmd as &dyn Runnable,
+            },
+        }
+    }
 }

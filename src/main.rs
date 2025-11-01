@@ -1,11 +1,29 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-use std::env;
+/* The Heart *sparkles*
+ *
+ * Some personal take:
+ *
+ * I've tried incorporating a very minimal main.rs since most developers often try to fill their projects' main.rs up
+ * with unnecessary boilerplate. cutler has been my primary way of learning and practicing Rust through a real-world
+ * project which I actually use on a daily basis in my workflow, and honestly it has made me a better programmer to
+ * say the least.
+ *
+ * However, I do not like people who flood crates.io with unnecessary iterations of their own garbage, so let's spread
+ * good code and let's spread "meaningful" code.
+ *
+ * I don't know how well I've even managed to write cutler (as any amount of code is a liability anyway), but hopefully
+ * if you're looking at this and you've cloned the project onto your computer, you'll have a look around, and maybe
+ * produce a lot of good code, which could potentially be beneficial to both you and the community.
+ *
+ * I relicensed this code from MIT to GPL only from the sheer inspiration of writing "good" code (taken from other
+ * projects such as git), so I suppose let's keep that going ^w^ happy coding!
+ */
+
 use std::process::exit;
 
 use clap::Parser;
 use cutler::autosync::try_auto_sync;
-use cutler::cli::args::{BrewSubcmd, MasSubcmd};
 
 use cutler::cli::atomic::{
     set_accept_all, set_dry_run, set_no_restart_services, set_quiet, set_verbose,
@@ -13,7 +31,7 @@ use cutler::cli::atomic::{
 use cutler::cli::{Args, Command};
 use cutler::commands::Runnable;
 use cutler::util::sudo::{run_with_noroot, run_with_root};
-use cutler::{log_err, log_info, log_warn};
+use cutler::{log_err, log_info};
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() {
@@ -34,13 +52,6 @@ async fn main() {
         log_info!("Skipping remote config autosync.");
     }
 
-    if env::var("CUTLER_NO_HINTS").is_err() {
-        log_warn!(
-            "Run `cutler brew backup` if you are using Homebrew backups in cutler as new release contains breaking changes."
-        );
-        log_warn!("Suppress this warning by exporting `CUTLER_NO_HINTS=1` in your shell.");
-    }
-
     // sudo protection
     let result = match &args.command {
         Command::SelfUpdate(_) | Command::Lock(_) | Command::Unlock(_) => run_with_root().await,
@@ -53,29 +64,7 @@ async fn main() {
     }
 
     // command invocation (for real this time)
-    let runnable: &dyn Runnable = match &args.command {
-        Command::Apply(cmd) => cmd,
-        Command::Config(cmd) => cmd,
-        Command::Cookbook(cmd) => cmd,
-        Command::Exec(cmd) => cmd,
-        Command::Fetch(cmd) => cmd,
-        Command::Init(cmd) => cmd,
-        Command::Unapply(cmd) => cmd,
-        Command::Reset(cmd) => cmd,
-        Command::Status(cmd) => cmd,
-        Command::Lock(cmd) => cmd,
-        Command::Unlock(cmd) => cmd,
-        Command::Brew { command } => match command {
-            BrewSubcmd::Backup(cmd) => cmd,
-            BrewSubcmd::Install(cmd) => cmd,
-        },
-        Command::Mas { command } => match command {
-            MasSubcmd::Backup(cmd) => cmd,
-        },
-        Command::CheckUpdate(cmd) => cmd,
-        Command::SelfUpdate(cmd) => cmd,
-        Command::Completion(cmd) => cmd,
-    };
+    let runnable: &dyn Runnable = args.command.as_runnable();
     let result = runnable.run().await;
 
     if let Err(err) = result {
