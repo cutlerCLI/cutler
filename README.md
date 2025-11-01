@@ -7,7 +7,10 @@
 [![Crates.io Downloads](https://img.shields.io/crates/d/cutler?style=social&logo=Rust)](https://crates.io/crates/cutler)
 [![Rust Tests](https://github.com/cutlerCLI/cutler/actions/workflows/tests.yml/badge.svg)](https://github.com/cutlerCLI/cutler/actions/workflows/tests.yml)
 
-Turn your macOS setup workflow into a one-command procedure. System preferences, apps, tooling, you name it - cutler can automate it with a single file!
+Turn your macOS setup workflow into a one-command procedure and a single TOML file.
+
+> [!WARNING]
+> Expect breaking changes before v1.0.0 release.
 
 ## Quick Start
 
@@ -29,20 +32,22 @@ cutler apply
 
 ## What is cutler?
 
-cutler aims to simply the setup procedure for Macs by doing the following:
+cutler simplifies the macOS setup pipeline by:
 
-- Provide a declarative way to set system settings, without touching the Settings app.
-- Wrap around package manages such as Homebrew and mas for quick setup of apps from third-party sources / the official App Store.
-- Provide first-class support for external command execution for extensibility.
+- providing a declarative way to set system settings, without touching the Settings app,
+- wrapping around package managers for easy apps/tooling installation, and
+- by providing first-class support for external commands to ensure easy extensibility.
 
-All of this, under a single `cutler.toml` file in your config directory.
+All of this happens with a single `cutler.toml` file in your config directory.
 
 ## How it works
 
 For backend functionality over system preferences, cutler wraps around the preferences APIs exposed by macOS. This allows for direct and instant feedback by just restarting the corresponding services related to the preference.
 
 For wrapping around tooling, cutler includes mature implementations for extracting the data from the selected package managers.
-Sensitive actions (e.g. installing) are currently outsourced to remain as close to the original functionality as possible. However, this will change as cutler is still in development.
+Sensitive actions (e.g. installing) are currently outsourced to remain as close to the original functionality as possible.
+
+cutler is still in development and changes in functionality may be common during this stage.
 
 ## Useful Links
 
