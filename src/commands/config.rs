@@ -12,7 +12,7 @@ use crate::{
     cli::atomic::{should_be_quiet, should_dry_run},
     commands::Runnable,
     config::path::get_config_path,
-    util::logging::{LogLevel, print_log},
+    log_cute, log_dry, log_info,
 };
 
 #[derive(Debug, Args)]
@@ -25,10 +25,7 @@ impl Runnable for ConfigCmd {
 
         // handle dry‑run
         if should_dry_run() {
-            print_log(
-                LogLevel::Dry,
-                &format!("Would display config at {config_path:?}"),
-            );
+            log_dry!("Would display config at {config_path:?}",);
             return Ok(());
         }
 
@@ -51,21 +48,15 @@ impl Runnable for ConfigCmd {
                 }
             };
 
-            print_log(
-                LogLevel::Info,
-                &format!("Executing: {} {:?}", editor_cmd, config_path),
-            );
-            print_log(
-                LogLevel::Fruitful,
-                "Opening configuration in editor. Close editor to quit.",
-            );
+            log_info!("Executing: {} {:?}", editor_cmd, config_path,);
+            log_cute!("Opening configuration in editor. Close editor to quit.",);
             let mut command = Command::new(program);
             command.args(&args).arg(&config_path);
 
             let status = command.status();
             match status {
                 Ok(s) if s.success() => {
-                    print_log(LogLevel::Info, "Opened configuration file in editor.");
+                    log_info!("Opened configuration file in editor.");
                 }
                 Ok(s) => {
                     bail!("Editor exited with status: {}", s);
@@ -75,10 +66,7 @@ impl Runnable for ConfigCmd {
                 }
             }
         } else {
-            print_log(
-                LogLevel::Info,
-                "Editor could not be found, opening normally:\n",
-            );
+            log_info!("Editor could not be found, opening normally:\n",);
             // read and print the file
             let content = fs::read_to_string(&config_path).await?;
             if !should_be_quiet() {

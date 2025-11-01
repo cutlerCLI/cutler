@@ -19,7 +19,6 @@ pub mod status;
 pub mod unapply;
 pub mod unlock;
 
-// this is directly used by src/cli/args.rs and other parts of the code to match commands
 pub use apply::ApplyCmd;
 pub use brew::{backup::BrewBackupCmd, install::BrewInstallCmd};
 pub use check_update::CheckUpdateCmd;
@@ -36,8 +35,13 @@ pub use status::StatusCmd;
 pub use unapply::UnapplyCmd;
 pub use unlock::UnlockCmd;
 
-/// Trait for all runnable commands.
+/// A common trait for cutler commands.
+///
+/// This trait must be implemented for all commands inside cutler since in
+/// src/cli/args.rs, the trait is used for passing down the same callable.
 #[async_trait]
 pub trait Runnable {
+    /// Run the command. The result is implemented using anyhow::Result since cutler's internal functions
+    /// often propagate an error upto the root error handler.
     async fn run(&self) -> Result<()>;
 }

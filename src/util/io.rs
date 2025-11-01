@@ -5,14 +5,14 @@ use tokio::process::Command;
 
 use crate::{
     cli::atomic::{should_accept_all, should_dry_run, should_not_restart_services},
-    util::logging::{LogLevel, print_log},
+    log_dry, log_err, log_info, log_prompt, log_warn,
 };
 use anyhow::Result;
 
 /// Ask "Y/N?"; returns true if accept_all is set or the user types "y" or "Y"
 pub fn confirm(prompt: &str) -> bool {
     if should_accept_all() {
-        print_log(LogLevel::Prompt, &format!("{prompt} (auto-accepted)"));
+        log_prompt!("{prompt} (auto-accepted)");
         return true;
     }
 
@@ -48,19 +48,19 @@ pub async fn restart_services() {
 
     for svc in SERVICES {
         if dry_run {
-            print_log(LogLevel::Dry, &format!("Would restart {svc}"));
+            log_dry!("Would restart {svc}");
         } else {
             match Command::new("killall").arg(svc).output().await {
                 Ok(out) => {
                     if !out.status.success() {
-                        print_log(LogLevel::Error, &format!("Failed to restart {svc}"));
+                        log_err!("Failed to restart {svc}");
                         failed = true;
                     } else {
-                        print_log(LogLevel::Info, &format!("{svc} restarted"));
+                        log_info!("{svc} restarted");
                     }
                 }
                 Err(_) => {
-                    print_log(LogLevel::Error, &format!("Could not restart {svc}"));
+                    log_err!("Could not restart {svc}");
                     continue;
                 }
             }
@@ -68,9 +68,6 @@ pub async fn restart_services() {
     }
 
     if failed {
-        print_log(
-            LogLevel::Warning,
-            "Being quick with commands can cause your computer to run out of breath.",
-        );
+        log_warn!("Being quick with commands can cause your computer to run out of breath.",);
     }
 }

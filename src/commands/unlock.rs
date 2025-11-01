@@ -5,12 +5,7 @@ use clap::Args;
 
 use anyhow::{Result, bail};
 
-use crate::{
-    cli::atomic::should_dry_run,
-    commands::Runnable,
-    config::core::Config,
-    util::logging::{LogLevel, print_log},
-};
+use crate::{cli::atomic::should_dry_run, commands::Runnable, config::core::Config, log_dry};
 
 #[derive(Debug, Args)]
 pub struct UnlockCmd;
@@ -28,7 +23,7 @@ impl Runnable for UnlockCmd {
         if config.lock.is_none_or(|val| !val) {
             bail!("Already unlocked.")
         } else if dry_run {
-            print_log(LogLevel::Dry, "Would unlock config file.");
+            log_dry!("Would unlock config file.");
             return Ok(());
         }
 

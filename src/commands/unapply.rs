@@ -11,10 +11,10 @@ use crate::{
     commands::{ResetCmd, Runnable},
     config::core::Config,
     domains::convert::{string_to_toml_value, toml_to_prefvalue},
+    log_cute, log_dry, log_err, log_info, log_warn,
     snapshot::{core::Snapshot, get_snapshot_path},
     util::{
         io::{confirm, restart_services},
-        logging::{LogLevel, print_log},
         sha::get_digest,
     },
 };
@@ -28,7 +28,7 @@ impl Runnable for UnapplyCmd {
         let config = Config::load(true).await?;
 
         if !Snapshot::is_loadable().await {
-            print_log(LogLevel::Warning, "No snapshot found to revert.");
+            log_warn!("No snapshot found to revert.");
 
             if confirm("Reset all System Settings instead?") {
                 return ResetCmd.run().await;
@@ -52,14 +52,8 @@ impl Runnable for UnapplyCmd {
         };
 
         if snapshot.digest != get_digest(config.path)? {
-            print_log(
-                LogLevel::Warning,
-                "Config has been modified since last application.",
-            );
-            print_log(
-                LogLevel::Warning,
-                "Please note that only the applied modifications will be unapplied.",
-            );
+            log_warn!("Config has been modified since last application.",);
+            log_warn!("Please note that only the applied modifications will be unapplied.",);
         }
 
         // prepare undo operations, grouping by domain for efficiency
@@ -89,18 +83,12 @@ impl Runnable for UnapplyCmd {
         if dry_run {
             for (domain, restores) in &batch_restores {
                 for (key, value) in restores {
-                    print_log(
-                        LogLevel::Dry,
-                        &format!("Would restore: {domain} | {key} -> {value}"),
-                    );
+                    log_dry!("Would restore: {domain} | {key} -> {value}",);
                 }
             }
             for (domain, deletes) in &batch_deletes {
                 for key in deletes {
-                    print_log(
-                        LogLevel::Dry,
-                        &format!("Would delete setting: {domain} | {key}"),
-                    );
+                    log_dry!("Would delete setting: {domain} | {key}",);
                 }
             }
         } else {
@@ -109,15 +97,12 @@ impl Runnable for UnapplyCmd {
                 let mut batch_vec = Vec::new();
                 for (domain, entries) in batch_restores {
                     for (key, value) in entries {
-                        print_log(
-                            LogLevel::Info,
-                            &format!("Restoring: {domain} | {key} -> {value}"),
-                        );
+                        log_info!("Restoring: {domain} | {key} -> {value}",);
                         batch_vec.push((domain.clone(), key, value));
                     }
                 }
                 if let Err(e) = Preferences::write_batch(batch_vec.clone()).await {
-                    print_log(LogLevel::Error, &format!("Batch restore failed: {e}"));
+                    log_err!("Batch restore failed: {e}");
                 }
             }
 
@@ -126,45 +111,36 @@ impl Runnable for UnapplyCmd {
                 let mut delete_vec = Vec::new();
                 for (domain, keys) in batch_deletes {
                     for key in keys {
-                        print_log(LogLevel::Info, &format!("Deleting: {domain} | {key}"));
+                        log_info!("Deleting: {domain} | {key}");
                         delete_vec.push((domain.clone(), Some(key)));
                     }
                 }
                 if let Err(e) = Preferences::delete_batch(delete_vec.clone()).await {
-                    print_log(LogLevel::Error, &format!("Batch delete failed: {e}"));
+                    log_err!("Batch delete failed: {e}");
                 }
             }
         }
 
         // warn about external command execution
         if snapshot.exec_run_count > 0 {
-            print_log(
-                LogLevel::Warning,
-                &format!(
-                    "{} commands were executed previously; revert them manually.",
-                    snapshot.exec_run_count
-                ),
+            log_warn!(
+                "{} commands were executed previously; revert them manually.",
+                snapshot.exec_run_count
             );
         }
 
         // delete the snapshot file
         if dry_run {
-            print_log(
-                LogLevel::Dry,
-                &format!("Would remove snapshot file at {snap_path:?}"),
-            );
+            log_dry!("Would remove snapshot file at {snap_path:?}",);
         } else {
             snapshot.delete().await?;
-            print_log(
-                LogLevel::Info,
-                &format!("Removed snapshot file at {snap_path:?}"),
-            );
+            log_info!("Removed snapshot file at {snap_path:?}",);
         }
 
         // Restart system services if requested
         restart_services().await;
 
-        print_log(LogLevel::Fruitful, "Unapply operation complete.");
+        log_cute!("Unapply operation complete.");
 
         Ok(())
     }

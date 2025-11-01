@@ -7,13 +7,13 @@ use tokio::process::Command;
 
 use crate::{
     brew::{
-        core::{compare_brew_state, ensure_brew},
+        core::{diff_brew, ensure_brew},
         types::BrewDiff,
     },
     cli::atomic::{should_be_quiet, should_dry_run},
     commands::Runnable,
     config::core::Config,
-    util::logging::{LogLevel, print_log},
+    log_cute, log_dry, log_err, log_info, log_warn,
 };
 
 #[derive(Debug, Args)]
@@ -34,45 +34,32 @@ impl Runnable for BrewInstallCmd {
         ensure_brew().await?;
 
         // check the current brew state, including taps, formulae, and casks
-        let brew_diff = match compare_brew_state(brew_cfg).await {
+        let brew_diff = match diff_brew(brew_cfg).await {
             Ok(diff) => {
                 if !diff.extra_formulae.is_empty() {
-                    print_log(
-                        LogLevel::Warning,
-                        &format!(
-                            "Extra installed formulae not in config: {:?}",
-                            diff.extra_formulae
-                        ),
+                    log_warn!(
+                        "Extra installed formulae not in config: {:?}",
+                        diff.extra_formulae
                     );
                 }
                 if !diff.extra_casks.is_empty() {
-                    print_log(
-                        LogLevel::Warning,
-                        &format!(
-                            "Extra installed casks not in config: {:?}",
-                            diff.extra_casks
-                        ),
+                    log_warn!(
+                        "Extra installed casks not in config: {:?}",
+                        diff.extra_casks
                     );
                 }
                 if !diff.extra_taps.is_empty() {
-                    print_log(
-                        LogLevel::Warning,
-                        &format!("Extra taps not in config: {:?}", diff.extra_taps),
-                    );
+                    log_warn!("Extra taps not in config: {:?}", diff.extra_taps,);
                 }
                 if !diff.extra_formulae.is_empty() || !diff.extra_casks.is_empty() {
-                    print_log(
-                        LogLevel::Warning,
+                    log_warn!(
                         "Run `cutler brew backup` to synchronize your config with the system.\n",
                     );
                 }
                 diff
             }
             Err(e) => {
-                print_log(
-                    LogLevel::Error,
-                    &format!("Could not check Homebrew status: {e}"),
-                );
+                log_err!("Could not check Homebrew status: {e}",);
                 // If we cannot compare the state, treat as if nothing is missing.
                 BrewDiff {
                     missing_formulae: vec![],
@@ -89,32 +76,32 @@ impl Runnable for BrewInstallCmd {
         if !brew_diff.missing_taps.is_empty() {
             for tap in brew_diff.missing_taps.iter() {
                 if dry_run {
-                    print_log(LogLevel::Dry, &format!("Would tap {tap}"));
+                    log_dry!("Would tap {tap}");
                 } else {
-                    print_log(LogLevel::Info, &format!("Tapping: {tap}"));
+                    log_info!("Tapping: {tap}");
                     let status = Command::new("brew").arg("tap").arg(tap).status().await?;
 
                     if !status.success() {
-                        print_log(LogLevel::Error, &format!("Failed to tap: {tap}"));
+                        log_err!("Failed to tap: {tap}");
                     }
                 }
             }
         }
 
         if !brew_diff.missing_formulae.is_empty() || !brew_diff.missing_casks.is_empty() {
-            print_log(LogLevel::Info, "Pre-downloading all formulae and casks...");
+            log_info!("Pre-downloading all formulae and casks...");
         } else {
-            print_log(LogLevel::Info, "No formulae or casks to download/install.");
+            log_cute!("No formulae or casks to download/install.");
             return Ok(());
         }
 
         // handle all of dry-run in this single block
         if dry_run {
             brew_diff.missing_formulae.iter().for_each(|formula| {
-                print_log(LogLevel::Dry, &format!("Would fetch formula: {formula}"));
+                log_info!("Would fetch formula: {formula}");
             });
             brew_diff.missing_casks.iter().for_each(|cask| {
-                print_log(LogLevel::Dry, &format!("Would fetch cask: {cask}"));
+                log_dry!("Would fetch cask: {cask}");
             });
             return Ok(());
         }
@@ -152,7 +139,7 @@ async fn fetch_all(formulae: &[String], casks: &[String]) -> FetchedThings {
         cmd.arg("fetch").arg(name);
 
         if !quiet {
-            print_log(LogLevel::Info, &format!("Fetching formula: {name}"));
+            log_info!("Fetching formula: {name}");
         } else {
             cmd.arg("--quiet");
         }
@@ -169,7 +156,7 @@ async fn fetch_all(formulae: &[String], casks: &[String]) -> FetchedThings {
         cmd.arg("fetch").arg("--cask").arg(name);
 
         if !quiet {
-            print_log(LogLevel::Info, &format!("Fetching cask: {name}"));
+            log_info!("Fetching cask: {name}");
         } else {
             cmd.arg("--quiet");
         }
@@ -182,22 +169,13 @@ async fn fetch_all(formulae: &[String], casks: &[String]) -> FetchedThings {
 
     // warn user about failed formulae and casks
     if !failed_formulae.is_empty() {
-        print_log(
-            LogLevel::Warning,
-            &format!("Failed to fetch formulae: {failed_formulae:?}"),
-        );
+        log_warn!("Failed to fetch formulae: {failed_formulae:?}",);
     }
     if !failed_casks.is_empty() {
-        print_log(
-            LogLevel::Warning,
-            &format!("Failed to fetch casks: {failed_casks:?}"),
-        );
+        log_warn!("Failed to fetch casks: {failed_casks:?}",);
     }
     if !failed_formulae.is_empty() || !failed_casks.is_empty() {
-        print_log(
-            LogLevel::Warning,
-            "Some software failed to download and won't be installed.",
-        );
+        log_warn!("Some software failed to download and won't be installed.",);
     }
 
     FetchedThings {
@@ -210,7 +188,7 @@ async fn fetch_all(formulae: &[String], casks: &[String]) -> FetchedThings {
 /// The argument is a vector of argslices, representing the arguments to the `brew install` subcommand.
 async fn install_all(install_tasks: Vec<String>, cask: bool) -> anyhow::Result<()> {
     for task in install_tasks {
-        print_log(LogLevel::Info, &format!("Installing: {task}"));
+        log_info!("Installing: {task}");
 
         let status = Command::new("brew")
             .arg("install")
@@ -220,7 +198,7 @@ async fn install_all(install_tasks: Vec<String>, cask: bool) -> anyhow::Result<(
             .await?;
 
         if !status.success() {
-            print_log(LogLevel::Error, &format!("Failed to install: {task}"));
+            log_err!("Failed to install: {task}");
         }
     }
     Ok(())

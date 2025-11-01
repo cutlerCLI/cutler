@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+//! Logging module for cutler.
+//!
+//! Use the log_*! macros for pretty-printing text inside cutler.
+
 use crate::cli::atomic::{should_be_quiet, should_be_verbose};
 
 // ANSI color codes.
@@ -12,7 +16,7 @@ pub const CYAN: &str = "\x1b[36m";
 pub const RESET: &str = "\x1b[0m";
 pub const BOLD: &str = "\x1b[1m";
 
-/// Logging level based on what action cutler is performing.
+#[doc(hidden)]
 #[derive(PartialEq)]
 pub enum LogLevel {
     Error,
@@ -24,9 +28,8 @@ pub enum LogLevel {
     Fruitful, // 🍎
 }
 
-/// Central logger.
-/// It is important that most, if not all, prints in cutler go through this function.
-pub fn print_log(level: LogLevel, msg: &str) {
+#[doc(hidden)]
+pub fn _print_log(level: LogLevel, msg: &str) {
     if (should_be_quiet() && level != LogLevel::Error && level != LogLevel::Warning)
         || (level == LogLevel::Info && !should_be_verbose())
     {
@@ -54,4 +57,67 @@ pub fn print_log(level: LogLevel, msg: &str) {
     } else {
         println!("{line}");
     }
+}
+
+/// Logs with LogLevel::Info.
+#[macro_export]
+macro_rules! log_info {
+    ($($arg:tt)*) => {{
+        let msg = format!($($arg)*);
+        $crate::util::logging::_print_log($crate::util::logging::LogLevel::Info, &msg);
+    }};
+}
+
+/// Logs with LogLevel::Error.
+#[macro_export]
+macro_rules! log_err {
+    ($($arg:tt)*) => {{
+        let msg = format!($($arg)*);
+        $crate::util::logging::_print_log($crate::util::logging::LogLevel::Error, &msg);
+    }};
+}
+
+/// Logs with LogLevel::Warning.
+#[macro_export]
+macro_rules! log_warn {
+    ($($arg:tt)*) => {{
+        let msg = format!($($arg)*);
+        $crate::util::logging::_print_log($crate::util::logging::LogLevel::Warning, &msg);
+    }};
+}
+
+/// Logs with LogLevel::Fruitful.
+#[macro_export]
+macro_rules! log_cute {
+    ($($arg:tt)*) => {{
+        let msg = format!($($arg)*);
+        $crate::util::logging::_print_log($crate::util::logging::LogLevel::Fruitful, &msg);
+    }};
+}
+
+/// Logs with LogLevel::Dry.
+#[macro_export]
+macro_rules! log_dry {
+    ($($arg:tt)*) => {{
+        let msg = format!($($arg)*);
+        $crate::util::logging::_print_log($crate::util::logging::LogLevel::Dry, &msg);
+    }};
+}
+
+/// Logs with LogLevel::Exec.
+#[macro_export]
+macro_rules! log_exec {
+    ($($arg:tt)*) => {{
+        let msg = format!($($arg)*);
+        $crate::util::logging::_print_log($crate::util::logging::LogLevel::Exec, &msg);
+    }};
+}
+
+/// Logs with LogLevel::Prompt.
+#[macro_export]
+macro_rules! log_prompt {
+    ($($arg:tt)*) => {{
+        let msg = format!($($arg)*);
+        $crate::util::logging::_print_log($crate::util::logging::LogLevel::Prompt, &msg);
+    }};
 }
