@@ -27,6 +27,23 @@ nano ~/.config/cutler/config.toml
 cutler apply
 ```
 
+## What is cutler?
+
+cutler aims to simply the setup procedure for Macs by doing the following:
+
+- Provide a declarative way to set system settings, without touching the Settings app.
+- Wrap around package manages such as Homebrew and mas for quick setup of apps from third-party sources / the official App Store.
+- Provide first-class support for external command execution for extensibility.
+
+All of this, under a single `cutler.toml` file in your config directory.
+
+## How it works
+
+For backend functionality over system preferences, cutler wraps around the preferences APIs exposed by macOS. This allows for direct and instant feedback by just restarting the corresponding services related to the preference.
+
+For wrapping around tooling, cutler includes mature implementations for extracting the data from the selected package managers.
+Sensitive actions (e.g. installing) are currently outsourced to remain as close to the original functionality as possible. However, this will change as cutler is still in development.
+
 ## Useful Links
 
 - [Resources](#resources)
