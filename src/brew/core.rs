@@ -1,80 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use crate::brew::types::{BrewDiff, BrewListType};
+use crate::brew::xcode::ensure_xcode_clt;
 use crate::cli::atomic::should_dry_run;
 use crate::config::core::Brew;
 use crate::util::io::confirm;
-use crate::{log_cute, log_dry, log_info, log_warn};
+use crate::{log_dry, log_info, log_warn};
 use anyhow::{Result, bail};
-use std::{env, path::Path, time::Duration};
+use std::{env, path::Path};
 use tokio::process::Command;
 use tokio::{fs, try_join};
-
-/// Helper for: ensure_brew()
-/// Ensures Xcode Command Line Tools are installed.
-/// If not, prompts the user to install them (unless dry_run).
-async fn ensure_xcode_clt() -> Result<()> {
-    async fn check_installed() -> bool {
-        let output = Command::new("xcode-select").arg("-p").output().await;
-        match output {
-            Ok(out) if out.status.success() => {
-                let path = String::from_utf8_lossy(&out.stdout).trim().to_string();
-                !path.is_empty()
-            }
-            _ => false,
-        }
-    }
-
-    // first round check
-    // if not, continue to installation process
-    let clt_installed = check_installed().await;
-
-    if clt_installed {
-        return Ok(());
-    }
-
-    if should_dry_run() {
-        log_dry!("Would install Xcode Command Line Tools (not detected)");
-        return Ok(());
-    }
-
-    log_warn!("Xcode CLT is not installed.");
-
-    if confirm("Install Xcode Command Line Tools now?") {
-        let status = Command::new("xcode-select")
-            .arg("--install")
-            .status()
-            .await?;
-
-        if !status.success() {
-            bail!(
-                "Failed to launch Xcode Command Line Tools installer. Try manually installing it using `xcode-select --install`."
-            );
-        }
-
-        log_warn!("Waiting for installation to complete...");
-
-        // wait for 60 minutes for the user to finish installation
-        // otherwise, bail out
-        for _ in 0..720 {
-            tokio::time::sleep(Duration::from_millis(5000)).await;
-
-            // loop checks here
-            if check_installed().await {
-                log_cute!("Xcode Command Line tools installed.");
-                return Ok(());
-            }
-        }
-
-        bail!(
-            "Timed out. Re-run this command once installation completes.\nIf there was an error during installation, try running `xcode-select --install` again."
-        );
-    } else {
-        bail!(
-            "Xcode Command Line Tools are required for Homebrew operations, but were not found. Aborting."
-        );
-    }
-}
 
 /// Sets the required environment variables for cutler to interact with Homebrew.
 async fn set_homebrew_env_vars() {
@@ -167,6 +102,23 @@ pub async fn ensure_brew() -> Result<()> {
     Ok(())
 }
 
+/// Flattens tap prefixes for a given list of strings.
+///
+/// `vec!["some/cool/program", "other_program"]` -> `vec!["some/cool/program", "program", "other_program"]`
+fn flatten_tap_prefix(lines: Vec<String>) -> Vec<String> {
+    lines
+        .iter()
+        .flat_map(|l| {
+            let parts: Vec<&str> = l.split('/').collect();
+            if parts.len() == 3 {
+                vec![l.clone(), parts[2].to_string()]
+            } else {
+                vec![l.clone()]
+            }
+        })
+        .collect()
+}
+
 /// Lists Homebrew things (formulae/casks/taps/deps) and separates them based on newline.
 pub async fn brew_list(list_type: BrewListType) -> Result<Vec<String>> {
     let args: Vec<String> = match list_type {
@@ -192,29 +144,35 @@ pub async fn brew_list(list_type: BrewListType) -> Result<Vec<String>> {
     }
 
     let stdout = String::from_utf8_lossy(&output.stdout);
-    Ok(stdout
+    let mut lines: Vec<String> = stdout
         .lines()
         .map(|l| l.trim().to_string())
         .filter(|l| !l.is_empty())
-        .collect())
+        .collect();
+
+    if BrewListType::Tap != list_type {
+        lines = flatten_tap_prefix(lines);
+    }
+
+    Ok(lines)
 }
 
 /// Compare the Brew config struct with the actual Homebrew state.
 /// Returns a BrewDiff struct with missing/extra formulae, casks, and taps.
-pub async fn compare_brew_state(brew_cfg: Brew) -> Result<BrewDiff> {
+pub async fn diff_brew(brew_cfg: Brew) -> Result<BrewDiff> {
     let no_deps = brew_cfg.no_deps.unwrap_or(false);
 
-    let config_formulae: Vec<String> = brew_cfg.formulae.clone().unwrap_or_default();
-    let config_casks: Vec<String> = brew_cfg.casks.clone().unwrap_or_default();
+    let config_formulae: Vec<String> =
+        flatten_tap_prefix(brew_cfg.formulae.clone().unwrap_or_default());
+    let config_casks: Vec<String> = flatten_tap_prefix(brew_cfg.casks.clone().unwrap_or_default());
     let config_taps: Vec<String> = brew_cfg.taps.clone().unwrap_or_default();
 
     // fetch installed state in parallel
-    let (installed_formulae, installed_casks, installed_taps) = try_join!(
+    let (mut installed_formulae, installed_casks, installed_taps) = try_join!(
         brew_list(BrewListType::Formula),
         brew_list(BrewListType::Cask),
         brew_list(BrewListType::Tap)
     )?;
-    let mut installed_formulae = installed_formulae;
 
     // omit installed as dependency
     if no_deps {

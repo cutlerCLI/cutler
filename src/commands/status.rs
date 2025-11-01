@@ -2,7 +2,7 @@
 
 use crate::{
     brew::{
-        core::{brew_is_installed, compare_brew_state},
+        core::{brew_is_installed, diff_brew},
         types::BrewDiff,
     },
     commands::Runnable,
@@ -119,7 +119,7 @@ impl Runnable for StatusCmd {
                 if !brew_is_installed().await {
                     log_warn!("Homebrew not available in $PATH, skipping status check for it.",);
                 } else {
-                    match compare_brew_state(brew_val).await {
+                    match diff_brew(brew_val).await {
                         Ok(BrewDiff {
                             missing_formulae,
                             extra_formulae,

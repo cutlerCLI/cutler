@@ -7,7 +7,7 @@ use tokio::process::Command;
 
 use crate::{
     brew::{
-        core::{compare_brew_state, ensure_brew},
+        core::{diff_brew, ensure_brew},
         types::BrewDiff,
     },
     cli::atomic::{should_be_quiet, should_dry_run},
@@ -34,7 +34,7 @@ impl Runnable for BrewInstallCmd {
         ensure_brew().await?;
 
         // check the current brew state, including taps, formulae, and casks
-        let brew_diff = match compare_brew_state(brew_cfg).await {
+        let brew_diff = match diff_brew(brew_cfg).await {
             Ok(diff) => {
                 if !diff.extra_formulae.is_empty() {
                     log_warn!(
