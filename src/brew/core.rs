@@ -94,20 +94,6 @@ async fn set_homebrew_env_vars() {
             new_path = format!("{sbin}:{new_path}");
         }
         unsafe { env::set_var("PATH", &new_path) };
-    } else if fs::try_exists(Path::new("/usr/local/bin/brew"))
-        .await
-        .unwrap_or_default()
-    {
-        let bin = "/usr/local/bin";
-        let sbin = "/usr/local/sbin";
-        let mut new_path = existing_path.clone();
-        if !existing_path.split(':').any(|p| p == bin) {
-            new_path = format!("{bin}:{new_path}");
-        }
-        if !existing_path.split(':').any(|p| p == sbin) {
-            new_path = format!("{sbin}:{new_path}");
-        }
-        unsafe { env::set_var("PATH", &new_path) };
     } else {
         log_warn!("Brew binary not found in standard directories; $PATH not updated.");
     }
