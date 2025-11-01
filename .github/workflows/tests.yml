@@ -56,10 +56,3 @@ jobs:
 
       - name: Check formatting
         run: cargo fmt --all -- --check
-
-      - name: Save sccache cache
-        if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: ~/.cache/sccache
-          key: ${{ runner.os }}-sccache-${{ github.run_id }}
