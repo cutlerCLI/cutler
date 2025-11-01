@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
