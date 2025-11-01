@@ -1,4 +1,4 @@
-name: Rust Tests
+name: Tests CI
 
 on:
   push:
@@ -9,6 +9,9 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  SCCACHE_GHA_ENABLED: "true"
+  SCCACHE_CACHE_SIZE: 2G
+  RUSTC_WRAPPER: "sccache"
 
 concurrency:
   group: "tests"
@@ -28,14 +31,19 @@ jobs:
           override: true
           components: clippy, rustfmt
 
-      - name: Cache Cargo registry and build
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.9
+
+      - name: sccache stats
+        run: sccache --show-stats || true
+
+      - name: Cache Cargo registry
         uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-            target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
@@ -44,7 +52,7 @@ jobs:
         run: cargo clippy --all-targets -- -D warnings
 
       - name: Run unit tests
-        run: cargo test --verbose
+        run: cargo test --quiet
 
       - name: Check formatting
         run: cargo fmt --all -- --check
