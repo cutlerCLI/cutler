@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 use crate::cli::atomic::{should_be_quiet, should_be_verbose};
 
