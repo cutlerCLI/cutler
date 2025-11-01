@@ -33,7 +33,7 @@ Copy and run the command below to install cutler:
 curl -fsSL https://cutlercli.github.io/scripts/install.sh | /bin/bash
 ```
 
-Or, see ["Installation"](https://cutlercli.github.io/cookbook/installation.html) for other installation methods.
+Or, see ["Installation"](https://cutlercli.github.io/cookbook/installation/installation-methods.html) for other installation methods.
 
 > [!WARNING]
 > **DEPRECATION:** The x86_64 builds will soon be removed in favor of Apple Silicon, as Apple themselves have officially discontinued this timed architecture.
@@ -49,8 +49,12 @@ cutler cookbook
 
 ## Contributing
 
-View the [Contribution Guidelines](https://cutlercli.github.io/cookbook/contributing.html) to learn more about contributing to cutler. It also contains resources such as code snippets to make your contribution workflow easier.
+View the [Contribution Guidelines](https://cutlercli.github.io/cookbook/guidelines/contributing.html) to learn more about contributing to cutler. It also contains resources such as code snippets to make your contribution workflow easier.
 
 ## License
 
 This project is licensed under the [Apache 2.0 License](https://github.com/cutlerCLI/cutler/blob/master/LICENSE.md).
+
+For organizations that prefer not to comply with Apache 2.0 terms
+(e.g. attribution, source distribution) or need commercial support,
+a commercial license is available — refer to [COMMERCIAL_LICENSE.md](https://github.com/cutlerCLI/cutler/blob/master/COMMERCIAL_LICENSE.md).
