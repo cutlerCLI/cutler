@@ -59,7 +59,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v5
         with:
-          name: cutler-darwin-arm64
+          name: ${{ env.FILE_NAME }}
           path: ${{ env.FILE_NAME }}
           retention-days: 90
 
