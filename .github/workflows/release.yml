@@ -14,7 +14,7 @@ jobs:
 
     env:
       MACOSX_DEPLOYMENT_TARGET: 11
-      FILE_NAME: cutler-${{ github.event.release.name }}-darwin-arm64.zip
+      FILE_NAME: cutler-aarch64-apple-darwin.tar.gz
       SCCACHE_GHA_ENABLED: "true"
       SCCACHE_CACHE_SIZE: 2G
       RUSTC_WRAPPER: "sccache"
@@ -54,7 +54,7 @@ jobs:
           cp man/man1/cutler.1 release/man/man1/
           cp LICENSE.md release/
           cp README.md release/
-          cd release && zip -r ../${{ env.FILE_NAME }} bin man README.md LICENSE.md && cd ..
+          tar -C release -czf "../${FILE_NAME}" bin man README.md LICENSE.md
 
       - name: Upload artifact
         uses: actions/upload-artifact@v5
