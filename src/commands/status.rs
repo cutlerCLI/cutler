@@ -143,7 +143,7 @@ impl Runnable for StatusCmd {
                             for (label, items) in brew_checks.iter() {
                                 if !items.is_empty() {
                                     any_diff = true;
-                                    log_warn!("{BOLD}{label}:{RESET} {}", items.join(", "),);
+                                    log_warn!("{BOLD}{label}:{RESET} {}", items.join(", "));
                                 }
                             }
 

@@ -92,7 +92,7 @@ impl Runnable for BrewBackupCmd {
                 formula_arr.push(formula.clone());
             }
         }
-        log_info!("Pushed {} formulae.", formula_arr.len(),);
+        log_info!("Pushed {} formulae.", formula_arr.len());
         brew.formulae = Some(formula_arr);
 
         let mut cask_arr = Vec::new();

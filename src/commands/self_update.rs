@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-use anyhow::{Result, bail};
+use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
 use self_update::{backends::github::Update, cargo_crate_version};
@@ -56,22 +56,12 @@ impl Runnable for SelfUpdateCmd {
             log_warn!("If you wish to skip this behavior, use: cutler self-update --no-man",);
         }
 
-        // determine architecture for update target
-        let arch = std::env::consts::ARCH;
-        let target = match arch {
-            "x86_64" | "x86" => "darwin-x86_64",
-            "aarch64" => "darwin-arm64",
-            _ => {
-                bail!("Unsupported architecture for self-update: {arch}")
-            }
-        };
-
         // run the self_update updater in a blocking thread to avoid dropping a runtime in async context
         let status = tokio::task::spawn_blocking(move || {
             Update::configure()
                 .repo_owner("cutlerCLI")
                 .repo_name("cutler")
-                .target(target)
+                .target("aarch64-apple-darwin")
                 .bin_name("cutler")
                 .bin_path_in_archive("bin/cutler")
                 .show_download_progress(true)
@@ -104,7 +94,7 @@ impl Runnable for SelfUpdateCmd {
             return Ok(());
         }
 
-        log_cute!("cutler updated to: {}", status.version(),);
+        log_cute!("cutler updated to: {}", status.version());
 
         Ok(())
     }
