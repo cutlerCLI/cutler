@@ -54,7 +54,7 @@ jobs:
           cp man/man1/cutler.1 release/man/man1/
           cp LICENSE.md release/
           cp README.md release/
-          tar -C release -czf "../${FILE_NAME}" bin man README.md LICENSE.md
+          tar -C release -czf $FILE_NAME bin man README.md LICENSE.md
 
       - name: Upload artifact
         uses: actions/upload-artifact@v5
