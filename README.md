@@ -93,7 +93,7 @@ View the [Contribution Guidelines](https://cutlercli.github.io/cookbook/guidelin
 
 ## License
 
-This project is permissively licensed and free foever. See the license files mentioned below for the details:
+This project is permissively licensed and free forever. See the license files mentioned below for the details:
 
 - Apache Software License 2.0 [(LICENSE-APACHE)](https://github.com/cutlerCLI/cutler/blob/master/LICENSE-APACHE)
 - MIT License [(LICENSE-MIT)](https://github.com/cutlerCLI/cutler/blob/master/LICENSE-MIT)
