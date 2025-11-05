@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use super::get_styles;
 use clap::{Parser, Subcommand};
 
 use crate::commands::{
@@ -10,7 +9,26 @@ use crate::commands::{
 };
 
 #[derive(Parser)]
-#[command(name = "cutler", styles = get_styles(), version, about)]
+#[command(
+    name = "cutler",
+    version,
+    about,
+    help_template = "\
+{name} {version}
+{about}
+
+usage
+{usage}
+
+options:
+{options}
+
+subcmds:
+{subcommands}
+
+For more information on a subcommand, run `{name} <subcommand> --help`
+    "
+)]
 pub struct Args {
     /// Increase output verbosity.
     #[arg(short, long, global = true)]
