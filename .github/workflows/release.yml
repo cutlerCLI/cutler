@@ -55,7 +55,7 @@ jobs:
           cp LICENSE-APACHE release/
           cp LICENSE-MIT release/
           cp README.md release/
-          tar -C release -czf $FILE_NAME bin man README.md LICENSE.md
+          tar -C release -czf $FILE_NAME bin man README.md LICENSE-APACHE LICENSE-MIT
 
       - name: Upload artifact
         uses: actions/upload-artifact@v5
