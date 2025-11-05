@@ -78,7 +78,7 @@ pub enum Command {
     /// Unapply previously applied modifications(s).
     #[command(visible_alias = "undo")]
     Unapply(UnapplyCmd),
-    /// (Risky) Hard-reset all preferences.
+    /// WARN: Hard-reset all preferences.
     Reset(ResetCmd),
     /// Compare your system against config.
     #[command(visible_alias = "s")]

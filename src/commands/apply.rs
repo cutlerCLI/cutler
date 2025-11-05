@@ -43,9 +43,9 @@ pub struct ApplyCmd {
     #[arg(short, long, conflicts_with_all = &["all_cmd", "no_cmd"])]
     flagged_cmd: bool,
 
-    /// Risky: Disables check for domain existence before applying modification.
+    /// WARN: Disables check for domain existence before applying modification.
     #[arg(long)]
-    no_domain_check: bool,
+    no_dom_check: bool,
 
     /// Invoke `brew install` after applying defaults.
     #[arg(short, long)]
@@ -123,7 +123,7 @@ impl Runnable for ApplyCmd {
             for (key, toml_value) in table.into_iter() {
                 let (eff_dom, eff_key) = collector::effective(&dom, &key);
 
-                if !self.no_domain_check
+                if !self.no_dom_check
                     && eff_dom != "NSGlobalDomain"
                     && !domains_list.contains(&eff_dom.to_owned())
                 {
