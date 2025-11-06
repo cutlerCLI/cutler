@@ -1,4 +1,6 @@
-<img src="assets/logo.png" width="180px" align="right">
+<div align="center">
+
+<img src="assets/logo.png" width="150px" align="right">
 
 # 🍎 cutler
 
@@ -9,8 +11,9 @@
 
 Pre-built binaries support **macOS Big Sur (11.0) or later** versions.
 
-> [!WARNING]
-> Expect breaking changes before v1.0.0 release.
+![Demo](demo.gif)
+
+</div>
 
 ## Quick Start
 
