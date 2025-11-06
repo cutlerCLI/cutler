@@ -11,7 +11,7 @@
 
 Pre-built binaries support **macOS Big Sur (11.0) or later** versions.
 
-<img src="assets/demo.gif" width="450px">
+<img src="assets/demo.gif" width="600px">
 
 </div>
 
