@@ -52,6 +52,7 @@ cutler is still in development and changes in functionality may be common during
 
 - [Resources](#resources)
 - [Installation](#installation)
+- [Caveats](#caveats)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -85,6 +86,12 @@ cargo install cutler
 ```bash
 mise use -g cargo:cutler
 ```
+
+## Caveats
+
+These are the concurrent issues which are affecting some of the functionality but are under resolving efforts:
+
+- Dictionary parsing for TOML & defaults-rs backend (https://github.com/cutlerCLI/cutler/issues/73).
 
 ## Contributing
 
