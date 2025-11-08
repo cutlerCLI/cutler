@@ -350,8 +350,7 @@ dependencies = [
 [[package]]
 name = "defaults-rs"
 version = "0.3.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85397cb95c34eb6e448e2e4ba4b886f731207b01e9790c547e27a8d64de6df89"
+source = "git+https://github.com/hitblast/defaults-rs.git#91d0746993071ceb0169a2f964b715526d3a6819"
 dependencies = [
  "core-foundation",
  "core-foundation-sys",

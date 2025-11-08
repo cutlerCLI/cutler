@@ -1,3 +1,0 @@
-[submodule "crates/defaults-rs"]
-	path = crates/defaults-rs
-	url = https://github.com/hitblast/defaults-rs
