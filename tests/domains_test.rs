@@ -220,13 +220,12 @@ ShowPathbar = true
         assert!(fx_info.is_table());
 
         let fx_table = fx_info.as_table().unwrap();
-        assert_eq!(fx_table.get("Preview").unwrap().as_bool().unwrap(), false);
-        assert_eq!(fx_table.get("General").unwrap().as_bool().unwrap(), true);
+        assert!(!fx_table.get("Preview").unwrap().as_bool().unwrap());
+        assert!(fx_table.get("General").unwrap().as_bool().unwrap());
 
         // ShowPathbar should still be there
-        assert_eq!(
-            finder_domain.get("ShowPathbar").unwrap().as_bool().unwrap(),
-            true
+        assert!(
+            finder_domain.get("ShowPathbar").unwrap().as_bool().unwrap()
         );
     }
 
