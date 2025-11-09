@@ -4,6 +4,7 @@
 mod tests {
     use cutler::config::core::Config;
     use cutler::domains::{collect, effective};
+    use cutler::domains::convert::{toml_to_prefvalue, prefvalue_to_toml};
     use std::collections::HashMap;
     use toml::{Value, value::Table};
 
@@ -100,5 +101,84 @@ fnState = false
         assert!(dock.get("autohide").unwrap().as_bool().unwrap());
         let kb = domains.get("NSGlobalDomain.com.apple.keyboard").unwrap();
         assert!(!kb.get("fnState").unwrap().as_bool().unwrap());
+    }
+
+    #[test]
+    fn test_toml_to_prefvalue_array() {
+        // Test array conversion
+        let toml_array = Value::Array(vec![
+            Value::String("item1".to_string()),
+            Value::String("item2".to_string()),
+            Value::Integer(42),
+        ]);
+
+        let pref_value = toml_to_prefvalue(&toml_array).unwrap();
+        
+        // Convert back to TOML to verify round-trip
+        let back_to_toml = prefvalue_to_toml(&pref_value);
+        assert_eq!(back_to_toml, toml_array);
+    }
+
+    #[test]
+    fn test_toml_to_prefvalue_dictionary() {
+        // Test dictionary conversion
+        let mut tbl = Table::new();
+        tbl.insert("key1".to_string(), Value::String("value1".to_string()));
+        tbl.insert("key2".to_string(), Value::Integer(100));
+        tbl.insert("key3".to_string(), Value::Boolean(true));
+        
+        let toml_dict = Value::Table(tbl);
+        let pref_value = toml_to_prefvalue(&toml_dict).unwrap();
+        
+        // Convert back to TOML to verify round-trip
+        let back_to_toml = prefvalue_to_toml(&pref_value);
+        assert_eq!(back_to_toml, toml_dict);
+    }
+
+    #[test]
+    fn test_toml_to_prefvalue_nested() {
+        // Test nested structures
+        let mut inner_tbl = Table::new();
+        inner_tbl.insert("nested_key".to_string(), Value::String("nested_value".to_string()));
+        
+        let mut outer_tbl = Table::new();
+        outer_tbl.insert("outer_key".to_string(), Value::Table(inner_tbl));
+        outer_tbl.insert("array_key".to_string(), Value::Array(vec![
+            Value::Integer(1),
+            Value::Integer(2),
+            Value::Integer(3),
+        ]));
+        
+        let toml_nested = Value::Table(outer_tbl);
+        let pref_value = toml_to_prefvalue(&toml_nested).unwrap();
+        
+        // Convert back to TOML to verify round-trip
+        let back_to_toml = prefvalue_to_toml(&pref_value);
+        assert_eq!(back_to_toml, toml_nested);
+    }
+
+    #[test]
+    fn test_collect_domains_with_arrays() {
+        // Test collecting domains with array values
+        let parsed: Config = toml::from_str(
+            r#"
+[set.test]
+simple_array = ["item1", "item2", "item3"]
+mixed_array = [1, 2, 3]
+"#,
+        )
+        .unwrap();
+
+        let domains = collect(&parsed).unwrap();
+        assert_eq!(domains.len(), 1);
+        let test_domain = domains.get("test").unwrap();
+        
+        let simple_array = test_domain.get("simple_array").unwrap();
+        assert!(simple_array.is_array());
+        let arr = simple_array.as_array().unwrap();
+        assert_eq!(arr.len(), 3);
+        
+        let mixed_array = test_domain.get("mixed_array").unwrap();
+        assert!(mixed_array.is_array());
     }
 }

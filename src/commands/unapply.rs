@@ -10,7 +10,7 @@ use crate::{
     cli::atomic::should_dry_run,
     commands::{ResetCmd, Runnable},
     config::core::Config,
-    domains::convert::{string_to_toml_value, toml_to_prefvalue},
+    domains::convert::toml_to_prefvalue,
     log_cute, log_dry, log_err, log_info, log_warn,
     snapshot::{core::Snapshot, get_snapshot_path},
     util::{
@@ -69,7 +69,7 @@ impl Runnable for UnapplyCmd {
                 Domain::User(s.domain.clone())
             };
             if let Some(orig) = s.original_value {
-                let pref_value = toml_to_prefvalue(&string_to_toml_value(&orig))?;
+                let pref_value = toml_to_prefvalue(&orig)?;
                 batch_restores
                     .entry(domain_obj)
                     .or_default()

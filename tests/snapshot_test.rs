@@ -41,11 +41,11 @@ mod tests {
         let setting = SettingState {
             domain: "com.apple.dock".to_string(),
             key: "tilesize".to_string(),
-            original_value: Some("36".to_string()),
+            original_value: Some(toml::Value::Integer(36)),
         };
         assert_eq!(setting.domain, "com.apple.dock");
         assert_eq!(setting.key, "tilesize");
-        assert_eq!(setting.original_value, Some("36".to_string()));
+        assert_eq!(setting.original_value, Some(toml::Value::Integer(36)));
 
         // Test external command state
         let command = ExecJob {
@@ -69,7 +69,7 @@ mod tests {
         snapshot.settings.push(SettingState {
             domain: "com.apple.dock".to_string(),
             key: "tilesize".to_string(),
-            original_value: Some("36".to_string()),
+            original_value: Some(toml::Value::Integer(36)),
         });
 
         snapshot.settings.push(SettingState {
@@ -81,7 +81,7 @@ mod tests {
         snapshot.settings.push(SettingState {
             domain: "NSGlobalDomain".to_string(),
             key: "ApplePressAndHoldEnabled".to_string(),
-            original_value: Some("0".to_string()),
+            original_value: Some(toml::Value::Boolean(false)),
         });
 
         // Create a temporary file to store the snapshot
@@ -115,7 +115,7 @@ mod tests {
         let dock_setting = settings_map
             .get(&("com.apple.dock".to_string(), "tilesize".to_string()))
             .unwrap();
-        assert_eq!(dock_setting.original_value, Some("36".to_string()));
+        assert_eq!(dock_setting.original_value, Some(toml::Value::Integer(36)));
 
         // Check finder setting (null original)
         let finder_setting = settings_map
@@ -130,7 +130,7 @@ mod tests {
                 "ApplePressAndHoldEnabled".to_string(),
             ))
             .unwrap();
-        assert_eq!(global_setting.original_value, Some("0".to_string()));
+        assert_eq!(global_setting.original_value, Some(toml::Value::Boolean(false)));
     }
 
     #[tokio::test]

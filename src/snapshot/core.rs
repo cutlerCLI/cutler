@@ -4,6 +4,7 @@ use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 use std::{env, path::PathBuf};
 use tokio::fs;
+use toml::Value;
 
 use crate::snapshot::get_snapshot_path;
 
@@ -13,7 +14,7 @@ use crate::snapshot::get_snapshot_path;
 pub struct SettingState {
     pub domain: String,
     pub key: String,
-    pub original_value: Option<String>,
+    pub original_value: Option<Value>,
 }
 
 /// Represents a snapshot.

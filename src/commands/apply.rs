@@ -6,7 +6,7 @@ use crate::{
     config::{core::Config, path::get_config_path, remote::RemoteConfigManager},
     domains::{
         collector,
-        convert::{normalize, toml_to_prefvalue},
+        convert::toml_to_prefvalue,
     },
     exec::core::{self, ExecMode},
     log_cute, log_dry, log_err, log_info, log_warn,
@@ -59,8 +59,8 @@ struct PreferenceJob {
     key: String,
     toml_value: Value,
     action: &'static str,
-    original: Option<String>,
-    new_value: String,
+    original: Option<Value>,
+    new_value: PrefValue,
 }
 
 #[async_trait]
@@ -138,11 +138,9 @@ impl Runnable for ApplyCmd {
                 // read the current value from the system
                 // then, check if changed
                 // TODO: could use read_batch from defaults-rs here
-                let current = collector::read_current(&eff_dom, &eff_key)
-                    .await
-                    .unwrap_or_default();
-                let desired = normalize(&toml_value);
-                let changed = current != desired;
+                let current = collector::read_current(&eff_dom, &eff_key).await;
+                let desired = toml_to_prefvalue(&toml_value)?;
+                let changed = current.as_ref() != Some(&desired);
 
                 // grab the old snapshot entry if it exists
                 let old_entry = existing.get(&(eff_dom.clone(), eff_key.clone())).cloned();
@@ -153,10 +151,10 @@ impl Runnable for ApplyCmd {
                     // Preserve existing non-null original; otherwise, for brand new keys, capture original from system
                     let original = if let Some(e) = &old_entry {
                         e.original_value.clone()
-                    } else if current.is_empty() {
+                    } else if current.is_none() {
                         None
                     } else {
-                        Some(current.clone())
+                        current.as_ref().map(|v| crate::domains::convert::prefvalue_to_toml(v))
                     };
 
                     // decide “applying” vs “updating”
@@ -205,8 +203,7 @@ impl Runnable for ApplyCmd {
                     }
                 );
             }
-            let pref_value = toml_to_prefvalue(&job.toml_value)?;
-            batch.push((domain_obj, job.key.clone(), pref_value));
+            batch.push((domain_obj, job.key.clone(), job.new_value.clone()));
         }
 
         // perform batch write

@@ -84,7 +84,7 @@ pub fn effective(domain: &str, key: &str) -> (String, String) {
 }
 
 /// Read the current value of a defaults key, if any.
-pub async fn read_current(eff_domain: &str, eff_key: &str) -> Option<String> {
+pub async fn read_current(eff_domain: &str, eff_key: &str) -> Option<defaults_rs::PrefValue> {
     let domain_obj = if eff_domain == "NSGlobalDomain" {
         Domain::Global
     } else if let Some(rest) = eff_domain.strip_prefix("com.apple.") {
@@ -94,7 +94,7 @@ pub async fn read_current(eff_domain: &str, eff_key: &str) -> Option<String> {
     };
 
     match Preferences::read(domain_obj, Some(eff_key)).await {
-        Ok(result) => Some(result.to_string()),
+        Ok(result) => Some(result),
         Err(_) => None,
     }
 }
