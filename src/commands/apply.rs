@@ -43,11 +43,11 @@ pub struct ApplyCmd {
     #[arg(short, long, conflicts_with_all = &["all_cmd", "no_cmd"])]
     flagged_cmd: bool,
 
-    /// Registers new domains if the domain does not exist.
+    /// WARN: Disables domain existence check.
     #[arg(short, long)]
-    register: bool,
+    no_dom_check: bool,
 
-    /// Invoke `brew install` after applying defaults.
+    /// Invoke `brew install` after applying preferences.
     #[arg(short, long)]
     brew: bool,
 }
@@ -128,16 +128,11 @@ impl Runnable for ApplyCmd {
             for (key, toml_value) in table.into_iter() {
                 let (eff_dom, eff_key) = collector::effective(&dom, &key);
 
-                if !self.register
+                if !self.no_dom_check
                     && eff_dom != "NSGlobalDomain"
-                    && !domains_list
-                        .iter()
-                        .any(|domain| eff_dom.starts_with(domain))
+                    && !domains_list.contains(&eff_dom)
                 {
-                    bail!(
-                        "Domain \"{}\" not found. Try with `--register` to apply and register domains.",
-                        eff_dom
-                    )
+                    bail!("Domain \"{}\" not found.", eff_dom)
                 }
 
                 // read the current value from the system
