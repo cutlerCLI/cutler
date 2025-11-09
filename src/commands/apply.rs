@@ -99,7 +99,7 @@ impl Runnable for ApplyCmd {
                 Ok(snap) => snap,
                 Err(e) => {
                     log_warn!(
-                        "Bad snapshot: {e}; starting new. Note that when unapplying, all your settings will reset to factory defaults."
+                        "Bad snapshot: {e}; starting new. \nWhen unapplying, all your settings will reset to factory defaults."
                     );
                     is_bad_snap = true;
                     Snapshot::new().await

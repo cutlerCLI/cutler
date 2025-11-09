@@ -99,9 +99,7 @@ impl Runnable for StatusCmd {
             }
 
             if any_diff {
-                log_warn!(
-                    "Preferences diverged. Run `cutler apply` to apply the config onto the system.",
-                );
+                log_warn!("Preferences diverged. Run `cutler apply` to apply changes.",);
             } else {
                 log_cute!("System preferences are on sync.");
             }
@@ -148,9 +146,22 @@ impl Runnable for StatusCmd {
                             }
 
                             if any_diff {
-                                log_warn!(
-                                    "Homebrew diverged. Run the `cutler brew` command group to sync/install with/from config.",
-                                );
+                                log_warn!("Homebrew diverged.",);
+
+                                if !missing_casks.is_empty()
+                                    || !missing_formulae.is_empty()
+                                    || !missing_taps.is_empty()
+                                {
+                                    log_warn!(
+                                        "Run `cutler brew install` to install missing software."
+                                    )
+                                }
+                                if !extra_casks.is_empty()
+                                    || !extra_formulae.is_empty()
+                                    || !extra_taps.is_empty()
+                                {
+                                    log_warn!("Run `cutler brew backup` to backup extra software.")
+                                }
                             } else {
                                 log_cute!("Homebrew status on sync.");
                             }
