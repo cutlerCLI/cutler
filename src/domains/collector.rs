@@ -145,8 +145,5 @@ pub fn effective(domain: &str, key: &str) -> (String, String) {
 pub async fn read_current(eff_domain: &str, eff_key: &str) -> Option<defaults_rs::PrefValue> {
     let domain_obj = domain_string_to_obj(eff_domain);
 
-    match Preferences::read(domain_obj, Some(eff_key)).await {
-        Ok(result) => Some(result),
-        Err(_) => None,
-    }
+    (Preferences::read(domain_obj, Some(eff_key)).await).ok()
 }

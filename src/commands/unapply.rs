@@ -57,8 +57,10 @@ impl Runnable for UnapplyCmd {
         }
 
         // prepare undo operations, grouping by domain for efficiency
-        let mut batch_restores: HashMap<defaults_rs::Domain, Vec<(String, defaults_rs::PrefValue)>> =
-            HashMap::new();
+        let mut batch_restores: HashMap<
+            defaults_rs::Domain,
+            Vec<(String, defaults_rs::PrefValue)>,
+        > = HashMap::new();
         let mut batch_deletes: HashMap<defaults_rs::Domain, Vec<String>> = HashMap::new();
 
         // reverse order to undo in correct sequence

@@ -152,7 +152,7 @@ impl Runnable for ApplyCmd {
                     } else {
                         current
                             .as_ref()
-                            .map(|v| crate::domains::convert::prefvalue_to_toml(v))
+                            .map(crate::domains::convert::prefvalue_to_toml)
                     };
 
                     // decide “applying” vs “updating”
@@ -180,7 +180,7 @@ impl Runnable for ApplyCmd {
             .iter()
             .map(|job| {
                 let domain_obj = domain_string_to_obj(&job.domain);
-                
+
                 if !dry_run {
                     log_info!(
                         "{} {} | {} -> {} {}",
@@ -188,12 +188,13 @@ impl Runnable for ApplyCmd {
                         job.domain,
                         job.key,
                         job.new_value,
-                        job.original.as_ref()
+                        job.original
+                            .as_ref()
                             .map(|v| format!("[Restorable to {}]", v))
                             .unwrap_or_default()
                     );
                 }
-                
+
                 (domain_obj, job.key.clone(), job.new_value.clone())
             })
             .collect();

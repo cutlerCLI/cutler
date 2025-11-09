@@ -52,8 +52,14 @@ impl Runnable for StatusCmd {
                 let desired = crate::domains::convert::toml_to_prefvalue(value).ok();
                 let is_diff = current != desired;
 
-                let current_str = current.as_ref().map(|v| v.to_string()).unwrap_or_else(|| "Not set".into());
-                let desired_str = desired.as_ref().map(|v| v.to_string()).unwrap_or_else(|| value.to_string());
+                let current_str = current
+                    .as_ref()
+                    .map(|v| v.to_string())
+                    .unwrap_or_else(|| "Not set".into());
+                let desired_str = desired
+                    .as_ref()
+                    .map(|v| v.to_string())
+                    .unwrap_or_else(|| value.to_string());
 
                 outcomes.push((
                     eff_dom.clone(),

@@ -89,7 +89,7 @@ impl Snapshot {
                         key: String,
                         original_value: Option<String>,
                     }
-                    
+
                     #[derive(Deserialize)]
                     struct OldSnapshot {
                         settings: Vec<OldSettingState>,
@@ -100,18 +100,22 @@ impl Snapshot {
                         #[serde(default)]
                         digest: String,
                     }
-                    
+
                     let old_snap_result: Result<OldSnapshot, _> = serde_json::from_str(&txt);
                     match old_snap_result {
                         Ok(old_snap) => {
                             let mut snap = Snapshot::new().await;
-                            snap.settings = old_snap.settings.into_iter().map(|s| SettingState {
-                                domain: s.domain,
-                                key: s.key,
-                                original_value: s.original_value.map(|v| 
-                                    crate::domains::convert::string_to_toml_value(&v)
-                                ),
-                            }).collect();
+                            snap.settings = old_snap
+                                .settings
+                                .into_iter()
+                                .map(|s| SettingState {
+                                    domain: s.domain,
+                                    key: s.key,
+                                    original_value: s
+                                        .original_value
+                                        .map(|v| crate::domains::convert::string_to_toml_value(&v)),
+                                })
+                                .collect();
                             snap.exec_run_count = old_snap.exec_run_count;
                             snap.version = old_snap.version;
                             snap.digest = old_snap.digest;
@@ -124,7 +128,8 @@ impl Snapshot {
                             struct SettingsOnly {
                                 settings: Vec<SettingState>,
                             }
-                            let settings_only_result: Result<SettingsOnly, _> = serde_json::from_str(&txt);
+                            let settings_only_result: Result<SettingsOnly, _> =
+                                serde_json::from_str(&txt);
                             match settings_only_result {
                                 Ok(settings_only) => {
                                     let mut snap = Snapshot::new().await;
