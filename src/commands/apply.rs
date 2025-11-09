@@ -130,10 +130,12 @@ impl Runnable for ApplyCmd {
 
                 if !self.register
                     && eff_dom != "NSGlobalDomain"
-                    && !domains_list.contains(&eff_dom.to_owned())
+                    && !domains_list
+                        .iter()
+                        .any(|domain| eff_dom.starts_with(domain))
                 {
                     bail!(
-                        "Domain \"{}\" not found. Try with `--register` to apply and create new domains.",
+                        "Domain \"{}\" not found. Try with `--register` to apply and register domains.",
                         eff_dom
                     )
                 }
