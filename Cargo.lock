@@ -349,13 +349,14 @@ dependencies = [
 
 [[package]]
 name = "defaults-rs"
-version = "0.3.7"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a190e3a5444069ebcf129cab88b3819f2c91a6545b823bedb6f73831a5f60f4"
+checksum = "bcf36e3d573b456a505330f31fae75f88623d8253b0e9e13195a29ee2fab7698"
 dependencies = [
  "clap",
  "core-foundation",
  "core-foundation-sys",
+ "dirs",
  "futures",
  "libc",
  "once_cell",

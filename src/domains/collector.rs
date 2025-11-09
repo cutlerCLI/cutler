@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use anyhow::Result;
-use defaults_rs::{Domain, Preferences, ReadResult};
+use defaults_rs::{Domain, Preferences};
 use std::collections::HashMap;
 use toml::{Table, Value};
 
@@ -94,10 +94,7 @@ pub async fn read_current(eff_domain: &str, eff_key: &str) -> Option<String> {
     };
 
     match Preferences::read(domain_obj, Some(eff_key)).await {
-        Ok(result) => match result {
-            ReadResult::Value(val) => Some(val.to_string()),
-            ReadResult::Plist(plist_val) => Some(format!("{plist_val:?}")),
-        },
+        Ok(result) => Some(result.to_string()),
         Err(_) => None,
     }
 }
