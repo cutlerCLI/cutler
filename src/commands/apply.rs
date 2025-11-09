@@ -4,10 +4,7 @@ use crate::{
     cli::atomic::should_dry_run,
     commands::{BrewInstallCmd, Runnable},
     config::{core::Config, path::get_config_path, remote::RemoteConfigManager},
-    domains::{
-        collector,
-        convert::toml_to_prefvalue,
-    },
+    domains::{collector, convert::toml_to_prefvalue},
     exec::core::{self, ExecMode},
     log_cute, log_dry, log_err, log_info, log_warn,
     snapshot::{
@@ -44,7 +41,7 @@ pub struct ApplyCmd {
     flagged_cmd: bool,
 
     /// WARN: Disables domain existence check.
-    #[arg(short, long)]
+    #[arg(long)]
     no_dom_check: bool,
 
     /// Invoke `brew install` after applying preferences.
@@ -154,7 +151,9 @@ impl Runnable for ApplyCmd {
                     } else if current.is_none() {
                         None
                     } else {
-                        current.as_ref().map(|v| crate::domains::convert::prefvalue_to_toml(v))
+                        current
+                            .as_ref()
+                            .map(|v| crate::domains::convert::prefvalue_to_toml(v))
                     };
 
                     // decide “applying” vs “updating”
