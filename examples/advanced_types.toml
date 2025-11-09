@@ -1,0 +1,48 @@
+# Advanced Types Example
+# This example demonstrates support for arrays and dictionaries in cutler settings
+# Remove the lock to activate this configuration
+lock = true
+
+# Example with simple arrays
+[set.dock]
+# Arrays of strings
+persistent-apps = [
+    "/Applications/Safari.app",
+    "/Applications/Mail.app",
+    "/Applications/Calendar.app"
+]
+
+# Arrays of numbers
+recent-apps = [1, 2, 3, 4, 5]
+
+# Example with boolean and mixed types
+[set.finder]
+AppleShowAllFiles = true
+FXPreferredViewStyle = "Nlsv"  # List view
+# Arrays can contain various types
+FXRecentFolders = [
+    "/Users/user/Documents",
+    "/Users/user/Downloads",
+    "/Users/user/Desktop"
+]
+
+# Example with nested settings (treated as sub-domains)
+[set.NSGlobalDomain.com.apple.keyboard]
+fnState = false
+
+# Example demonstrating type preservation
+[set.menuextra.clock]
+ShowSeconds = true
+ShowDate = 2  # Integer value preserved
+FlashDateSeparators = false
+
+# Note: cutler now properly supports:
+# - Strings: "value"
+# - Integers: 42
+# - Floats: 3.14
+# - Booleans: true/false
+# - Arrays: [1, 2, 3] or ["a", "b", "c"]
+# - Nested structures via domain notation
+#
+# All types are preserved during apply/unapply operations,
+# ensuring accurate state tracking and restoration.
