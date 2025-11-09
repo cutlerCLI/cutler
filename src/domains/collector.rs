@@ -5,6 +5,16 @@ use defaults_rs::{Domain, Preferences};
 use std::collections::HashMap;
 use toml::{Table, Value};
 
+/// Convert a domain string to a Domain object.
+/// Helper function to reduce code duplication.
+pub fn domain_string_to_obj(domain: &str) -> Domain {
+    if domain == "NSGlobalDomain" {
+        Domain::Global
+    } else {
+        Domain::User(domain.to_string())
+    }
+}
+
 /// Recursively flatten nested TOML tables that represent domain hierarchies.
 /// Uses the actual domain list to distinguish between nested domains and inline dictionaries.
 fn flatten_domains(
@@ -127,13 +137,7 @@ pub fn effective(domain: &str, key: &str) -> (String, String) {
 
 /// Read the current value of a defaults key, if any.
 pub async fn read_current(eff_domain: &str, eff_key: &str) -> Option<defaults_rs::PrefValue> {
-    let domain_obj = if eff_domain == "NSGlobalDomain" {
-        Domain::Global
-    } else if let Some(rest) = eff_domain.strip_prefix("com.apple.") {
-        Domain::User(format!("com.apple.{rest}"))
-    } else {
-        Domain::User(eff_domain.to_string())
-    };
+    let domain_obj = domain_string_to_obj(eff_domain);
 
     match Preferences::read(domain_obj, Some(eff_key)).await {
         Ok(result) => Some(result),

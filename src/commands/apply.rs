@@ -4,7 +4,7 @@ use crate::{
     cli::atomic::should_dry_run,
     commands::{BrewInstallCmd, Runnable},
     config::{core::Config, path::get_config_path, remote::RemoteConfigManager},
-    domains::{collector, convert::toml_to_prefvalue},
+    domains::{collector, convert::toml_to_prefvalue, domain_string_to_obj},
     exec::core::{self, ExecMode},
     log_cute, log_dry, log_err, log_info, log_warn,
     snapshot::{
@@ -19,7 +19,7 @@ use crate::{
 use anyhow::{Result, bail};
 use async_trait::async_trait;
 use clap::Args;
-use defaults_rs::{Domain, PrefValue, Preferences};
+use defaults_rs::Preferences;
 use toml::Value;
 
 #[derive(Args, Debug)]
@@ -54,10 +54,9 @@ pub struct ApplyCmd {
 struct PreferenceJob {
     domain: String,
     key: String,
-    toml_value: Value,
     action: &'static str,
     original: Option<Value>,
-    new_value: PrefValue,
+    new_value: defaults_rs::PrefValue,
 }
 
 #[async_trait]
@@ -166,7 +165,6 @@ impl Runnable for ApplyCmd {
                     jobs.push(PreferenceJob {
                         domain: eff_dom.clone(),
                         key: eff_key.clone(),
-                        toml_value: toml_value.clone(),
                         action,
                         original: if is_bad_snap { None } else { original },
                         new_value: desired.clone(),
@@ -178,32 +176,27 @@ impl Runnable for ApplyCmd {
         }
 
         // use defaults-rs batch write API for all changed settings
-        // collect jobs into a Vec<(Domain, String, PrefValue)>
-        let mut batch: Vec<(Domain, String, PrefValue)> = Vec::new();
-
-        for job in &jobs {
-            let domain_obj = if job.domain == "NSGlobalDomain" {
-                Domain::Global
-            } else {
-                Domain::User(job.domain.clone())
-            };
-
-            if !dry_run {
-                log_info!(
-                    "{} {} | {} -> {} {}",
-                    job.action,
-                    job.domain,
-                    job.key,
-                    job.new_value,
-                    if job.original.is_some() {
-                        format!("[Restorable to {}]", job.original.clone().unwrap())
-                    } else {
-                        "".to_string()
-                    }
-                );
-            }
-            batch.push((domain_obj, job.key.clone(), job.new_value.clone()));
-        }
+        let batch: Vec<_> = jobs
+            .iter()
+            .map(|job| {
+                let domain_obj = domain_string_to_obj(&job.domain);
+                
+                if !dry_run {
+                    log_info!(
+                        "{} {} | {} -> {} {}",
+                        job.action,
+                        job.domain,
+                        job.key,
+                        job.new_value,
+                        job.original.as_ref()
+                            .map(|v| format!("[Restorable to {}]", v))
+                            .unwrap_or_default()
+                    );
+                }
+                
+                (domain_obj, job.key.clone(), job.new_value.clone())
+            })
+            .collect();
 
         // perform batch write
         if !dry_run {

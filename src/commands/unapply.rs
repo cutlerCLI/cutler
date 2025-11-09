@@ -3,14 +3,14 @@
 use anyhow::{Result, bail};
 use async_trait::async_trait;
 use clap::Args;
-use defaults_rs::{Domain, Preferences};
+use defaults_rs::Preferences;
 use std::collections::HashMap;
 
 use crate::{
     cli::atomic::should_dry_run,
     commands::{ResetCmd, Runnable},
     config::core::Config,
-    domains::convert::toml_to_prefvalue,
+    domains::{convert::toml_to_prefvalue, domain_string_to_obj},
     log_cute, log_dry, log_err, log_info, log_warn,
     snapshot::{core::Snapshot, get_snapshot_path},
     util::{
@@ -57,17 +57,13 @@ impl Runnable for UnapplyCmd {
         }
 
         // prepare undo operations, grouping by domain for efficiency
-        let mut batch_restores: HashMap<Domain, Vec<(String, defaults_rs::PrefValue)>> =
+        let mut batch_restores: HashMap<defaults_rs::Domain, Vec<(String, defaults_rs::PrefValue)>> =
             HashMap::new();
-        let mut batch_deletes: HashMap<Domain, Vec<String>> = HashMap::new();
+        let mut batch_deletes: HashMap<defaults_rs::Domain, Vec<String>> = HashMap::new();
 
         // reverse order to undo in correct sequence
         for s in snapshot.settings.clone().into_iter().rev() {
-            let domain_obj = if s.domain == "NSGlobalDomain" {
-                Domain::Global
-            } else {
-                Domain::User(s.domain.clone())
-            };
+            let domain_obj = domain_string_to_obj(&s.domain);
             if let Some(orig) = s.original_value {
                 let pref_value = toml_to_prefvalue(&orig)?;
                 batch_restores

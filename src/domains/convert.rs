@@ -45,6 +45,7 @@ pub fn prefvalue_to_toml(val: &PrefValue) -> Value {
 }
 
 /// Turns a string into its toml::Value counterpart.
+/// Used for backward compatibility when migrating old string-based snapshots.
 pub fn string_to_toml_value(s: &str) -> toml::Value {
     // try bool, int, float, fallback to string
     if s == "true" {
@@ -57,13 +58,5 @@ pub fn string_to_toml_value(s: &str) -> toml::Value {
         toml::Value::Float(f)
     } else {
         toml::Value::String(s.to_string())
-    }
-}
-
-/// Normalize a toml::Value to a string.
-pub fn normalize(value: &Value) -> String {
-    match value {
-        Value::String(s) => s.clone(),
-        _ => value.to_string(),
     }
 }

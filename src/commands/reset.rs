@@ -3,14 +3,14 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
-use defaults_rs::{Domain, Preferences};
+use defaults_rs::Preferences;
 use tokio::fs;
 
 use crate::{
     cli::atomic::should_dry_run,
     commands::Runnable,
     config::core::Config,
-    domains::{collect, effective, read_current},
+    domains::{collect, domain_string_to_obj, effective, read_current},
     log_cute, log_dry, log_err, log_info, log_warn,
     snapshot::{Snapshot, get_snapshot_path},
     util::io::{confirm, restart_services},
@@ -40,13 +40,7 @@ impl Runnable for ResetCmd {
 
                 // only delete it if currently set
                 if read_current(&eff_dom, &eff_key).await.is_some() {
-                    let domain_obj = if eff_dom == "NSGlobalDomain" {
-                        Domain::Global
-                    } else if let Some(rest) = eff_dom.strip_prefix("com.apple.") {
-                        Domain::User(format!("com.apple.{rest}"))
-                    } else {
-                        Domain::User(eff_dom.clone())
-                    };
+                    let domain_obj = domain_string_to_obj(&eff_dom);
 
                     if dry_run {
                         log_dry!("Would reset {eff_dom}.{eff_key} to system default",);
