@@ -40,22 +40,15 @@ mod tests {
 
     #[test]
     fn test_collect_domains_nested() {
-        // [set.root]
-        //   [set.root.nested]
+        // [set.root.nested]
         //   inner_key = "inner_value"
-        let mut inner: HashMap<String, Value> = HashMap::new();
-        inner.insert("inner_key".into(), Value::String("inner_value".into()));
-        let mut nested = HashMap::new();
-        nested.insert(
-            "nested".into(),
-            Value::Table({
-                let mut tbl = Table::new();
-                tbl.insert("inner_key".into(), Value::String("inner_value".into()));
-                tbl
-            }),
-        );
+        // TOML parses section headers into top-level keys, so this creates
+        // a domain "root.nested", not a nested structure under "root"
+        let mut inner_values = HashMap::new();
+        inner_values.insert("inner_key".into(), Value::String("inner_value".into()));
+        
         let mut set_map = HashMap::new();
-        set_map.insert("root".into(), nested);
+        set_map.insert("root.nested".into(), inner_values);
 
         let config = config_with_set(set_map);
 
@@ -180,5 +173,37 @@ mixed_array = [1, 2, 3]
         
         let mixed_array = test_domain.get("mixed_array").unwrap();
         assert!(mixed_array.is_array());
+    }
+
+    #[test]
+    fn test_collect_domains_with_inline_tables() {
+        // Test that inline tables (dictionaries) are kept as values, not flattened
+        let parsed: Config = toml::from_str(
+            r#"
+[set.finder]
+FXInfoPanelsExpanded = { Preview = false, General = true }
+ShowPathbar = true
+"#,
+        )
+        .unwrap();
+
+        let domains = collect(&parsed).unwrap();
+        // Should only have "finder" domain, not "finder.FXInfoPanelsExpanded"
+        assert_eq!(domains.len(), 1);
+        assert!(domains.contains_key("finder"));
+        assert!(!domains.contains_key("finder.FXInfoPanelsExpanded"));
+        
+        let finder_domain = domains.get("finder").unwrap();
+        
+        // FXInfoPanelsExpanded should be a table value
+        let fx_info = finder_domain.get("FXInfoPanelsExpanded").unwrap();
+        assert!(fx_info.is_table());
+        
+        let fx_table = fx_info.as_table().unwrap();
+        assert_eq!(fx_table.get("Preview").unwrap().as_bool().unwrap(), false);
+        assert_eq!(fx_table.get("General").unwrap().as_bool().unwrap(), true);
+        
+        // ShowPathbar should still be there
+        assert_eq!(finder_domain.get("ShowPathbar").unwrap().as_bool().unwrap(), true);
     }
 }

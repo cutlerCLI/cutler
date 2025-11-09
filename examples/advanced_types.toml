@@ -15,10 +15,15 @@ persistent-apps = [
 # Arrays of numbers
 recent-apps = [1, 2, 3, 4, 5]
 
-# Example with boolean and mixed types
+# Example with boolean, arrays, and dictionaries
 [set.finder]
 AppleShowAllFiles = true
 FXPreferredViewStyle = "Nlsv"  # List view
+
+# Dictionaries (inline tables) are now fully supported!
+# These are treated as dictionary values, not as nested domains
+FXInfoPanelsExpanded = { Preview = false, General = true, MetaData = true }
+
 # Arrays can contain various types
 FXRecentFolders = [
     "/Users/user/Documents",
@@ -42,7 +47,8 @@ FlashDateSeparators = false
 # - Floats: 3.14
 # - Booleans: true/false
 # - Arrays: [1, 2, 3] or ["a", "b", "c"]
-# - Nested structures via domain notation
+# - Dictionaries: { key1 = value1, key2 = value2 }
+# - Nested structures via domain notation (e.g., [set.domain.subdomain])
 #
 # All types are preserved during apply/unapply operations,
 # ensuring accurate state tracking and restoration.
