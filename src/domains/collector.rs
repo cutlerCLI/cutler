@@ -28,34 +28,40 @@ fn flatten_domains(
 
     for (k, v) in table {
         if let Value::Table(inner) = v {
-            // At depth 0, check if this could be a valid domain
-            if depth == 0 {
-                let potential_domain = match &prefix {
-                    Some(p) if !p.is_empty() => format!("{p}.{k}"),
-                    _ => k.clone(),
-                };
-                
-                // If we have a valid domains list, use it to check
-                let should_flatten = if let Some(domains) = valid_domains {
-                    // Convert to effective domain name to check
+            let potential_domain = match &prefix {
+                Some(p) if !p.is_empty() => format!("{p}.{k}"),
+                _ => k.clone(),
+            };
+
+            // Determine if we should flatten this table into a subdomain
+            let should_flatten = if depth == 0 {
+                // At depth 0, check if this would be a valid domain
+                if let Some(domains) = valid_domains {
                     let effective_domain = get_defaults_domain(&potential_domain);
-                    
-                    // Only flatten if this would be a valid domain OR if it's NSGlobalDomain
+                    // NSGlobalDomain is always valid (even though list_domains doesn't return it)
+                    // Also flatten if the effective domain is in the valid domains list
                     effective_domain == "NSGlobalDomain" || domains.contains(&effective_domain)
                 } else {
-                    // No domain validation available (e.g., in tests), use old behavior:
-                    // flatten at depth 0 only
+                    // No domain validation available, flatten at depth 0
                     true
-                };
-                
-                if should_flatten {
-                    flatten_domains(Some(potential_domain), inner, dest, depth + 1, valid_domains);
-                } else {
-                    // Not a valid domain, keep as inline table value
-                    flat.insert(k.clone(), v.clone());
                 }
             } else {
-                // Preserve as-is (we're already past depth 0)
+                // At depth > 0, only continue flattening for NSGlobalDomain subdomains
+                // This handles cases like [set.NSGlobalDomain.com.apple.keyboard]
+                let effective_domain = get_defaults_domain(&potential_domain);
+                effective_domain == "NSGlobalDomain"
+            };
+
+            if should_flatten {
+                flatten_domains(
+                    Some(potential_domain),
+                    inner,
+                    dest,
+                    depth + 1,
+                    valid_domains,
+                );
+            } else {
+                // Not a valid domain, keep as inline table value
                 flat.insert(k.clone(), v.clone());
             }
         } else {
@@ -90,11 +96,11 @@ pub async fn collect(config: &crate::config::core::Config) -> Result<HashMap<Str
             }
             let mut flat = Vec::with_capacity(inner_table.len());
             flatten_domains(
-                Some(domain_key.clone()), 
-                &inner_table, 
-                &mut flat, 
-                0, 
-                valid_domains.as_deref()
+                Some(domain_key.clone()),
+                &inner_table,
+                &mut flat,
+                0,
+                valid_domains.as_deref(),
             );
 
             for (domain, tbl) in flat {

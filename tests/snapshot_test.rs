@@ -130,7 +130,10 @@ mod tests {
                 "ApplePressAndHoldEnabled".to_string(),
             ))
             .unwrap();
-        assert_eq!(global_setting.original_value, Some(toml::Value::Boolean(false)));
+        assert_eq!(
+            global_setting.original_value,
+            Some(toml::Value::Boolean(false))
+        );
     }
 
     #[tokio::test]
@@ -158,12 +161,12 @@ mod tests {
                 {
                     "domain": "com.apple.dock",
                     "key": "tilesize",
-                    "original_value": "36"
+                    "original_value": 36
                 },
                 {
                     "domain": "com.apple.finder",
                     "key": "ShowPathbar",
-                    "original_value": "true"
+                    "original_value": true
                 },
                 {
                     "domain": "NSGlobalDomain",
@@ -187,7 +190,7 @@ mod tests {
 
         // Verify settings were migrated
         assert_eq!(loaded_snapshot.settings.len(), 3);
-        
+
         let settings_map: HashMap<_, _> = loaded_snapshot
             .settings
             .iter()
@@ -204,7 +207,10 @@ mod tests {
         let finder_setting = settings_map
             .get(&("com.apple.finder".to_string(), "ShowPathbar".to_string()))
             .unwrap();
-        assert_eq!(finder_setting.original_value, Some(toml::Value::Boolean(true)));
+        assert_eq!(
+            finder_setting.original_value,
+            Some(toml::Value::Boolean(true))
+        );
 
         // Check global setting - should remain None
         let global_setting = settings_map
