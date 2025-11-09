@@ -7,7 +7,7 @@ use crate::{
     },
     commands::Runnable,
     config::core::Config,
-    domains::{collect, convert::prefvalue_to_toml, effective, read_current},
+    domains::{collect, effective, read_current},
     log_cute, log_err, log_info, log_warn,
     util::logging::{BOLD, GREEN, RED, RESET},
 };
@@ -52,8 +52,8 @@ impl Runnable for StatusCmd {
                 let desired = crate::domains::convert::toml_to_prefvalue(value).ok();
                 let is_diff = current != desired;
 
-                let current_str = current.map(|v| v.to_string()).unwrap_or_else(|| "Not set".into());
-                let desired_str = prefvalue_to_toml(desired.as_ref().unwrap_or(&defaults_rs::PrefValue::String("".into()))).to_string();
+                let current_str = current.as_ref().map(|v| v.to_string()).unwrap_or_else(|| "Not set".into());
+                let desired_str = desired.as_ref().map(|v| v.to_string()).unwrap_or_else(|| value.to_string());
 
                 outcomes.push((
                     eff_dom.clone(),
