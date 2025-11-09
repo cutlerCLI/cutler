@@ -149,4 +149,72 @@ mod tests {
         let result = Snapshot::load(&invalid_path).await;
         assert!(result.is_err());
     }
+
+    #[tokio::test]
+    async fn test_snapshot_backward_compatibility() {
+        // Test loading old format snapshots (with string original_value)
+        let old_format_json = r#"{
+            "settings": [
+                {
+                    "domain": "com.apple.dock",
+                    "key": "tilesize",
+                    "original_value": "36"
+                },
+                {
+                    "domain": "com.apple.finder",
+                    "key": "ShowPathbar",
+                    "original_value": "true"
+                },
+                {
+                    "domain": "NSGlobalDomain",
+                    "key": "KeyRepeat",
+                    "original_value": null
+                }
+            ],
+            "exec_run_count": 2,
+            "version": "0.14.0",
+            "digest": "abc123"
+        }"#;
+
+        let temp_dir = TempDir::new().unwrap();
+        let old_snapshot_path = temp_dir.path().join("old_snapshot.json");
+        fs::write(&old_snapshot_path, old_format_json)
+            .await
+            .unwrap();
+
+        // Load should succeed and migrate to new format
+        let loaded_snapshot = Snapshot::load(&old_snapshot_path).await.unwrap();
+
+        // Verify settings were migrated
+        assert_eq!(loaded_snapshot.settings.len(), 3);
+        
+        let settings_map: HashMap<_, _> = loaded_snapshot
+            .settings
+            .iter()
+            .map(|s| ((s.domain.clone(), s.key.clone()), s))
+            .collect();
+
+        // Check dock setting - should be converted to Integer
+        let dock_setting = settings_map
+            .get(&("com.apple.dock".to_string(), "tilesize".to_string()))
+            .unwrap();
+        assert_eq!(dock_setting.original_value, Some(toml::Value::Integer(36)));
+
+        // Check finder setting - should be converted to Boolean
+        let finder_setting = settings_map
+            .get(&("com.apple.finder".to_string(), "ShowPathbar".to_string()))
+            .unwrap();
+        assert_eq!(finder_setting.original_value, Some(toml::Value::Boolean(true)));
+
+        // Check global setting - should remain None
+        let global_setting = settings_map
+            .get(&("NSGlobalDomain".to_string(), "KeyRepeat".to_string()))
+            .unwrap();
+        assert_eq!(global_setting.original_value, None);
+
+        // Check metadata was preserved
+        assert_eq!(loaded_snapshot.exec_run_count, 2);
+        assert_eq!(loaded_snapshot.version, "0.14.0");
+        assert_eq!(loaded_snapshot.digest, "abc123");
+    }
 }

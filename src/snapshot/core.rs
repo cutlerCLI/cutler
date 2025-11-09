@@ -82,21 +82,60 @@ impl Snapshot {
                     Ok(snap)
                 }
                 Err(e) => {
-                    // Try to deserialize only the settings field if everything else fails.
+                    // Try to deserialize old format (with string original_value)
                     #[derive(Deserialize)]
-                    struct SettingsOnly {
-                        settings: Vec<SettingState>,
+                    struct OldSettingState {
+                        domain: String,
+                        key: String,
+                        original_value: Option<String>,
                     }
-                    let settings_only_result: Result<SettingsOnly, _> = serde_json::from_str(&txt);
-                    match settings_only_result {
-                        Ok(settings_only) => {
+                    
+                    #[derive(Deserialize)]
+                    struct OldSnapshot {
+                        settings: Vec<OldSettingState>,
+                        #[serde(default)]
+                        exec_run_count: i32,
+                        #[serde(default)]
+                        version: String,
+                        #[serde(default)]
+                        digest: String,
+                    }
+                    
+                    let old_snap_result: Result<OldSnapshot, _> = serde_json::from_str(&txt);
+                    match old_snap_result {
+                        Ok(old_snap) => {
                             let mut snap = Snapshot::new().await;
-                            snap.settings = settings_only.settings;
+                            snap.settings = old_snap.settings.into_iter().map(|s| SettingState {
+                                domain: s.domain,
+                                key: s.key,
+                                original_value: s.original_value.map(|v| 
+                                    crate::domains::convert::string_to_toml_value(&v)
+                                ),
+                            }).collect();
+                            snap.exec_run_count = old_snap.exec_run_count;
+                            snap.version = old_snap.version;
+                            snap.digest = old_snap.digest;
                             snap.path = path.clone();
                             Ok(snap)
                         }
                         Err(_) => {
-                            bail!("Failed to deserialize snapshot: {e}")
+                            // Try to deserialize only the settings field if everything else fails.
+                            #[derive(Deserialize)]
+                            struct SettingsOnly {
+                                settings: Vec<SettingState>,
+                            }
+                            let settings_only_result: Result<SettingsOnly, _> = serde_json::from_str(&txt);
+                            match settings_only_result {
+                                Ok(settings_only) => {
+                                    let mut snap = Snapshot::new().await;
+                                    snap.settings = settings_only.settings;
+                                    snap.path = path.clone();
+                                    Ok(snap)
+                                }
+                                Err(_) => {
+                                    bail!("Failed to deserialize snapshot: {e}")
+                                }
+                            }
                         }
                     }
                 }
