@@ -32,7 +32,7 @@ impl Runnable for ResetCmd {
             return Ok(());
         }
 
-        let domains = collect(&config)?;
+        let domains = collect(&config).await?;
 
         for (domain, table) in domains {
             for (key, _) in table {

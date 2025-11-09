@@ -21,8 +21,8 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_collect_domains_simple() {
+    #[tokio::test]
+    async fn test_collect_domains_simple() {
         // [set.domain]
         //   key1 = "value1"
         let mut domain_map = HashMap::new();
@@ -32,14 +32,14 @@ mod tests {
 
         let config = config_with_set(set_map);
 
-        let domains = collect(&config).unwrap();
+        let domains = collect(&config).await.unwrap();
         assert_eq!(domains.len(), 1);
         let got = domains.get("domain").unwrap();
         assert_eq!(got.get("key1").unwrap().as_str().unwrap(), "value1");
     }
 
-    #[test]
-    fn test_collect_domains_nested() {
+    #[tokio::test]
+    async fn test_collect_domains_nested() {
         // [set.root.nested]
         //   inner_key = "inner_value"
         // When TOML creates nested structures, flatten_domains processes them
@@ -59,7 +59,7 @@ mod tests {
 
         let config = config_with_set(set_map);
 
-        let domains = collect(&config).unwrap();
+        let domains = collect(&config).await.unwrap();
         assert_eq!(domains.len(), 1);
         let got = domains.get("root.nested").unwrap();
         assert_eq!(
@@ -68,8 +68,8 @@ mod tests {
         );
     }
 
-    #[test]
-    fn test_get_effective_domain_and_key() {
+    #[tokio::test]
+    async fn test_get_effective_domain_and_key() {
         let (d, k) = effective("finder", "ShowPathbar");
         assert_eq!((d, k), ("com.apple.finder".into(), "ShowPathbar".into()));
 
@@ -80,8 +80,8 @@ mod tests {
         assert_eq!((d, k), ("NSGlobalDomain".into(), "bar.Baz".into()));
     }
 
-    #[test]
-    fn test_collect_domains_set() {
+    #[tokio::test]
+    async fn test_collect_domains_set() {
         let parsed: Config = toml::from_str(
             r#"
 [set.dock]
@@ -94,7 +94,7 @@ fnState = false
         )
         .unwrap();
 
-        let domains = collect(&parsed).unwrap();
+        let domains = collect(&parsed).await.unwrap();
         assert_eq!(domains.len(), 2);
         let dock = domains.get("dock").unwrap();
         assert_eq!(dock.get("tilesize").unwrap().as_str().unwrap(), "50");
@@ -103,8 +103,8 @@ fnState = false
         assert!(!kb.get("fnState").unwrap().as_bool().unwrap());
     }
 
-    #[test]
-    fn test_toml_to_prefvalue_array() {
+    #[tokio::test]
+    async fn test_toml_to_prefvalue_array() {
         // Test array conversion
         let toml_array = Value::Array(vec![
             Value::String("item1".to_string()),
@@ -119,8 +119,8 @@ fnState = false
         assert_eq!(back_to_toml, toml_array);
     }
 
-    #[test]
-    fn test_toml_to_prefvalue_dictionary() {
+    #[tokio::test]
+    async fn test_toml_to_prefvalue_dictionary() {
         // Test dictionary conversion
         let mut tbl = Table::new();
         tbl.insert("key1".to_string(), Value::String("value1".to_string()));
@@ -135,8 +135,8 @@ fnState = false
         assert_eq!(back_to_toml, toml_dict);
     }
 
-    #[test]
-    fn test_toml_to_prefvalue_nested() {
+    #[tokio::test]
+    async fn test_toml_to_prefvalue_nested() {
         // Test nested structures
         let mut inner_tbl = Table::new();
         inner_tbl.insert("nested_key".to_string(), Value::String("nested_value".to_string()));
@@ -157,8 +157,8 @@ fnState = false
         assert_eq!(back_to_toml, toml_nested);
     }
 
-    #[test]
-    fn test_collect_domains_with_arrays() {
+    #[tokio::test]
+    async fn test_collect_domains_with_arrays() {
         // Test collecting domains with array values
         let parsed: Config = toml::from_str(
             r#"
@@ -169,7 +169,7 @@ mixed_array = [1, 2, 3]
         )
         .unwrap();
 
-        let domains = collect(&parsed).unwrap();
+        let domains = collect(&parsed).await.unwrap();
         assert_eq!(domains.len(), 1);
         let test_domain = domains.get("test").unwrap();
         
@@ -182,8 +182,8 @@ mixed_array = [1, 2, 3]
         assert!(mixed_array.is_array());
     }
 
-    #[test]
-    fn test_collect_domains_with_inline_tables() {
+    #[tokio::test]
+    async fn test_collect_domains_with_inline_tables() {
         // Test that inline tables (dictionaries) are kept as values, not flattened
         let parsed: Config = toml::from_str(
             r#"
@@ -194,7 +194,7 @@ ShowPathbar = true
         )
         .unwrap();
 
-        let domains = collect(&parsed).unwrap();
+        let domains = collect(&parsed).await.unwrap();
         // Should only have "finder" domain, not "finder.FXInfoPanelsExpanded"
         assert_eq!(domains.len(), 1);
         assert!(domains.contains_key("finder"));
@@ -216,8 +216,8 @@ ShowPathbar = true
         assert_eq!(finder_domain.get("ShowPathbar").unwrap().as_bool().unwrap(), true);
     }
 
-    #[test]
-    fn test_collect_menuextra_clock_with_inline_table() {
+    #[tokio::test]
+    async fn test_collect_menuextra_clock_with_inline_table() {
         // Test the specific case from the user: [set.menuextra.clock] with inline table values
         let parsed: Config = toml::from_str(
             r#"
@@ -228,7 +228,7 @@ key2 = { part1 = 1, part2 = 2 }
         )
         .unwrap();
 
-        let domains = collect(&parsed).unwrap();
+        let domains = collect(&parsed).await.unwrap();
         // Should have "menuextra.clock" domain (from section header flattening)
         // but NOT flatten the inline table key2
         assert_eq!(domains.len(), 1);

@@ -6,29 +6,46 @@ use std::collections::HashMap;
 use toml::{Table, Value};
 
 /// Recursively flatten nested TOML tables that represent domain hierarchies.
-/// Only flattens top-level nested tables (from section headers like [set.domain.subdomain]),
-/// preserving inline table dictionary values.
+/// Uses the actual domain list to distinguish between nested domains and inline dictionaries.
 fn flatten_domains(
     prefix: Option<String>,
     table: &toml::value::Table,
     dest: &mut Vec<(String, Table)>,
     depth: usize,
+    valid_domains: Option<&[String]>,
 ) {
     let mut flat = Table::new();
 
     for (k, v) in table {
         if let Value::Table(inner) = v {
-            // Only flatten at depth 0 (top level after domain_key)
-            // This handles [set.domain.subdomain] section nesting
-            // but preserves inline tables like key = { x = 1 } as dictionary values
+            // At depth 0, check if this could be a valid domain
             if depth == 0 {
-                let new_prefix = match &prefix {
+                let potential_domain = match &prefix {
                     Some(p) if !p.is_empty() => format!("{p}.{k}"),
                     _ => k.clone(),
                 };
-                flatten_domains(Some(new_prefix), inner, dest, depth + 1);
+                
+                // If we have a valid domains list, use it to check
+                let should_flatten = if let Some(domains) = valid_domains {
+                    // Convert to effective domain name to check
+                    let effective_domain = get_defaults_domain(&potential_domain);
+                    
+                    // Only flatten if this would be a valid domain OR if it's NSGlobalDomain
+                    effective_domain == "NSGlobalDomain" || domains.contains(&effective_domain)
+                } else {
+                    // No domain validation available (e.g., in tests), use old behavior:
+                    // flatten at depth 0 only
+                    true
+                };
+                
+                if should_flatten {
+                    flatten_domains(Some(potential_domain), inner, dest, depth + 1, valid_domains);
+                } else {
+                    // Not a valid domain, keep as inline table value
+                    flat.insert(k.clone(), v.clone());
+                }
             } else {
-                // Preserve as-is (it's an inline table value)
+                // Preserve as-is (we're already past depth 0)
                 flat.insert(k.clone(), v.clone());
             }
         } else {
@@ -44,10 +61,17 @@ fn flatten_domains(
 /// Collect all tables in `[set]` and return a map domain → settings.
 /// Handles both section header nesting (e.g., [set.domain.subdomain]) and
 /// inline table dictionary values (e.g., key = { x = 1, y = 2 }).
-pub fn collect(config: &crate::config::core::Config) -> Result<HashMap<String, Table>> {
+/// Uses the system's actual domain list to distinguish between domains and dictionaries.
+pub async fn collect(config: &crate::config::core::Config) -> Result<HashMap<String, Table>> {
     let mut out = HashMap::new();
 
     if let Some(set) = &config.set {
+        // Get the list of valid domains from the system
+        let valid_domains: Option<Vec<String>> = Preferences::list_domains()
+            .await
+            .ok()
+            .map(|domains| domains.iter().map(|d| d.to_string()).collect());
+
         for (domain_key, domain_val) in set {
             // domain_val: HashMap<String, Value>
             let mut inner_table = Table::new();
@@ -55,7 +79,13 @@ pub fn collect(config: &crate::config::core::Config) -> Result<HashMap<String, T
                 inner_table.insert(k.clone(), v.clone());
             }
             let mut flat = Vec::with_capacity(inner_table.len());
-            flatten_domains(Some(domain_key.clone()), &inner_table, &mut flat, 0);
+            flatten_domains(
+                Some(domain_key.clone()), 
+                &inner_table, 
+                &mut flat, 
+                0, 
+                valid_domains.as_deref()
+            );
 
             for (domain, tbl) in flat {
                 out.insert(domain, tbl);
