@@ -5,25 +5,61 @@ use defaults_rs::{Domain, Preferences};
 use std::collections::HashMap;
 use toml::{Table, Value};
 
+/// Recursively flatten nested TOML tables that represent domain hierarchies.
+/// Only flattens top-level nested tables (from section headers like [set.domain.subdomain]),
+/// preserving inline table dictionary values.
+fn flatten_domains(
+    prefix: Option<String>,
+    table: &toml::value::Table,
+    dest: &mut Vec<(String, Table)>,
+    depth: usize,
+) {
+    let mut flat = Table::new();
+
+    for (k, v) in table {
+        if let Value::Table(inner) = v {
+            // Only flatten at depth 0 (top level after domain_key)
+            // This handles [set.domain.subdomain] section nesting
+            // but preserves inline tables like key = { x = 1 } as dictionary values
+            if depth == 0 {
+                let new_prefix = match &prefix {
+                    Some(p) if !p.is_empty() => format!("{p}.{k}"),
+                    _ => k.clone(),
+                };
+                flatten_domains(Some(new_prefix), inner, dest, depth + 1);
+            } else {
+                // Preserve as-is (it's an inline table value)
+                flat.insert(k.clone(), v.clone());
+            }
+        } else {
+            flat.insert(k.clone(), v.clone());
+        }
+    }
+
+    if !flat.is_empty() {
+        dest.push((prefix.unwrap_or_default(), flat));
+    }
+}
+
 /// Collect all tables in `[set]` and return a map domain → settings.
-/// Note: TOML sections like [set.finder.FXInfoPanelsExpanded] are already parsed
-/// as separate top-level domains by TOML, so we don't need recursive flattening.
-/// Inline tables like FXInfoPanelsExpanded = { Preview = false } should be kept
-/// as dictionary values, not flattened into sub-domains.
+/// Handles both section header nesting (e.g., [set.domain.subdomain]) and
+/// inline table dictionary values (e.g., key = { x = 1, y = 2 }).
 pub fn collect(config: &crate::config::core::Config) -> Result<HashMap<String, Table>> {
     let mut out = HashMap::new();
 
     if let Some(set) = &config.set {
         for (domain_key, domain_val) in set {
             // domain_val: HashMap<String, Value>
-            // TOML already parsed section headers like [set.finder.nested] 
-            // into separate entries, so domain_key is already the full domain name.
-            // We just need to convert the HashMap to a Table.
-            let mut table = Table::new();
+            let mut inner_table = Table::new();
             for (k, v) in domain_val {
-                table.insert(k.clone(), v.clone());
+                inner_table.insert(k.clone(), v.clone());
             }
-            out.insert(domain_key.clone(), table);
+            let mut flat = Vec::with_capacity(inner_table.len());
+            flatten_domains(Some(domain_key.clone()), &inner_table, &mut flat, 0);
+
+            for (domain, tbl) in flat {
+                out.insert(domain, tbl);
+            }
         }
     }
     Ok(out)

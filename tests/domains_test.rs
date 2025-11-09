@@ -42,13 +42,20 @@ mod tests {
     fn test_collect_domains_nested() {
         // [set.root.nested]
         //   inner_key = "inner_value"
-        // TOML parses section headers into top-level keys, so this creates
-        // a domain "root.nested", not a nested structure under "root"
-        let mut inner_values = HashMap::new();
-        inner_values.insert("inner_key".into(), Value::String("inner_value".into()));
-        
+        // When TOML creates nested structures, flatten_domains processes them
+        let mut inner: HashMap<String, Value> = HashMap::new();
+        inner.insert("inner_key".into(), Value::String("inner_value".into()));
+        let mut nested = HashMap::new();
+        nested.insert(
+            "nested".into(),
+            Value::Table({
+                let mut tbl = Table::new();
+                tbl.insert("inner_key".into(), Value::String("inner_value".into()));
+                tbl
+            }),
+        );
         let mut set_map = HashMap::new();
-        set_map.insert("root.nested".into(), inner_values);
+        set_map.insert("root".into(), nested);
 
         let config = config_with_set(set_map);
 
@@ -192,6 +199,8 @@ ShowPathbar = true
         assert_eq!(domains.len(), 1);
         assert!(domains.contains_key("finder"));
         assert!(!domains.contains_key("finder.FXInfoPanelsExpanded"));
+        assert!(!domains.contains_key("finder.Preview"));
+        assert!(!domains.contains_key("finder.General"));
         
         let finder_domain = domains.get("finder").unwrap();
         
@@ -205,5 +214,39 @@ ShowPathbar = true
         
         // ShowPathbar should still be there
         assert_eq!(finder_domain.get("ShowPathbar").unwrap().as_bool().unwrap(), true);
+    }
+
+    #[test]
+    fn test_collect_menuextra_clock_with_inline_table() {
+        // Test the specific case from the user: [set.menuextra.clock] with inline table values
+        let parsed: Config = toml::from_str(
+            r#"
+[set.menuextra.clock]
+key1 = 1
+key2 = { part1 = 1, part2 = 2 }
+"#,
+        )
+        .unwrap();
+
+        let domains = collect(&parsed).unwrap();
+        // Should have "menuextra.clock" domain (from section header flattening)
+        // but NOT flatten the inline table key2
+        assert_eq!(domains.len(), 1);
+        assert!(domains.contains_key("menuextra.clock"));
+        assert!(!domains.contains_key("menuextra.clock.key2"));
+        assert!(!domains.contains_key("menuextra.clock.part1"));
+        
+        let clock_domain = domains.get("menuextra.clock").unwrap();
+        
+        // key1 should be an integer
+        assert_eq!(clock_domain.get("key1").unwrap().as_integer().unwrap(), 1);
+        
+        // key2 should be a table (dictionary) value
+        let key2 = clock_domain.get("key2").unwrap();
+        assert!(key2.is_table());
+        
+        let key2_table = key2.as_table().unwrap();
+        assert_eq!(key2_table.get("part1").unwrap().as_integer().unwrap(), 1);
+        assert_eq!(key2_table.get("part2").unwrap().as_integer().unwrap(), 2);
     }
 }
