@@ -39,7 +39,7 @@ pub struct Args {
     pub quiet: bool,
 
     /// Do not restart system services after execution.
-    #[arg(short, long, global = true)]
+    #[arg(short = 'N', long, global = true)]
     pub no_restart_services: bool,
 
     /// Do not sync with remote (if autosync = true).

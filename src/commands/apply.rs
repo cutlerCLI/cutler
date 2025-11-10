@@ -34,7 +34,7 @@ pub struct ApplyCmd {
     url: Option<String>,
 
     /// Skip executing external commands.
-    #[arg(long, conflicts_with_all = &["all_cmd", "flagged_cmd"])]
+    #[arg(short, long, conflicts_with_all = &["all_cmd", "flagged_cmd"])]
     no_cmd: bool,
 
     /// Execute all external commands (even flagged ones).
@@ -100,9 +100,8 @@ impl Runnable for ApplyCmd {
             match Snapshot::load(&snap_path).await {
                 Ok(snap) => snap,
                 Err(e) => {
-                    log_warn!(
-                        "Bad snapshot: {e}; starting new. \nWhen unapplying, all your settings will reset to factory defaults."
-                    );
+                    log_warn!("Bad snapshot: {e}; starting new.");
+                    log_warn!("When unapplying, all your settings will reset to factory defaults.");
                     is_bad_snap = true;
                     Snapshot::new().await
                 }
