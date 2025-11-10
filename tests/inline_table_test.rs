@@ -39,8 +39,8 @@ ShowPathbar = true
         assert!(fx_info.is_table());
 
         let fx_table = fx_info.as_table().unwrap();
-        assert_eq!(fx_table.get("Preview").unwrap().as_bool().unwrap(), false);
-        assert_eq!(fx_table.get("MetaData").unwrap().as_bool().unwrap(), true);
+        assert!(!fx_table.get("Preview").unwrap().as_bool().unwrap());
+        assert!(fx_table.get("MetaData").unwrap().as_bool().unwrap());
 
         // ShowPathbar should be a boolean
         assert!(finder.get("ShowPathbar").unwrap().as_bool().unwrap());
@@ -76,7 +76,7 @@ fnState = false
         assert_eq!(dock.get("tilesize").unwrap().as_integer().unwrap(), 50);
 
         let keyboard = domains.get("NSGlobalDomain.com.apple.keyboard").unwrap();
-        assert_eq!(keyboard.get("fnState").unwrap().as_bool().unwrap(), false);
+        assert!(!keyboard.get("fnState").unwrap().as_bool().unwrap());
     }
 
     #[tokio::test]
@@ -115,13 +115,12 @@ FXInfoPanesExpanded = { Preview = false, MetaData = true, Comments = false }
 
         // Check NSGlobalDomain settings
         let global = domains.get("NSGlobalDomain").unwrap();
-        assert_eq!(
-            global
+        assert!(
+            !global
                 .get("com.apple.dock.fnState")
                 .unwrap()
                 .as_bool()
-                .unwrap(),
-            false
+                .unwrap()
         );
 
         let int_array = global
@@ -151,8 +150,8 @@ FXInfoPanesExpanded = { Preview = false, MetaData = true, Comments = false }
             .unwrap()
             .as_table()
             .unwrap();
-        assert_eq!(fx_table.get("Preview").unwrap().as_bool().unwrap(), false);
-        assert_eq!(fx_table.get("MetaData").unwrap().as_bool().unwrap(), true);
-        assert_eq!(fx_table.get("Comments").unwrap().as_bool().unwrap(), false);
+        assert!(!fx_table.get("Preview").unwrap().as_bool().unwrap());
+        assert!(fx_table.get("MetaData").unwrap().as_bool().unwrap());
+        assert!(!fx_table.get("Comments").unwrap().as_bool().unwrap());
     }
 }

@@ -2,6 +2,8 @@
 
 #[cfg(test)]
 mod tests {
+    use std::f64::consts::PI;
+
     use cutler::domains::convert::{
         prefvalue_to_toml, toml_edit_to_prefvalue, toml_edit_to_toml, toml_to_prefvalue,
     };
@@ -27,10 +29,10 @@ mod tests {
         }
 
         // Float
-        let f = Value::Float(3.14);
+        let f = Value::Float(PI);
         let pref = toml_to_prefvalue(&f).unwrap();
         match pref {
-            PrefValue::Float(val) => assert!((val - 3.14).abs() < 0.001),
+            PrefValue::Float(val) => assert!((val - PI).abs() < 0.001),
             _ => panic!("Expected Float"),
         }
 
