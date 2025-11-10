@@ -159,9 +159,7 @@ impl Runnable for ApplyCmd {
                     let original = if let Some(e) = &old_entry {
                         e.original_value.clone()
                     } else {
-                        current_pref
-                            .as_ref()
-                            .map(|current| prefvalue_to_serializable(current))
+                        current_pref.as_ref().map(prefvalue_to_serializable)
                     };
 
                     // decide “applying” vs “updating”

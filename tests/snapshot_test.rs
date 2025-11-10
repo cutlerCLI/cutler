@@ -180,10 +180,7 @@ mod tests {
 
         // Dictionary type
         let mut dict = HashMap::new();
-        dict.insert(
-            "Preview".to_string(),
-            SerializablePrefValue::Boolean(false),
-        );
+        dict.insert("Preview".to_string(), SerializablePrefValue::Boolean(false));
         dict.insert("MetaData".to_string(), SerializablePrefValue::Boolean(true));
 
         snapshot.settings.push(SettingState {
