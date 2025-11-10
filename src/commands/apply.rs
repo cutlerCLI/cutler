@@ -6,7 +6,7 @@ use crate::{
     config::{core::Config, path::get_config_path, remote::RemoteConfigManager},
     domains::{
         collector,
-        convert::{normalize, toml_to_prefvalue},
+        convert::toml_to_prefvalue,
     },
     exec::core::{self, ExecMode},
     log_cute, log_dry, log_err, log_info, log_warn,
@@ -138,11 +138,14 @@ impl Runnable for ApplyCmd {
                 // read the current value from the system
                 // then, check if changed
                 // TODO: could use read_batch from defaults-rs here
-                let current = collector::read_current(&eff_dom, &eff_key)
-                    .await
-                    .unwrap_or_default();
-                let desired = normalize(&toml_value);
-                let changed = current != desired;
+                let current_pref = collector::read_current(&eff_dom, &eff_key).await;
+                let desired_pref = toml_to_prefvalue(&toml_value)?;
+                
+                // Compare PrefValues directly instead of strings
+                let changed = match &current_pref {
+                    Some(current) => current != &desired_pref,
+                    None => true, // No current value means it's a new setting
+                };
 
                 // grab the old snapshot entry if it exists
                 let old_entry = existing.get(&(eff_dom.clone(), eff_key.clone())).cloned();
@@ -153,10 +156,10 @@ impl Runnable for ApplyCmd {
                     // Preserve existing non-null original; otherwise, for brand new keys, capture original from system
                     let original = if let Some(e) = &old_entry {
                         e.original_value.clone()
-                    } else if current.is_empty() {
-                        None
+                    } else if let Some(current) = &current_pref {
+                        Some(current.to_string())
                     } else {
-                        Some(current.clone())
+                        None
                     };
 
                     // decide “applying” vs “updating”
@@ -172,7 +175,7 @@ impl Runnable for ApplyCmd {
                         toml_value: toml_value.clone(),
                         action,
                         original: if is_bad_snap { None } else { original },
-                        new_value: desired.clone(),
+                        new_value: desired_pref.to_string(),
                     });
                 } else {
                     log_info!("Skipping unchanged {eff_dom} | {eff_key}",);

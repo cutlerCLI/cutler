@@ -4,6 +4,7 @@ use anyhow::{Result, bail};
 use defaults_rs::PrefValue;
 use std::collections::HashMap;
 use toml::Value;
+use toml_edit::Value as EditValue;
 
 /// Turns a toml::Value into its defaults_rs::PrefValue counterpart.
 pub fn toml_to_prefvalue(val: &Value) -> anyhow::Result<PrefValue> {
@@ -66,4 +67,54 @@ pub fn normalize(value: &Value) -> String {
         Value::String(s) => s.clone(),
         _ => value.to_string(),
     }
+}
+
+/// Turns a toml_edit::Value into its defaults_rs::PrefValue counterpart.
+pub fn toml_edit_to_prefvalue(val: &EditValue) -> anyhow::Result<PrefValue> {
+    Ok(match val {
+        EditValue::String(s) => PrefValue::String(s.value().to_string()),
+        EditValue::Integer(i) => PrefValue::Integer(i.value()),
+        EditValue::Float(f) => PrefValue::Float(f.value()),
+        EditValue::Boolean(b) => PrefValue::Boolean(b.value()),
+        EditValue::Array(arr) => {
+            let mut result = Vec::new();
+            for item in arr.iter() {
+                result.push(toml_edit_to_prefvalue(item)?);
+            }
+            PrefValue::Array(result)
+        }
+        EditValue::InlineTable(tbl) => {
+            let mut dict = HashMap::new();
+            for (k, v) in tbl.iter() {
+                dict.insert(k.to_string(), toml_edit_to_prefvalue(v)?);
+            }
+            PrefValue::Dictionary(dict)
+        }
+        _ => bail!("Unsupported toml_edit value type for PrefValue"),
+    })
+}
+
+/// Converts a toml_edit::Value to a toml::Value for compatibility.
+pub fn toml_edit_to_toml(val: &EditValue) -> anyhow::Result<Value> {
+    Ok(match val {
+        EditValue::String(s) => Value::String(s.value().to_string()),
+        EditValue::Integer(i) => Value::Integer(i.value()),
+        EditValue::Float(f) => Value::Float(f.value()),
+        EditValue::Boolean(b) => Value::Boolean(b.value()),
+        EditValue::Array(arr) => {
+            let mut result = Vec::new();
+            for item in arr.iter() {
+                result.push(toml_edit_to_toml(item)?);
+            }
+            Value::Array(result)
+        }
+        EditValue::InlineTable(tbl) => {
+            let mut map = toml::map::Map::new();
+            for (k, v) in tbl.iter() {
+                map.insert(k.to_string(), toml_edit_to_toml(v)?);
+            }
+            Value::Table(map)
+        }
+        _ => bail!("Unsupported toml_edit value type"),
+    })
 }

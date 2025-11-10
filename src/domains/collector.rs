@@ -1,56 +1,85 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use anyhow::Result;
-use defaults_rs::{Domain, Preferences};
+use defaults_rs::{Domain, Preferences, PrefValue};
 use std::collections::HashMap;
 use toml::{Table, Value};
 
-/// Recursively flatten nested TOML tables into (domain, settings-table) pairs.
-fn flatten_domains(
-    prefix: Option<String>,
-    table: &toml::value::Table,
-    dest: &mut Vec<(String, Table)>,
-) {
-    let mut flat = Table::new();
-
-    for (k, v) in table {
-        if let Value::Table(inner) = v {
-            // descend into nested table
-            let new_prefix = match &prefix {
-                Some(p) if !p.is_empty() => format!("{p}.{k}"),
-                _ => k.clone(),
-            };
-            flatten_domains(Some(new_prefix), inner, dest);
-        } else {
-            flat.insert(k.clone(), v.clone());
-        }
-    }
-
-    if !flat.is_empty() {
-        dest.push((prefix.unwrap_or_default(), flat));
-    }
-}
-
-/// Collect all tables in `[set]`, flatten them, and return a map domain → settings.
+/// Collect all tables in `[set]`, parse with toml_edit to properly handle inline tables,
+/// and return a map domain → settings.
 pub fn collect(config: &crate::config::core::Config) -> Result<HashMap<String, Table>> {
+    use crate::domains::convert::toml_edit_to_toml;
+    use toml_edit::{DocumentMut, Item};
+
     let mut out = HashMap::new();
 
     if let Some(set) = &config.set {
-        for (domain_key, domain_val) in set {
-            // domain_val: HashMap<String, Value>
-            let mut inner_table = Table::new();
-            for (k, v) in domain_val {
-                inner_table.insert(k.clone(), v.clone());
-            }
-            let mut flat = Vec::with_capacity(inner_table.len());
-            flatten_domains(Some(domain_key.clone()), &inner_table, &mut flat);
+        // Re-serialize just the [set] portion to parse with toml_edit
+        // This allows us to distinguish inline tables from nested tables
+        let set_toml = toml::to_string(&set)?;
+        let doc = set_toml.parse::<DocumentMut>()?;
 
-            for (domain, tbl) in flat {
-                out.insert(domain, tbl);
+        for (domain_key, item) in doc.iter() {
+            if let Item::Table(domain_table) = item {
+                // Now process the domain_table, checking if values are inline tables
+                let mut settings = Table::new();
+                
+                for (key, value) in domain_table.iter() {
+                    match value {
+                        Item::Value(v) => {
+                            // This could be a scalar value or an inline table
+                            settings.insert(key.to_string(), toml_edit_to_toml(v)?);
+                        }
+                        Item::Table(nested_table) => {
+                            // This is a nested table header [set.domain.nested]
+                            // Recursively process it with the prefixed domain name
+                            let nested_domain = format!("{}.{}", domain_key, key);
+                            collect_nested_table(&nested_domain, nested_table, &mut out)?;
+                        }
+                        _ => {}
+                    }
+                }
+
+                if !settings.is_empty() {
+                    out.insert(domain_key.to_string(), settings);
+                }
             }
         }
     }
+    
     Ok(out)
+}
+
+/// Helper to recursively process nested tables
+fn collect_nested_table(
+    domain_prefix: &str,
+    table: &toml_edit::Table,
+    out: &mut HashMap<String, Table>,
+) -> Result<()> {
+    use crate::domains::convert::toml_edit_to_toml;
+    use toml_edit::Item;
+
+    let mut settings = Table::new();
+    
+    for (key, value) in table.iter() {
+        match value {
+            Item::Value(v) => {
+                settings.insert(key.to_string(), toml_edit_to_toml(v)?);
+            }
+            Item::Table(nested_table) => {
+                // Further nested table
+                let nested_domain = format!("{}.{}", domain_prefix, key);
+                collect_nested_table(&nested_domain, nested_table, out)?;
+            }
+            _ => {}
+        }
+    }
+
+    if !settings.is_empty() {
+        out.insert(domain_prefix.to_string(), settings);
+    }
+    
+    Ok(())
 }
 
 /// Helper for: effective()
@@ -84,7 +113,7 @@ pub fn effective(domain: &str, key: &str) -> (String, String) {
 }
 
 /// Read the current value of a defaults key, if any.
-pub async fn read_current(eff_domain: &str, eff_key: &str) -> Option<String> {
+pub async fn read_current(eff_domain: &str, eff_key: &str) -> Option<PrefValue> {
     let domain_obj = if eff_domain == "NSGlobalDomain" {
         Domain::Global
     } else if let Some(rest) = eff_domain.strip_prefix("com.apple.") {
@@ -94,7 +123,7 @@ pub async fn read_current(eff_domain: &str, eff_key: &str) -> Option<String> {
     };
 
     match Preferences::read(domain_obj, Some(eff_key)).await {
-        Ok(result) => Some(result.to_string()),
+        Ok(result) => Some(result),
         Err(_) => None,
     }
 }
