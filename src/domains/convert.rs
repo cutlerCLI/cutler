@@ -2,9 +2,23 @@
 
 use anyhow::{Result, bail};
 use defaults_rs::PrefValue;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use toml::Value;
 use toml_edit::Value as EditValue;
+
+/// Serializable representation of a preference value.
+/// This mirrors the structure of defaults_rs::PrefValue but implements Serialize/Deserialize.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(untagged)]
+pub enum SerializablePrefValue {
+    String(String),
+    Integer(i64),
+    Float(f64),
+    Boolean(bool),
+    Array(Vec<SerializablePrefValue>),
+    Dictionary(HashMap<String, SerializablePrefValue>),
+}
 
 /// Turns a toml::Value into its defaults_rs::PrefValue counterpart.
 pub fn toml_to_prefvalue(val: &Value) -> anyhow::Result<PrefValue> {
@@ -117,4 +131,40 @@ pub fn toml_edit_to_toml(val: &EditValue) -> anyhow::Result<Value> {
         }
         _ => bail!("Unsupported toml_edit value type"),
     })
+}
+
+/// Converts a PrefValue to a SerializablePrefValue.
+pub fn prefvalue_to_serializable(val: &PrefValue) -> SerializablePrefValue {
+    match val {
+        PrefValue::String(s) => SerializablePrefValue::String(s.clone()),
+        PrefValue::Integer(i) => SerializablePrefValue::Integer(*i),
+        PrefValue::Float(f) => SerializablePrefValue::Float(*f),
+        PrefValue::Boolean(b) => SerializablePrefValue::Boolean(*b),
+        PrefValue::Array(arr) => {
+            SerializablePrefValue::Array(arr.iter().map(prefvalue_to_serializable).collect())
+        }
+        PrefValue::Dictionary(dict) => SerializablePrefValue::Dictionary(
+            dict.iter()
+                .map(|(k, v)| (k.clone(), prefvalue_to_serializable(v)))
+                .collect(),
+        ),
+    }
+}
+
+/// Converts a SerializablePrefValue to a PrefValue.
+pub fn serializable_to_prefvalue(val: &SerializablePrefValue) -> PrefValue {
+    match val {
+        SerializablePrefValue::String(s) => PrefValue::String(s.clone()),
+        SerializablePrefValue::Integer(i) => PrefValue::Integer(*i),
+        SerializablePrefValue::Float(f) => PrefValue::Float(*f),
+        SerializablePrefValue::Boolean(b) => PrefValue::Boolean(*b),
+        SerializablePrefValue::Array(arr) => {
+            PrefValue::Array(arr.iter().map(serializable_to_prefvalue).collect())
+        }
+        SerializablePrefValue::Dictionary(dict) => PrefValue::Dictionary(
+            dict.iter()
+                .map(|(k, v)| (k.clone(), serializable_to_prefvalue(v)))
+                .collect(),
+        ),
+    }
 }

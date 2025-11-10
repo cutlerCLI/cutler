@@ -4,7 +4,10 @@ use crate::{
     cli::atomic::should_dry_run,
     commands::{BrewInstallCmd, Runnable},
     config::{core::Config, path::get_config_path, remote::RemoteConfigManager},
-    domains::{collector, convert::toml_to_prefvalue},
+    domains::{
+        collector,
+        convert::{prefvalue_to_serializable, toml_to_prefvalue},
+    },
     exec::core::{self, ExecMode},
     log_cute, log_dry, log_err, log_info, log_warn,
     snapshot::{
@@ -21,6 +24,8 @@ use async_trait::async_trait;
 use clap::Args;
 use defaults_rs::{Domain, PrefValue, Preferences};
 use toml::Value;
+
+use crate::domains::convert::SerializablePrefValue;
 
 #[derive(Args, Debug)]
 pub struct ApplyCmd {
@@ -56,7 +61,7 @@ struct PreferenceJob {
     key: String,
     toml_value: Value,
     action: &'static str,
-    original: Option<String>,
+    original: Option<SerializablePrefValue>,
     new_value: String,
 }
 
@@ -154,7 +159,9 @@ impl Runnable for ApplyCmd {
                     let original = if let Some(e) = &old_entry {
                         e.original_value.clone()
                     } else {
-                        current_pref.as_ref().map(|current| current.to_string())
+                        current_pref
+                            .as_ref()
+                            .map(|current| prefvalue_to_serializable(current))
                     };
 
                     // decide “applying” vs “updating”
@@ -196,8 +203,11 @@ impl Runnable for ApplyCmd {
                     job.domain,
                     job.key,
                     job.new_value,
-                    if job.original.is_some() {
-                        format!("[Restorable to {}]", job.original.clone().unwrap())
+                    if let Some(orig) = &job.original {
+                        format!(
+                            "[Restorable to {}]",
+                            serde_json::to_string(orig).unwrap_or_else(|_| "?".to_string())
+                        )
                     } else {
                         "".to_string()
                     }
