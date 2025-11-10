@@ -89,9 +89,7 @@ mise use -g cargo:cutler
 
 ## Caveats
 
-These are the concurrent issues which are affecting some of the functionality but are under resolving efforts:
-
-- Dictionary parsing for TOML & defaults-rs backend (https://github.com/cutlerCLI/cutler/issues/73).
+None at the moment. Previous issues with dictionary parsing for TOML & defaults-rs backend have been resolved.
 
 ## Contributing
 

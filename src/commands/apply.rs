@@ -6,7 +6,7 @@ use crate::{
     config::{core::Config, path::get_config_path, remote::RemoteConfigManager},
     domains::{
         collector,
-        convert::{normalize, toml_to_prefvalue},
+        convert::{prefvalue_to_serializable, toml_to_prefvalue},
     },
     exec::core::{self, ExecMode},
     log_cute, log_dry, log_err, log_info, log_warn,
@@ -24,6 +24,8 @@ use async_trait::async_trait;
 use clap::Args;
 use defaults_rs::{Domain, PrefValue, Preferences};
 use toml::Value;
+
+use crate::domains::convert::SerializablePrefValue;
 
 #[derive(Args, Debug)]
 pub struct ApplyCmd {
@@ -44,7 +46,7 @@ pub struct ApplyCmd {
     flagged_cmd: bool,
 
     /// WARN: Disables domain existence check.
-    #[arg(short, long)]
+    #[arg(long)]
     no_dom_check: bool,
 
     /// Invoke `brew install` after applying preferences.
@@ -59,7 +61,7 @@ struct PreferenceJob {
     key: String,
     toml_value: Value,
     action: &'static str,
-    original: Option<String>,
+    original: Option<SerializablePrefValue>,
     new_value: String,
 }
 
@@ -138,11 +140,14 @@ impl Runnable for ApplyCmd {
                 // read the current value from the system
                 // then, check if changed
                 // TODO: could use read_batch from defaults-rs here
-                let current = collector::read_current(&eff_dom, &eff_key)
-                    .await
-                    .unwrap_or_default();
-                let desired = normalize(&toml_value);
-                let changed = current != desired;
+                let current_pref = collector::read_current(&eff_dom, &eff_key).await;
+                let desired_pref = toml_to_prefvalue(&toml_value)?;
+
+                // Compare PrefValues directly instead of strings
+                let changed = match &current_pref {
+                    Some(current) => current != &desired_pref,
+                    None => true, // No current value means it's a new setting
+                };
 
                 // grab the old snapshot entry if it exists
                 let old_entry = existing.get(&(eff_dom.clone(), eff_key.clone())).cloned();
@@ -153,10 +158,8 @@ impl Runnable for ApplyCmd {
                     // Preserve existing non-null original; otherwise, for brand new keys, capture original from system
                     let original = if let Some(e) = &old_entry {
                         e.original_value.clone()
-                    } else if current.is_empty() {
-                        None
                     } else {
-                        Some(current.clone())
+                        current_pref.as_ref().map(prefvalue_to_serializable)
                     };
 
                     // decide “applying” vs “updating”
@@ -172,7 +175,7 @@ impl Runnable for ApplyCmd {
                         toml_value: toml_value.clone(),
                         action,
                         original: if is_bad_snap { None } else { original },
-                        new_value: desired.clone(),
+                        new_value: desired_pref.to_string(),
                     });
                 } else {
                     log_info!("Skipping unchanged {eff_dom} | {eff_key}",);
@@ -198,8 +201,11 @@ impl Runnable for ApplyCmd {
                     job.domain,
                     job.key,
                     job.new_value,
-                    if job.original.is_some() {
-                        format!("[Restorable to {}]", job.original.clone().unwrap())
+                    if let Some(orig) = &job.original {
+                        format!(
+                            "[Restorable to {}]",
+                            serde_json::to_string(orig).unwrap_or_else(|_| "?".to_string())
+                        )
                     } else {
                         "".to_string()
                     }

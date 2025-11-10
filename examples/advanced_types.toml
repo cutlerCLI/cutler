@@ -1,0 +1,41 @@
+# Example configuration showing advanced type support
+# This demonstrates the new inline table and complex type handling
+
+[set.dock]
+tilesize = 50
+autohide = true
+orientation = "left"
+
+[set.finder]
+# Inline table (dictionary) - treated as a value, not a domain
+FXInfoPanesExpanded = { Preview = false, MetaData = true, Comments = false }
+ShowPathbar = true
+CreateDesktop = false
+
+[set.NSGlobalDomain]
+# String with dots in the key name
+"com.apple.dock.fnState" = false
+
+# Array of integers
+exampleArrayOfInts = [1, 2, 3, 4, 5]
+
+# Array of strings
+exampleArrayOfStrings = ["one", "two", "three"]
+
+# Array of booleans
+exampleArrayOfBools = [true, false, true]
+
+# Mixed settings
+KeyRepeat = 2
+InitialKeyRepeat = 15
+NSDocumentSaveNewDocumentsToCloud = false
+
+# Nested domain using table header syntax
+[set.NSGlobalDomain.com.apple.keyboard]
+fnState = false
+
+# Another example with inline table
+[set.menuextra.clock]
+FlashDateSeparators = true
+Show24Hour = false
+DateFormat = { day = 1, month = 2, year = 4 }

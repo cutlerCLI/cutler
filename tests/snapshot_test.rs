@@ -4,6 +4,7 @@
 mod tests {
     use cutler::{
         config::path::get_config_path,
+        domains::convert::SerializablePrefValue,
         exec::core::ExecJob,
         snapshot::{
             core::{SettingState, Snapshot},
@@ -41,11 +42,14 @@ mod tests {
         let setting = SettingState {
             domain: "com.apple.dock".to_string(),
             key: "tilesize".to_string(),
-            original_value: Some("36".to_string()),
+            original_value: Some(SerializablePrefValue::Integer(36)),
         };
         assert_eq!(setting.domain, "com.apple.dock");
         assert_eq!(setting.key, "tilesize");
-        assert_eq!(setting.original_value, Some("36".to_string()));
+        assert_eq!(
+            setting.original_value,
+            Some(SerializablePrefValue::Integer(36))
+        );
 
         // Test external command state
         let command = ExecJob {
@@ -69,7 +73,7 @@ mod tests {
         snapshot.settings.push(SettingState {
             domain: "com.apple.dock".to_string(),
             key: "tilesize".to_string(),
-            original_value: Some("36".to_string()),
+            original_value: Some(SerializablePrefValue::Integer(36)),
         });
 
         snapshot.settings.push(SettingState {
@@ -81,7 +85,7 @@ mod tests {
         snapshot.settings.push(SettingState {
             domain: "NSGlobalDomain".to_string(),
             key: "ApplePressAndHoldEnabled".to_string(),
-            original_value: Some("0".to_string()),
+            original_value: Some(SerializablePrefValue::Boolean(false)),
         });
 
         // Create a temporary file to store the snapshot
@@ -115,7 +119,10 @@ mod tests {
         let dock_setting = settings_map
             .get(&("com.apple.dock".to_string(), "tilesize".to_string()))
             .unwrap();
-        assert_eq!(dock_setting.original_value, Some("36".to_string()));
+        assert_eq!(
+            dock_setting.original_value,
+            Some(SerializablePrefValue::Integer(36))
+        );
 
         // Check finder setting (null original)
         let finder_setting = settings_map
@@ -130,7 +137,10 @@ mod tests {
                 "ApplePressAndHoldEnabled".to_string(),
             ))
             .unwrap();
-        assert_eq!(global_setting.original_value, Some("0".to_string()));
+        assert_eq!(
+            global_setting.original_value,
+            Some(SerializablePrefValue::Boolean(false))
+        );
     }
 
     #[tokio::test]
@@ -148,5 +158,79 @@ mod tests {
 
         let result = Snapshot::load(&invalid_path).await;
         assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_snapshot_complex_types() {
+        use std::collections::HashMap;
+
+        // Test snapshot with complex types (arrays, dictionaries)
+        let mut snapshot = Snapshot::new().await;
+
+        // Array type
+        snapshot.settings.push(SettingState {
+            domain: "NSGlobalDomain".to_string(),
+            key: "exampleArray".to_string(),
+            original_value: Some(SerializablePrefValue::Array(vec![
+                SerializablePrefValue::Integer(1),
+                SerializablePrefValue::Integer(2),
+                SerializablePrefValue::Integer(3),
+            ])),
+        });
+
+        // Dictionary type
+        let mut dict = HashMap::new();
+        dict.insert("Preview".to_string(), SerializablePrefValue::Boolean(false));
+        dict.insert("MetaData".to_string(), SerializablePrefValue::Boolean(true));
+
+        snapshot.settings.push(SettingState {
+            domain: "com.apple.finder".to_string(),
+            key: "FXInfoPanesExpanded".to_string(),
+            original_value: Some(SerializablePrefValue::Dictionary(dict)),
+        });
+
+        // Create a temporary file to store the snapshot
+        let temp_dir = TempDir::new().unwrap();
+        let snapshot_path = temp_dir.path().join("test_complex_snapshot.json");
+
+        // Save the snapshot
+        snapshot.path = snapshot_path.clone();
+        snapshot.save().await.unwrap();
+
+        // Load the snapshot back
+        let loaded_snapshot = Snapshot::load(&snapshot_path).await.unwrap();
+
+        // Verify array
+        let array_setting = &loaded_snapshot.settings[0];
+        assert_eq!(array_setting.domain, "NSGlobalDomain");
+        assert_eq!(array_setting.key, "exampleArray");
+        match &array_setting.original_value {
+            Some(SerializablePrefValue::Array(arr)) => {
+                assert_eq!(arr.len(), 3);
+                assert_eq!(arr[0], SerializablePrefValue::Integer(1));
+                assert_eq!(arr[1], SerializablePrefValue::Integer(2));
+                assert_eq!(arr[2], SerializablePrefValue::Integer(3));
+            }
+            _ => panic!("Expected array type"),
+        }
+
+        // Verify dictionary
+        let dict_setting = &loaded_snapshot.settings[1];
+        assert_eq!(dict_setting.domain, "com.apple.finder");
+        assert_eq!(dict_setting.key, "FXInfoPanesExpanded");
+        match &dict_setting.original_value {
+            Some(SerializablePrefValue::Dictionary(dict)) => {
+                assert_eq!(dict.len(), 2);
+                assert_eq!(
+                    dict.get("Preview"),
+                    Some(&SerializablePrefValue::Boolean(false))
+                );
+                assert_eq!(
+                    dict.get("MetaData"),
+                    Some(&SerializablePrefValue::Boolean(true))
+                );
+            }
+            _ => panic!("Expected dictionary type"),
+        }
     }
 }

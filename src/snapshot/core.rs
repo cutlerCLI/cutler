@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::{env, path::PathBuf};
 use tokio::fs;
 
+use crate::domains::convert::SerializablePrefValue;
 use crate::snapshot::get_snapshot_path;
 
 /// A single defaults‑setting change.
@@ -13,7 +14,7 @@ use crate::snapshot::get_snapshot_path;
 pub struct SettingState {
     pub domain: String,
     pub key: String,
-    pub original_value: Option<String>,
+    pub original_value: Option<SerializablePrefValue>,
 }
 
 /// Represents a snapshot.
