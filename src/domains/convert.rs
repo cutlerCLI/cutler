@@ -56,6 +56,7 @@ pub fn prefvalue_to_toml(val: &PrefValue) -> Value {
                 .collect();
             Value::Table(map)
         }
+        _ => unreachable!(),
     }
 }
 
@@ -148,6 +149,7 @@ pub fn prefvalue_to_serializable(val: &PrefValue) -> SerializablePrefValue {
                 .map(|(k, v)| (k.clone(), prefvalue_to_serializable(v)))
                 .collect(),
         ),
+        _ => unreachable!(),
     }
 }
 
