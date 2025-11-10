@@ -49,7 +49,7 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Run Clippy
-        run: cargo clippy --all-targets -- -D warnings
+        run: cargo clippy --all-targets --no-deps -- -D warnings
 
       - name: Run unit tests
         run: cargo test --quiet
