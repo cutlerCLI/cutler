@@ -73,9 +73,9 @@ pub fn normalize(value: &Value) -> String {
 pub fn toml_edit_to_prefvalue(val: &EditValue) -> anyhow::Result<PrefValue> {
     Ok(match val {
         EditValue::String(s) => PrefValue::String(s.value().to_string()),
-        EditValue::Integer(i) => PrefValue::Integer(i.value()),
-        EditValue::Float(f) => PrefValue::Float(f.value()),
-        EditValue::Boolean(b) => PrefValue::Boolean(b.value()),
+        EditValue::Integer(i) => PrefValue::Integer(i.value().to_owned()),
+        EditValue::Float(f) => PrefValue::Float(f.value().to_owned()),
+        EditValue::Boolean(b) => PrefValue::Boolean(b.value().to_owned()),
         EditValue::Array(arr) => {
             let mut result = Vec::new();
             for item in arr.iter() {
@@ -98,9 +98,9 @@ pub fn toml_edit_to_prefvalue(val: &EditValue) -> anyhow::Result<PrefValue> {
 pub fn toml_edit_to_toml(val: &EditValue) -> anyhow::Result<Value> {
     Ok(match val {
         EditValue::String(s) => Value::String(s.value().to_string()),
-        EditValue::Integer(i) => Value::Integer(i.value()),
-        EditValue::Float(f) => Value::Float(f.value()),
-        EditValue::Boolean(b) => Value::Boolean(b.value()),
+        EditValue::Integer(i) => Value::Integer(*i.value()),
+        EditValue::Float(f) => Value::Float(*f.value()),
+        EditValue::Boolean(b) => Value::Boolean(*b.value()),
         EditValue::Array(arr) => {
             let mut result = Vec::new();
             for item in arr.iter() {

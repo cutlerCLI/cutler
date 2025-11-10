@@ -44,7 +44,7 @@ mod tests {
         // [set.root]
         //   [set.root.nested]
         //   inner_key = "inner_value"
-        // 
+        //
         // This test now tests that we DON'T flatten nested Value::Tables
         // when they're created programmatically (no file path).
         // Instead, they should be treated as inline table values.
@@ -69,7 +69,7 @@ mod tests {
         // since we don't have a file path to parse with toml_edit
         assert_eq!(domains.len(), 1);
         let got = domains.get("root").unwrap();
-        
+
         // "nested" should be a table value, not a flattened domain
         assert!(got.contains_key("nested"));
         let nested_val = got.get("nested").unwrap();

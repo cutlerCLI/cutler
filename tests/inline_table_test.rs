@@ -4,8 +4,8 @@
 mod tests {
     use cutler::config::core::Config;
     use cutler::domains::collect;
-    use tempfile::NamedTempFile;
     use std::io::Write;
+    use tempfile::NamedTempFile;
 
     #[tokio::test]
     async fn test_inline_table_as_dictionary_value() {
@@ -25,23 +25,23 @@ ShowPathbar = true
         config_with_path.path = temp_file.path().to_path_buf();
 
         let domains = collect(&config_with_path).unwrap();
-        
+
         // Should only have "finder" domain, not "finder.FXInfoPanesExpanded"
         assert_eq!(domains.len(), 1);
         assert!(domains.contains_key("finder"));
         assert!(!domains.contains_key("finder.FXInfoPanesExpanded"));
 
         let finder = domains.get("finder").unwrap();
-        
+
         // FXInfoPanesExpanded should be a table value
         assert!(finder.contains_key("FXInfoPanesExpanded"));
         let fx_info = finder.get("FXInfoPanesExpanded").unwrap();
         assert!(fx_info.is_table());
-        
+
         let fx_table = fx_info.as_table().unwrap();
         assert_eq!(fx_table.get("Preview").unwrap().as_bool().unwrap(), false);
         assert_eq!(fx_table.get("MetaData").unwrap().as_bool().unwrap(), true);
-        
+
         // ShowPathbar should be a boolean
         assert!(finder.get("ShowPathbar").unwrap().as_bool().unwrap());
     }
@@ -66,7 +66,7 @@ fnState = false
         config_with_path.path = temp_file.path().to_path_buf();
 
         let domains = collect(&config_with_path).unwrap();
-        
+
         // Should have "dock" and "NSGlobalDomain.com.apple.keyboard"
         assert_eq!(domains.len(), 2);
         assert!(domains.contains_key("dock"));
@@ -105,7 +105,7 @@ FXInfoPanesExpanded = { Preview = false, MetaData = true, Comments = false }
         config_with_path.path = temp_file.path().to_path_buf();
 
         let domains = collect(&config_with_path).unwrap();
-        
+
         assert_eq!(domains.len(), 3);
 
         // Check dock settings
@@ -115,15 +115,30 @@ FXInfoPanesExpanded = { Preview = false, MetaData = true, Comments = false }
 
         // Check NSGlobalDomain settings
         let global = domains.get("NSGlobalDomain").unwrap();
-        assert_eq!(global.get("com.apple.dock.fnState").unwrap().as_bool().unwrap(), false);
-        
-        let int_array = global.get("exampleArrayOfInts").unwrap().as_array().unwrap();
+        assert_eq!(
+            global
+                .get("com.apple.dock.fnState")
+                .unwrap()
+                .as_bool()
+                .unwrap(),
+            false
+        );
+
+        let int_array = global
+            .get("exampleArrayOfInts")
+            .unwrap()
+            .as_array()
+            .unwrap();
         assert_eq!(int_array.len(), 3);
         assert_eq!(int_array[0].as_integer().unwrap(), 1);
         assert_eq!(int_array[1].as_integer().unwrap(), 2);
         assert_eq!(int_array[2].as_integer().unwrap(), 3);
-        
-        let str_array = global.get("exampleArrayOfStrings").unwrap().as_array().unwrap();
+
+        let str_array = global
+            .get("exampleArrayOfStrings")
+            .unwrap()
+            .as_array()
+            .unwrap();
         assert_eq!(str_array.len(), 3);
         assert_eq!(str_array[0].as_str().unwrap(), "one");
         assert_eq!(str_array[1].as_str().unwrap(), "two");
@@ -131,7 +146,11 @@ FXInfoPanesExpanded = { Preview = false, MetaData = true, Comments = false }
 
         // Check finder inline table
         let finder = domains.get("finder").unwrap();
-        let fx_table = finder.get("FXInfoPanesExpanded").unwrap().as_table().unwrap();
+        let fx_table = finder
+            .get("FXInfoPanesExpanded")
+            .unwrap()
+            .as_table()
+            .unwrap();
         assert_eq!(fx_table.get("Preview").unwrap().as_bool().unwrap(), false);
         assert_eq!(fx_table.get("MetaData").unwrap().as_bool().unwrap(), true);
         assert_eq!(fx_table.get("Comments").unwrap().as_bool().unwrap(), false);

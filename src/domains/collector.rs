@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use anyhow::Result;
-use defaults_rs::{Domain, Preferences, PrefValue};
+use defaults_rs::{Domain, PrefValue, Preferences};
 use std::collections::HashMap;
-use toml::{Table, Value};
+use toml::Table;
 
 /// Collect all tables in `[set]`, parse with toml_edit to properly handle inline tables,
 /// and return a map domain → settings.
@@ -25,7 +25,7 @@ pub fn collect(config: &crate::config::core::Config) -> Result<HashMap<String, T
                 if let Item::Table(domain_table) = item {
                     // Now process the domain_table, checking if values are inline tables
                     let mut settings = Table::new();
-                    
+
                     for (key, value) in domain_table.iter() {
                         match value {
                             Item::Value(v) => {
@@ -63,7 +63,7 @@ pub fn collect(config: &crate::config::core::Config) -> Result<HashMap<String, T
             }
         }
     }
-    
+
     Ok(out)
 }
 
@@ -77,7 +77,7 @@ fn collect_nested_table(
     use toml_edit::Item;
 
     let mut settings = Table::new();
-    
+
     for (key, value) in table.iter() {
         match value {
             Item::Value(v) => {
@@ -95,7 +95,7 @@ fn collect_nested_table(
     if !settings.is_empty() {
         out.insert(domain_prefix.to_string(), settings);
     }
-    
+
     Ok(())
 }
 
@@ -139,8 +139,5 @@ pub async fn read_current(eff_domain: &str, eff_key: &str) -> Option<PrefValue> 
         Domain::User(eff_domain.to_string())
     };
 
-    match Preferences::read(domain_obj, Some(eff_key)).await {
-        Ok(result) => Some(result),
-        Err(_) => None,
-    }
+    (Preferences::read(domain_obj, Some(eff_key)).await).ok()
 }

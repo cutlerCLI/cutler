@@ -50,7 +50,7 @@ impl Runnable for StatusCmd {
 
                 let current_pref = read_current(&eff_dom, &eff_key).await;
                 let desired_pref = crate::domains::convert::toml_to_prefvalue(value)?;
-                
+
                 let (current_str, is_diff) = match &current_pref {
                     Some(current) => {
                         let diff = current != &desired_pref;

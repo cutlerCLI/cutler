@@ -2,9 +2,10 @@
 
 #[cfg(test)]
 mod tests {
-    use cutler::domains::convert::{prefvalue_to_toml, toml_to_prefvalue, toml_edit_to_toml, toml_edit_to_prefvalue};
+    use cutler::domains::convert::{
+        prefvalue_to_toml, toml_edit_to_prefvalue, toml_edit_to_toml, toml_to_prefvalue,
+    };
     use defaults_rs::PrefValue;
-    use std::collections::HashMap;
     use toml::Value;
 
     #[test]
@@ -49,7 +50,7 @@ mod tests {
             Value::Integer(2),
             Value::Integer(3),
         ]);
-        
+
         let pref = toml_to_prefvalue(&arr).unwrap();
         match pref {
             PrefValue::Array(vals) => {
@@ -69,7 +70,7 @@ mod tests {
         map.insert("key1".to_string(), Value::String("value1".to_string()));
         map.insert("key2".to_string(), Value::Integer(42));
         let table = Value::Table(map);
-        
+
         let pref = toml_to_prefvalue(&table).unwrap();
         match pref {
             PrefValue::Dictionary(dict) => {
@@ -95,10 +96,10 @@ mod tests {
             Value::Integer(42),
             Value::Boolean(true),
         ]);
-        
+
         let pref = toml_to_prefvalue(&original).unwrap();
         let back = prefvalue_to_toml(&pref);
-        
+
         assert_eq!(original, back);
     }
 
@@ -110,10 +111,10 @@ test = { key1 = "value1", key2 = 42 }
 "#;
         let doc: toml_edit::DocumentMut = toml_str.parse().unwrap();
         let value = doc.get("test").unwrap();
-        
+
         if let toml_edit::Item::Value(v) = value {
             let toml_val = toml_edit_to_toml(v).unwrap();
-            
+
             // Should be a table
             assert!(toml_val.is_table());
             let table = toml_val.as_table().unwrap();
@@ -132,10 +133,10 @@ test = { Preview = false, MetaData = true }
 "#;
         let doc: toml_edit::DocumentMut = toml_str.parse().unwrap();
         let value = doc.get("test").unwrap();
-        
+
         if let toml_edit::Item::Value(v) = value {
             let pref_val = toml_edit_to_prefvalue(v).unwrap();
-            
+
             // Should be a dictionary
             match pref_val {
                 PrefValue::Dictionary(dict) => {

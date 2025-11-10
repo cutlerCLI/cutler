@@ -4,10 +4,7 @@ use crate::{
     cli::atomic::should_dry_run,
     commands::{BrewInstallCmd, Runnable},
     config::{core::Config, path::get_config_path, remote::RemoteConfigManager},
-    domains::{
-        collector,
-        convert::toml_to_prefvalue,
-    },
+    domains::{collector, convert::toml_to_prefvalue},
     exec::core::{self, ExecMode},
     log_cute, log_dry, log_err, log_info, log_warn,
     snapshot::{
@@ -44,7 +41,7 @@ pub struct ApplyCmd {
     flagged_cmd: bool,
 
     /// WARN: Disables domain existence check.
-    #[arg(short, long)]
+    #[arg(long)]
     no_dom_check: bool,
 
     /// Invoke `brew install` after applying preferences.
@@ -140,7 +137,7 @@ impl Runnable for ApplyCmd {
                 // TODO: could use read_batch from defaults-rs here
                 let current_pref = collector::read_current(&eff_dom, &eff_key).await;
                 let desired_pref = toml_to_prefvalue(&toml_value)?;
-                
+
                 // Compare PrefValues directly instead of strings
                 let changed = match &current_pref {
                     Some(current) => current != &desired_pref,
@@ -156,10 +153,8 @@ impl Runnable for ApplyCmd {
                     // Preserve existing non-null original; otherwise, for brand new keys, capture original from system
                     let original = if let Some(e) = &old_entry {
                         e.original_value.clone()
-                    } else if let Some(current) = &current_pref {
-                        Some(current.to_string())
                     } else {
-                        None
+                        current_pref.as_ref().map(|current| current.to_string())
                     };
 
                     // decide “applying” vs “updating”
