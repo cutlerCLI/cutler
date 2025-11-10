@@ -42,7 +42,7 @@ pub async fn restart_services() {
     let dry_run = should_dry_run();
 
     // services to restart
-    const SERVICES: &[&str] = &["SystemUIServer", "Dock", "Finder"];
+    const SERVICES: &[&str] = &["SystemUIServer", "Dock", "Finder", "ControlCenter", "NotificationCenter"];
 
     let mut failed: bool = false;
 
