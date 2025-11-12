@@ -12,6 +12,6 @@ pub struct CookbookCmd;
 #[async_trait]
 impl Runnable for CookbookCmd {
     async fn run(&self) -> Result<()> {
-        open("https://cutlerhq.github.io/cookbook").await
+        open("https://machlit.github.io/cutler").await
     }
 }

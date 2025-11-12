@@ -1,3 +1,3 @@
 # Contribution Guidelines
 
-Please see: https://cutlerhq.github.io/cookbook/guidelines/contributing.html
+Please see: https://machlit.github.io/cutler/guidelines/contributing.html

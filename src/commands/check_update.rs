@@ -26,7 +26,7 @@ impl Runnable for CheckUpdateCmd {
         log_info!("Current version: {current_version}",);
 
         // fetch latest release tag from GitHub API
-        let url = "https://api.github.com/repos/cutlerHQ/cutler/releases/latest";
+        let url = "https://api.github.com/repos/machlit/cutler/releases/latest";
         let client = reqwest::Client::builder()
             .user_agent("cutler-update-check")
             .build()
@@ -70,7 +70,7 @@ To update, run one of the following:
   cutler self-update                     # for manual installs
 
 Or download the latest release from:
-  https://github.com/cutlerHQ/cutler/releases"#
+  https://github.com/machlit/cutler/releases"#
                     );
                 } else {
                     log_cute!("Update available!")
