@@ -3,7 +3,7 @@
 You can install cutler by directly running this command in the terminal:
 
 ```sh
-curl -fsSL https://machlit.github.io/scripts/install.sh | /bin/bash
+curl -fsSL https://machlit.github.io/scripts/install-cutler.sh | /bin/bash
 ```
 
 Other installation methods are:

@@ -16,7 +16,7 @@ Pre-built binaries support **macOS Big Sur (11.0) or later** versions.
 ```bash
 # Self-installing script
 # See below sections for other methods.
-curl -fsSL https://machlit.github.io/scripts/install.sh | /bin/bash
+curl -fsSL https://machlit.github.io/scripts/install-cutler.sh | /bin/bash
 
 # Initialize a configuration file.
 # Basic template includes preferences, Homebrew and external commands.
@@ -66,7 +66,7 @@ cutler is still in development and changes in functionality may be common during
 ### Self-install (recommended)
 
 ```bash
-curl -fsSL https://machlit.github.io/scripts/install.sh | /bin/bash
+curl -fsSL https://machlit.github.io/scripts/install-cutler.sh | /bin/bash
 ```
 
 ### Using Homebrew
