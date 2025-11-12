@@ -1,7 +1,5 @@
 # System Preferences Backend
 
-<img width="150px" src="https://github.com/machlit/defaults-rs/raw/master/assets/logo.png">
-
 ## defaults-rs
 
 In order to automate the process for setting up System Preferences, instead of relying on the `defaults` command, cutler uses
