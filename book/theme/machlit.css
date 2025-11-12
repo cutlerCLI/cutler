@@ -1,0 +1,271 @@
+.machlit.hljs {
+    color: #cccccc;
+    background: #22211f;
+}
+
+.machlit .hljs-keyword {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-property {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-tag {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-built_in {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-type {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-literal {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-number {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-operator {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-entity {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-url {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-punctuation {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-regexp {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-string {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-char.escape_ {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-subst {
+    color: #cccccc;
+}
+
+.machlit .hljs-symbol {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-variable {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-variable.language_ {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-variable.constant_ {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-title {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-title.class_ {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-title.function_ {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-params {
+    color: #cccccc;
+}
+
+.machlit .hljs-comment,
+.machlit .hljs-doctag {
+    color: #666666;
+}
+
+.machlit .hljs-meta {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-section {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-name {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-attr {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-attribute {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-bullet {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-code {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-emphasis {
+    color: #bbbbbb;
+    font-style: italic;
+}
+
+.machlit .hljs-strong {
+    color: #bbbbbb;
+    font-weight: bold;
+}
+
+.machlit .hljs-formula {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-link {
+    color: #bbbbbb;
+    font-style: italic;
+}
+
+.machlit .hljs-quote {
+    color: #bbbbbb;
+    font-style: italic;
+}
+
+.machlit .hljs-selector-tag {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-selector-id {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-selector-class {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-selector-attr {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-selector-pseudo {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-template-tag {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-template-variable {
+    color: #bbbbbb;
+}
+
+.machlit .hljs-addition {
+    color: #bbbbbb;
+    background: rgba(187, 187, 187, 0.1);
+}
+
+.machlit .hljs-deletion {
+    color: #bbbbbb;
+    background: rgba(187, 187, 187, 0.1);
+}
+
+.machlit :is(h1, h2, h3, h4, h5, h6) a code {
+    color: #cccccc;
+}
+
+.machlit a code {
+    color: #bbbbbb;
+}
+
+.machlit code {
+    color: #eeeeee;
+    background: #22211f;
+    border-radius: 0.7rem;
+}
+
+.machlit blockquote blockquote {
+    border-top: 0.1em solid #bbbbbb;
+    border-bottom: 0.1em solid #bbbbbb;
+}
+
+.machlit hr {
+    border-color: #bbbbbb;
+    border-style: solid;
+}
+
+.machlit del {
+    color: #666666;
+}
+
+.machlit .ace_gutter {
+    color: #bbbbbb;
+    background: #22211f;
+}
+
+.machlit .ace_gutter-active-line.ace_gutter-cell {
+    color: #cccccc;
+    background: #22211f;
+}
+
+.machlit .tooltiptext {
+    background: #22211f;
+    color: #cccccc;
+}
+
+.machlit {
+    --bg: #22211f;
+    --fg: #cccccc;
+    --sidebar-bg: #191816;
+    --sidebar-fg: #cccccc;
+    --sidebar-non-existant: #666666;
+    --sidebar-active: #bbbbbb;
+    --sidebar-spacer: #666666;
+    --scrollbar: #666666;
+    --icons: #666666;
+    --icons-hover: #bbbbbb;
+    --links: #bbbbbb;
+    --inline-code-color: #cccccc;
+    --theme-popup-bg: #22211f;
+    --theme-popup-border: #bbbbbb;
+    --theme-hover: #2a2926;
+    --quote-bg: #22211f;
+    --quote-border: #bbbbbb;
+    --table-border-color: #bbbbbb;
+    --table-header-bg: #22211f;
+    --table-alternate-bg: #22211f;
+    --searchbar-border-color: #bbbbbb;
+    --searchbar-bg: #22211f;
+    --searchbar-fg: #cccccc;
+    --searchbar-shadow-color: #bbbbbb;
+    --searchresults-header-fg: #cccccc;
+    --searchresults-border-color: #bbbbbb;
+    --searchresults-li-bg: #22211f;
+    --search-mark-bg: #bbbbbb;
+    --warning-border: #bbbbbb;
+    --color-scheme: dark;
+    --copy-button-filter: brightness(0) saturate(0%) invert(70%) brightness(85%)
+        contrast(100%);
+    --copy-button-filter-hover: brightness(0) saturate(0%) invert(70%)
+        brightness(100%) contrast(100%);
+}
