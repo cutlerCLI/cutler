@@ -59,7 +59,7 @@ impl Runnable for SelfUpdateCmd {
         // run the self_update updater in a blocking thread to avoid dropping a runtime in async context
         let status = tokio::task::spawn_blocking(move || {
             Update::configure()
-                .repo_owner("cutlerCLI")
+                .repo_owner("cutlerHQ")
                 .repo_name("cutler")
                 .target("aarch64-apple-darwin")
                 .bin_name("cutler")
@@ -75,7 +75,7 @@ impl Runnable for SelfUpdateCmd {
             if !self.no_man {
                 println!("Binary updated, updating manpage...");
 
-                let manpage_url = "https://raw.githubusercontent.com/cutlerCLI/cutler/refs/heads/master/man/man1/cutler.1".to_string();
+                let manpage_url = "https://raw.githubusercontent.com/cutlerHQ/cutler/refs/heads/master/man/man1/cutler.1".to_string();
                 let client = reqwest::Client::builder()
                     .user_agent("cutler-self-update")
                     .build()?;

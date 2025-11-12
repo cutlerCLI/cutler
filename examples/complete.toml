@@ -3,7 +3,7 @@ lock = true
 
 # This is a starter configuration.
 # If you want to explore what section of the configuration does in detail,
-# visit: https://cutlercli.github.io/cookbook
+# visit: https://cutlerhq.github.io/cookbook
 
 # cutler works by storing various different configurations in a table-like structure.
 # The example below is of storing the system preferences:

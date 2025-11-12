@@ -5,7 +5,7 @@
 #### Setup automation for your Mac
 
 [![Crates.io Downloads](https://img.shields.io/crates/d/cutler?style=social&logo=Rust)](https://crates.io/crates/cutler)
-[![Rust Tests](https://github.com/cutlerCLI/cutler/actions/workflows/tests.yml/badge.svg)](https://github.com/cutlerCLI/cutler/actions/workflows/tests.yml)
+[![Rust Tests](https://github.com/cutlerHQ/cutler/actions/workflows/tests.yml/badge.svg)](https://github.com/cutlerHQ/cutler/actions/workflows/tests.yml)
 
 Pre-built binaries support **macOS Big Sur (11.0) or later** versions.
 
@@ -16,7 +16,7 @@ Pre-built binaries support **macOS Big Sur (11.0) or later** versions.
 ```bash
 # Self-installing script
 # See below sections for other methods.
-curl -fsSL https://cutlercli.github.io/scripts/install.sh | /bin/bash
+curl -fsSL https://cutlerhq.github.io/scripts/install.sh | /bin/bash
 
 # Initialize a configuration file.
 # Basic template includes preferences, Homebrew and external commands.
@@ -58,7 +58,7 @@ cutler is still in development and changes in functionality may be common during
 
 ## Resources
 
-- [**Complete Documentation (Cookbook)**](https://cutlercli.github.io/cookbook)
+- [**Complete Documentation (Cookbook)**](https://cutlerhq.github.io/cookbook)
 - [macOS defaults list](https://macos-defaults.com) (useful if you're starting out with declaring bare-metal system preferences and have not previously used `defaults`)
 
 ## Installation
@@ -66,7 +66,7 @@ cutler is still in development and changes in functionality may be common during
 ### Self-install (recommended)
 
 ```bash
-curl -fsSL https://cutlercli.github.io/scripts/install.sh | /bin/bash
+curl -fsSL https://cutlerhq.github.io/scripts/install.sh | /bin/bash
 ```
 
 ### Using Homebrew
@@ -93,11 +93,11 @@ None at the moment. Previous issues with dictionary parsing for TOML & defaults-
 
 ## Contributing
 
-View the [Contribution Guidelines](https://cutlercli.github.io/cookbook/guidelines/contributing.html) to learn more about contributing to cutler. It also contains resources such as code snippets to make your contribution workflow easier.
+View the [Contribution Guidelines](https://cutlerhq.github.io/cookbook/guidelines/contributing.html) to learn more about contributing to cutler. It also contains resources such as code snippets to make your contribution workflow easier.
 
 ## License
 
 This project is permissively licensed and free forever. See the license files mentioned below for the details:
 
-- Apache Software License 2.0 [(LICENSE-APACHE)](https://github.com/cutlerCLI/cutler/blob/master/LICENSE-APACHE)
-- MIT License [(LICENSE-MIT)](https://github.com/cutlerCLI/cutler/blob/master/LICENSE-MIT)
+- Apache Software License 2.0 [(LICENSE-APACHE)](https://github.com/cutlerHQ/cutler/blob/master/LICENSE-APACHE)
+- MIT License [(LICENSE-MIT)](https://github.com/cutlerHQ/cutler/blob/master/LICENSE-MIT)
