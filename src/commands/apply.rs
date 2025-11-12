@@ -119,8 +119,7 @@ impl Runnable for ApplyCmd {
 
         let mut jobs: Vec<PreferenceJob> = Vec::new();
 
-        let domains_list: Vec<String> = Preferences::list_domains()
-            .await?
+        let domains_list: Vec<String> = Preferences::list_domains()?
             .iter()
             .map(|f| f.to_string())
             .collect();
@@ -216,7 +215,7 @@ impl Runnable for ApplyCmd {
 
         // perform batch write
         if !dry_run {
-            match Preferences::write_batch(batch).await {
+            match Preferences::write_batch(batch) {
                 Ok(_) => {
                     log_info!("All preferences applied.");
                 }

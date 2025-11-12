@@ -139,5 +139,5 @@ pub async fn read_current(eff_domain: &str, eff_key: &str) -> Option<PrefValue> 
         Domain::User(eff_domain.to_string())
     };
 
-    (Preferences::read(domain_obj, Some(eff_key)).await).ok()
+    (Preferences::read(domain_obj, eff_key)).ok()
 }

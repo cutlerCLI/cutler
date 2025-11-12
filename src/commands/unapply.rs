@@ -101,7 +101,7 @@ impl Runnable for UnapplyCmd {
                         batch_vec.push((domain.clone(), key, value));
                     }
                 }
-                if let Err(e) = Preferences::write_batch(batch_vec.clone()).await {
+                if let Err(e) = Preferences::write_batch(batch_vec.clone()) {
                     log_err!("Batch restore failed: {e}");
                 }
             }
@@ -112,10 +112,10 @@ impl Runnable for UnapplyCmd {
                 for (domain, keys) in batch_deletes {
                     for key in keys {
                         log_info!("Deleting: {domain} | {key}");
-                        delete_vec.push((domain.clone(), Some(key)));
+                        delete_vec.push((domain.clone(), key));
                     }
                 }
-                if let Err(e) = Preferences::delete_batch(delete_vec.clone()).await {
+                if let Err(e) = Preferences::delete_batch(delete_vec.clone()) {
                     log_err!("Batch delete failed: {e}");
                 }
             }

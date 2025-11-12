@@ -51,7 +51,7 @@ impl Runnable for ResetCmd {
                     if dry_run {
                         log_dry!("Would reset {eff_dom}.{eff_key} to system default",);
                     } else {
-                        match Preferences::delete(domain_obj, Some(&eff_key)).await {
+                        match Preferences::delete(domain_obj, &eff_key) {
                             Ok(_) => {
                                 log_info!("Reset {eff_dom}.{eff_key} to system default",);
                             }
