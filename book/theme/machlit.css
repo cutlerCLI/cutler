@@ -1,94 +1,99 @@
 .machlit.hljs {
     color: #cccccc;
-    background: #22211f;
+    background: #191816;
 }
 
 .machlit .hljs-keyword {
-    color: #bbbbbb;
+    color: #ff7ab2;
+    font-weight: bold;
 }
 
 .machlit .hljs-property {
-    color: #bbbbbb;
+    color: #ffb86c;
 }
 
 .machlit .hljs-tag {
-    color: #bbbbbb;
+    color: #8be9fd;
 }
 
 .machlit .hljs-built_in {
-    color: #bbbbbb;
+    color: #50fa7b;
 }
 
 .machlit .hljs-type {
-    color: #bbbbbb;
+    color: #bd93f9;
 }
 
 .machlit .hljs-literal {
-    color: #bbbbbb;
+    color: #f1fa8c;
 }
 
 .machlit .hljs-number {
-    color: #bbbbbb;
+    color: #f1fa8c;
 }
 
 .machlit .hljs-operator {
-    color: #bbbbbb;
+    color: #ff79c6;
 }
 
 .machlit .hljs-entity {
-    color: #bbbbbb;
+    color: #8be9fd;
 }
 
 .machlit .hljs-url {
-    color: #bbbbbb;
+    color: #8be9fd;
+    text-decoration: underline;
 }
 
 .machlit .hljs-punctuation {
-    color: #bbbbbb;
-}
-
-.machlit .hljs-regexp {
-    color: #bbbbbb;
-}
-
-.machlit .hljs-string {
-    color: #bbbbbb;
-}
-
-.machlit .hljs-char.escape_ {
-    color: #bbbbbb;
-}
-
-.machlit .hljs-subst {
     color: #cccccc;
 }
 
+.machlit .hljs-regexp {
+    color: #ffb86c;
+}
+
+.machlit .hljs-string {
+    color: #50fa7b;
+}
+
+.machlit .hljs-char.escape_ {
+    color: #ffb86c;
+}
+
+.machlit .hljs-subst {
+    color: #f8f8f2;
+}
+
 .machlit .hljs-symbol {
-    color: #bbbbbb;
+    color: #f1fa8c;
 }
 
 .machlit .hljs-variable {
-    color: #bbbbbb;
+    color: #bd93f9;
 }
 
 .machlit .hljs-variable.language_ {
-    color: #bbbbbb;
+    color: #bd93f9;
 }
 
 .machlit .hljs-variable.constant_ {
-    color: #bbbbbb;
+    color: #f1fa8c;
 }
 
 .machlit .hljs-title {
-    color: #bbbbbb;
+    color: #8be9fd;
+    font-weight: bold;
 }
 
 .machlit .hljs-title.class_ {
-    color: #bbbbbb;
+    color: #ffb86c;
+    font-weight: bold;
 }
 
 .machlit .hljs-title.function_ {
-    color: #bbbbbb;
+    color: #50fa7b;
+    font-weight: bold;
 }
 
 .machlit .hljs-params {
@@ -98,96 +103,99 @@
 .machlit .hljs-comment,
 .machlit .hljs-doctag {
     color: #666666;
+    font-style: italic;
 }
 
 .machlit .hljs-meta {
-    color: #bbbbbb;
+    color: #ff79c6;
 }
 
 .machlit .hljs-section {
-    color: #bbbbbb;
+    color: #8be9fd;
+    font-weight: bold;
 }
 
 .machlit .hljs-name {
-    color: #bbbbbb;
+    color: #8be9fd;
 }
 
 .machlit .hljs-attr {
-    color: #bbbbbb;
+    color: #f1fa8c;
 }
 
 .machlit .hljs-attribute {
-    color: #bbbbbb;
+    color: #f1fa8c;
 }
 
 .machlit .hljs-bullet {
-    color: #bbbbbb;
+    color: #ffb86c;
 }
 
 .machlit .hljs-code {
-    color: #bbbbbb;
+    color: #50fa7b;
 }
 
 .machlit .hljs-emphasis {
-    color: #bbbbbb;
+    color: #ffb86c;
     font-style: italic;
 }
 
 .machlit .hljs-strong {
-    color: #bbbbbb;
+    color: #ff79c6;
     font-weight: bold;
 }
 
 .machlit .hljs-formula {
-    color: #bbbbbb;
+    color: #bd93f9;
 }
 
 .machlit .hljs-link {
-    color: #bbbbbb;
+    color: #8be9fd;
     font-style: italic;
+    text-decoration: underline;
 }
 
 .machlit .hljs-quote {
-    color: #bbbbbb;
+    color: #666666;
     font-style: italic;
 }
 
 .machlit .hljs-selector-tag {
-    color: #bbbbbb;
+    color: #ff7ab2;
 }
 
 .machlit .hljs-selector-id {
-    color: #bbbbbb;
+    color: #bd93f9;
 }
 
 .machlit .hljs-selector-class {
-    color: #bbbbbb;
+    color: #8be9fd;
 }
 
 .machlit .hljs-selector-attr {
-    color: #bbbbbb;
+    color: #f1fa8c;
 }
 
 .machlit .hljs-selector-pseudo {
-    color: #bbbbbb;
+    color: #ffb86c;
 }
 
 .machlit .hljs-template-tag {
-    color: #bbbbbb;
+    color: #ff79c6;
 }
 
 .machlit .hljs-template-variable {
-    color: #bbbbbb;
+    color: #bd93f9;
 }
 
 .machlit .hljs-addition {
-    color: #bbbbbb;
-    background: rgba(187, 187, 187, 0.1);
+    color: #50fa7b;
+    background: rgba(80, 250, 123, 0.1);
 }
 
 .machlit .hljs-deletion {
-    color: #bbbbbb;
-    background: rgba(187, 187, 187, 0.1);
+    color: #ff5555;
+    background: rgba(255, 85, 85, 0.1);
 }
 
 .machlit :is(h1, h2, h3, h4, h5, h6) a code {
@@ -200,7 +208,7 @@
 
 .machlit code {
     color: #eeeeee;
-    background: #22211f;
+    background: #191816;
     border-radius: 0.7rem;
 }
 
@@ -220,16 +228,16 @@
 
 .machlit .ace_gutter {
     color: #bbbbbb;
-    background: #22211f;
+    background: #191816;
 }
 
 .machlit .ace_gutter-active-line.ace_gutter-cell {
     color: #cccccc;
-    background: #22211f;
+    background: #191816;
 }
 
 .machlit .tooltiptext {
-    background: #22211f;
+    background: #191816;
     color: #cccccc;
 }
 
