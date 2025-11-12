@@ -1,10 +1,10 @@
 .ie \n(.g .ds Aq \(aq
 .el .ds Aq '
-.TH cutler 1  "cutler 0.15.0" 
+.TH cutler 1  "cutler 0.15.1" 
 .SH NAME
 cutler \- Powerful, declarative settings management for your Mac, with speed.
 .SH SYNOPSIS
-\fBcutler\fR [\fB\-v\fR|\fB\-\-verbose\fR] [\fB\-\-quiet\fR] [\fB\-n\fR|\fB\-\-no\-restart\-services\fR] [\fB\-\-no\-sync\fR] [\fB\-\-dry\-run\fR] [\fB\-y\fR|\fB\-\-accept\-all\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
+\fBcutler\fR [\fB\-v\fR|\fB\-\-verbose\fR] [\fB\-\-quiet\fR] [\fB\-N\fR|\fB\-\-no\-restart\-services\fR] [\fB\-\-no\-sync\fR] [\fB\-\-dry\-run\fR] [\fB\-y\fR|\fB\-\-accept\-all\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
 .SH DESCRIPTION
 Powerful, declarative settings management for your Mac, with speed.
 .SH OPTIONS
@@ -15,7 +15,7 @@ Increase output verbosity
 \fB\-\-quiet\fR
 Suppress all output except errors/warnings
 .TP
-\fB\-n\fR, \fB\-\-no\-restart\-services\fR
+\fB\-N\fR, \fB\-\-no\-restart\-services\fR
 Do not restart system services after execution
 .TP
 \fB\-\-no\-sync\fR
@@ -82,4 +82,4 @@ Sync the local config with remote (if any in [remote])
 cutler\-help(1)
 Print this message or the help of the given subcommand(s)
 .SH VERSION
-v0.15.0
+v0.15.1
