@@ -1,4 +1,4 @@
-<img src="assets/logo.png" width="150px" align="right">
+<img src="assets/logo.png" width="180px" align="right">
 
 # 🍎 cutler
 

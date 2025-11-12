@@ -33,14 +33,11 @@ jobs:
         run: |
           cd book
           mdbook build
-          cd ..
-          mkdir -p cookbook
-          cp -r book/book/* cookbook/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "."
+          path: "./book/book/"
 
       - name: Deploy to GitHub Pages
         id: deployment
