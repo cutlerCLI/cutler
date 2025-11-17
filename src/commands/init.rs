@@ -6,10 +6,7 @@ use clap::Args;
 use tokio::fs;
 
 use crate::{
-    commands::Runnable,
-    config::{core::Config, path::get_config_path},
-    log_cute, log_warn,
-    util::io::confirm,
+    commands::Runnable, config::path::get_config_path, log_cute, log_warn, util::io::confirm,
 };
 
 #[derive(Args, Debug)]
@@ -20,7 +17,7 @@ impl Runnable for InitCmd {
     async fn run(&self) -> Result<()> {
         let config_path = get_config_path().await?;
 
-        if Config::is_loadable().await {
+        if config_path.try_exists()? {
             log_warn!("Configuration file already exists at {config_path:?}",);
             if !confirm("Do you want to overwrite it?") {
                 bail!("Configuration init aborted.")

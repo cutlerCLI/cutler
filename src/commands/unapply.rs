@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use crate::{
     cli::atomic::should_dry_run,
     commands::{ResetCmd, Runnable},
-    config::core::Config,
+    config::{core::Config, path::get_config_path},
     domains::convert::serializable_to_prefvalue,
     log_cute, log_dry, log_err, log_info, log_warn,
     snapshot::{core::Snapshot, get_snapshot_path},
@@ -25,7 +25,7 @@ pub struct UnapplyCmd;
 #[async_trait]
 impl Runnable for UnapplyCmd {
     async fn run(&self) -> Result<()> {
-        let config = Config::load(true).await?;
+        let config = Config::new(get_config_path().await?).load(true).await?;
 
         if !Snapshot::is_loadable().await {
             log_warn!("No snapshot found to revert.");

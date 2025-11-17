@@ -3,47 +3,59 @@
 use anyhow::Result;
 use defaults_rs::{Domain, PrefValue, Preferences};
 use std::collections::HashMap;
-use std::fs;
 use toml::Table;
-use toml_edit::{DocumentMut, Item};
+use toml_edit::Item;
 
 use crate::config::core::Config;
 use crate::domains::convert::toml_edit_to_toml;
 
 /// Collect all tables in `[set]`, parse with toml_edit to properly handle inline tables,
 /// and return a map domain → settings.
-pub fn collect(config: &Config) -> Result<HashMap<String, Table>> {
+pub async fn collect(config: &Config) -> Result<HashMap<String, Table>> {
     let mut out = HashMap::new();
 
     // If we have the config path, read the raw file to parse with toml_edit
     // This allows us to distinguish inline tables from nested tables
-    let content = fs::read_to_string(&config.path)?;
-    let doc = content.parse::<DocumentMut>()?;
+    if let Ok(doc) = config.load_as_mut(false).await {
+        if let Some(Item::Table(set_table)) = doc.get("set") {
+            for (domain_key, item) in set_table.iter() {
+                if let Item::Table(domain_table) = item {
+                    // Now process the domain_table, checking if values are inline tables
+                    let mut settings = Table::new();
 
-    if let Some(Item::Table(set_table)) = doc.get("set") {
-        for (domain_key, item) in set_table.iter() {
-            if let Item::Table(domain_table) = item {
-                // Now process the domain_table, checking if values are inline tables
-                let mut settings = Table::new();
+                    for (key, value) in domain_table.iter() {
+                        match value {
+                            Item::Value(v) => {
+                                // This could be a scalar value or an inline table
+                                settings.insert(key.to_string(), toml_edit_to_toml(v)?);
+                            }
+                            Item::Table(nested_table) => {
+                                // This is a nested table header [set.domain.nested]
+                                // Recursively process it with the prefixed domain name
+                                let nested_domain = format!("{}.{}", domain_key, key);
+                                collect_nested_table(&nested_domain, nested_table, &mut out)?;
+                            }
+                            _ => {}
+                        }
+                    }
 
-                for (key, value) in domain_table.iter() {
-                    match value {
-                        Item::Value(v) => {
-                            // This could be a scalar value or an inline table
-                            settings.insert(key.to_string(), toml_edit_to_toml(v)?);
-                        }
-                        Item::Table(nested_table) => {
-                            // This is a nested table header [set.domain.nested]
-                            // Recursively process it with the prefixed domain name
-                            let nested_domain = format!("{}.{}", domain_key, key);
-                            collect_nested_table(&nested_domain, nested_table, &mut out)?;
-                        }
-                        _ => {}
+                    if !settings.is_empty() {
+                        out.insert(domain_key.to_string(), settings);
                     }
                 }
-
+            }
+        }
+    } else {
+        // Fallback: use the already-deserialized config.set
+        // This is for tests or when config.path is not available
+        if let Some(set) = &config.set {
+            for (domain_key, domain_val) in set {
+                let mut settings = Table::new();
+                for (k, v) in domain_val {
+                    settings.insert(k.clone(), v.clone());
+                }
                 if !settings.is_empty() {
-                    out.insert(domain_key.to_string(), settings);
+                    out.insert(domain_key.clone(), settings);
                 }
             }
         }

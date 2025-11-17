@@ -7,7 +7,7 @@ use clap::Args;
 use crate::{
     cli::atomic::should_dry_run,
     commands::Runnable,
-    config::{core::Config, remote::RemoteConfigManager},
+    config::{core::Config, path::get_config_path, remote::RemoteConfigManager},
     log_cute, log_dry, log_warn,
     util::{
         io::confirm,
@@ -26,7 +26,8 @@ pub struct FetchCmd {
 impl Runnable for FetchCmd {
     async fn run(&self) -> Result<()> {
         let dry_run = should_dry_run();
-        let local_config = Config::load(true).await?;
+
+        let local_config = Config::new(get_config_path().await?).load(true).await?;
 
         // parse [remote] section
         let remote_mgr = if let Some(ref remote) = local_config.remote {

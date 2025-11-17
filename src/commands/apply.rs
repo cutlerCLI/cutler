@@ -69,11 +69,12 @@ struct PreferenceJob {
 impl Runnable for ApplyCmd {
     async fn run(&self) -> Result<()> {
         let dry_run = should_dry_run();
-        let config = Config::load(true).await?;
+
+        let config_path = get_config_path().await?;
 
         // remote download logic
         if let Some(url) = &self.url {
-            if Config::is_loadable().await
+            if config_path.try_exists()?
                 && !confirm("Local config exists but a URL was still passed. Proceed?")
             {
                 bail!("Aborted apply: --url is passed despite local config.")
@@ -89,9 +90,11 @@ impl Runnable for ApplyCmd {
             );
         }
 
+        let config = Config::new(config_path).load(true).await?;
+
         // parse + flatten domains
         let digest = get_digest(config.path.clone())?;
-        let domains = collector::collect(&config)?;
+        let domains = collector::collect(&config).await?;
 
         // load the old snapshot (if any), otherwise create a new instance
         let snap_path = get_snapshot_path().await?;

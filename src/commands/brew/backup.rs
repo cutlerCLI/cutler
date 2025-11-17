@@ -11,7 +11,7 @@ use crate::{
     },
     cli::atomic::should_dry_run,
     commands::Runnable,
-    config::core::Config,
+    config::{core::Config, path::get_config_path},
     log_cute, log_dry, log_info, log_warn,
     util::io::confirm,
 };
@@ -33,11 +33,14 @@ impl Runnable for BrewBackupCmd {
         ensure_brew().await?;
 
         // init config
-        let mut config = if Config::is_loadable().await {
-            Config::load(true).await?
+        let config_path = get_config_path().await?;
+        let mut config = Config::new(config_path);
+
+        config = if config.path.try_exists()? {
+            config.load(true).await?
         } else {
             log_warn!("Config file does not exist. Creating new...",);
-            Config::new().await
+            config
         };
 
         // Prepare Brew struct for backup
@@ -134,7 +137,7 @@ impl Runnable for BrewBackupCmd {
 
         // write backup
         if !dry_run {
-            config.save().await?;
+            config.save(None).await?;
 
             log_cute!("Done!");
         } else {

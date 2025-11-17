@@ -9,7 +9,7 @@ use tokio::fs;
 use crate::{
     cli::atomic::should_dry_run,
     commands::Runnable,
-    config::core::Config,
+    config::{core::Config, path::get_config_path},
     domains::{collect, effective, read_current},
     log_cute, log_dry, log_err, log_info, log_warn,
     snapshot::{Snapshot, get_snapshot_path},
@@ -23,7 +23,8 @@ pub struct ResetCmd;
 impl Runnable for ResetCmd {
     async fn run(&self) -> Result<()> {
         let dry_run = should_dry_run();
-        let config = Config::load(true).await?;
+
+        let config = Config::new(get_config_path().await?).load(true).await?;
 
         log_warn!("This will DELETE all settings defined in your config file.",);
         log_warn!("Settings will be reset to macOS defaults, not to their previous values.",);
@@ -32,7 +33,7 @@ impl Runnable for ResetCmd {
             return Ok(());
         }
 
-        let domains = collect(&config)?;
+        let domains = collect(&config).await?;
 
         for (domain, table) in domains {
             for (key, _) in table {

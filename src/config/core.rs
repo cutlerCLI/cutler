@@ -2,12 +2,11 @@
 
 use std::{collections::HashMap, path::PathBuf};
 
-use anyhow::{Result, bail};
+use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 use tokio::fs;
 use toml::Value;
-
-use crate::config::path::get_config_path;
+use toml_edit::DocumentMut;
 
 /// Struct representing a cutler configuration.
 ///
@@ -64,60 +63,73 @@ pub struct Brew {
 }
 
 impl Config {
-    /// If the configuration file can be loaded.
-    /// Since this is an independent function, it is generally encouraged over manually
-    /// checking the existence of the path derived from `get_config_path()`.
-    pub async fn is_loadable() -> bool {
-        if let Ok(path) = get_config_path().await {
-            fs::try_exists(path).await.unwrap_or_default()
-        } else {
-            false
-        }
-    }
-
-    /// Loads the configuration. Errors out if the configuration is not loadable
-    /// (decided by `Self::is_loadable()`).
-    pub async fn load(not_if_locked: bool) -> Result<Self> {
-        if Self::is_loadable().await {
-            let config_path = get_config_path().await.unwrap();
-            let data = fs::read_to_string(&config_path).await?;
-            let mut config: Config = toml::from_str(&data)?;
-
-            if config.lock.unwrap_or_default() && not_if_locked {
-                bail!("Config is locked. Run `cutler unlock` to unlock.")
-            }
-
-            config.path = config_path;
-            Ok(config)
-        } else {
-            bail!("Config path could not be decided, so cannot load.")
-        }
-    }
-
-    /// Creates a new `Config` instance.
-    /// Note that the path field is pre-initialized with `get_config_path()`,
-    /// which can also be an empty `PathBuf`.
-    pub async fn new() -> Self {
+    pub fn new(path: PathBuf) -> Self {
         Config {
             lock: None,
             set: None,
             vars: None,
             command: None,
             brew: None,
-            remote: None,
             mas: None,
-            path: get_config_path().await.unwrap_or_default(),
+            remote: None,
+            path,
+        }
+    }
+
+    pub fn is_loadable(&self) -> bool {
+        !self.path.as_os_str().is_empty() && self.path.try_exists().unwrap_or(false)
+    }
+
+    /// Loads the configuration. Errors out if the configuration is not loadable
+    /// (decided by `Self::is_loadable()`).
+    pub async fn load(&self, not_if_locked: bool) -> Result<Self> {
+        if self.is_loadable() {
+            let data = fs::read_to_string(&self.path).await?;
+            let config: Config =
+                toml::from_str(&data).context("Failed to parse config data from valid TOML.")?;
+
+            if config.lock.unwrap_or_default() && not_if_locked {
+                bail!("Config is locked. Run `cutler unlock` to unlock.")
+            }
+
+            Ok(config)
+        } else {
+            bail!("Config path does not exist!")
+        }
+    }
+
+    /// Loads config as mutable DocumentMut. Useful for in-place editing of values.
+    pub async fn load_as_mut(&self, not_if_locked: bool) -> Result<DocumentMut> {
+        if self.is_loadable() {
+            let data = fs::read_to_string(&self.path).await?;
+            let config: Config =
+                toml::from_str(&data).context("Failed to parse config data from valid TOML.")?;
+
+            if config.lock.unwrap_or_default() && not_if_locked {
+                bail!("Config is locked. Run `cutler unlock` to unlock.")
+            }
+
+            let doc = data.parse::<DocumentMut>()?;
+
+            Ok(doc)
+        } else {
+            bail!("Config path does not exist!")
         }
     }
 
     /// Saves the configuration instance onto disk.
     /// If the parent directories do not exist, they are also created in the process.
-    pub async fn save(&self) -> Result<()> {
+    pub async fn save(&self, doc: Option<DocumentMut>) -> Result<()> {
         if let Some(dir) = self.path.parent() {
             fs::create_dir_all(dir).await?;
         }
 
-        let data = toml::to_string_pretty(self)?;
+        let data = if let Some(doc) = doc {
+            doc.to_string()
+        } else {
+            toml::to_string_pretty(self)?
+        };
+
         fs::write(&self.path, data).await?;
 
         Ok(())

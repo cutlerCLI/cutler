@@ -12,7 +12,7 @@ use crate::{
     },
     cli::atomic::{should_be_quiet, should_dry_run},
     commands::Runnable,
-    config::core::Config,
+    config::{core::Config, path::get_config_path},
     log_cute, log_dry, log_err, log_info, log_warn,
 };
 
@@ -24,7 +24,8 @@ impl Runnable for BrewInstallCmd {
     async fn run(&self) -> Result<()> {
         let dry_run = should_dry_run();
 
-        let config = Config::load(true).await?;
+        let config = Config::new(get_config_path().await?).load(true).await?;
+
         let brew_cfg = config
             .brew
             .clone()

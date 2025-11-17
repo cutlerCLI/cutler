@@ -3,6 +3,7 @@
 use crate::cli::Command;
 use crate::cli::args::BrewSubcmd;
 use crate::config::core::Config;
+use crate::config::path::get_config_path;
 use crate::config::remote::RemoteConfigManager;
 use crate::{log_err, log_info, log_warn};
 
@@ -26,11 +27,12 @@ pub async fn try_auto_sync(command: &crate::cli::Command) {
         _ => {}
     }
 
-    if !Config::is_loadable().await {
+    let config_path = get_config_path().await.unwrap_or_default();
+    if !config_path.try_exists().unwrap_or(false) {
         return;
     }
 
-    let local_config = match Config::load(true).await {
+    let local_config = match Config::new(config_path).load(true).await {
         Ok(cfg) => cfg,
         Err(_) => {
             // Loading error handling is managed by later loads.
