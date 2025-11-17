@@ -1,10 +1,23 @@
+.machlit {
+    font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+        sans-serif;
+}
+
+.machlit code,
+.machlit pre,
+.machlit .hljs {
+    font-family:
+        ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
 .machlit.hljs {
     color: #c9c7c2;
     background: #121212;
 }
 
 .machlit .hljs-keyword {
-    color: #b3a7c2;
+    color: #d8c8ff;
     font-weight: bold;
 }
 
@@ -17,19 +30,19 @@
 }
 
 .machlit .hljs-built_in {
-    color: #a7b8a7;
+    color: #cfe8c5;
 }
 
 .machlit .hljs-type {
-    color: #b3b2c2;
+    color: #dad8ff;
 }
 
 .machlit .hljs-literal {
-    color: #c2c1a7;
+    color: #f1e8b0;
 }
 
 .machlit .hljs-number {
-    color: #c2c1a7;
+    color: #f1e8b0;
 }
 
 .machlit .hljs-operator {
@@ -54,7 +67,7 @@
 }
 
 .machlit .hljs-string {
-    color: #a7b8a7;
+    color: #cfe8c5;
 }
 
 .machlit .hljs-char.escape_ {
@@ -66,19 +79,19 @@
 }
 
 .machlit .hljs-symbol {
-    color: #c2c1a7;
+    color: #f1e8b0;
 }
 
 .machlit .hljs-variable {
-    color: #b3b2c2;
+    color: #dad8ff;
 }
 
 .machlit .hljs-variable.language_ {
-    color: #b3b2c2;
+    color: #dad8ff;
 }
 
 .machlit .hljs-variable.constant_ {
-    color: #c2c1a7;
+    color: #f1e8b0;
 }
 
 .machlit .hljs-title {
@@ -92,7 +105,7 @@
 }
 
 .machlit .hljs-title.function_ {
-    color: #a7b8a7;
+    color: #cfe8c5;
     font-weight: bold;
 }
 
@@ -102,7 +115,7 @@
 
 .machlit .hljs-comment,
 .machlit .hljs-doctag {
-    color: #888682;
+    color: #7a7975;
     font-style: italic;
 }
 
@@ -120,11 +133,11 @@
 }
 
 .machlit .hljs-attr {
-    color: #c2c1a7;
+    color: #f1e8b0;
 }
 
 .machlit .hljs-attribute {
-    color: #c2c1a7;
+    color: #f1e8b0;
 }
 
 .machlit .hljs-bullet {
@@ -132,7 +145,7 @@
 }
 
 .machlit .hljs-code {
-    color: #a7b8a7;
+    color: #cfe8c5;
 }
 
 .machlit .hljs-emphasis {
@@ -146,7 +159,7 @@
 }
 
 .machlit .hljs-formula {
-    color: #b3b2c2;
+    color: #dad8ff;
 }
 
 .machlit .hljs-link {
@@ -156,16 +169,16 @@
 }
 
 .machlit .hljs-quote {
-    color: #888682;
+    color: #7a7975;
     font-style: italic;
 }
 
 .machlit .hljs-selector-tag {
-    color: #b3a7c2;
+    color: #d8c8ff;
 }
 
 .machlit .hljs-selector-id {
-    color: #b3b2c2;
+    color: #dad8ff;
 }
 
 .machlit .hljs-selector-class {
@@ -173,7 +186,7 @@
 }
 
 .machlit .hljs-selector-attr {
-    color: #c2c1a7;
+    color: #f1e8b0;
 }
 
 .machlit .hljs-selector-pseudo {
@@ -185,11 +198,11 @@
 }
 
 .machlit .hljs-template-variable {
-    color: #b3b2c2;
+    color: #dad8ff;
 }
 
 .machlit .hljs-addition {
-    color: #a7b8a7;
+    color: #cfe8c5;
     background: rgba(167, 184, 167, 0.08);
 }
 
@@ -227,7 +240,7 @@
 }
 
 .machlit del {
-    color: #888682;
+    color: #7a7975;
 }
 
 .machlit .ace_gutter {

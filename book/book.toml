@@ -1,14 +1,14 @@
 [book]
-title = "cutler - Cookbook"
+title = "the cutler cookbook"
 author = "Anindya Shiddhartha"
 description = "Documentation for cutler - a fast, declarative settings manager for the Mac"
 language = "en"
 src = "src"
 
 [output.html]
-default-theme = "machlit"
+default-theme = "machlight"
 preferred-dark-theme = "machlit"
-additional-css = ["./theme/machlit.css"]
+additional-css = ["./theme/machlit.css", "./theme/machlight.css"]
 
 [output.html.search]
 limit-results = 15
