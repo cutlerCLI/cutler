@@ -1,0 +1,242 @@
+.machlight {
+    font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+        sans-serif;
+}
+
+/* Code fonts */
+.machlight code,
+.machlight pre,
+.machlight .hljs {
+    font-family:
+        ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* Base HLJS block */
+.machlight.hljs {
+    color: #2b2b2b;
+    background: #fafafa;
+}
+
+/* Syntax colors (light equivalents) */
+.machlight .hljs-keyword {
+    color: #5a34b0;
+    font-weight: bold;
+}
+
+.machlight .hljs-property {
+    color: #6b665a;
+}
+
+.machlight .hljs-tag {
+    color: #4b6b64;
+}
+
+.machlight .hljs-built_in {
+    color: #3d6c2f;
+}
+
+.machlight .hljs-type {
+    color: #5f58c6;
+}
+
+.machlight .hljs-literal,
+.machlight .hljs-number,
+.machlight .hljs-variable.constant_,
+.machlight .hljs-symbol,
+.machlight .hljs-attr,
+.machlight .hljs-attribute {
+    color: #b79b00;
+}
+
+.machlight .hljs-operator {
+    color: #6a5a68;
+}
+
+.machlight .hljs-entity,
+.machlight .hljs-url {
+    color: #4b6b64;
+}
+
+.machlight .hljs-url {
+    text-decoration: underline;
+}
+
+.machlight .hljs-punctuation {
+    color: #2b2b2b;
+}
+
+.machlight .hljs-regexp,
+.machlight .hljs-char.escape_ {
+    color: #6b665a;
+}
+
+.machlight .hljs-string,
+.machlight .hljs-title.function_ {
+    color: #3d6c2f;
+    font-weight: bold;
+}
+
+.machlight .hljs-subst {
+    color: #333;
+}
+
+.machlight .hljs-title {
+    color: #4b6b64;
+    font-weight: bold;
+}
+
+.machlight .hljs-title.class_ {
+    color: #6b665a;
+    font-weight: bold;
+}
+
+.machlight .hljs-params {
+    color: #2b2b2b;
+}
+
+.machlight .hljs-comment,
+.machlight .hljs-doctag {
+    color: #7f7f7f;
+    font-style: italic;
+}
+
+.machlight .hljs-meta {
+    color: #6a5a68;
+}
+
+.machlight .hljs-section,
+.machlight .hljs-name {
+    color: #4b6b64;
+    font-weight: bold;
+}
+
+.machlight .hljs-bullet,
+.machlight .hljs-emphasis,
+.machlight .hljs-selector-pseudo {
+    color: #6b665a;
+    font-style: italic;
+}
+
+.machlight .hljs-strong {
+    color: #6a5a68;
+    font-weight: bold;
+}
+
+.machlight .hljs-formula,
+.machlight .hljs-variable.language_,
+.machlight .hljs-template-variable,
+.machlight .hljs-selector-id {
+    color: #5f58c6;
+}
+
+.machlight .hljs-selector-tag {
+    color: #5a34b0;
+}
+
+.machlight .hljs-selector-class {
+    color: #4b6b64;
+}
+
+.machlight .hljs-selector-attr {
+    color: #b79b00;
+}
+
+.machlight .hljs-template-tag {
+    color: #6a5a68;
+}
+
+.machlight .hljs-addition {
+    color: #3d6c2f;
+    background: rgba(61, 108, 47, 0.08);
+}
+
+.machlight .hljs-deletion {
+    color: #a65c5c;
+    background: rgba(166, 92, 92, 0.1);
+}
+
+.machlight :is(h1, h2, h3, h4, h5, h6) a code {
+    color: #2b2b2b;
+}
+
+.machlight a code {
+    color: #555;
+}
+
+.machlight code {
+    color: #1f1f1f;
+    background: #f0f0f0;
+    border-radius: 0.7rem;
+}
+
+.machlight blockquote blockquote {
+    border-top: 0.1em solid #555;
+    border-bottom: 0.1em solid #555;
+}
+
+.machlight a {
+    text-decoration: underline;
+    color: #444;
+}
+
+.machlight hr {
+    border-color: #555;
+    border-style: solid;
+}
+
+.machlight del {
+    color: #7f7f7f;
+}
+
+/* ACE editor theme parts */
+.machlight .ace_gutter {
+    color: #555;
+    background: #ededed;
+}
+
+.machlight .ace_gutter-active-line.ace_gutter-cell {
+    color: #2b2b2b;
+    background: #e6e6e6;
+}
+
+.machlight .tooltiptext {
+    background: #e6e6e6;
+    color: #2b2b2b;
+}
+
+/* Theme variables — light equivalents */
+.machlight {
+    --bg: #ffffff;
+    --fg: #2b2b2b;
+    --sidebar-bg: #f5f5f5;
+    --sidebar-fg: #2b2b2b;
+    --sidebar-non-existant: #999;
+    --sidebar-active: #555;
+    --sidebar-spacer: #999;
+    --scrollbar: #aaa;
+    --icons: #777;
+    --icons-hover: #444;
+    --links: #444;
+    --inline-code-color: #2b2b2b;
+    --theme-popup-bg: #e6e6e6;
+    --theme-popup-border: #555;
+    --theme-hover: #ededed;
+    --quote-bg: #f0f0f0;
+    --quote-border: #555;
+    --table-border-color: #555;
+    --table-header-bg: #f0f0f0;
+    --table-alternate-bg: #f7f7f7;
+    --searchbar-border-color: #555;
+    --searchbar-bg: #f0f0f0;
+    --searchbar-fg: #2b2b2b;
+    --searchbar-shadow-color: #555;
+    --searchresults-header-fg: #2b2b2b;
+    --searchresults-border-color: #555;
+    --searchresults-li-bg: #f7f7f7;
+    --search-mark-bg: #b79b00;
+    --warning-border: #555;
+    --color-scheme: light;
+    --copy-button-filter: none;
+    --copy-button-filter-hover: none;
+}
