@@ -10,16 +10,9 @@ mod tests {
     use toml::{Value, value::Table};
 
     fn config_with_set(set: HashMap<String, HashMap<String, Value>>) -> Config {
-        Config {
-            lock: None,
-            set: Some(set),
-            vars: None,
-            command: None,
-            brew: None,
-            mas: None,
-            remote: None,
-            path: Default::default(),
-        }
+        let mut config = Config::new(Default::default());
+        config.set = Some(set);
+        config
     }
 
     #[tokio::test]
