@@ -127,19 +127,6 @@ impl Config {
             bail!("Config path does not exist!")
         }
     }
-
-    /// Saves the configuration instance onto disk.
-    /// If the parent directories do not exist, they are also created in the process.
-    pub async fn save(&self) -> Result<()> {
-        if let Some(dir) = self.path.parent() {
-            fs::create_dir_all(dir).await?;
-        }
-
-        let data = toml::to_string_pretty(self)?;
-        fs::write(&self.path, data).await?;
-
-        Ok(())
-    }
 }
 
 /// Trait for implementing core Config struct methods for other types.
