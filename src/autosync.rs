@@ -26,7 +26,7 @@ pub async fn try_auto_sync(command: &crate::cli::Command, local_config: &mut Con
         _ => {}
     }
 
-    if let Err(_) = local_config.load(true).await {
+    if local_config.load(true).await.is_err() {
         return;
     };
 
