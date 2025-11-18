@@ -27,8 +27,6 @@ pub struct Config {
     pub remote: Option<Remote>,
     #[serde(skip)]
     pub path: PathBuf,
-    #[serde(skip)]
-    _is_loaded: bool,
 }
 
 /// Represents the [remote] table.
@@ -78,7 +76,6 @@ impl Config {
             mas: None,
             remote: None,
             path,
-            _is_loaded: false,
         }
     }
 
@@ -90,24 +87,21 @@ impl Config {
     /// (decided by `.is_loadable()`).
     pub async fn load(&mut self, not_if_locked: bool) -> Result<()> {
         if self.is_loadable() {
-            if !self._is_loaded {
-                let data = fs::read_to_string(&self.path).await?;
-                let config: Config = toml::from_str(&data)
-                    .context("Failed to parse config data from valid TOML.")?;
+            let data = fs::read_to_string(&self.path).await?;
+            let config: Config =
+                toml::from_str(&data).context("Failed to parse config data from valid TOML.")?;
 
-                if config.lock.unwrap_or_default() && not_if_locked {
-                    bail!("Config is locked. Run `cutler unlock` to unlock.")
-                }
-
-                self.lock = config.lock;
-                self.set = config.set;
-                self.vars = config.vars;
-                self.command = config.command;
-                self.brew = config.brew;
-                self.mas = config.mas;
-                self.remote = config.remote;
-                self._is_loaded = true;
+            if config.lock.unwrap_or_default() && not_if_locked {
+                bail!("Config is locked. Run `cutler unlock` to unlock.")
             }
+
+            self.lock = config.lock;
+            self.set = config.set;
+            self.vars = config.vars;
+            self.command = config.command;
+            self.brew = config.brew;
+            self.mas = config.mas;
+            self.remote = config.remote;
 
             Ok(())
         } else {
