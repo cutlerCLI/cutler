@@ -58,14 +58,18 @@ jobs:
           cp README.md release/
           tar -C release -czf $FILE_NAME bin man README.md LICENSE-APACHE LICENSE-MIT
 
+      - name: Set release body
+        id: release_body
+        run: |
+          body=$(cat RELEASE.md)
+          echo "body<<EOF" >> $GITHUB_OUTPUT
+          echo "$body" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          body: |
-            The compressed binaries have been attached with the release.
-
-            [View release changelog](https://github.com/machlit/cutler/blob/master/CHANGELOG.md)
-
+          body: ${{ steps.release_body.outputs.body }}
           files: ${{ env.FILE_NAME }}
 
       - name: Prepare Crates.io README
