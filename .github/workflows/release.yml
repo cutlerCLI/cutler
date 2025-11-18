@@ -2,8 +2,9 @@ name: Release CI
 
 on:
   workflow_dispatch:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "v*"
 
 env:
   CARGO_TERM_COLOR: always
@@ -57,20 +58,15 @@ jobs:
           cp README.md release/
           tar -C release -czf $FILE_NAME bin man README.md LICENSE-APACHE LICENSE-MIT
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v5
+      - name: Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: ${{ env.FILE_NAME }}
-          path: ${{ env.FILE_NAME }}
-          retention-days: 90
+          body: |
+            The compressed binaries have been attached with the release.
 
-      - name: Upload binary to release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ env.FILE_NAME }}
-          tag: ${{ github.ref }}
-          overwrite: true
+            [View release changelog](https://github.com/machlit/cutler/blob/master/CHANGELOG.md)
+
+          files: ${{ env.FILE_NAME }}
 
       - name: Prepare Crates.io README
         run: sed -i '' '/^>/d' README.md
