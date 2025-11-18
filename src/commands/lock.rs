@@ -8,7 +8,7 @@ use anyhow::{Result, bail};
 use crate::{
     cli::atomic::should_dry_run,
     commands::Runnable,
-    config::{core::Config, path::get_config_path},
+    config::core::{Config, ConfigCoreMethods},
     log_dry,
 };
 
@@ -17,14 +17,11 @@ pub struct LockCmd;
 
 #[async_trait]
 impl Runnable for LockCmd {
-    async fn run(&self) -> Result<()> {
-        let config_path = get_config_path().await?;
-
-        if !config_path.try_exists()? {
+    async fn run(&self, config: &mut Config) -> Result<()> {
+        if !config.is_loadable() {
             bail!("Cannot find a configuration to lock in the first place.")
         }
 
-        let config = Config::new(config_path);
         let mut document = config.load_as_mut(false).await?;
         let dry_run = should_dry_run();
 
@@ -40,7 +37,7 @@ impl Runnable for LockCmd {
         }
 
         document["lock"] = toml_edit::value(true);
-        config.save(Some(document)).await?;
+        document.save(&config.path).await?;
 
         Ok(())
     }

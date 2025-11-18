@@ -67,14 +67,12 @@ struct PreferenceJob {
 
 #[async_trait]
 impl Runnable for ApplyCmd {
-    async fn run(&self) -> Result<()> {
+    async fn run(&self, config: &mut Config) -> Result<()> {
         let dry_run = should_dry_run();
-
-        let config_path = get_config_path().await?;
 
         // remote download logic
         if let Some(url) = &self.url {
-            if config_path.try_exists()?
+            if config.is_loadable()
                 && !confirm("Local config exists but a URL was still passed. Proceed?")
             {
                 bail!("Aborted apply: --url is passed despite local config.")
@@ -90,7 +88,8 @@ impl Runnable for ApplyCmd {
             );
         }
 
-        let config = Config::new(config_path).load(true).await?;
+        // finally either load the preexisting config / the config we just downloaded
+        config.load(true).await?;
 
         // parse + flatten domains
         let digest = get_digest(config.path.clone())?;
@@ -266,7 +265,7 @@ impl Runnable for ApplyCmd {
 
         // run brew
         if self.brew {
-            BrewInstallCmd.run().await?;
+            BrewInstallCmd.run(config).await?;
         }
 
         // exec external commands
@@ -279,7 +278,7 @@ impl Runnable for ApplyCmd {
                 ExecMode::Regular
             };
 
-            let exec_run_count = core::run_all(config, mode).await?;
+            let exec_run_count = core::run_all(config.clone(), mode).await?;
 
             if !dry_run {
                 if exec_run_count > 0 {

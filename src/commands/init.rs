@@ -5,20 +5,16 @@ use async_trait::async_trait;
 use clap::Args;
 use tokio::fs;
 
-use crate::{
-    commands::Runnable, config::path::get_config_path, log_cute, log_warn, util::io::confirm,
-};
+use crate::{commands::Runnable, config::core::Config, log_cute, log_warn, util::io::confirm};
 
 #[derive(Args, Debug)]
 pub struct InitCmd;
 
 #[async_trait]
 impl Runnable for InitCmd {
-    async fn run(&self) -> Result<()> {
-        let config_path = get_config_path().await?;
-
-        if config_path.try_exists()? {
-            log_warn!("Configuration file already exists at {config_path:?}",);
+    async fn run(&self, config: &mut Config) -> Result<()> {
+        if config.is_loadable() {
+            log_warn!("Configuration file already exists at {:?}", &config.path);
             if !confirm("Do you want to overwrite it?") {
                 bail!("Configuration init aborted.")
             }
@@ -28,10 +24,13 @@ impl Runnable for InitCmd {
         // this is not done by create_empty_config
         let default_cfg = include_str!("../../examples/complete.toml");
 
-        fs::create_dir_all(config_path.parent().unwrap()).await?;
-        fs::write(&config_path, default_cfg).await?;
+        fs::create_dir_all(&config.path.parent().unwrap()).await?;
+        fs::write(&config.path, default_cfg).await?;
 
-        log_cute!("Config created at {config_path:?}, Review and customize it before applying.",);
+        log_cute!(
+            "Config created at {:?}, Review and customize it before applying.",
+            &config.path
+        );
 
         Ok(())
     }

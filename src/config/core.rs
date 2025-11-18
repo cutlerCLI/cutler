@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use std::{collections::HashMap, path::PathBuf};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 
 use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
@@ -81,8 +84,8 @@ impl Config {
     }
 
     /// Loads the configuration. Errors out if the configuration is not loadable
-    /// (decided by `Self::is_loadable()`).
-    pub async fn load(&self, not_if_locked: bool) -> Result<Self> {
+    /// (decided by `.is_loadable()`).
+    pub async fn load(&mut self, not_if_locked: bool) -> Result<()> {
         if self.is_loadable() {
             let data = fs::read_to_string(&self.path).await?;
             let config: Config =
@@ -92,7 +95,15 @@ impl Config {
                 bail!("Config is locked. Run `cutler unlock` to unlock.")
             }
 
-            Ok(config)
+            self.lock = config.lock;
+            self.set = config.set;
+            self.vars = config.vars;
+            self.command = config.command;
+            self.brew = config.brew;
+            self.mas = config.mas;
+            self.remote = config.remote;
+
+            Ok(())
         } else {
             bail!("Config path does not exist!")
         }
@@ -119,18 +130,34 @@ impl Config {
 
     /// Saves the configuration instance onto disk.
     /// If the parent directories do not exist, they are also created in the process.
-    pub async fn save(&self, doc: Option<DocumentMut>) -> Result<()> {
+    pub async fn save(&self) -> Result<()> {
         if let Some(dir) = self.path.parent() {
             fs::create_dir_all(dir).await?;
         }
 
-        let data = if let Some(doc) = doc {
-            doc.to_string()
-        } else {
-            toml::to_string_pretty(self)?
-        };
-
+        let data = toml::to_string_pretty(self)?;
         fs::write(&self.path, data).await?;
+
+        Ok(())
+    }
+}
+
+/// Trait for implementing core Config struct methods for other types.
+///
+/// Purely convenience.
+pub trait ConfigCoreMethods {
+    fn save(&self, path: &Path) -> impl Future<Output = Result<()>>;
+}
+
+impl ConfigCoreMethods for DocumentMut {
+    /// Saves the document into the conventional configuration path decided during runtime.
+    async fn save(&self, path: &Path) -> Result<()> {
+        if let Some(dir) = path.parent() {
+            fs::create_dir_all(dir).await?;
+        }
+
+        let data = self.to_string();
+        fs::write(path, data).await?;
 
         Ok(())
     }

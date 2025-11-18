@@ -12,7 +12,7 @@ use crate::{
     },
     cli::atomic::{should_be_quiet, should_dry_run},
     commands::Runnable,
-    config::{core::Config, path::get_config_path},
+    config::core::Config,
     log_cute, log_dry, log_err, log_info, log_warn,
 };
 
@@ -21,10 +21,10 @@ pub struct BrewInstallCmd;
 
 #[async_trait]
 impl Runnable for BrewInstallCmd {
-    async fn run(&self) -> Result<()> {
+    async fn run(&self, config: &mut Config) -> Result<()> {
         let dry_run = should_dry_run();
 
-        let config = Config::new(get_config_path().await?).load(true).await?;
+        config.load(true).await?;
 
         let brew_cfg = config
             .brew
@@ -50,7 +50,7 @@ impl Runnable for BrewInstallCmd {
                     );
                 }
                 if !diff.extra_taps.is_empty() {
-                    log_warn!("Extra taps not in config: {:?}", diff.extra_taps,);
+                    log_warn!("Extra taps not in config: {:?}", diff.extra_taps);
                 }
                 if !diff.extra_formulae.is_empty() || !diff.extra_casks.is_empty() {
                     log_warn!(

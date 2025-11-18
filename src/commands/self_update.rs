@@ -7,7 +7,7 @@ use self_update::{backends::github::Update, cargo_crate_version};
 use std::env;
 use tokio::fs;
 
-use crate::{commands::Runnable, log_cute, log_warn};
+use crate::{commands::Runnable, config::core::Config, log_cute, log_warn};
 
 #[derive(Args, Debug)]
 pub struct SelfUpdateCmd {
@@ -18,7 +18,7 @@ pub struct SelfUpdateCmd {
 
 #[async_trait]
 impl Runnable for SelfUpdateCmd {
-    async fn run(&self) -> Result<()> {
+    async fn run(&self, _: &mut Config) -> Result<()> {
         // get the path to the current executable
         let exe_path = env::current_exe()?;
         let exe_path_str = exe_path.to_string_lossy();

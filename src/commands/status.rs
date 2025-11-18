@@ -6,7 +6,7 @@ use crate::{
         types::BrewDiff,
     },
     commands::Runnable,
-    config::{core::Config, path::get_config_path},
+    config::core::Config,
     domains::{collect, effective, read_current},
     log_cute, log_err, log_info, log_warn,
     util::logging::{BOLD, GREEN, RED, RESET},
@@ -25,8 +25,8 @@ pub struct StatusCmd {
 
 #[async_trait]
 impl Runnable for StatusCmd {
-    async fn run(&self) -> Result<()> {
-        let config = Config::new(get_config_path().await?).load(false).await?;
+    async fn run(&self, config: &mut Config) -> Result<()> {
+        config.load(false).await?;
         let domains = collect(&config).await?;
 
         // flatten all settings into a list

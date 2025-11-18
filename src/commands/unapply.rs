@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use crate::{
     cli::atomic::should_dry_run,
     commands::{ResetCmd, Runnable},
-    config::{core::Config, path::get_config_path},
+    config::core::Config,
     domains::convert::serializable_to_prefvalue,
     log_cute, log_dry, log_err, log_info, log_warn,
     snapshot::{core::Snapshot, get_snapshot_path},
@@ -24,14 +24,14 @@ pub struct UnapplyCmd;
 
 #[async_trait]
 impl Runnable for UnapplyCmd {
-    async fn run(&self) -> Result<()> {
-        let config = Config::new(get_config_path().await?).load(true).await?;
+    async fn run(&self, config: &mut Config) -> Result<()> {
+        config.load(true).await?;
 
         if !Snapshot::is_loadable().await {
             log_warn!("No snapshot found to revert.");
 
             if confirm("Reset all System Settings instead?") {
-                return ResetCmd.run().await;
+                return ResetCmd.run(config).await;
             } else {
                 bail!("Abort operation.")
             }
@@ -51,7 +51,7 @@ impl Runnable for UnapplyCmd {
             }
         };
 
-        if snapshot.digest != get_digest(config.path)? {
+        if snapshot.digest != get_digest(config.path.clone())? {
             log_warn!("Config has been modified since last application.",);
             log_warn!("Please note that only the applied modifications will be unapplied.",);
         }

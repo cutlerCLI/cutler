@@ -30,6 +30,8 @@ use cutler::cli::atomic::{
 };
 use cutler::cli::{Args, Command};
 use cutler::commands::Runnable;
+use cutler::config::core::Config;
+use cutler::config::path::get_config_path;
 use cutler::util::sudo::{run_with_noroot, run_with_root};
 use cutler::{log_err, log_info};
 
@@ -63,9 +65,18 @@ async fn main() {
         exit(1);
     }
 
+    // decide configuration path for the entire lifetime of the program
+    let mut config = match get_config_path().await {
+        Ok(path) => Config::new(path),
+        Err(_) => {
+            log_err!("Path could not be decided for the configuration file.");
+            exit(1);
+        }
+    };
+
     // command invocation (for real this time)
     let runnable: &dyn Runnable = args.command.as_runnable();
-    let result = runnable.run().await;
+    let result = runnable.run(&mut config).await;
 
     if let Err(err) = result {
         log_err!("{err}");

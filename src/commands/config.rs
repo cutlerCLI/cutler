@@ -11,7 +11,7 @@ use tokio::fs;
 use crate::{
     cli::atomic::{should_be_quiet, should_dry_run},
     commands::Runnable,
-    config::path::get_config_path,
+    config::core::Config,
     log_cute, log_dry, log_info,
 };
 
@@ -20,12 +20,10 @@ pub struct ConfigCmd {}
 
 #[async_trait]
 impl Runnable for ConfigCmd {
-    async fn run(&self) -> Result<()> {
-        let config_path = get_config_path().await?;
-
+    async fn run(&self, config: &mut Config) -> Result<()> {
         // handle dry‑run
         if should_dry_run() {
-            log_dry!("Would display config at {config_path:?}",);
+            log_dry!("Would display config from {:?}", config.path);
             return Ok(());
         }
 
@@ -48,10 +46,10 @@ impl Runnable for ConfigCmd {
                 }
             };
 
-            log_info!("Executing: {} {:?}", editor_cmd, config_path,);
+            log_info!("Executing: {} {:?}", editor_cmd, &config.path);
             log_cute!("Opening configuration in editor. Close editor to quit.",);
             let mut command = Command::new(program);
-            command.args(&args).arg(&config_path);
+            command.args(&args).arg(&config.path);
 
             let status = command.status();
             match status {
@@ -66,12 +64,14 @@ impl Runnable for ConfigCmd {
                 }
             }
         } else {
-            log_info!("Editor could not be found, opening normally:\n",);
-            // read and print the file
-            let content = fs::read_to_string(&config_path).await?;
             if !should_be_quiet() {
-                println!("{content}");
+                log_info!("Editor could not be found, opening normally:\n",);
             }
+
+            // read and print the file
+            let content = fs::read_to_string(&config.path).await?;
+
+            println!("{content}");
         }
 
         Ok(())
