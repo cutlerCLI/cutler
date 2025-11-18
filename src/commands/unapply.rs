@@ -24,14 +24,14 @@ pub struct UnapplyCmd;
 
 #[async_trait]
 impl Runnable for UnapplyCmd {
-    async fn run(&self) -> Result<()> {
-        let config = Config::load(true).await?;
+    async fn run(&self, config: &mut Config) -> Result<()> {
+        config.load(true).await?;
 
         if !Snapshot::is_loadable().await {
             log_warn!("No snapshot found to revert.");
 
             if confirm("Reset all System Settings instead?") {
-                return ResetCmd.run().await;
+                return ResetCmd.run(config).await;
             } else {
                 bail!("Abort operation.")
             }
@@ -51,7 +51,7 @@ impl Runnable for UnapplyCmd {
             }
         };
 
-        if snapshot.digest != get_digest(config.path)? {
+        if snapshot.digest != get_digest(config.path.clone())? {
             log_warn!("Config has been modified since last application.",);
             log_warn!("Please note that only the applied modifications will be unapplied.",);
         }

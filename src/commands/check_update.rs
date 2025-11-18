@@ -11,6 +11,7 @@ use semver::Version;
 use crate::{
     cli::atomic::should_be_quiet,
     commands::Runnable,
+    config::core::Config,
     log_cute, log_info,
     util::logging::{BOLD, RESET},
 };
@@ -20,7 +21,7 @@ pub struct CheckUpdateCmd;
 
 #[async_trait]
 impl Runnable for CheckUpdateCmd {
-    async fn run(&self) -> Result<()> {
+    async fn run(&self, _: &mut Config) -> Result<()> {
         let current_version = env!("CARGO_PKG_VERSION");
 
         log_info!("Current version: {current_version}",);

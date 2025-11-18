@@ -21,10 +21,11 @@ pub struct BrewInstallCmd;
 
 #[async_trait]
 impl Runnable for BrewInstallCmd {
-    async fn run(&self) -> Result<()> {
+    async fn run(&self, config: &mut Config) -> Result<()> {
         let dry_run = should_dry_run();
 
-        let config = Config::load(true).await?;
+        config.load(true).await?;
+
         let brew_cfg = config
             .brew
             .clone()
@@ -49,7 +50,7 @@ impl Runnable for BrewInstallCmd {
                     );
                 }
                 if !diff.extra_taps.is_empty() {
-                    log_warn!("Extra taps not in config: {:?}", diff.extra_taps,);
+                    log_warn!("Extra taps not in config: {:?}", diff.extra_taps);
                 }
                 if !diff.extra_formulae.is_empty() || !diff.extra_casks.is_empty() {
                     log_warn!(

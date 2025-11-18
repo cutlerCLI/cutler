@@ -10,20 +10,13 @@ mod tests {
     use toml::{Value, value::Table};
 
     fn config_with_set(set: HashMap<String, HashMap<String, Value>>) -> Config {
-        Config {
-            lock: None,
-            set: Some(set),
-            vars: None,
-            command: None,
-            brew: None,
-            mas: None,
-            remote: None,
-            path: Default::default(),
-        }
+        let mut config = Config::new(Default::default());
+        config.set = Some(set);
+        config
     }
 
-    #[test]
-    fn test_collect_domains_simple() {
+    #[tokio::test]
+    async fn test_collect_domains_simple() {
         // [set.domain]
         //   key1 = "value1"
         let mut domain_map = HashMap::new();
@@ -33,14 +26,14 @@ mod tests {
 
         let config = config_with_set(set_map);
 
-        let domains = collect(&config).unwrap();
+        let domains = collect(&config).await.unwrap();
         assert_eq!(domains.len(), 1);
         let got = domains.get("domain").unwrap();
         assert_eq!(got.get("key1").unwrap().as_str().unwrap(), "value1");
     }
 
-    #[test]
-    fn test_collect_domains_nested() {
+    #[tokio::test]
+    async fn test_collect_domains_nested() {
         // [set.root]
         //   [set.root.nested]
         //   inner_key = "inner_value"
@@ -64,7 +57,7 @@ mod tests {
 
         let config = config_with_set(set_map);
 
-        let domains = collect(&config).unwrap();
+        let domains = collect(&config).await.unwrap();
         // With the new behavior, "nested" is treated as an inline table value
         // since we don't have a file path to parse with toml_edit
         assert_eq!(domains.len(), 1);
@@ -93,8 +86,8 @@ mod tests {
         assert_eq!((d, k), ("NSGlobalDomain".into(), "bar.Baz".into()));
     }
 
-    #[test]
-    fn test_collect_domains_set() {
+    #[tokio::test]
+    async fn test_collect_domains_set() {
         let config_content = r#"
 [set.dock]
 tilesize = "50"
@@ -112,7 +105,7 @@ fnState = false
         let mut config_with_path = parsed;
         config_with_path.path = temp_file.path().to_path_buf();
 
-        let domains = collect(&config_with_path).unwrap();
+        let domains = collect(&config_with_path).await.unwrap();
         assert_eq!(domains.len(), 2);
         let dock = domains.get("dock").unwrap();
         assert_eq!(dock.get("tilesize").unwrap().as_str().unwrap(), "50");

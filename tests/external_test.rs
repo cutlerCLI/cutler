@@ -31,16 +31,9 @@ mod tests {
         );
 
         // Top-level config
-        let config = Config {
-            lock: None,
-            set: None,
-            vars: Some(vars),
-            command: Some(command_map),
-            brew: None,
-            mas: None,
-            remote: None,
-            path: Default::default(),
-        };
+        let mut config = Config::new(Default::default());
+        config.vars = Some(vars);
+        config.command = Some(command_map);
 
         assert!(run_all(config, ExecMode::Regular).await.is_ok());
     }
@@ -67,16 +60,9 @@ mod tests {
         );
 
         // Top-level config
-        let config = Config {
-            lock: None,
-            set: None,
-            vars: Some(vars),
-            command: Some(command_map),
-            brew: None,
-            mas: None,
-            remote: None,
-            path: Default::default(),
-        };
+        let mut config = Config::new(Default::default());
+        config.vars = Some(vars);
+        config.command = Some(command_map);
 
         // Dry‑run single command
         assert!(run_one(config, "whoami").await.is_ok());

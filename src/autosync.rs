@@ -8,7 +8,7 @@ use crate::{log_err, log_info, log_warn};
 
 /// Perform remote config auto-sync if enabled in [remote] and internet is available.
 /// This should be called early in main().
-pub async fn try_auto_sync(command: &crate::cli::Command) {
+pub async fn try_auto_sync(command: &crate::cli::Command, local_config: &mut Config) {
     match command {
         Command::Fetch(_)
         | Command::Brew {
@@ -26,21 +26,12 @@ pub async fn try_auto_sync(command: &crate::cli::Command) {
         _ => {}
     }
 
-    if !Config::is_loadable().await {
+    if local_config.load(true).await.is_err() {
         return;
-    }
-
-    let local_config = match Config::load(true).await {
-        Ok(cfg) => cfg,
-        Err(_) => {
-            // Loading error handling is managed by later loads.
-            // Skipped for this one, otherwise the error would double.
-            return;
-        }
     };
 
     // start
-    let remote = local_config.remote.unwrap_or_default();
+    let remote = local_config.remote.clone().unwrap_or_default();
     let remote_mgr = RemoteConfigManager::new(remote.url);
 
     if remote.autosync.unwrap_or_default() {

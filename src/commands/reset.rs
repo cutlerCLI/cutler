@@ -21,9 +21,10 @@ pub struct ResetCmd;
 
 #[async_trait]
 impl Runnable for ResetCmd {
-    async fn run(&self) -> Result<()> {
+    async fn run(&self, config: &mut Config) -> Result<()> {
         let dry_run = should_dry_run();
-        let config = Config::load(true).await?;
+
+        config.load(true).await?;
 
         log_warn!("This will DELETE all settings defined in your config file.",);
         log_warn!("Settings will be reset to macOS defaults, not to their previous values.",);
@@ -32,7 +33,7 @@ impl Runnable for ResetCmd {
             return Ok(());
         }
 
-        let domains = collect(&config)?;
+        let domains = collect(config).await?;
 
         for (domain, table) in domains {
             for (key, _) in table {

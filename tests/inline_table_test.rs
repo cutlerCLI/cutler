@@ -24,7 +24,7 @@ ShowPathbar = true
         let mut config_with_path = config;
         config_with_path.path = temp_file.path().to_path_buf();
 
-        let domains = collect(&config_with_path).unwrap();
+        let domains = collect(&config_with_path).await.unwrap();
 
         // Should only have "finder" domain, not "finder.FXInfoPanesExpanded"
         assert_eq!(domains.len(), 1);
@@ -65,7 +65,7 @@ fnState = false
         let mut config_with_path = config;
         config_with_path.path = temp_file.path().to_path_buf();
 
-        let domains = collect(&config_with_path).unwrap();
+        let domains = collect(&config_with_path).await.unwrap();
 
         // Should have "dock" and "NSGlobalDomain.com.apple.keyboard"
         assert_eq!(domains.len(), 2);
@@ -104,7 +104,7 @@ FXInfoPanesExpanded = { Preview = false, MetaData = true, Comments = false }
         let mut config_with_path = config;
         config_with_path.path = temp_file.path().to_path_buf();
 
-        let domains = collect(&config_with_path).unwrap();
+        let domains = collect(&config_with_path).await.unwrap();
 
         assert_eq!(domains.len(), 3);
 

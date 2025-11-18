@@ -3,24 +3,20 @@
 use anyhow::Result;
 use defaults_rs::{Domain, PrefValue, Preferences};
 use std::collections::HashMap;
-use std::fs;
 use toml::Table;
-use toml_edit::{DocumentMut, Item};
+use toml_edit::Item;
 
 use crate::config::core::Config;
 use crate::domains::convert::toml_edit_to_toml;
 
 /// Collect all tables in `[set]`, parse with toml_edit to properly handle inline tables,
 /// and return a map domain → settings.
-pub fn collect(config: &Config) -> Result<HashMap<String, Table>> {
+pub async fn collect(config: &Config) -> Result<HashMap<String, Table>> {
     let mut out = HashMap::new();
 
     // If we have the config path, read the raw file to parse with toml_edit
     // This allows us to distinguish inline tables from nested tables
-    if !config.path.as_os_str().is_empty() && config.path.try_exists()? {
-        let content = fs::read_to_string(&config.path)?;
-        let doc = content.parse::<DocumentMut>()?;
-
+    if let Ok(doc) = config.load_as_mut(false).await {
         if let Some(Item::Table(set_table)) = doc.get("set") {
             for (domain_key, item) in set_table.iter() {
                 if let Item::Table(domain_table) = item {

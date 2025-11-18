@@ -35,6 +35,8 @@ pub use status::StatusCmd;
 pub use unapply::UnapplyCmd;
 pub use unlock::UnlockCmd;
 
+use crate::config::core::Config;
+
 /// A common trait for cutler commands.
 ///
 /// This trait must be implemented for all commands inside cutler since in
@@ -43,5 +45,5 @@ pub use unlock::UnlockCmd;
 pub trait Runnable {
     /// Run the command. The result is implemented using anyhow::Result since cutler's internal functions
     /// often propagate an error upto the root error handler.
-    async fn run(&self) -> Result<()>;
+    async fn run(&self, config: &mut Config) -> Result<()>;
 }
