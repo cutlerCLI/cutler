@@ -1,4 +1,3 @@
-## What's Changed
 
 ---
 
