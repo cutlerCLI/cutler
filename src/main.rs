@@ -47,9 +47,18 @@ async fn main() {
     set_dry_run(args.dry_run);
     set_no_restart_services(args.no_restart_services);
 
+    // decide configuration path for the entire lifetime of the program
+    let mut config = match get_config_path().await {
+        Ok(path) => Config::new(path),
+        Err(_) => {
+            log_err!("Path could not be decided for the configuration file.");
+            exit(1);
+        }
+    };
+
     // remote config auto-sync logic
     if !args.no_sync {
-        try_auto_sync(&args.command).await;
+        try_auto_sync(&args.command, &mut config).await;
     } else {
         log_info!("Skipping remote config autosync.");
     }
@@ -64,15 +73,6 @@ async fn main() {
         log_err!("{err}");
         exit(1);
     }
-
-    // decide configuration path for the entire lifetime of the program
-    let mut config = match get_config_path().await {
-        Ok(path) => Config::new(path),
-        Err(_) => {
-            log_err!("Path could not be decided for the configuration file.");
-            exit(1);
-        }
-    };
 
     // command invocation (for real this time)
     let runnable: &dyn Runnable = args.command.as_runnable();

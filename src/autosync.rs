@@ -3,13 +3,12 @@
 use crate::cli::Command;
 use crate::cli::args::BrewSubcmd;
 use crate::config::core::Config;
-use crate::config::path::get_config_path;
 use crate::config::remote::RemoteConfigManager;
 use crate::{log_err, log_info, log_warn};
 
 /// Perform remote config auto-sync if enabled in [remote] and internet is available.
 /// This should be called early in main().
-pub async fn try_auto_sync(command: &crate::cli::Command) {
+pub async fn try_auto_sync(command: &crate::cli::Command, local_config: &mut Config) {
     match command {
         Command::Fetch(_)
         | Command::Brew {
@@ -27,24 +26,12 @@ pub async fn try_auto_sync(command: &crate::cli::Command) {
         _ => {}
     }
 
-    let config_path = get_config_path().await.unwrap_or_default();
-    if !config_path.try_exists().unwrap_or(false) {
+    if let Err(_) = local_config.load(true).await {
         return;
-    }
-
-    let mut local_config = Config::new(config_path);
-
-    match local_config.load(true).await {
-        Ok(cfg) => cfg,
-        Err(_) => {
-            // Loading error handling is managed by later loads.
-            // Skipped for this one, otherwise the error would double.
-            return;
-        }
     };
 
     // start
-    let remote = local_config.remote.unwrap_or_default();
+    let remote = local_config.remote.clone().unwrap_or_default();
     let remote_mgr = RemoteConfigManager::new(remote.url);
 
     if remote.autosync.unwrap_or_default() {
