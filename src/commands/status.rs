@@ -27,7 +27,7 @@ pub struct StatusCmd {
 impl Runnable for StatusCmd {
     async fn run(&self, config: &mut Config) -> Result<()> {
         config.load(false).await?;
-        let domains = collect(&config).await?;
+        let domains = collect(config).await?;
 
         // flatten all settings into a list
         let entries: Vec<(String, String, toml::Value)> = domains

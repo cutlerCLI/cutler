@@ -93,7 +93,7 @@ impl Runnable for ApplyCmd {
 
         // parse + flatten domains
         let digest = get_digest(config.path.clone())?;
-        let domains = collector::collect(&config).await?;
+        let domains = collector::collect(config).await?;
 
         // load the old snapshot (if any), otherwise create a new instance
         let snap_path = get_snapshot_path().await?;
