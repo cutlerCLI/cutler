@@ -126,6 +126,7 @@ impl Runnable for ApplyCmd {
             .map(|f| f.to_string())
             .collect();
 
+        let mut applyable_settings_count = 0;
         for (dom, table) in domains.into_iter() {
             for (key, toml_value) in table.into_iter() {
                 let (eff_dom, eff_key) = collector::effective(&dom, &key);
@@ -177,6 +178,7 @@ impl Runnable for ApplyCmd {
                         original: if is_bad_snap { None } else { original },
                         new_value: desired_pref.to_string(),
                     });
+                    applyable_settings_count += 1;
                 } else {
                     log_info!("Skipping unchanged {eff_dom} | {eff_key}",);
                 }
@@ -220,14 +222,16 @@ impl Runnable for ApplyCmd {
             match Preferences::write_batch(batch) {
                 Ok(_) => {
                     log_info!("All preferences applied.");
+
+                    // restart system services if applicable
+                    if applyable_settings_count > 0 {
+                        restart_services().await;
+                    }
                 }
                 Err(e) => {
                     log_err!("Batch write failed: {e}");
                 }
             }
-
-            // restart system services if requested
-            restart_services().await;
         } else {
             for job in &jobs {
                 log_dry!(

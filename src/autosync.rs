@@ -20,7 +20,7 @@ pub async fn try_auto_sync(command: &crate::cli::Command, local_config: &mut Con
         | Command::Completion(_)
         | Command::Reset(_)
         | Command::Init(_)
-        | Command::Config { .. } => {
+        | Command::Config(_) => {
             return;
         }
         _ => {}
