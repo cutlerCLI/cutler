@@ -10,8 +10,6 @@
 
 This book, by name, wants to introduce you with <code>cutler</code>, a software made to declaratively manage your macOS preferences and essentials. It can do a number of things. This book will help you navigate all of them, including new ones which are currently in development.
 
-It's a solo project, but I hope it will give you the proper impression for shrinking dotfiles by an order of magnitude.
-
 ## Basic Directions
 
 When you follow along the book, you'll notice both command and code snippets as examples, showing you certain behavior. If the command is prefixed with a `$`, it may mean that you may need to only "follow" the structure
