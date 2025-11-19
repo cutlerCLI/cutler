@@ -5,10 +5,11 @@ use crate::{
     commands::{BrewInstallCmd, Runnable},
     config::{core::Config, path::get_config_path, remote::RemoteConfigManager},
     domains::{
-        collector,
+        collect,
         convert::{prefvalue_to_serializable, toml_to_prefvalue},
+        core,
     },
-    exec::core::{self, ExecMode},
+    exec::{core::ExecMode, run_all},
     log_cute, log_dry, log_err, log_info, log_warn,
     snapshot::{
         core::{SettingState, Snapshot},
@@ -93,7 +94,7 @@ impl Runnable for ApplyCmd {
 
         // parse + flatten domains
         let digest = get_digest(config.path.clone())?;
-        let domains = collector::collect(config).await?;
+        let domains = collect(config).await?;
 
         // load the old snapshot (if any), otherwise create a new instance
         let snap_path = get_snapshot_path().await?;
@@ -130,7 +131,7 @@ impl Runnable for ApplyCmd {
 
         for (dom, table) in domains.into_iter() {
             for (key, toml_value) in table.into_iter() {
-                let (eff_dom, eff_key) = collector::effective(&dom, &key);
+                let (eff_dom, eff_key) = core::effective(&dom, &key);
 
                 if !self.no_dom_check
                     && eff_dom != "NSGlobalDomain"
@@ -142,7 +143,7 @@ impl Runnable for ApplyCmd {
                 // read the current value from the system
                 // then, check if changed
                 // TODO: could use read_batch from defaults-rs here
-                let current_pref = collector::read_current(&eff_dom, &eff_key).await;
+                let current_pref = core::read_current(&eff_dom, &eff_key).await;
                 let desired_pref = toml_to_prefvalue(&toml_value)?;
 
                 // Compare PrefValues directly instead of strings
@@ -285,7 +286,7 @@ impl Runnable for ApplyCmd {
                 ExecMode::Regular
             };
 
-            let exec_run_count = core::run_all(config.clone(), mode).await?;
+            let exec_run_count = run_all(config.clone(), mode).await?;
 
             if !dry_run {
                 if exec_run_count > 0 {
