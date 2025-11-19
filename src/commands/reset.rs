@@ -43,8 +43,6 @@ impl Runnable for ResetCmd {
                 if read_current(&eff_dom, &eff_key).await.is_some() {
                     let domain_obj = if eff_dom == "NSGlobalDomain" {
                         Domain::Global
-                    } else if let Some(rest) = eff_dom.strip_prefix("com.apple.") {
-                        Domain::User(format!("com.apple.{rest}"))
                     } else {
                         Domain::User(eff_dom.clone())
                     };
@@ -54,10 +52,10 @@ impl Runnable for ResetCmd {
                     } else {
                         match Preferences::delete(domain_obj, &eff_key) {
                             Ok(_) => {
-                                log_info!("Reset {eff_dom}.{eff_key} to system default",);
+                                log_info!("Reset {eff_dom}.{eff_key} to system default");
                             }
                             Err(e) => {
-                                log_err!("Failed to reset {eff_dom}.{eff_key}: {e}",);
+                                log_err!("Failed to reset {eff_dom}.{eff_key}: {e}");
                             }
                         }
                     }

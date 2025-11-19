@@ -127,6 +127,7 @@ impl Runnable for ApplyCmd {
             .collect();
 
         let mut applyable_settings_count = 0;
+
         for (dom, table) in domains.into_iter() {
             for (key, toml_value) in table.into_iter() {
                 let (eff_dom, eff_key) = collector::effective(&dom, &key);
@@ -178,6 +179,7 @@ impl Runnable for ApplyCmd {
                         original: if is_bad_snap { None } else { original },
                         new_value: desired_pref.to_string(),
                     });
+
                     applyable_settings_count += 1;
                 } else {
                     log_info!("Skipping unchanged {eff_dom} | {eff_key}",);
@@ -213,6 +215,7 @@ impl Runnable for ApplyCmd {
                     }
                 );
             }
+
             let pref_value = toml_to_prefvalue(&job.toml_value)?;
             batch.push((domain_obj, job.key.clone(), pref_value));
         }
