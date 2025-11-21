@@ -56,18 +56,16 @@ pub async fn restart_services() {
     for svc in SERVICES {
         if dry_run {
             log_dry!("Would restart {svc}");
-        } else {
-            if let Ok(out) = Command::new("killall").arg(svc).output().await {
-                if out.status.success() {
-                    log_info!("{svc} restarted");
-                } else {
-                    log_err!("Failed to restart {svc}");
-                    failed = true;
-                }
+        } else if let Ok(out) = Command::new("killall").arg(svc).output().await {
+            if out.status.success() {
+                log_info!("{svc} restarted");
             } else {
-                log_err!("Could not restart {svc}");
-                continue;
+                log_err!("Failed to restart {svc}");
+                failed = true;
             }
+        } else {
+            log_err!("Could not restart {svc}");
+            continue;
         }
     }
 

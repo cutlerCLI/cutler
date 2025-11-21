@@ -34,13 +34,19 @@ impl Runnable for BrewBackupCmd {
         ensure_brew().await?;
 
         // init config
-        let mut doc = if let Ok(doc) = conf.load_as_mut(true).await { doc } else {
+        let mut doc = if let Ok(doc) = conf.load_as_mut(true).await {
+            doc
+        } else {
             log_warn!("Configuration does not exist; a new one will be created.");
             DocumentMut::new()
         };
 
         let brew_item = doc.entry("brew").or_insert(Item::Table(Table::new()));
-        let brew_tbl = brew_item.as_table_mut().unwrap();
+        let brew_tbl = if let Some(brew_tbl) = brew_item.as_table_mut() {
+            brew_tbl
+        } else {
+            &mut Table::new()
+        };
 
         // firstly remember the --no-deps value
         let no_deps = brew_tbl

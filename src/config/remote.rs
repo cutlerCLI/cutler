@@ -18,7 +18,7 @@ pub struct RemoteConfigManager {
 
 impl RemoteConfigManager {
     /// Create a new `RemoteConfigManager` with a Remote struct.
-    #[must_use] 
+    #[must_use]
     pub const fn new(url: String) -> Self {
         Self {
             url,
@@ -59,7 +59,12 @@ impl RemoteConfigManager {
         let config = self.get()?;
         let config_path = get_config_path().await?;
 
-        fs::create_dir_all(config_path.parent().unwrap()).await?;
+        fs::create_dir_all(
+            config_path
+                .parent()
+                .context("Failed to initialize config path for remote sync.")?,
+        )
+        .await?;
         fs::write(config_path, config).await?;
         log_info!("Successfully saved remote config to destination.");
         Ok(())

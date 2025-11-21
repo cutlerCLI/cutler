@@ -4,7 +4,7 @@ use crate::cli::atomic::should_dry_run;
 use crate::config::core::Config;
 use crate::util::logging::{BOLD, RESET};
 use crate::{log_dry, log_exec, log_warn};
-use anyhow::{Result, anyhow, bail};
+use anyhow::{Context, Result, anyhow, bail};
 use regex::Regex;
 use std::collections::HashMap;
 use std::env;
@@ -34,7 +34,7 @@ pub fn extract_cmd(config: &Config, name: &str) -> Result<ExecJob> {
 
     // substitute to get possible variables
     // ultimately turning it into the final command to run
-    let run = substitute(&command.run, config.vars.clone());
+    let run = substitute(&command.run, config.vars.clone())?;
 
     // extra fields
     let sudo = command.sudo.unwrap_or_default();
@@ -53,7 +53,7 @@ pub fn extract_cmd(config: &Config, name: &str) -> Result<ExecJob> {
 }
 
 // Pull all external commands written in user config into state objects.
-#[must_use] 
+#[must_use]
 pub fn extract_all_cmds(config: &Config) -> Vec<ExecJob> {
     let mut jobs = Vec::new();
 
@@ -70,11 +70,14 @@ pub fn extract_all_cmds(config: &Config) -> Vec<ExecJob> {
 
 /// Perform variable substitution (env + `[external.variables]`) in a text.
 /// Uses regex to find $var and ${var} patterns.
-fn substitute(text: &str, vars: Option<HashMap<String, String>>) -> String {
+fn substitute(text: &str, vars: Option<HashMap<String, String>>) -> Result<String> {
     // regex to match $var or ${var}
     // $VAR_NAME or ${VAR_NAME}
     // note: $ followed by [A-Za-z_][A-Za-z0-9_]* or ${...}
-    let re = Regex::new(r"\$([A-Za-z_][A-Za-z0-9_]*)|\$\{([A-Za-z_][A-Za-z0-9_]*)\}").unwrap();
+    let re = Regex::new(r"\$([A-Za-z_][A-Za-z0-9_]*)|\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
+        .with_context(
+            || "Failed to construct regex pattern for external cmd variable substitution.",
+        )?;
 
     // clusure to resolve variable name
     let resolve_var = |var_name: &str| {
@@ -95,7 +98,7 @@ fn substitute(text: &str, vars: Option<HashMap<String, String>>) -> String {
         resolve_var(var_name)
     });
 
-    result.into_owned()
+    Ok(result.into_owned())
 }
 
 /// Helper for: `run_one()`, `run_all()`
