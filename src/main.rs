@@ -48,19 +48,16 @@ async fn main() {
     set_no_restart_services(args.no_restart_services);
 
     // decide configuration path for the entire lifetime of the program
-    let mut config = match get_config_path().await {
-        Ok(path) => Config::new(path),
-        Err(_) => {
-            log_err!("Path could not be decided for the configuration file.");
-            exit(1);
-        }
+    let mut config = if let Ok(path) = get_config_path().await { Config::new(path) } else {
+        log_err!("Path could not be decided for the configuration file.");
+        exit(1);
     };
 
     // remote config auto-sync logic
-    if !args.no_sync {
-        try_auto_sync(&args.command, &mut config).await;
-    } else {
+    if args.no_sync {
         log_info!("Skipping remote config autosync.");
+    } else {
+        try_auto_sync(&args.command, &mut config).await;
     }
 
     // sudo protection

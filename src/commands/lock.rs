@@ -27,7 +27,7 @@ impl Runnable for LockCmd {
 
         if document
             .get("lock")
-            .and_then(|v| v.as_bool())
+            .and_then(toml_edit::Item::as_bool)
             .unwrap_or(false)
         {
             bail!("Already locked.");

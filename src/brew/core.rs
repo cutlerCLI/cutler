@@ -40,7 +40,7 @@ async fn set_homebrew_env_vars() {
     log_info!("Homebrew environment has been configured for this process.");
 }
 
-/// Helper for: ensure_brew()
+/// Helper for: `ensure_brew()`
 /// Installs Homebrew via the official script.
 async fn install_homebrew() -> Result<()> {
     let install_command =
@@ -81,9 +81,8 @@ pub async fn ensure_brew() -> Result<()> {
             log_dry!("Would install Homebrew since not found in $PATH.");
 
             return Ok(());
-        } else {
-            log_warn!("Homebrew is not installed.");
         }
+        log_warn!("Homebrew is not installed.");
 
         if confirm("Install Homebrew now?") {
             install_homebrew().await?;
@@ -122,18 +121,15 @@ fn flatten_tap_prefix(lines: Vec<String>) -> Vec<String> {
 /// Lists Homebrew things (formulae/casks/taps/deps) and separates them based on newline.
 /// Note that `flatten` will be ignored if `list_type` is `BrewListType::Tap`.
 pub async fn brew_list(list_type: BrewListType, flatten: bool) -> Result<Vec<String>> {
-    let args: Vec<String> = match list_type {
-        BrewListType::Tap => vec![list_type.to_string()],
-        _ => {
-            let lt_str = list_type.to_string();
-            vec![
-                "list".to_string(),
-                "--quiet".to_string(),
-                "--full-name".to_string(),
-                "-1".to_string(),
-                lt_str,
-            ]
-        }
+    let args: Vec<String> = if list_type == BrewListType::Tap { vec![list_type.to_string()] } else {
+        let lt_str = list_type.to_string();
+        vec![
+            "list".to_string(),
+            "--quiet".to_string(),
+            "--full-name".to_string(),
+            "-1".to_string(),
+            lt_str,
+        ]
     };
 
     let output = Command::new("brew").args(&args).output().await?;
@@ -159,7 +155,7 @@ pub async fn brew_list(list_type: BrewListType, flatten: bool) -> Result<Vec<Str
 }
 
 /// Compare the Brew config struct with the actual Homebrew state.
-/// Returns a BrewDiff struct with missing/extra formulae, casks, and taps.
+/// Returns a `BrewDiff` struct with missing/extra formulae, casks, and taps.
 pub async fn diff_brew(brew_cfg: Brew) -> Result<BrewDiff> {
     let no_deps = brew_cfg.no_deps.unwrap_or(false);
 

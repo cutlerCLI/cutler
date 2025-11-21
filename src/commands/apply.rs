@@ -122,19 +122,19 @@ impl Runnable for ApplyCmd {
 
         let domains_list: Vec<String> = Preferences::list_domains()?
             .iter()
-            .map(|f| f.to_string())
+            .map(std::string::ToString::to_string)
             .collect();
 
         // create jobs for applying
-        for (dom, table) in domains.into_iter() {
-            for (key, toml_value) in table.into_iter() {
+        for (dom, table) in domains {
+            for (key, toml_value) in table {
                 let (eff_dom, eff_key) = core::effective(&dom, &key);
 
                 if !self.no_dom_check
                     && eff_dom != "NSGlobalDomain"
                     && !domains_list.contains(&eff_dom)
                 {
-                    bail!("Domain \"{}\" not found.", eff_dom)
+                    bail!("Domain \"{eff_dom}\" not found.")
                 }
 
                 let current_pref = core::read_current(&eff_dom, &eff_key).await;
@@ -171,7 +171,16 @@ impl Runnable for ApplyCmd {
             }
         }
 
-        if !dry_run {
+        if dry_run {
+            for job in &jobs {
+                log_dry!(
+                    "Would apply: {} {} -> {}",
+                    job.domain,
+                    job.key,
+                    job.new_value
+                );
+            }
+        } else {
             let mut applyable_settings_count = 0;
 
             for job in &jobs {
@@ -192,7 +201,7 @@ impl Runnable for ApplyCmd {
                             serde_json::to_string(orig).unwrap_or_else(|_| "?".to_string())
                         )
                     } else {
-                        "".to_string()
+                        String::new()
                     }
                 );
 
@@ -215,19 +224,10 @@ impl Runnable for ApplyCmd {
                 );
                 restart_services().await;
             }
-        } else {
-            for job in &jobs {
-                log_dry!(
-                    "Would apply: {} {} -> {}",
-                    job.domain,
-                    job.key,
-                    job.new_value
-                );
-            }
         }
 
         let mut new_snap = Snapshot::new().await;
-        for ((_, _), old_entry) in existing.into_iter() {
+        for ((_, _), old_entry) in existing {
             new_snap.settings.push(old_entry);
         }
 
@@ -243,11 +243,11 @@ impl Runnable for ApplyCmd {
         // save config digest to snapshot
         new_snap.digest = digest;
 
-        if !dry_run {
+        if dry_run {
+            log_dry!("Would save snapshot with system preferences.",);
+        } else {
             new_snap.save().await?;
             log_info!("Logged system preferences change in snapshot.",);
-        } else {
-            log_dry!("Would save snapshot with system preferences.",);
         }
 
         // run brew
@@ -267,15 +267,13 @@ impl Runnable for ApplyCmd {
 
             let exec_run_count = run_all(config.clone(), mode).await?;
 
-            if !dry_run {
-                if exec_run_count > 0 {
-                    new_snap.exec_run_count = exec_run_count;
-                    new_snap.save().await?;
-
-                    log_info!("Logged command execution in snapshot.");
-                }
-            } else {
+            if dry_run {
                 log_dry!("Would save snapshot with external command execution.",);
+            } else if exec_run_count > 0 {
+                new_snap.exec_run_count = exec_run_count;
+                new_snap.save().await?;
+
+                log_info!("Logged command execution in snapshot.");
             }
         }
 

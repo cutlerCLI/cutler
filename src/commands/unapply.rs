@@ -31,9 +31,8 @@ impl Runnable for UnapplyCmd {
 
             if confirm("Reset all System Settings instead?") {
                 return ResetCmd.run(config).await;
-            } else {
-                bail!("Abort operation.")
             }
+            bail!("Abort operation.")
         }
 
         let dry_run = should_dry_run();

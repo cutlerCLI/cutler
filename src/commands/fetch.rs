@@ -62,21 +62,19 @@ impl Runnable for FetchCmd {
             if changes.is_empty() {
                 log_cute!("No changes found so skipping. Use -f to fetch forcefully.",);
                 return Ok(());
-            } else {
-                log_warn!("Differences between local and remote config:",);
-                for line in &changes {
-                    log_warn!("  {line}");
-                }
+            }
+            log_warn!("Differences between local and remote config:",);
+            for line in &changes {
+                log_warn!("  {line}");
             }
 
             if changes.is_empty() {
                 log_cute!("No changes found so skipping. Use -f to fetch forcefully.",);
                 return Ok(());
-            } else {
-                log_warn!("Differences between local and remote config:",);
-                for line in &changes {
-                    log_warn!("  {line}");
-                }
+            }
+            log_warn!("Differences between local and remote config:",);
+            for line in &changes {
+                log_warn!("  {line}");
             }
 
             // prompt user to proceed (unless dry-run)

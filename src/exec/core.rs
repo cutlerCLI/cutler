@@ -30,17 +30,17 @@ pub fn extract_cmd(config: &Config, name: &str) -> Result<ExecJob> {
     let command = command_map
         .get(name)
         .cloned()
-        .ok_or_else(|| anyhow!("no such command {}", name))?;
+        .ok_or_else(|| anyhow!("no such command {name}"))?;
 
     // substitute to get possible variables
     // ultimately turning it into the final command to run
-    let run = substitute(&command.run, config.vars.as_ref().cloned());
+    let run = substitute(&command.run, config.vars.clone());
 
     // extra fields
     let sudo = command.sudo.unwrap_or_default();
     let flag = command.flag.unwrap_or_default();
     let ensure_first = command.ensure_first.unwrap_or_default();
-    let required = command.required.clone().unwrap_or_default();
+    let required = command.required.unwrap_or_default();
 
     Ok(ExecJob {
         name: name.to_string(),
@@ -53,11 +53,12 @@ pub fn extract_cmd(config: &Config, name: &str) -> Result<ExecJob> {
 }
 
 // Pull all external commands written in user config into state objects.
+#[must_use] 
 pub fn extract_all_cmds(config: &Config) -> Vec<ExecJob> {
     let mut jobs = Vec::new();
 
     if let Some(command_map) = config.command.as_ref() {
-        for (name, _) in command_map.iter() {
+        for name in command_map.keys() {
             if let Ok(job) = extract_cmd(config, name) {
                 jobs.push(job);
             }
@@ -81,7 +82,7 @@ fn substitute(text: &str, vars: Option<HashMap<String, String>>) -> String {
             .and_then(|map| map.get(var_name))
             .cloned()
             .or_else(|| env::var(var_name).ok())
-            .unwrap_or_else(|| format!("${{{}}}", var_name))
+            .unwrap_or_else(|| format!("${{{var_name}}}"))
     };
 
     // replace all matches
@@ -90,15 +91,14 @@ fn substitute(text: &str, vars: Option<HashMap<String, String>>) -> String {
         let var_name = caps
             .get(1)
             .or_else(|| caps.get(2))
-            .map(|m| m.as_str())
-            .unwrap_or("");
+            .map_or("", |m| m.as_str());
         resolve_var(var_name)
     });
 
     result.into_owned()
 }
 
-/// Helper for: run_one(), run_all()
+/// Helper for: `run_one()`, `run_all()`
 /// Execute a single command with the given template and sudo flag.
 async fn execute_command(job: ExecJob, dry_run: bool) -> Result<()> {
     // build the actual runner
@@ -125,7 +125,7 @@ async fn execute_command(job: ExecJob, dry_run: bool) -> Result<()> {
     Ok(())
 }
 
-/// Helper for: run_all(), run_one()
+/// Helper for: `run_all()`, `run_one()`
 /// Checks if the binaries designated in `required` are found in $PATH and whether to skip command execution.
 fn all_bins_present(required: &[String]) -> bool {
     let mut present = true;
@@ -143,7 +143,7 @@ fn all_bins_present(required: &[String]) -> bool {
 }
 
 /// Execution mode enum.
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq)]
 pub enum ExecMode {
     Regular,
     All,

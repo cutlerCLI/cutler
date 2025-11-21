@@ -17,7 +17,7 @@ pub const RESET: &str = "\x1b[0m";
 pub const BOLD: &str = "\x1b[1m";
 
 #[doc(hidden)]
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq)]
 pub enum LogLevel {
     Error,
     Warning,
@@ -59,7 +59,7 @@ pub fn _print_log(level: LogLevel, msg: &str) {
     }
 }
 
-/// Logs with LogLevel::Info.
+/// Logs with `LogLevel::Info`.
 #[macro_export]
 macro_rules! log_info {
     ($($arg:tt)*) => {{
@@ -68,7 +68,7 @@ macro_rules! log_info {
     }};
 }
 
-/// Logs with LogLevel::Error.
+/// Logs with `LogLevel::Error`.
 #[macro_export]
 macro_rules! log_err {
     ($($arg:tt)*) => {{
@@ -77,7 +77,7 @@ macro_rules! log_err {
     }};
 }
 
-/// Logs with LogLevel::Warning.
+/// Logs with `LogLevel::Warning`.
 #[macro_export]
 macro_rules! log_warn {
     ($($arg:tt)*) => {{
@@ -86,7 +86,7 @@ macro_rules! log_warn {
     }};
 }
 
-/// Logs with LogLevel::Fruitful.
+/// Logs with `LogLevel::Fruitful`.
 #[macro_export]
 macro_rules! log_cute {
     ($($arg:tt)*) => {{
@@ -95,7 +95,7 @@ macro_rules! log_cute {
     }};
 }
 
-/// Logs with LogLevel::Dry.
+/// Logs with `LogLevel::Dry`.
 #[macro_export]
 macro_rules! log_dry {
     ($($arg:tt)*) => {{
@@ -104,7 +104,7 @@ macro_rules! log_dry {
     }};
 }
 
-/// Logs with LogLevel::Exec.
+/// Logs with `LogLevel::Exec`.
 #[macro_export]
 macro_rules! log_exec {
     ($($arg:tt)*) => {{
@@ -113,7 +113,7 @@ macro_rules! log_exec {
     }};
 }
 
-/// Logs with LogLevel::Prompt.
+/// Logs with `LogLevel::Prompt`.
 #[macro_export]
 macro_rules! log_prompt {
     ($($arg:tt)*) => {{

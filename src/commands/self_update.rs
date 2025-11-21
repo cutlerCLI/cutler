@@ -83,7 +83,7 @@ impl Runnable for SelfUpdateCmd {
                     .get(&manpage_url)
                     .send()
                     .await
-                    .map_err(|e| anyhow::anyhow!("Failed to fetch manpage: {}", e))?;
+                    .map_err(|e| anyhow::anyhow!("Failed to fetch manpage: {e}"))?;
                 let manpage_content = resp.text().await?;
 
                 fs::create_dir_all("/usr/local/share/man/man1").await?;

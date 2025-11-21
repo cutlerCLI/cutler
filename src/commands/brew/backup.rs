@@ -34,12 +34,9 @@ impl Runnable for BrewBackupCmd {
         ensure_brew().await?;
 
         // init config
-        let mut doc = match conf.load_as_mut(true).await {
-            Ok(doc) => doc,
-            Err(_) => {
-                log_warn!("Configuration does not exist; a new one will be created.");
-                DocumentMut::new()
-            }
+        let mut doc = if let Ok(doc) = conf.load_as_mut(true).await { doc } else {
+            log_warn!("Configuration does not exist; a new one will be created.");
+            DocumentMut::new()
         };
 
         let brew_item = doc.entry("brew").or_insert(Item::Table(Table::new()));
@@ -48,7 +45,7 @@ impl Runnable for BrewBackupCmd {
         // firstly remember the --no-deps value
         let no_deps = brew_tbl
             .get("no_deps")
-            .and_then(|f| f.as_bool())
+            .and_then(toml_edit::Item::as_bool)
             .unwrap_or(false);
 
         if self.no_deps {
@@ -59,7 +56,7 @@ impl Runnable for BrewBackupCmd {
                 log_info!("no_deps already found true in configuration, so not setting.",);
             }
         } else if no_deps && confirm("The previous backup was without dependencies. Do now too?") {
-            backup_no_deps = true
+            backup_no_deps = true;
         } else {
             brew_tbl["no_deps"] = Item::None;
         }
@@ -135,12 +132,12 @@ impl Runnable for BrewBackupCmd {
         brew_tbl["taps"] = value(taps_arr);
 
         // write backup
-        if !dry_run {
+        if dry_run {
+            log_info!("Backup would be saved to {:?}", &conf.path);
+        } else {
             doc.save(&conf.path).await?;
 
             log_cute!("Done!");
-        } else {
-            log_info!("Backup would be saved to {:?}", &conf.path);
         }
 
         Ok(())

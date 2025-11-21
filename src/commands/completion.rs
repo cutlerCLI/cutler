@@ -43,7 +43,7 @@ impl Runnable for CompletionCmd {
                 Shell::Fish => generate(Fish, &mut cmd, name, &mut io::stdout()),
                 Shell::PowerShell => generate(PowerShell, &mut cmd, name, &mut io::stdout()),
                 Shell::Elvish => generate(Elvish, &mut cmd, name, &mut io::stdout()),
-            };
+            }
             Ok(())
         })
         .await??;

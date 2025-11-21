@@ -30,7 +30,7 @@ pub struct Config {
 }
 
 /// Represents the [remote] table.
-#[derive(Deserialize, PartialEq, Serialize, Default, Clone, Debug)]
+#[derive(Deserialize, PartialEq, Eq, Serialize, Default, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct Remote {
     pub url: String,
@@ -56,7 +56,7 @@ pub struct Mas {
 }
 
 /// Represents the [brew] table.
-#[derive(Deserialize, Serialize, PartialEq, Clone, Debug, Default)]
+#[derive(Deserialize, Serialize, PartialEq, Eq, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
 pub struct Brew {
     pub formulae: Option<Vec<String>>,
@@ -66,8 +66,9 @@ pub struct Brew {
 }
 
 impl Config {
-    pub fn new(path: PathBuf) -> Self {
-        Config {
+    #[must_use] 
+    pub const fn new(path: PathBuf) -> Self {
+        Self {
             lock: None,
             set: None,
             vars: None,
@@ -79,6 +80,7 @@ impl Config {
         }
     }
 
+    #[must_use] 
     pub fn is_loadable(&self) -> bool {
         !self.path.as_os_str().is_empty() && self.path.try_exists().unwrap_or(false)
     }
@@ -88,7 +90,7 @@ impl Config {
     pub async fn load(&mut self, not_if_locked: bool) -> Result<()> {
         if self.is_loadable() {
             let data = fs::read_to_string(&self.path).await?;
-            let config: Config =
+            let config: Self =
                 toml::from_str(&data).context("Failed to parse config data from valid TOML.")?;
 
             if config.lock.unwrap_or_default() && not_if_locked {
@@ -109,11 +111,11 @@ impl Config {
         }
     }
 
-    /// Loads config as mutable DocumentMut. Useful for in-place editing of values.
+    /// Loads config as mutable `DocumentMut`. Useful for in-place editing of values.
     pub async fn load_as_mut(&self, not_if_locked: bool) -> Result<DocumentMut> {
         if self.is_loadable() {
             let data = fs::read_to_string(&self.path).await?;
-            let config: Config =
+            let config: Self =
                 toml::from_str(&data).context("Failed to parse config data from valid TOML.")?;
 
             if config.lock.unwrap_or_default() && not_if_locked {

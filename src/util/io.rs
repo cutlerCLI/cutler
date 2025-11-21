@@ -9,7 +9,8 @@ use crate::{
 };
 use anyhow::Result;
 
-/// Ask "Y/N?"; returns true if accept_all is set or the user types "y" or "Y"
+/// Ask "Y/N?"; returns true if `accept_all` is set or the user types "y" or "Y"
+#[must_use] 
 pub fn confirm(prompt: &str) -> bool {
     if should_accept_all() {
         log_prompt!("{prompt} (auto-accepted)");
@@ -33,7 +34,7 @@ pub async fn open(arg: &str) -> Result<()> {
     Ok(())
 }
 
-/// Restart Finder, Dock, SystemUIServer so defaults take effect.
+/// Restart Finder, Dock, `SystemUIServer` so defaults take effect.
 pub async fn restart_services() {
     if should_not_restart_services() {
         return;
@@ -56,19 +57,16 @@ pub async fn restart_services() {
         if dry_run {
             log_dry!("Would restart {svc}");
         } else {
-            match Command::new("killall").arg(svc).output().await {
-                Ok(out) => {
-                    if !out.status.success() {
-                        log_err!("Failed to restart {svc}");
-                        failed = true;
-                    } else {
-                        log_info!("{svc} restarted");
-                    }
+            if let Ok(out) = Command::new("killall").arg(svc).output().await {
+                if out.status.success() {
+                    log_info!("{svc} restarted");
+                } else {
+                    log_err!("Failed to restart {svc}");
+                    failed = true;
                 }
-                Err(_) => {
-                    log_err!("Could not restart {svc}");
-                    continue;
-                }
+            } else {
+                log_err!("Could not restart {svc}");
+                continue;
             }
         }
     }

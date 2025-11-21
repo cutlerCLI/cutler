@@ -17,8 +17,9 @@ pub struct RemoteConfigManager {
 }
 
 impl RemoteConfigManager {
-    /// Create a new RemoteConfigManager with a Remote struct.
-    pub fn new(url: String) -> Self {
+    /// Create a new `RemoteConfigManager` with a Remote struct.
+    #[must_use] 
+    pub const fn new(url: String) -> Self {
         Self {
             url,
             config: OnceCell::const_new(),
@@ -74,7 +75,7 @@ impl RemoteConfigManager {
         Ok(config)
     }
 
-    /// Get a parsed version of the output of .get() as serde-based Config.
+    /// Get a parsed version of the output of .`get()` as serde-based Config.
     pub fn get_parsed(&self) -> Result<Config> {
         let config_str = self.get()?;
         let config = toml::from_str::<Config>(config_str)?;
