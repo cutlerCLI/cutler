@@ -24,7 +24,6 @@ use anyhow::{Result, bail};
 use async_trait::async_trait;
 use clap::Args;
 use defaults_rs::{Domain, PrefValue, Preferences};
-use toml::Value;
 
 use crate::domains::convert::SerializablePrefValue;
 
@@ -60,10 +59,8 @@ pub struct ApplyCmd {
 struct PreferenceJob {
     domain: String,
     key: String,
-    toml_value: Value,
-    action: &'static str,
     original: Option<SerializablePrefValue>,
-    new_value: String,
+    new_value: PrefValue,
 }
 
 #[async_trait]
@@ -99,6 +96,7 @@ impl Runnable for ApplyCmd {
         // load the old snapshot (if any), otherwise create a new instance
         let snap_path = get_snapshot_path().await?;
         let mut is_bad_snap: bool = false;
+
         let snap = if Snapshot::is_loadable().await {
             match Snapshot::load(&snap_path).await {
                 Ok(snap) => snap,
@@ -127,8 +125,7 @@ impl Runnable for ApplyCmd {
             .map(|f| f.to_string())
             .collect();
 
-        let mut applyable_settings_count = 0;
-
+        // create jobs for applying
         for (dom, table) in domains.into_iter() {
             for (key, toml_value) in table.into_iter() {
                 let (eff_dom, eff_key) = core::effective(&dom, &key);
@@ -140,15 +137,12 @@ impl Runnable for ApplyCmd {
                     bail!("Domain \"{}\" not found.", eff_dom)
                 }
 
-                // read the current value from the system
-                // then, check if changed
-                // TODO: could use read_batch from defaults-rs here
                 let current_pref = core::read_current(&eff_dom, &eff_key).await;
-                let desired_pref = toml_to_prefvalue(&toml_value)?;
+                let new_pref = toml_to_prefvalue(&toml_value)?;
 
                 // Compare PrefValues directly instead of strings
                 let changed = match &current_pref {
-                    Some(current) => current != &desired_pref,
+                    Some(current) => current != &new_pref,
                     None => true, // No current value means it's a new setting
                 };
 
@@ -165,47 +159,33 @@ impl Runnable for ApplyCmd {
                         current_pref.as_ref().map(prefvalue_to_serializable)
                     };
 
-                    // decide “applying” vs “updating”
-                    let action = if old_entry.is_some() {
-                        "Updating"
-                    } else {
-                        "Applying"
-                    };
-
                     jobs.push(PreferenceJob {
                         domain: eff_dom.clone(),
                         key: eff_key.clone(),
-                        toml_value: toml_value.clone(),
-                        action,
+                        new_value: new_pref,
                         original: if is_bad_snap { None } else { original },
-                        new_value: desired_pref.to_string(),
                     });
-
-                    applyable_settings_count += 1;
                 } else {
                     log_info!("Skipping unchanged {eff_dom} | {eff_key}",);
                 }
             }
         }
 
-        // use defaults-rs batch write API for all changed settings
-        // collect jobs into a Vec<(Domain, String, PrefValue)>
-        let mut batch: Vec<(Domain, String, PrefValue)> = Vec::new();
+        if !dry_run {
+            let mut applyable_settings_count = 0;
 
-        for job in &jobs {
-            let domain_obj = if job.domain == "NSGlobalDomain" {
-                Domain::Global
-            } else {
-                Domain::User(job.domain.clone())
-            };
+            for job in &jobs {
+                let domain_obj = if job.domain == "NSGlobalDomain" {
+                    Domain::Global
+                } else {
+                    Domain::User(job.domain.clone())
+                };
 
-            if !dry_run {
                 log_info!(
-                    "{} {} | {} -> {} {}",
-                    job.action,
+                    "Applying {} | {} -> {} {}",
                     job.domain,
                     job.key,
-                    job.new_value,
+                    job.new_value.to_string(),
                     if let Some(orig) = &job.original {
                         format!(
                             "[Restorable to {}]",
@@ -215,34 +195,33 @@ impl Runnable for ApplyCmd {
                         "".to_string()
                     }
                 );
+
+                if let Err(e) = Preferences::write(domain_obj, &job.key, job.new_value.clone()) {
+                    log_err!(
+                        "Failed to apply preference ({} | {}). Error: {}",
+                        job.domain,
+                        job.key,
+                        e
+                    );
+                } else {
+                    applyable_settings_count += 1;
+                }
             }
 
-            let pref_value = toml_to_prefvalue(&job.toml_value)?;
-            batch.push((domain_obj, job.key.clone(), pref_value));
-        }
-
-        // perform batch write
-        if !dry_run {
-            match Preferences::write_batch(batch) {
-                Ok(_) => {
-                    log_info!("All preferences applied.");
-
-                    // restart system services if applicable
-                    if applyable_settings_count > 0 {
-                        restart_services().await;
-                    }
-                }
-                Err(e) => {
-                    log_err!("Batch write failed: {e}");
-                }
+            if applyable_settings_count > 0 {
+                log_info!(
+                    "Applied {} settings, will restart services.",
+                    applyable_settings_count
+                );
+                restart_services().await;
             }
         } else {
             for job in &jobs {
                 log_dry!(
-                    "Would {} setting '{}' for {}",
-                    job.action,
+                    "Would apply: {} {} -> {}",
+                    job.domain,
                     job.key,
-                    job.domain
+                    job.new_value
                 );
             }
         }
