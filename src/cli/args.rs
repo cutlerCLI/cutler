@@ -116,24 +116,25 @@ pub enum BrewSubcmd {
 
 impl Command {
     /// Returns a trait object reference for a given command so that it can
-    /// be run using the .run() implementation of that particular command.
+    /// be run using the .`run()` implementation of that particular command.
+    #[must_use] 
     pub fn as_runnable(&self) -> &dyn Runnable {
         match self {
-            Command::Apply(cmd) => cmd,
-            Command::Config(cmd) => cmd,
-            Command::Cookbook(cmd) => cmd,
-            Command::Exec(cmd) => cmd,
-            Command::Fetch(cmd) => cmd,
-            Command::Init(cmd) => cmd,
-            Command::Unapply(cmd) => cmd,
-            Command::Reset(cmd) => cmd,
-            Command::Status(cmd) => cmd,
-            Command::Lock(cmd) => cmd,
-            Command::Unlock(cmd) => cmd,
-            Command::CheckUpdate(cmd) => cmd,
-            Command::SelfUpdate(cmd) => cmd,
-            Command::Completion(cmd) => cmd,
-            Command::Brew { command } => match command {
+            Self::Apply(cmd) => cmd,
+            Self::Config(cmd) => cmd,
+            Self::Cookbook(cmd) => cmd,
+            Self::Exec(cmd) => cmd,
+            Self::Fetch(cmd) => cmd,
+            Self::Init(cmd) => cmd,
+            Self::Unapply(cmd) => cmd,
+            Self::Reset(cmd) => cmd,
+            Self::Status(cmd) => cmd,
+            Self::Lock(cmd) => cmd,
+            Self::Unlock(cmd) => cmd,
+            Self::CheckUpdate(cmd) => cmd,
+            Self::SelfUpdate(cmd) => cmd,
+            Self::Completion(cmd) => cmd,
+            Self::Brew { command } => match command {
                 BrewSubcmd::Backup(cmd) => cmd as &dyn Runnable,
                 BrewSubcmd::Install(cmd) => cmd as &dyn Runnable,
             },

@@ -12,7 +12,7 @@ use crate::{
     },
     cli::atomic::{should_be_quiet, should_dry_run},
     commands::Runnable,
-    config::core::Config,
+    config::Config,
     log_cute, log_dry, log_err, log_info, log_warn,
 };
 
@@ -75,7 +75,7 @@ impl Runnable for BrewInstallCmd {
 
         // tap only the missing taps reported by BrewDiff
         if !brew_diff.missing_taps.is_empty() {
-            for tap in brew_diff.missing_taps.iter() {
+            for tap in &brew_diff.missing_taps {
                 if dry_run {
                     log_dry!("Would tap {tap}");
                 } else {
@@ -139,10 +139,10 @@ async fn fetch_all(formulae: &[String], casks: &[String]) -> FetchedThings {
         let mut cmd = Command::new("brew");
         cmd.arg("fetch").arg(name);
 
-        if !quiet {
-            log_info!("Fetching formula: {name}");
-        } else {
+        if quiet {
             cmd.arg("--quiet");
+        } else {
+            log_info!("Fetching formula: {name}");
         }
 
         match cmd.status().await {
@@ -156,10 +156,10 @@ async fn fetch_all(formulae: &[String], casks: &[String]) -> FetchedThings {
         let mut cmd = Command::new("brew");
         cmd.arg("fetch").arg("--cask").arg(name);
 
-        if !quiet {
-            log_info!("Fetching cask: {name}");
-        } else {
+        if quiet {
             cmd.arg("--quiet");
+        } else {
+            log_info!("Fetching cask: {name}");
         }
 
         match cmd.status().await {

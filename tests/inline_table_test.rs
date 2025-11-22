@@ -2,7 +2,7 @@
 
 #[cfg(test)]
 mod tests {
-    use cutler::config::core::Config;
+    use cutler::config::Config;
     use cutler::domains::collect;
     use std::io::Write;
     use tempfile::NamedTempFile;

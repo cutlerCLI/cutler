@@ -8,7 +8,7 @@ use anyhow::{Result, bail};
 use crate::{
     cli::atomic::should_dry_run,
     commands::Runnable,
-    config::core::{Config, ConfigCoreMethods},
+    config::{Config, ConfigCoreMethods},
     log_dry,
 };
 
@@ -27,7 +27,7 @@ impl Runnable for UnlockCmd {
 
         if !document
             .get("lock")
-            .and_then(|v| v.as_bool())
+            .and_then(toml_edit::Item::as_bool)
             .unwrap_or(false)
         {
             bail!("Already unlocked.")

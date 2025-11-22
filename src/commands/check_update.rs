@@ -11,7 +11,7 @@ use semver::Version;
 use crate::{
     cli::atomic::should_be_quiet,
     commands::Runnable,
-    config::core::Config,
+    config::Config,
     log_cute, log_info,
     util::logging::{BOLD, RESET},
 };
@@ -40,7 +40,7 @@ impl Runnable for CheckUpdateCmd {
             .with_context(|| format!("Failed to fetch latest GitHub release: {url}"))?;
         let body = resp.text().await?;
         let json: serde_json::Value = serde_json::from_str(&body)
-            .map_err(|e| anyhow!("Failed to parse GitHub API response: {}", e))?;
+            .map_err(|e| anyhow!("Failed to parse GitHub API response: {e}"))?;
 
         // try "tag_name" first, fallback to "name"
         let latest_version = json
@@ -58,23 +58,23 @@ impl Runnable for CheckUpdateCmd {
 
         match current.cmp(&latest) {
             Ordering::Less => {
-                if !should_be_quiet() {
-                    println!(
-                        r#"
-{BOLD}Update available:{RESET} {current_version} → {latest_version}
-
-To update, run one of the following:
-
-  brew update && brew upgrade cutler     # if installed via homebrew
-  cargo install cutler --force           # if installed via cargo
-  mise up cutler                         # if installed via mise
-  cutler self-update                     # for manual installs
-
-Or download the latest release from:
-  https://github.com/machlit/cutler/releases"#
-                    );
+                if should_be_quiet() {
+                    log_cute!("Update available!");
                 } else {
-                    log_cute!("Update available!")
+                    println!(
+                        r"
+                {BOLD}Update available:{RESET} {current_version} → {latest_version}
+
+                To update, run one of the following:
+
+                  brew update && brew upgrade cutler     # if installed via homebrew
+                  cargo install cutler --force           # if installed via cargo
+                  mise up cutler                         # if installed via mise
+                  cutler self-update                     # for manual installs
+
+                Or download the latest release from:
+                  https://github.com/machlit/cutler/releases"
+                    );
                 }
             }
             Ordering::Equal => {

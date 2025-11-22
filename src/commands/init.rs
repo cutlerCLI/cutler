@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use anyhow::{Result, bail};
+use anyhow::{Context, Result, bail};
 use async_trait::async_trait;
 use clap::Args;
 use tokio::fs;
 
-use crate::{commands::Runnable, config::core::Config, log_cute, log_warn, util::io::confirm};
+use crate::{commands::Runnable, config::Config, log_cute, log_warn, util::io::confirm};
 
 #[derive(Args, Debug)]
 pub struct InitCmd;
@@ -24,7 +24,13 @@ impl Runnable for InitCmd {
         // this is not done by create_empty_config
         let default_cfg = include_str!("../../examples/complete.toml");
 
-        fs::create_dir_all(&config.path.parent().unwrap()).await?;
+        fs::create_dir_all(
+            &config
+                .path
+                .parent()
+                .context("Failed to initialize new configuration path.")?,
+        )
+        .await?;
         fs::write(&config.path, default_cfg).await?;
 
         log_cute!(

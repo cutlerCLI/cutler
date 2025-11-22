@@ -3,7 +3,7 @@
 use std::fmt::Display;
 
 /// Represents the type of software to list in Homebrew.
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq)]
 pub enum BrewListType {
     /// Lists casks (inside caskroom).
     Cask,
@@ -18,12 +18,12 @@ pub enum BrewListType {
 impl Display for BrewListType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let flag = match self {
-            BrewListType::Cask => "--cask",
-            BrewListType::Formula => "--formula",
-            BrewListType::Dependency => "--installed-as-dependency",
-            BrewListType::Tap => "tap",
+            Self::Cask => "--cask",
+            Self::Formula => "--formula",
+            Self::Dependency => "--installed-as-dependency",
+            Self::Tap => "tap",
         };
-        write!(f, "{}", flag)
+        write!(f, "{flag}")
     }
 }
 

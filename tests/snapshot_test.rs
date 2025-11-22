@@ -3,9 +3,8 @@
 #[cfg(test)]
 mod tests {
     use cutler::{
-        config::path::get_config_path,
+        config::get_config_path,
         domains::convert::SerializablePrefValue,
-        exec::core::ExecJob,
         snapshot::{
             core::{SettingState, Snapshot},
             get_snapshot_path,
@@ -50,18 +49,6 @@ mod tests {
             setting.original_value,
             Some(SerializablePrefValue::Integer(36))
         );
-
-        // Test external command state
-        let command = ExecJob {
-            name: "echo".to_string(),
-            run: "echo Hello World".to_string(),
-            sudo: false,
-            ensure_first: false,
-            flag: false,
-            required: vec!["echo".to_string()],
-        };
-        assert_eq!(command.run, "echo Hello World");
-        assert!(!command.sudo);
     }
 
     #[tokio::test]

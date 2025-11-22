@@ -4,8 +4,8 @@
 mod tests {
     use cutler::{
         cli::atomic::set_dry_run,
-        config::core::{Command, Config},
-        exec::core::{ExecMode, run_all, run_one},
+        config::{Command, Config},
+        exec::{ExecMode, run_all, run_one},
     };
     use std::collections::HashMap;
 

@@ -7,7 +7,7 @@ use self_update::{backends::github::Update, cargo_crate_version};
 use std::env;
 use tokio::fs;
 
-use crate::{commands::Runnable, config::core::Config, log_cute, log_warn};
+use crate::{commands::Runnable, config::Config, log_cute, log_warn};
 
 #[derive(Args, Debug)]
 pub struct SelfUpdateCmd {
@@ -83,7 +83,7 @@ impl Runnable for SelfUpdateCmd {
                     .get(&manpage_url)
                     .send()
                     .await
-                    .map_err(|e| anyhow::anyhow!("Failed to fetch manpage: {}", e))?;
+                    .map_err(|e| anyhow::anyhow!("Failed to fetch manpage: {e}"))?;
                 let manpage_content = resp.text().await?;
 
                 fs::create_dir_all("/usr/local/share/man/man1").await?;

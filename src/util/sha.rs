@@ -24,5 +24,5 @@ pub fn get_digest(path: PathBuf) -> Result<String> {
     }
 
     let result = hasher.finalize();
-    Ok(format!("{:x}", result))
+    Ok(format!("{result:x}"))
 }
