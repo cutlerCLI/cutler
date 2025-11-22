@@ -3,13 +3,13 @@
 use crate::{
     cli::atomic::should_dry_run,
     commands::{BrewInstallCmd, Runnable},
-    config::{core::Config, path::get_config_path, remote::RemoteConfigManager},
+    config::{Config, get_config_path, remote::RemoteConfigManager},
     domains::{
         collect,
         convert::{prefvalue_to_serializable, toml_to_prefvalue},
         core,
     },
-    exec::{core::ExecMode, run_all},
+    exec::{ExecMode, run_all},
     log_cute, log_dry, log_err, log_info, log_warn,
     snapshot::{
         core::{SettingState, Snapshot},

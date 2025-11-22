@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use clap::Args;
 use tokio::fs;
 
-use crate::{commands::Runnable, config::core::Config, log_cute, log_warn, util::io::confirm};
+use crate::{commands::Runnable, config::Config, log_cute, log_warn, util::io::confirm};
 
 #[derive(Args, Debug)]
 pub struct InitCmd;

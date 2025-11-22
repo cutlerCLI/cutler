@@ -4,7 +4,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
 
-use crate::{commands::Runnable, config::core::Config, util::io::open};
+use crate::{commands::Runnable, config::Config, util::io::open};
 
 #[derive(Args, Debug)]
 pub struct CookbookCmd;

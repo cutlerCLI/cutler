@@ -8,7 +8,7 @@ use defaults_rs::{Domain, PrefValue, Preferences};
 use crate::{
     cli::atomic::should_dry_run,
     commands::{ResetCmd, Runnable},
-    config::core::Config,
+    config::Config,
     domains::convert::serializable_to_prefvalue,
     log_cute, log_dry, log_err, log_info, log_warn,
     snapshot::{core::Snapshot, get_snapshot_path},

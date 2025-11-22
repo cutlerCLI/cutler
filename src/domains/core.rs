@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use toml::Table;
 use toml_edit::Item;
 
-use crate::config::core::Config;
+use crate::config::Config;
 use crate::domains::convert::toml_edit_to_toml;
 
 /// Collect all tables in `[set]`, parse with `toml_edit` to properly handle inline tables,
@@ -114,7 +114,7 @@ fn get_defaults_domain(domain: &str) -> String {
 }
 
 /// Given the TOML domain and key, figure out the true domain-key pair.
-#[must_use] 
+#[must_use]
 pub fn effective(domain: &str, key: &str) -> (String, String) {
     let dom = get_defaults_domain(domain);
     let k = if dom == "NSGlobalDomain" && domain.starts_with("NSGlobalDomain.") {

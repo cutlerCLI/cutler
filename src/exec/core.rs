@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::cli::atomic::should_dry_run;
-use crate::config::core::Config;
+use crate::config::Config;
 use crate::util::logging::{BOLD, RESET};
 use crate::{log_dry, log_exec, log_warn};
 use anyhow::{Context, Result, anyhow, bail};
@@ -12,7 +12,7 @@ use tokio::process::Command;
 use tokio::task;
 
 /// Represents an external command job.
-pub struct ExecJob {
+struct ExecJob {
     pub name: String,
     pub run: String,
     pub sudo: bool,
@@ -22,7 +22,7 @@ pub struct ExecJob {
 }
 
 /// Extract a single command by name from the user config.
-pub fn extract_cmd(config: &Config, name: &str) -> Result<ExecJob> {
+fn extract_cmd(config: &Config, name: &str) -> Result<ExecJob> {
     let command_map = config
         .command
         .as_ref()
@@ -54,7 +54,7 @@ pub fn extract_cmd(config: &Config, name: &str) -> Result<ExecJob> {
 
 // Pull all external commands written in user config into state objects.
 #[must_use]
-pub fn extract_all_cmds(config: &Config) -> Vec<ExecJob> {
+fn extract_all_cmds(config: &Config) -> Vec<ExecJob> {
     let mut jobs = Vec::new();
 
     if let Some(command_map) = config.command.as_ref() {

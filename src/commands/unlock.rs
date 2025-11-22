@@ -8,7 +8,7 @@ use anyhow::{Result, bail};
 use crate::{
     cli::atomic::should_dry_run,
     commands::Runnable,
-    config::core::{Config, ConfigCoreMethods},
+    config::{Config, ConfigCoreMethods},
     log_dry,
 };
 

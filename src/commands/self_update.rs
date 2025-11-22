@@ -7,7 +7,7 @@ use self_update::{backends::github::Update, cargo_crate_version};
 use std::env;
 use tokio::fs;
 
-use crate::{commands::Runnable, config::core::Config, log_cute, log_warn};
+use crate::{commands::Runnable, config::Config, log_cute, log_warn};
 
 #[derive(Args, Debug)]
 pub struct SelfUpdateCmd {

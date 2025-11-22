@@ -30,8 +30,8 @@ use cutler::cli::atomic::{
 };
 use cutler::cli::{Args, Command};
 use cutler::commands::Runnable;
-use cutler::config::core::Config;
-use cutler::config::path::get_config_path;
+use cutler::config::Config;
+use cutler::config::get_config_path;
 use cutler::util::sudo::{run_with_noroot, run_with_root};
 use cutler::{log_err, log_info};
 
@@ -48,7 +48,9 @@ async fn main() {
     set_no_restart_services(args.no_restart_services);
 
     // decide configuration path for the entire lifetime of the program
-    let mut config = if let Ok(path) = get_config_path().await { Config::new(path) } else {
+    let mut config = if let Ok(path) = get_config_path().await {
+        Config::new(path)
+    } else {
         log_err!("Path could not be decided for the configuration file.");
         exit(1);
     };

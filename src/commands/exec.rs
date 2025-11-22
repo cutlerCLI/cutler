@@ -2,9 +2,8 @@
 
 use crate::commands::Runnable;
 
-use crate::config::core::Config;
-use crate::exec::core;
-use crate::exec::core::ExecMode;
+use crate::config::Config;
+use crate::exec::{ExecMode, run_all, run_one};
 use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
@@ -38,9 +37,9 @@ impl Runnable for ExecCmd {
         };
 
         if let Some(cmd_name) = &self.name {
-            core::run_one(config.to_owned(), cmd_name).await?;
+            run_one(config.to_owned(), cmd_name).await?;
         } else {
-            core::run_all(config.to_owned(), mode).await?;
+            run_all(config.to_owned(), mode).await?;
         }
 
         Ok(())

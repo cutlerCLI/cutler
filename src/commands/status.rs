@@ -6,7 +6,7 @@ use crate::{
         types::BrewDiff,
     },
     commands::Runnable,
-    config::core::Config,
+    config::Config,
     domains::{collect, effective, read_current},
     log_cute, log_err, log_info, log_warn,
     util::logging::{BOLD, GREEN, RED, RESET},

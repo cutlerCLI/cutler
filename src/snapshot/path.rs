@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use std::{path::PathBuf, sync::OnceLock};
 use tokio::fs;
 
-use crate::config::path::get_config_path;
+use crate::config::get_config_path;
 
 /// The static snapshot path to use throughout each command run.
 /// This is to make sure that accidental variable changes don't alter the snapshot being written.
@@ -39,9 +39,7 @@ pub async fn get_snapshot_path() -> Result<PathBuf> {
                 .with_context(|| format!("Failed to remove existing snapshot at {new_path:?}"))?;
         }
         fs::rename(&old_path, &new_path).await.with_context(|| {
-            format!(
-                "Failed to move snapshot from {old_path:?} to {new_path:?}"
-            )
+            format!("Failed to move snapshot from {old_path:?} to {new_path:?}")
         })?;
     }
 

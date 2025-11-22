@@ -35,7 +35,7 @@ pub use status::StatusCmd;
 pub use unapply::UnapplyCmd;
 pub use unlock::UnlockCmd;
 
-use crate::config::core::Config;
+use crate::config::Config;
 
 /// A common trait for cutler commands.
 ///

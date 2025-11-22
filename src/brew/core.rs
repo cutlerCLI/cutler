@@ -3,7 +3,7 @@
 use crate::brew::types::{BrewDiff, BrewListType};
 use crate::brew::xcode::ensure_xcode_clt;
 use crate::cli::atomic::should_dry_run;
-use crate::config::core::Brew;
+use crate::config::Brew;
 use crate::util::io::confirm;
 use crate::{log_dry, log_info, log_warn};
 use anyhow::{Result, bail};
@@ -121,7 +121,9 @@ fn flatten_tap_prefix(lines: Vec<String>) -> Vec<String> {
 /// Lists Homebrew things (formulae/casks/taps/deps) and separates them based on newline.
 /// Note that `flatten` will be ignored if `list_type` is `BrewListType::Tap`.
 pub async fn brew_list(list_type: BrewListType, flatten: bool) -> Result<Vec<String>> {
-    let args: Vec<String> = if list_type == BrewListType::Tap { vec![list_type.to_string()] } else {
+    let args: Vec<String> = if list_type == BrewListType::Tap {
+        vec![list_type.to_string()]
+    } else {
         let lt_str = list_type.to_string();
         vec![
             "list".to_string(),

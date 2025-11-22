@@ -7,7 +7,7 @@ use clap::Args;
 use crate::{
     cli::atomic::should_dry_run,
     commands::Runnable,
-    config::{core::Config, remote::RemoteConfigManager},
+    config::{Config, remote::RemoteConfigManager},
     log_cute, log_dry, log_warn,
     util::{
         io::confirm,

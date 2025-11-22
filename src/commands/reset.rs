@@ -9,7 +9,7 @@ use tokio::fs;
 use crate::{
     cli::atomic::should_dry_run,
     commands::Runnable,
-    config::core::Config,
+    config::Config,
     domains::{collect, effective, read_current},
     log_cute, log_dry, log_err, log_info, log_warn,
     snapshot::{Snapshot, get_snapshot_path},

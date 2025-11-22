@@ -10,7 +10,7 @@ use clap_complete::{
 use std::io;
 use tokio::task;
 
-use crate::{commands::Runnable, config::core::Config};
+use crate::{commands::Runnable, config::Config};
 
 /// Represents the shell types to generate completions for.
 #[derive(Copy, Clone, PartialEq, Eq, clap::ValueEnum, Debug)]

@@ -2,7 +2,7 @@
 
 use crate::cli::Command;
 use crate::cli::args::BrewSubcmd;
-use crate::config::core::Config;
+use crate::config::Config;
 use crate::config::remote::RemoteConfigManager;
 use crate::{log_err, log_info, log_warn};
 
