@@ -1,25 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-/* The Heart *sparkles*
- *
- * Some personal take:
- *
- * I've tried incorporating a very minimal main.rs since most developers often try to fill their projects' main.rs up
- * with unnecessary boilerplate. cutler has been my primary way of learning and practicing Rust through a real-world
- * project which I actually use on a daily basis in my workflow, and honestly it has made me a better programmer to
- * say the least.
- *
- * However, I do not like people who flood crates.io with unnecessary iterations of their own garbage, so let's spread
- * good code and let's spread "meaningful" code.
- *
- * I don't know how well I've even managed to write cutler (as any amount of code is a liability anyway), but hopefully
- * if you're looking at this and you've cloned the project onto your computer, you'll have a look around, and maybe
- * produce a lot of good code, which could potentially be beneficial to both you and the community.
- *
- * I relicensed this code from MIT to GPL only from the sheer inspiration of writing "good" code (taken from other
- * projects such as git), so I suppose let's keep that going ^w^ happy coding!
- */
-
 use std::process::exit;
 
 use clap::Parser;
