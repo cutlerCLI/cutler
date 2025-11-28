@@ -35,6 +35,19 @@ jobs:
       - uses: mozilla-actions/sccache-action@v0.0.9
       - run: sccache --show-stats || true
 
-      - run: cargo clippy --all-targets --no-deps -- -D warnings
-      - run: cargo test --quiet
-      - run: cargo fmt --all -- --check
+      - name: Install deps before command run
+        run: cargo install cargo-audit cargo-deny
+
+      - name: Generic clippy
+        run: cargo clippy --no-deps -- -D warnings
+
+      - name: Security check
+        run: cargo audit
+
+      - name: cargo-deny run
+        run: cargo deny check
+
+      - name: Generic testing and format check
+        run: |
+          cargo test --quiet
+          cargo fmt --all -- --check
