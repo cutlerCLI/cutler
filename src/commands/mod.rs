@@ -35,7 +35,7 @@ pub use status::StatusCmd;
 pub use unapply::UnapplyCmd;
 pub use unlock::UnlockCmd;
 
-use crate::config::core::Config;
+use crate::config::Config;
 
 /// A common trait for cutler commands.
 ///
@@ -43,7 +43,11 @@ use crate::config::core::Config;
 /// src/cli/args.rs, the trait is used for passing down the same callable.
 #[async_trait]
 pub trait Runnable {
-    /// Run the command. The result is implemented using anyhow::Result since cutler's internal functions
+    /// Run the command. The result is implemented using `anyhow::Result` since cutler's internal functions
     /// often propagate an error upto the root error handler.
-    async fn run(&self, config: &mut Config) -> Result<()>;
+    async fn run(&self, config: &Config) -> Result<()>;
+
+    /// Returns if the command requires sudo privileges or not.
+    /// This should always be implemented by the command.
+    fn needs_sudo(&self) -> bool;
 }

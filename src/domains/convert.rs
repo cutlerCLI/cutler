@@ -8,7 +8,7 @@ use toml::Value;
 use toml_edit::Value as EditValue;
 
 /// Serializable representation of a preference value.
-/// This mirrors the structure of defaults_rs::PrefValue but implements Serialize/Deserialize.
+/// This mirrors the structure of `defaults_rs::PrefValue` but implements Serialize/Deserialize.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(untagged)]
 pub enum SerializablePrefValue {
@@ -20,8 +20,8 @@ pub enum SerializablePrefValue {
     Dictionary(HashMap<String, SerializablePrefValue>),
 }
 
-/// Turns a toml::Value into its defaults_rs::PrefValue counterpart.
-pub fn toml_to_prefvalue(val: &Value) -> anyhow::Result<PrefValue> {
+/// Turns a `toml::Value` into its `defaults_rs::PrefValue` counterpart.
+pub fn toml_to_prefvalue(val: &Value) -> Result<PrefValue> {
     Ok(match val {
         Value::String(s) => PrefValue::String(s.clone()),
         Value::Integer(i) => PrefValue::Integer(*i),
@@ -41,26 +41,28 @@ pub fn toml_to_prefvalue(val: &Value) -> anyhow::Result<PrefValue> {
     })
 }
 
-/// Turns a defaults_rs::PrefValue into its toml::Value counterpart.
-pub fn prefvalue_to_toml(val: &PrefValue) -> Value {
-    match val {
+/// Turns a `defaults_rs::PrefValue` into its `toml::Value` counterpart.
+pub fn prefvalue_to_toml(val: &PrefValue) -> Result<Value> {
+    Ok(match val {
         PrefValue::String(s) => Value::String(s.clone()),
         PrefValue::Integer(i) => Value::Integer(*i),
         PrefValue::Float(f) => Value::Float(*f),
         PrefValue::Boolean(b) => Value::Boolean(*b),
-        PrefValue::Array(arr) => Value::Array(arr.iter().map(prefvalue_to_toml).collect()),
-        PrefValue::Dictionary(dict) => {
-            let map = dict
-                .iter()
-                .map(|(k, v)| (k.clone(), prefvalue_to_toml(v)))
-                .collect();
-            Value::Table(map)
-        }
-        _ => unreachable!(),
-    }
+        PrefValue::Array(arr) => Value::Array(
+            arr.iter()
+                .map(prefvalue_to_toml)
+                .collect::<Result<Vec<_>>>()?,
+        ),
+        PrefValue::Dictionary(dict) => dict
+            .iter()
+            .map(|(k, v)| Ok((k.clone(), prefvalue_to_toml(v)?)))
+            .collect::<Result<toml::map::Map<_, _>>>()
+            .map(Value::Table)?,
+        _ => bail!("Support does not extend to complex types of data."),
+    })
 }
 
-/// Turns a string into its toml::Value counterpart.
+/// Turns a string into its `toml::Value` counterpart.
 pub fn string_to_toml_value(s: &str) -> toml::Value {
     // try bool, int, float, fallback to string
     if s == "true" {
@@ -76,7 +78,7 @@ pub fn string_to_toml_value(s: &str) -> toml::Value {
     }
 }
 
-/// Normalize a toml::Value to a string.
+/// Normalize a `toml::Value` to a string.
 pub fn normalize(value: &Value) -> String {
     match value {
         Value::String(s) => s.clone(),
@@ -84,23 +86,23 @@ pub fn normalize(value: &Value) -> String {
     }
 }
 
-/// Turns a toml_edit::Value into its defaults_rs::PrefValue counterpart.
+/// Turns a `toml_edit::Value` into its `defaults_rs::PrefValue` counterpart.
 pub fn toml_edit_to_prefvalue(val: &EditValue) -> anyhow::Result<PrefValue> {
     Ok(match val {
-        EditValue::String(s) => PrefValue::String(s.value().to_string()),
+        EditValue::String(s) => PrefValue::String(s.value().clone()),
         EditValue::Integer(i) => PrefValue::Integer(i.value().to_owned()),
         EditValue::Float(f) => PrefValue::Float(f.value().to_owned()),
         EditValue::Boolean(b) => PrefValue::Boolean(b.value().to_owned()),
         EditValue::Array(arr) => {
             let mut result = Vec::new();
-            for item in arr.iter() {
+            for item in arr {
                 result.push(toml_edit_to_prefvalue(item)?);
             }
             PrefValue::Array(result)
         }
         EditValue::InlineTable(tbl) => {
             let mut dict = HashMap::new();
-            for (k, v) in tbl.iter() {
+            for (k, v) in tbl {
                 dict.insert(k.to_string(), toml_edit_to_prefvalue(v)?);
             }
             PrefValue::Dictionary(dict)
@@ -109,23 +111,23 @@ pub fn toml_edit_to_prefvalue(val: &EditValue) -> anyhow::Result<PrefValue> {
     })
 }
 
-/// Converts a toml_edit::Value to a toml::Value for compatibility.
+/// Converts a `toml_edit::Value` to a `toml::Value` for compatibility.
 pub fn toml_edit_to_toml(val: &EditValue) -> anyhow::Result<Value> {
     Ok(match val {
-        EditValue::String(s) => Value::String(s.value().to_string()),
+        EditValue::String(s) => Value::String(s.value().clone()),
         EditValue::Integer(i) => Value::Integer(*i.value()),
         EditValue::Float(f) => Value::Float(*f.value()),
         EditValue::Boolean(b) => Value::Boolean(*b.value()),
         EditValue::Array(arr) => {
             let mut result = Vec::new();
-            for item in arr.iter() {
+            for item in arr {
                 result.push(toml_edit_to_toml(item)?);
             }
             Value::Array(result)
         }
         EditValue::InlineTable(tbl) => {
             let mut map = toml::map::Map::new();
-            for (k, v) in tbl.iter() {
+            for (k, v) in tbl {
                 map.insert(k.to_string(), toml_edit_to_toml(v)?);
             }
             Value::Table(map)
@@ -134,26 +136,29 @@ pub fn toml_edit_to_toml(val: &EditValue) -> anyhow::Result<Value> {
     })
 }
 
-/// Converts a PrefValue to a SerializablePrefValue.
-pub fn prefvalue_to_serializable(val: &PrefValue) -> SerializablePrefValue {
-    match val {
+/// Converts a `PrefValue` to a `SerializablePrefValue`.
+/// Converts a `PrefValue` to a `SerializablePrefValue`.
+pub fn prefvalue_to_serializable(val: &PrefValue) -> Result<SerializablePrefValue> {
+    Ok(match val {
         PrefValue::String(s) => SerializablePrefValue::String(s.clone()),
         PrefValue::Integer(i) => SerializablePrefValue::Integer(*i),
         PrefValue::Float(f) => SerializablePrefValue::Float(*f),
         PrefValue::Boolean(b) => SerializablePrefValue::Boolean(*b),
-        PrefValue::Array(arr) => {
-            SerializablePrefValue::Array(arr.iter().map(prefvalue_to_serializable).collect())
-        }
+        PrefValue::Array(arr) => SerializablePrefValue::Array(
+            arr.iter()
+                .map(prefvalue_to_serializable)
+                .collect::<Result<Vec<_>>>()?,
+        ),
         PrefValue::Dictionary(dict) => SerializablePrefValue::Dictionary(
             dict.iter()
-                .map(|(k, v)| (k.clone(), prefvalue_to_serializable(v)))
-                .collect(),
+                .map(|(k, v)| Ok((k.clone(), prefvalue_to_serializable(v)?)))
+                .collect::<Result<HashMap<_, _>>>()?,
         ),
-        _ => unreachable!(),
-    }
+        _ => bail!("Unsupported PrefValue type"),
+    })
 }
 
-/// Converts a SerializablePrefValue to a PrefValue.
+/// Converts a `SerializablePrefValue` to a `PrefValue`.
 pub fn serializable_to_prefvalue(val: &SerializablePrefValue) -> PrefValue {
     match val {
         SerializablePrefValue::String(s) => PrefValue::String(s.clone()),

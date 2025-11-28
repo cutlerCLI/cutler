@@ -47,7 +47,7 @@ impl Snapshot {
     /// Creates a new snapshot.
     /// Note that the path field is decided by `get_snapshot_path()`.
     pub async fn new() -> Self {
-        Snapshot {
+        Self {
             settings: Vec::new(),
             version: env!("CARGO_PKG_VERSION").into(),
             path: get_snapshot_path()
@@ -74,7 +74,7 @@ impl Snapshot {
     pub async fn load(path: &PathBuf) -> Result<Self> {
         if fs::try_exists(path).await.unwrap_or_default() {
             let txt = fs::read_to_string(path).await?;
-            let snap_result: Result<Snapshot, _> = serde_json::from_str(&txt);
+            let snap_result: Result<Self, _> = serde_json::from_str(&txt);
 
             match snap_result {
                 Ok(mut snap) => {
@@ -90,7 +90,7 @@ impl Snapshot {
                     let settings_only_result: Result<SettingsOnly, _> = serde_json::from_str(&txt);
                     match settings_only_result {
                         Ok(settings_only) => {
-                            let mut snap = Snapshot::new().await;
+                            let mut snap = Self::new().await;
                             snap.settings = settings_only.settings;
                             snap.path = path.clone();
                             Ok(snap)

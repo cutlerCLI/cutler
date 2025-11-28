@@ -3,13 +3,12 @@
 use anyhow::{Result, bail};
 use async_trait::async_trait;
 use clap::Args;
-use defaults_rs::{Domain, Preferences};
-use std::collections::HashMap;
+use defaults_rs::{Domain, PrefValue, Preferences};
 
 use crate::{
     cli::atomic::should_dry_run,
     commands::{ResetCmd, Runnable},
-    config::core::Config,
+    config::Config,
     domains::convert::serializable_to_prefvalue,
     log_cute, log_dry, log_err, log_info, log_warn,
     snapshot::{core::Snapshot, get_snapshot_path},
@@ -24,17 +23,18 @@ pub struct UnapplyCmd;
 
 #[async_trait]
 impl Runnable for UnapplyCmd {
-    async fn run(&self, config: &mut Config) -> Result<()> {
-        config.load(true).await?;
+    fn needs_sudo(&self) -> bool {
+        false
+    }
 
+    async fn run(&self, config: &Config) -> Result<()> {
         if !Snapshot::is_loadable().await {
             log_warn!("No snapshot found to revert.");
 
             if confirm("Reset all System Settings instead?") {
                 return ResetCmd.run(config).await;
-            } else {
-                bail!("Abort operation.")
             }
+            bail!("Abort operation.")
         }
 
         let dry_run = should_dry_run();
@@ -57,9 +57,8 @@ impl Runnable for UnapplyCmd {
         }
 
         // prepare undo operations, grouping by domain for efficiency
-        let mut batch_restores: HashMap<Domain, Vec<(String, defaults_rs::PrefValue)>> =
-            HashMap::new();
-        let mut batch_deletes: HashMap<Domain, Vec<String>> = HashMap::new();
+        let mut restore_jobs: Vec<(Domain, String, PrefValue)> = Vec::new();
+        let mut delete_jobs: Vec<(Domain, String)> = Vec::new();
 
         // reverse order to undo in correct sequence
         for s in snapshot.settings.clone().into_iter().rev() {
@@ -68,79 +67,68 @@ impl Runnable for UnapplyCmd {
             } else {
                 Domain::User(s.domain.clone())
             };
+
             if let Some(orig) = s.original_value {
                 let pref_value = serializable_to_prefvalue(&orig);
-                batch_restores
-                    .entry(domain_obj)
-                    .or_default()
-                    .push((s.key, pref_value));
+
+                restore_jobs.push((domain_obj, s.key, pref_value));
             } else {
-                batch_deletes.entry(domain_obj).or_default().push(s.key);
+                delete_jobs.push((domain_obj, s.key));
             }
         }
 
         // in dry-run mode, just print what would be done
         if dry_run {
-            for (domain, restores) in &batch_restores {
-                for (key, value) in restores {
-                    log_dry!("Would restore: {domain} | {key} -> {value}",);
-                }
+            for (domain, key, original_value) in restore_jobs {
+                log_dry!("Would restore: {domain} | {key} -> {original_value}",);
             }
-            for (domain, deletes) in &batch_deletes {
-                for key in deletes {
-                    log_dry!("Would delete setting: {domain} | {key}",);
-                }
+            for (domain, key) in &delete_jobs {
+                log_dry!("Would delete setting: {domain} | {key}",);
             }
+
+            log_dry!("Would delete snapshot at path: {:?}", snapshot.path);
         } else {
-            // perform batch restores
-            if !batch_restores.is_empty() {
-                let mut batch_vec = Vec::new();
-                for (domain, entries) in batch_restores {
-                    for (key, value) in entries {
-                        log_info!("Restoring: {domain} | {key} -> {value}",);
-                        batch_vec.push((domain.clone(), key, value));
+            let mut settings_modified_count = 0;
+
+            if restore_jobs.is_empty() {
+                for (domain, key, value) in restore_jobs {
+                    log_info!("Restoring: {domain} | {key} -> {value}",);
+
+                    if let Err(e) = Preferences::write(domain.clone(), &key, value.clone()) {
+                        log_err!("Restore failed: {e}");
+                    } else {
+                        settings_modified_count += 1;
                     }
                 }
-                if let Err(e) = Preferences::write_batch(batch_vec.clone()) {
-                    log_err!("Batch restore failed: {e}");
-                }
             }
 
-            // perform batch deletes
-            if !batch_deletes.is_empty() {
-                let mut delete_vec = Vec::new();
-                for (domain, keys) in batch_deletes {
-                    for key in keys {
-                        log_info!("Deleting: {domain} | {key}");
-                        delete_vec.push((domain.clone(), key));
+            if !delete_jobs.is_empty() {
+                for (domain, key) in delete_jobs {
+                    log_info!("Deleting: {domain} | {key}");
+
+                    if let Err(e) = Preferences::delete(domain.clone(), &key) {
+                        log_err!("Delete failed: {e}");
+                    } else {
+                        settings_modified_count += 1;
                     }
                 }
-                if let Err(e) = Preferences::delete_batch(delete_vec.clone()) {
-                    log_err!("Batch delete failed: {e}");
-                }
             }
-        }
 
-        // warn about external command execution
-        if snapshot.exec_run_count > 0 {
-            log_warn!(
-                "{} commands were executed previously; revert them manually.",
-                snapshot.exec_run_count
-            );
-        }
+            if snapshot.exec_run_count > 0 {
+                log_warn!(
+                    "{} commands were executed previously; revert them manually.",
+                    snapshot.exec_run_count
+                );
+            }
 
-        // delete the snapshot file
-        if dry_run {
-            log_dry!("Would remove snapshot file at {snap_path:?}",);
-        } else {
+            if settings_modified_count > 0 {
+                log_info!("Modified {settings_modified_count} settings; restarting services.");
+                restart_services().await;
+            }
+
             snapshot.delete().await?;
-            log_info!("Removed snapshot file at {snap_path:?}",);
+            log_cute!("Unapply operation complete.");
         }
-
-        // Restart system services if requested
-        restart_services().await;
-
-        log_cute!("Unapply operation complete.");
 
         Ok(())
     }

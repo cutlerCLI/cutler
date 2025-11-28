@@ -19,9 +19,9 @@ async fn check_installed() -> bool {
     }
 }
 
-/// Helper for: ensure_brew()
+/// Helper for: `ensure_brew()`
 /// Ensures Xcode Command Line Tools are installed.
-/// If not, prompts the user to install them (unless dry_run).
+/// If not, prompts the user to install them (unless `dry_run`).
 pub async fn ensure_xcode_clt() -> Result<()> {
     if check_installed().await {
         return Ok(());
@@ -63,9 +63,8 @@ pub async fn ensure_xcode_clt() -> Result<()> {
         bail!(
             "Timed out. Re-run this command once installation completes.\nIf there was an error during installation, try running `xcode-select --install` again."
         );
-    } else {
-        bail!(
-            "Xcode Command Line Tools are required for Homebrew operations, but were not found. Aborting."
-        );
     }
+    bail!(
+        "Xcode Command Line Tools are required for Homebrew operations, but were not found. Aborting."
+    );
 }

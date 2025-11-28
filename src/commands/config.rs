@@ -11,7 +11,7 @@ use tokio::fs;
 use crate::{
     cli::atomic::{should_be_quiet, should_dry_run},
     commands::Runnable,
-    config::core::Config,
+    config::Config,
     log_cute, log_dry, log_info,
 };
 
@@ -20,7 +20,11 @@ pub struct ConfigCmd {}
 
 #[async_trait]
 impl Runnable for ConfigCmd {
-    async fn run(&self, config: &mut Config) -> Result<()> {
+    fn needs_sudo(&self) -> bool {
+        false
+    }
+
+    async fn run(&self, config: &Config) -> Result<()> {
         // handle dry‑run
         if should_dry_run() {
             log_dry!("Would display config from {:?}", config.path);
@@ -42,7 +46,7 @@ impl Runnable for ConfigCmd {
                     bail!("EDITOR environment variable is empty.");
                 }
                 Err(e) => {
-                    bail!("Failed to parse EDITOR: {}", e);
+                    bail!("Failed to parse EDITOR: {e}");
                 }
             };
 
@@ -57,10 +61,10 @@ impl Runnable for ConfigCmd {
                     log_info!("Opened configuration file in editor.");
                 }
                 Ok(s) => {
-                    bail!("Editor exited with status: {}", s);
+                    bail!("Editor exited with status: {s}");
                 }
                 Err(e) => {
-                    bail!("Failed to launch editor: {}", e);
+                    bail!("Failed to launch editor: {e}");
                 }
             }
         } else {

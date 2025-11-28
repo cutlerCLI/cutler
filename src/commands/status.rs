@@ -6,7 +6,7 @@ use crate::{
         types::BrewDiff,
     },
     commands::Runnable,
-    config::core::Config,
+    config::Config,
     domains::{collect, effective, read_current},
     log_cute, log_err, log_info, log_warn,
     util::logging::{BOLD, GREEN, RED, RESET},
@@ -25,8 +25,11 @@ pub struct StatusCmd {
 
 #[async_trait]
 impl Runnable for StatusCmd {
-    async fn run(&self, config: &mut Config) -> Result<()> {
-        config.load(false).await?;
+    fn needs_sudo(&self) -> bool {
+        false
+    }
+
+    async fn run(&self, config: &Config) -> Result<()> {
         let domains = collect(config).await?;
 
         // flatten all settings into a list
@@ -35,7 +38,7 @@ impl Runnable for StatusCmd {
             .flat_map(|(domain, table)| {
                 table
                     .into_iter()
-                    .map(move |(key, value)| (domain.clone(), key.clone(), value.clone()))
+                    .map(move |(key, value)| (domain.clone(), key, value))
             })
             .collect();
 
@@ -45,7 +48,7 @@ impl Runnable for StatusCmd {
             let mut domain_has_diff = HashMap::new();
 
             // let the checks begin!
-            for (domain, key, value) in entries.iter() {
+            for (domain, key, value) in &entries {
                 let (eff_dom, eff_key) = effective(domain, key);
 
                 let current_pref = read_current(&eff_dom, &eff_key).await;
@@ -94,7 +97,7 @@ impl Runnable for StatusCmd {
 
                 if is_diff {
                     if !any_diff {
-                        any_diff = true
+                        any_diff = true;
                     }
                     log_warn!(
                         "  {eff_key}: should be {RED}{desired}{RESET} (now: {RED}{current}{RESET})",
@@ -113,16 +116,14 @@ impl Runnable for StatusCmd {
 
         // brew status check
         {
-            let toml_brew = config.clone();
+            let toml_brew = (config.load(false)).await?.brew.clone();
             let no_brew = self.no_brew;
 
-            if !no_brew && let Some(brew_val) = toml_brew.brew {
+            if !no_brew && let Some(brew_val) = toml_brew {
                 log_info!("Homebrew status:");
 
                 // ensure homebrew is installed (skip if not)
-                if !brew_is_installed().await {
-                    log_warn!("Homebrew not available in $PATH, skipping status check for it.",);
-                } else {
+                if brew_is_installed().await {
                     match diff_brew(brew_val).await {
                         Ok(BrewDiff {
                             missing_formulae,
@@ -144,7 +145,7 @@ impl Runnable for StatusCmd {
                                 ("Extra taps", &extra_taps),
                             ];
 
-                            for (label, items) in brew_checks.iter() {
+                            for (label, items) in &brew_checks {
                                 if !items.is_empty() {
                                     any_diff = true;
                                     log_warn!("{BOLD}{label}:{RESET} {}", items.join(", "));
@@ -160,13 +161,13 @@ impl Runnable for StatusCmd {
                                 {
                                     log_warn!(
                                         "Run `cutler brew install` to install missing software."
-                                    )
+                                    );
                                 }
                                 if !extra_casks.is_empty()
                                     || !extra_formulae.is_empty()
                                     || !extra_taps.is_empty()
                                 {
-                                    log_warn!("Run `cutler brew backup` to backup extra software.")
+                                    log_warn!("Run `cutler brew backup` to backup extra software.");
                                 }
                             } else {
                                 log_cute!("Homebrew status on sync.");
@@ -176,6 +177,8 @@ impl Runnable for StatusCmd {
                             log_err!("Could not check Homebrew status: {e}",);
                         }
                     }
+                } else {
+                    log_warn!("Homebrew not available in $PATH, skipping status check for it.",);
                 }
             }
         }

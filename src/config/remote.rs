@@ -5,7 +5,7 @@ use reqwest::Client;
 use tokio::fs;
 use tokio::sync::OnceCell;
 
-use crate::config::core::Config;
+use crate::config::LoadedConfig;
 use crate::config::path::get_config_path;
 use crate::log_info;
 
@@ -17,8 +17,9 @@ pub struct RemoteConfigManager {
 }
 
 impl RemoteConfigManager {
-    /// Create a new RemoteConfigManager with a Remote struct.
-    pub fn new(url: String) -> Self {
+    /// Create a new `RemoteConfigManager` with a Remote struct.
+    #[must_use]
+    pub const fn new(url: String) -> Self {
         Self {
             url,
             config: OnceCell::const_new(),
@@ -44,7 +45,7 @@ impl RemoteConfigManager {
 
                 let text = resp.text().await?;
 
-                toml::from_str::<Config>(&text)
+                toml::from_str::<LoadedConfig>(&text)
                     .with_context(|| format!("Invalid TOML config fetched from {}", self.url))?;
 
                 Ok(text)
@@ -56,10 +57,17 @@ impl RemoteConfigManager {
     /// Save the fetched remote config to the given path.
     pub async fn save(&self) -> Result<()> {
         let config = self.get()?;
-        let config_path = get_config_path().await?;
+        let config_path = get_config_path();
 
-        fs::create_dir_all(config_path.parent().unwrap()).await?;
+        fs::create_dir_all(
+            config_path
+                .parent()
+                .with_context(|| "Failed to initialize config path for remote sync.".to_string())?,
+        )
+        .await?;
+
         fs::write(config_path, config).await?;
+
         log_info!("Successfully saved remote config to destination.");
         Ok(())
     }
@@ -74,10 +82,10 @@ impl RemoteConfigManager {
         Ok(config)
     }
 
-    /// Get a parsed version of the output of .get() as serde-based Config.
-    pub fn get_parsed(&self) -> Result<Config> {
+    /// Get a parsed version of the output of .`get()` as serde-based Config.
+    pub fn get_parsed(&self) -> Result<LoadedConfig> {
         let config_str = self.get()?;
-        let config = toml::from_str::<Config>(config_str)?;
+        let config = toml::from_str::<LoadedConfig>(config_str)?;
         Ok(config)
     }
 }

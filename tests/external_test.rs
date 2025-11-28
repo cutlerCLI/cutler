@@ -4,10 +4,28 @@
 mod tests {
     use cutler::{
         cli::atomic::set_dry_run,
-        config::core::{Command, Config},
-        exec::core::{ExecMode, run_all, run_one},
+        config::{Command, LoadedConfig},
+        exec::{ExecMode, run_all, run_one},
     };
     use std::collections::HashMap;
+    use std::path::PathBuf;
+
+    /// Helper to create a LoadedConfig with the given vars and commands.
+    fn loaded_config_with(
+        vars: Option<HashMap<String, String>>,
+        command: Option<HashMap<String, Command>>,
+    ) -> LoadedConfig {
+        LoadedConfig {
+            lock: None,
+            set: None,
+            vars,
+            command,
+            brew: None,
+            mas: None,
+            remote: None,
+            path: PathBuf::new(),
+        }
+    }
 
     #[tokio::test]
     async fn test_run_all_dry_run() {
@@ -31,9 +49,7 @@ mod tests {
         );
 
         // Top-level config
-        let mut config = Config::new(Default::default());
-        config.vars = Some(vars);
-        config.command = Some(command_map);
+        let config = loaded_config_with(Some(vars), Some(command_map));
 
         assert!(run_all(config, ExecMode::Regular).await.is_ok());
     }
@@ -60,9 +76,7 @@ mod tests {
         );
 
         // Top-level config
-        let mut config = Config::new(Default::default());
-        config.vars = Some(vars);
-        config.command = Some(command_map);
+        let config = loaded_config_with(Some(vars), Some(command_map));
 
         // Dry‑run single command
         assert!(run_one(config, "whoami").await.is_ok());

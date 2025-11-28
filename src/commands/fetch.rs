@@ -7,7 +7,7 @@ use clap::Args;
 use crate::{
     cli::atomic::should_dry_run,
     commands::Runnable,
-    config::{core::Config, remote::RemoteConfigManager},
+    config::{Config, remote::RemoteConfigManager},
     log_cute, log_dry, log_warn,
     util::{
         io::confirm,
@@ -24,11 +24,15 @@ pub struct FetchCmd {
 
 #[async_trait]
 impl Runnable for FetchCmd {
-    async fn run(&self, local_config: &mut Config) -> Result<()> {
+    fn needs_sudo(&self) -> bool {
+        false
+    }
+
+    async fn run(&self, config: &Config) -> Result<()> {
         let dry_run = should_dry_run();
 
         // prepare local config for comparison
-        local_config.load(true).await?;
+        let local_config = config.load(true).await?;
 
         // parse [remote] section
         let remote_mgr = if let Some(ref remote) = local_config.remote {
@@ -62,21 +66,19 @@ impl Runnable for FetchCmd {
             if changes.is_empty() {
                 log_cute!("No changes found so skipping. Use -f to fetch forcefully.",);
                 return Ok(());
-            } else {
-                log_warn!("Differences between local and remote config:",);
-                for line in &changes {
-                    log_warn!("  {line}");
-                }
+            }
+            log_warn!("Differences between local and remote config:",);
+            for line in &changes {
+                log_warn!("  {line}");
             }
 
             if changes.is_empty() {
                 log_cute!("No changes found so skipping. Use -f to fetch forcefully.",);
                 return Ok(());
-            } else {
-                log_warn!("Differences between local and remote config:",);
-                for line in &changes {
-                    log_warn!("  {line}");
-                }
+            }
+            log_warn!("Differences between local and remote config:",);
+            for line in &changes {
+                log_warn!("  {line}");
             }
 
             // prompt user to proceed (unless dry-run)

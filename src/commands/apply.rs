@@ -1,14 +1,17 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::collections::{HashMap, HashSet};
+
 use crate::{
     cli::atomic::should_dry_run,
     commands::{BrewInstallCmd, Runnable},
-    config::{core::Config, path::get_config_path, remote::RemoteConfigManager},
+    config::{Config, get_config_path, remote::RemoteConfigManager},
     domains::{
-        collector,
+        collect,
         convert::{prefvalue_to_serializable, toml_to_prefvalue},
+        core,
     },
-    exec::core::{self, ExecMode},
+    exec::{ExecMode, run_all},
     log_cute, log_dry, log_err, log_info, log_warn,
     snapshot::{
         core::{SettingState, Snapshot},
@@ -19,11 +22,10 @@ use crate::{
         sha::get_digest,
     },
 };
-use anyhow::{Result, bail};
+use anyhow::{Context, Result, bail};
 use async_trait::async_trait;
 use clap::Args;
 use defaults_rs::{Domain, PrefValue, Preferences};
-use toml::Value;
 
 use crate::domains::convert::SerializablePrefValue;
 
@@ -59,15 +61,17 @@ pub struct ApplyCmd {
 struct PreferenceJob {
     domain: String,
     key: String,
-    toml_value: Value,
-    action: &'static str,
     original: Option<SerializablePrefValue>,
-    new_value: String,
+    new_value: PrefValue,
 }
 
 #[async_trait]
 impl Runnable for ApplyCmd {
-    async fn run(&self, config: &mut Config) -> Result<()> {
+    fn needs_sudo(&self) -> bool {
+        false
+    }
+
+    async fn run(&self, config: &Config) -> Result<()> {
         let dry_run = should_dry_run();
 
         // remote download logic
@@ -82,22 +86,17 @@ impl Runnable for ApplyCmd {
             remote_mgr.fetch().await?;
             remote_mgr.save().await?;
 
-            log_info!(
-                "Remote config downloaded at path: {:?}",
-                get_config_path().await
-            );
+            log_info!("Remote config downloaded at path: {:?}", get_config_path());
         }
-
-        // finally either load the preexisting config / the config we just downloaded
-        config.load(true).await?;
 
         // parse + flatten domains
         let digest = get_digest(config.path.clone())?;
-        let domains = collector::collect(config).await?;
+        let domains = collect(config).await?;
 
         // load the old snapshot (if any), otherwise create a new instance
         let snap_path = get_snapshot_path().await?;
         let mut is_bad_snap: bool = false;
+
         let snap = if Snapshot::is_loadable().await {
             match Snapshot::load(&snap_path).await {
                 Ok(snap) => snap,
@@ -113,39 +112,39 @@ impl Runnable for ApplyCmd {
         };
 
         // turn the old snapshot into a hashmap for a quick lookup
-        let mut existing: std::collections::HashMap<_, _> = snap
+        let mut existing: HashMap<_, _> = snap
             .settings
-            .into_iter()
+            .iter()
             .map(|s| ((s.domain.clone(), s.key.clone()), s))
             .collect();
 
         let mut jobs: Vec<PreferenceJob> = Vec::new();
 
-        let domains_list: Vec<String> = Preferences::list_domains()?
+        let domains_list: HashSet<String> = Preferences::list_domains()?
             .iter()
-            .map(|f| f.to_string())
+            .map(std::string::ToString::to_string)
             .collect();
 
-        for (dom, table) in domains.into_iter() {
-            for (key, toml_value) in table.into_iter() {
-                let (eff_dom, eff_key) = collector::effective(&dom, &key);
+        // create jobs for applying
+        for (dom, table) in domains {
+            for (key, toml_value) in table {
+                let (eff_dom, eff_key) = core::effective(&dom, &key);
 
                 if !self.no_dom_check
                     && eff_dom != "NSGlobalDomain"
                     && !domains_list.contains(&eff_dom)
                 {
-                    bail!("Domain \"{}\" not found.", eff_dom)
+                    bail!(
+                        "Domain \"{eff_dom}\" was not found; cannot write to it. Disable this behavior by passing: --no-dom-check"
+                    )
                 }
 
-                // read the current value from the system
-                // then, check if changed
-                // TODO: could use read_batch from defaults-rs here
-                let current_pref = collector::read_current(&eff_dom, &eff_key).await;
-                let desired_pref = toml_to_prefvalue(&toml_value)?;
+                let current_pref = core::read_current(&eff_dom, &eff_key).await;
+                let new_pref = toml_to_prefvalue(&toml_value)?;
 
                 // Compare PrefValues directly instead of strings
                 let changed = match &current_pref {
-                    Some(current) => current != &desired_pref,
+                    Some(current) => current != &new_pref,
                     None => true, // No current value means it's a new setting
                 };
 
@@ -155,27 +154,25 @@ impl Runnable for ApplyCmd {
                 if changed {
                     existing.remove(&(eff_dom.clone(), eff_key.clone()));
 
-                    // Preserve existing non-null original; otherwise, for brand new keys, capture original from system
+                    // Preserve existing non-null original
+                    // otherwise, for brand new keys, capture original from system
                     let original = if let Some(e) = &old_entry {
                         e.original_value.clone()
+                    } else if let Some(pref) = current_pref {
+                        Some(prefvalue_to_serializable(&pref).with_context(|| {
+                            format!(
+                                "Failed to serialize current preference value for key '{eff_key}'."
+                            )
+                        })?)
                     } else {
-                        current_pref.as_ref().map(prefvalue_to_serializable)
-                    };
-
-                    // decide “applying” vs “updating”
-                    let action = if old_entry.is_some() {
-                        "Updating"
-                    } else {
-                        "Applying"
+                        None
                     };
 
                     jobs.push(PreferenceJob {
-                        domain: eff_dom.clone(),
-                        key: eff_key.clone(),
-                        toml_value: toml_value.clone(),
-                        action,
+                        domain: eff_dom,
+                        key: eff_key,
+                        new_value: new_pref,
                         original: if is_bad_snap { None } else { original },
-                        new_value: desired_pref.to_string(),
                     });
                 } else {
                     log_info!("Skipping unchanged {eff_dom} | {eff_key}",);
@@ -183,65 +180,64 @@ impl Runnable for ApplyCmd {
             }
         }
 
-        // use defaults-rs batch write API for all changed settings
-        // collect jobs into a Vec<(Domain, String, PrefValue)>
-        let mut batch: Vec<(Domain, String, PrefValue)> = Vec::new();
-
-        for job in &jobs {
-            let domain_obj = if job.domain == "NSGlobalDomain" {
-                Domain::Global
-            } else {
-                Domain::User(job.domain.clone())
-            };
-
-            if !dry_run {
-                log_info!(
-                    "{} {} | {} -> {} {}",
-                    job.action,
+        if dry_run {
+            for job in &jobs {
+                log_dry!(
+                    "Would apply: {} {} -> {}",
                     job.domain,
                     job.key,
-                    job.new_value,
+                    job.new_value
+                );
+            }
+        } else {
+            let mut applyable_settings_count = 0;
+
+            for job in &jobs {
+                let domain_obj = if job.domain == "NSGlobalDomain" {
+                    Domain::Global
+                } else {
+                    Domain::User(job.domain.clone())
+                };
+
+                log_info!(
+                    "Applying {} | {} -> {} {}",
+                    job.domain,
+                    job.key,
+                    job.new_value.to_string(),
                     if let Some(orig) = &job.original {
                         format!(
                             "[Restorable to {}]",
                             serde_json::to_string(orig).unwrap_or_else(|_| "?".to_string())
                         )
                     } else {
-                        "".to_string()
+                        String::new()
                     }
                 );
-            }
-            let pref_value = toml_to_prefvalue(&job.toml_value)?;
-            batch.push((domain_obj, job.key.clone(), pref_value));
-        }
 
-        // perform batch write
-        if !dry_run {
-            match Preferences::write_batch(batch) {
-                Ok(_) => {
-                    log_info!("All preferences applied.");
-                }
-                Err(e) => {
-                    log_err!("Batch write failed: {e}");
+                if let Err(e) = Preferences::write(domain_obj, &job.key, job.new_value.clone()) {
+                    log_err!(
+                        "Failed to apply preference ({} | {}). Error: {}",
+                        job.domain,
+                        job.key,
+                        e
+                    );
+                } else {
+                    applyable_settings_count += 1;
                 }
             }
 
-            // restart system services if requested
-            restart_services().await;
-        } else {
-            for job in &jobs {
-                log_dry!(
-                    "Would {} setting '{}' for {}",
-                    job.action,
-                    job.key,
-                    job.domain
+            if applyable_settings_count > 0 {
+                log_info!(
+                    "Applied {} settings, will restart services.",
+                    applyable_settings_count
                 );
+                restart_services().await;
             }
         }
 
         let mut new_snap = Snapshot::new().await;
-        for ((_, _), old_entry) in existing.into_iter() {
-            new_snap.settings.push(old_entry);
+        for ((_, _), old_entry) in existing {
+            new_snap.settings.push(old_entry.clone());
         }
 
         // now append all the newly applied/updated settings
@@ -256,11 +252,11 @@ impl Runnable for ApplyCmd {
         // save config digest to snapshot
         new_snap.digest = digest;
 
-        if !dry_run {
-            new_snap.save().await?;
-            log_info!("Logged system preferences change in snapshot.",);
+        if dry_run {
+            log_dry!("Would save snapshot with system preferences.");
         } else {
-            log_dry!("Would save snapshot with system preferences.",);
+            new_snap.save().await?;
+            log_info!("Logged system preferences change in snapshot.");
         }
 
         // run brew
@@ -278,17 +274,16 @@ impl Runnable for ApplyCmd {
                 ExecMode::Regular
             };
 
-            let exec_run_count = core::run_all(config.clone(), mode).await?;
+            let loaded_config = config.load(true).await?;
+            let exec_run_count = run_all(loaded_config, mode).await?;
 
-            if !dry_run {
-                if exec_run_count > 0 {
-                    new_snap.exec_run_count = exec_run_count;
-                    new_snap.save().await?;
-
-                    log_info!("Logged command execution in snapshot.");
-                }
-            } else {
+            if dry_run {
                 log_dry!("Would save snapshot with external command execution.",);
+            } else if exec_run_count > 0 {
+                new_snap.exec_run_count = exec_run_count;
+                new_snap.save().await?;
+
+                log_info!("Logged command execution in snapshot.");
             }
         }
 

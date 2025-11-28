@@ -7,7 +7,7 @@ use self_update::{backends::github::Update, cargo_crate_version};
 use std::env;
 use tokio::fs;
 
-use crate::{commands::Runnable, config::core::Config, log_cute, log_warn};
+use crate::{commands::Runnable, config::Config, log_cute, log_warn};
 
 #[derive(Args, Debug)]
 pub struct SelfUpdateCmd {
@@ -18,7 +18,11 @@ pub struct SelfUpdateCmd {
 
 #[async_trait]
 impl Runnable for SelfUpdateCmd {
-    async fn run(&self, _: &mut Config) -> Result<()> {
+    fn needs_sudo(&self) -> bool {
+        true
+    }
+
+    async fn run(&self, _: &Config) -> Result<()> {
         // get the path to the current executable
         let exe_path = env::current_exe()?;
         let exe_path_str = exe_path.to_string_lossy();
@@ -83,7 +87,7 @@ impl Runnable for SelfUpdateCmd {
                     .get(&manpage_url)
                     .send()
                     .await
-                    .map_err(|e| anyhow::anyhow!("Failed to fetch manpage: {}", e))?;
+                    .map_err(|e| anyhow::anyhow!("Failed to fetch manpage: {e}"))?;
                 let manpage_content = resp.text().await?;
 
                 fs::create_dir_all("/usr/local/share/man/man1").await?;

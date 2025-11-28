@@ -38,16 +38,17 @@ fn main() -> Result<()> {
 
 fn generate_manpage(dir: PathBuf) -> Result<()> {
     // Create the output directory
-    fs::create_dir_all(&dir).context("Failed to create output directory")?;
+    fs::create_dir_all(&dir).with_context(|| format!("Failed to create output directory"))?;
 
     // Generate the manpage
     let file_path = dir.join("cutler.1");
-    let mut file = File::create(&file_path).context("Failed to create manpage file")?;
+    let mut file =
+        File::create(&file_path).with_context(|| format!("Failed to create manpage file"))?;
 
     let cmd = cutler::cli::Args::command();
     Man::new(cmd)
         .render(&mut file)
-        .context("Failed to render manpage")?;
+        .with_context(|| format!("Failed to render manpage"))?;
 
     println!("Manpage generated at: {}", file_path.display());
 

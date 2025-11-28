@@ -10,7 +10,7 @@ use clap_complete::{
 use std::io;
 use tokio::task;
 
-use crate::{commands::Runnable, config::core::Config};
+use crate::{commands::Runnable, config::Config};
 
 /// Represents the shell types to generate completions for.
 #[derive(Copy, Clone, PartialEq, Eq, clap::ValueEnum, Debug)]
@@ -31,7 +31,11 @@ pub struct CompletionCmd {
 
 #[async_trait]
 impl Runnable for CompletionCmd {
-    async fn run(&self, _: &mut Config) -> Result<()> {
+    fn needs_sudo(&self) -> bool {
+        false
+    }
+
+    async fn run(&self, _: &Config) -> Result<()> {
         let shell = self.shell;
         task::spawn_blocking(move || -> Result<()> {
             let mut cmd = crate::cli::Args::command();
@@ -43,7 +47,7 @@ impl Runnable for CompletionCmd {
                 Shell::Fish => generate(Fish, &mut cmd, name, &mut io::stdout()),
                 Shell::PowerShell => generate(PowerShell, &mut cmd, name, &mut io::stdout()),
                 Shell::Elvish => generate(Elvish, &mut cmd, name, &mut io::stdout()),
-            };
+            }
             Ok(())
         })
         .await??;

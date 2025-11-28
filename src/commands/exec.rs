@@ -2,9 +2,8 @@
 
 use crate::commands::Runnable;
 
-use crate::config::core::Config;
-use crate::exec::core;
-use crate::exec::core::ExecMode;
+use crate::config::Config;
+use crate::exec::{ExecMode, run_all, run_one};
 use anyhow::Result;
 use async_trait::async_trait;
 use clap::Args;
@@ -26,8 +25,12 @@ pub struct ExecCmd {
 
 #[async_trait]
 impl Runnable for ExecCmd {
-    async fn run(&self, config: &mut Config) -> Result<()> {
-        config.load(true).await?;
+    fn needs_sudo(&self) -> bool {
+        false
+    }
+
+    async fn run(&self, config: &Config) -> Result<()> {
+        let loaded_config = config.load(true).await?;
 
         let mode = if self.all {
             ExecMode::All
@@ -38,9 +41,9 @@ impl Runnable for ExecCmd {
         };
 
         if let Some(cmd_name) = &self.name {
-            core::run_one(config.to_owned(), cmd_name).await?;
+            run_one(loaded_config, cmd_name).await?;
         } else {
-            core::run_all(config.to_owned(), mode).await?;
+            run_all(loaded_config, mode).await?;
         }
 
         Ok(())

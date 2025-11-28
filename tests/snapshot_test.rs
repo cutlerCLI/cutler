@@ -3,9 +3,8 @@
 #[cfg(test)]
 mod tests {
     use cutler::{
-        config::path::get_config_path,
+        config::get_config_path,
         domains::convert::SerializablePrefValue,
-        exec::core::ExecJob,
         snapshot::{
             core::{SettingState, Snapshot},
             get_snapshot_path,
@@ -17,16 +16,11 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_snapshot_path() {
-        // Test that get_snapshot_path returns .cutler_snapshot in the home directory
+        // Test that get_snapshot_path returns snapshot.json in the config parent directory
         let snapshot_path = get_snapshot_path().await.unwrap();
         assert_eq!(
             snapshot_path,
-            get_config_path()
-                .await
-                .unwrap()
-                .parent()
-                .unwrap()
-                .join("snapshot.json")
+            get_config_path().parent().unwrap().join("snapshot.json")
         );
     }
 
@@ -50,18 +44,6 @@ mod tests {
             setting.original_value,
             Some(SerializablePrefValue::Integer(36))
         );
-
-        // Test external command state
-        let command = ExecJob {
-            name: "echo".to_string(),
-            run: "echo Hello World".to_string(),
-            sudo: false,
-            ensure_first: false,
-            flag: false,
-            required: vec!["echo".to_string()],
-        };
-        assert_eq!(command.run, "echo Hello World");
-        assert!(!command.sudo);
     }
 
     #[tokio::test]

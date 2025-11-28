@@ -9,7 +9,7 @@ use tokio::fs;
 use crate::{
     cli::atomic::should_dry_run,
     commands::Runnable,
-    config::core::Config,
+    config::Config,
     domains::{collect, effective, read_current},
     log_cute, log_dry, log_err, log_info, log_warn,
     snapshot::{Snapshot, get_snapshot_path},
@@ -21,10 +21,12 @@ pub struct ResetCmd;
 
 #[async_trait]
 impl Runnable for ResetCmd {
-    async fn run(&self, config: &mut Config) -> Result<()> {
-        let dry_run = should_dry_run();
+    fn needs_sudo(&self) -> bool {
+        false
+    }
 
-        config.load(true).await?;
+    async fn run(&self, config: &Config) -> Result<()> {
+        let dry_run = should_dry_run();
 
         log_warn!("This will DELETE all settings defined in your config file.",);
         log_warn!("Settings will be reset to macOS defaults, not to their previous values.",);
@@ -43,8 +45,6 @@ impl Runnable for ResetCmd {
                 if read_current(&eff_dom, &eff_key).await.is_some() {
                     let domain_obj = if eff_dom == "NSGlobalDomain" {
                         Domain::Global
-                    } else if let Some(rest) = eff_dom.strip_prefix("com.apple.") {
-                        Domain::User(format!("com.apple.{rest}"))
                     } else {
                         Domain::User(eff_dom.clone())
                     };
@@ -53,11 +53,11 @@ impl Runnable for ResetCmd {
                         log_dry!("Would reset {eff_dom}.{eff_key} to system default",);
                     } else {
                         match Preferences::delete(domain_obj, &eff_key) {
-                            Ok(_) => {
-                                log_info!("Reset {eff_dom}.{eff_key} to system default",);
+                            Ok(()) => {
+                                log_info!("Reset {eff_dom}.{eff_key} to system default");
                             }
                             Err(e) => {
-                                log_err!("Failed to reset {eff_dom}.{eff_key}: {e}",);
+                                log_err!("Failed to reset {eff_dom}.{eff_key}: {e}");
                             }
                         }
                     }
