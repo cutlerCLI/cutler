@@ -24,7 +24,7 @@ impl Runnable for ConfigCmd {
         false
     }
 
-    async fn run(&self, config: &mut Config) -> Result<()> {
+    async fn run(&self, config: &Config) -> Result<()> {
         // handle dry‑run
         if should_dry_run() {
             log_dry!("Would display config from {:?}", config.path);

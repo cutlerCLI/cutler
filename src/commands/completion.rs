@@ -35,7 +35,7 @@ impl Runnable for CompletionCmd {
         false
     }
 
-    async fn run(&self, _: &mut Config) -> Result<()> {
+    async fn run(&self, _: &Config) -> Result<()> {
         let shell = self.shell;
         task::spawn_blocking(move || -> Result<()> {
             let mut cmd = crate::cli::Args::command();

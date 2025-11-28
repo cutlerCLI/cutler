@@ -25,7 +25,7 @@ impl Runnable for CheckUpdateCmd {
         false
     }
 
-    async fn run(&self, _: &mut Config) -> Result<()> {
+    async fn run(&self, _: &Config) -> Result<()> {
         let current_version = env!("CARGO_PKG_VERSION");
 
         log_info!("Current version: {current_version}",);

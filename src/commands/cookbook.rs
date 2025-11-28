@@ -15,7 +15,7 @@ impl Runnable for CookbookCmd {
         false
     }
 
-    async fn run(&self, _: &mut Config) -> Result<()> {
+    async fn run(&self, _: &Config) -> Result<()> {
         open("https://machlit.github.io/cutler").await
     }
 }

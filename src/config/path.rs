@@ -1,21 +1,19 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use anyhow::{Result, bail};
+use std::path::PathBuf;
 use std::sync::OnceLock;
-use std::{env, path::PathBuf};
-use tokio::fs;
 
 /// The configuration path decided for the current process.
 pub static CONFIG_PATH: OnceLock<PathBuf> = OnceLock::new();
 
 /// Returns the path to the configuration file by checking several candidate locations.
-pub async fn get_config_path() -> Result<PathBuf> {
+pub fn get_config_path() -> PathBuf {
     if let Some(path) = CONFIG_PATH.get().cloned() {
-        return Ok(path);
+        return path;
     }
 
-    let home = env::var_os("HOME");
-    let xdg = env::var_os("XDG_CONFIG_HOME");
+    let home = dirs::home_dir();
+    let xdg = dirs::config_dir();
 
     let mut candidates = Vec::new();
 
@@ -39,27 +37,9 @@ pub async fn get_config_path() -> Result<PathBuf> {
     }
 
     // Find the first existing candidate
-    let chosen = if let Some(existing) = {
-        let mut found = None;
-        for candidate in &candidates {
-            if fs::try_exists(candidate).await.unwrap_or(false) {
-                found = Some(candidate.to_owned());
-                break;
-            }
-        }
-        found
-    } {
-        Some(existing)
-    } else if !candidates.is_empty() {
-        Some(candidates[0].clone())
-    } else {
-        None
-    };
-
-    if let Some(ref path) = chosen {
-        CONFIG_PATH.set(path.clone()).ok();
-        Ok(path.clone())
-    } else {
-        bail!("Could not load configuration since cannot be assigned.")
-    }
+    candidates
+        .iter()
+        .find(|f| f.try_exists().unwrap_or(false))
+        .cloned()
+        .unwrap_or_else(|| candidates[0].clone())
 }

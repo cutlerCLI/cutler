@@ -27,9 +27,7 @@ impl Runnable for UnapplyCmd {
         false
     }
 
-    async fn run(&self, config: &mut Config) -> Result<()> {
-        config.load(true).await?;
-
+    async fn run(&self, config: &Config) -> Result<()> {
         if !Snapshot::is_loadable().await {
             log_warn!("No snapshot found to revert.");
 

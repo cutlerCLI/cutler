@@ -5,7 +5,7 @@ use reqwest::Client;
 use tokio::fs;
 use tokio::sync::OnceCell;
 
-use crate::config::core::Config;
+use crate::config::LoadedConfig;
 use crate::config::path::get_config_path;
 use crate::log_info;
 
@@ -45,7 +45,7 @@ impl RemoteConfigManager {
 
                 let text = resp.text().await?;
 
-                toml::from_str::<Config>(&text)
+                toml::from_str::<LoadedConfig>(&text)
                     .with_context(|| format!("Invalid TOML config fetched from {}", self.url))?;
 
                 Ok(text)
@@ -57,7 +57,7 @@ impl RemoteConfigManager {
     /// Save the fetched remote config to the given path.
     pub async fn save(&self) -> Result<()> {
         let config = self.get()?;
-        let config_path = get_config_path().await?;
+        let config_path = get_config_path();
 
         fs::create_dir_all(
             config_path
@@ -83,9 +83,9 @@ impl RemoteConfigManager {
     }
 
     /// Get a parsed version of the output of .`get()` as serde-based Config.
-    pub fn get_parsed(&self) -> Result<Config> {
+    pub fn get_parsed(&self) -> Result<LoadedConfig> {
         let config_str = self.get()?;
-        let config = toml::from_str::<Config>(config_str)?;
+        let config = toml::from_str::<LoadedConfig>(config_str)?;
         Ok(config)
     }
 }

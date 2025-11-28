@@ -6,18 +6,18 @@ use std::{
 };
 
 use anyhow::{Context, Result, bail};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use tokio::fs;
 use toml::Value;
 use toml_edit::DocumentMut;
 
-/// Struct representing a cutler configuration.
+/// Struct representing a loaded cutler configuration.
 ///
 /// This is a fully serde-compatible struct primarily meant to be used within cutler's source code
 /// to pass around information related to the config file.
-#[derive(Deserialize, Serialize, Clone)]
+#[derive(Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
-pub struct Config {
+pub struct LoadedConfig {
     pub lock: Option<bool>,
     pub set: Option<HashMap<String, HashMap<String, Value>>>,
     pub vars: Option<HashMap<String, String>>,
@@ -30,7 +30,7 @@ pub struct Config {
 }
 
 /// Represents the [remote] table.
-#[derive(Deserialize, PartialEq, Eq, Serialize, Default, Clone, Debug)]
+#[derive(Deserialize, PartialEq, Eq, Default, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct Remote {
     pub url: String,
@@ -38,7 +38,7 @@ pub struct Remote {
 }
 
 /// Represents [command.***] tables.
-#[derive(Deserialize, Serialize, Clone)]
+#[derive(Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct Command {
     pub run: String,
@@ -49,14 +49,14 @@ pub struct Command {
 }
 
 /// Represents the [mas] table.
-#[derive(Deserialize, Serialize, Debug, Clone, Default)]
+#[derive(Deserialize, Debug, Clone, Default)]
 #[serde(deny_unknown_fields)]
 pub struct Mas {
     pub ids: Vec<String>,
 }
 
 /// Represents the [brew] table.
-#[derive(Deserialize, Serialize, PartialEq, Eq, Clone, Debug, Default)]
+#[derive(Deserialize, PartialEq, Eq, Clone, Debug, Default)]
 #[serde(deny_unknown_fields)]
 pub struct Brew {
     pub formulae: Option<Vec<String>>,
@@ -65,47 +65,39 @@ pub struct Brew {
     pub no_deps: Option<bool>,
 }
 
+/// Represents an unloaded cutler configuration.
+///
+/// This must be loaded with .load() to return a LoadedConfig, or .load_as_mut() to return a toml_edit::DocumentMut.
+pub struct Config {
+    pub path: PathBuf,
+}
+
 impl Config {
-    #[must_use] 
+    #[must_use]
     pub const fn new(path: PathBuf) -> Self {
-        Self {
-            lock: None,
-            set: None,
-            vars: None,
-            command: None,
-            brew: None,
-            mas: None,
-            remote: None,
-            path,
-        }
+        Self { path }
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn is_loadable(&self) -> bool {
         !self.path.as_os_str().is_empty() && self.path.try_exists().unwrap_or(false)
     }
 
     /// Loads the configuration. Errors out if the configuration is not loadable
     /// (decided by `.is_loadable()`).
-    pub async fn load(&mut self, not_if_locked: bool) -> Result<()> {
+    pub async fn load(&self, not_if_locked: bool) -> Result<LoadedConfig> {
         if self.is_loadable() {
             let data = fs::read_to_string(&self.path).await?;
-            let config: Self =
+
+            let mut config: LoadedConfig =
                 toml::from_str(&data).context("Failed to parse config data from valid TOML.")?;
 
             if config.lock.unwrap_or_default() && not_if_locked {
                 bail!("Config is locked. Run `cutler unlock` to unlock.")
             }
 
-            self.lock = config.lock;
-            self.set = config.set;
-            self.vars = config.vars;
-            self.command = config.command;
-            self.brew = config.brew;
-            self.mas = config.mas;
-            self.remote = config.remote;
-
-            Ok(())
+            config.path = self.path.to_owned();
+            Ok(config)
         } else {
             bail!("Config path does not exist!")
         }
@@ -115,7 +107,7 @@ impl Config {
     pub async fn load_as_mut(&self, not_if_locked: bool) -> Result<DocumentMut> {
         if self.is_loadable() {
             let data = fs::read_to_string(&self.path).await?;
-            let config: Self =
+            let config: LoadedConfig =
                 toml::from_str(&data).context("Failed to parse config data from valid TOML.")?;
 
             if config.lock.unwrap_or_default() && not_if_locked {

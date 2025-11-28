@@ -8,7 +8,7 @@ use crate::{log_err, log_info, log_warn};
 
 /// Perform remote config auto-sync if enabled in [remote] and internet is available.
 /// This should be called early in `main()`.
-pub async fn try_auto_sync(command: &crate::cli::Command, local_config: &mut Config) {
+pub async fn try_auto_sync(command: &crate::cli::Command, config: &Config) {
     match command {
         Command::Fetch(_)
         | Command::Brew {
@@ -26,26 +26,25 @@ pub async fn try_auto_sync(command: &crate::cli::Command, local_config: &mut Con
         _ => {}
     }
 
-    if local_config.load(true).await.is_err() {
-        return;
+    if let Ok(local_config) = config.load(true).await {
+        let remote = local_config.remote.clone().unwrap_or_default();
+        let remote_mgr = RemoteConfigManager::new(remote.url);
+
+        if remote.autosync.unwrap_or_default() {
+            match remote_mgr.fetch().await {
+                Ok(()) => {
+                    if let Err(e) = remote_mgr.save().await {
+                        log_err!("Failed to save remote config after auto-sync: {e}");
+                    }
+                }
+                Err(e) => {
+                    log_warn!("Remote config auto-sync failed: {e}",);
+                }
+            }
+        } else {
+            log_info!("Skipping auto-sync since disabled in config.",);
+        }
     }
 
     // start
-    let remote = local_config.remote.clone().unwrap_or_default();
-    let remote_mgr = RemoteConfigManager::new(remote.url);
-
-    if remote.autosync.unwrap_or_default() {
-        match remote_mgr.fetch().await {
-            Ok(()) => {
-                if let Err(e) = remote_mgr.save().await {
-                    log_err!("Failed to save remote config after auto-sync: {e}");
-                }
-            }
-            Err(e) => {
-                log_warn!("Remote config auto-sync failed: {e}",);
-            }
-        }
-    } else {
-        log_info!("Skipping auto-sync since disabled in config.",);
-    }
 }

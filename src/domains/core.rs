@@ -45,20 +45,6 @@ pub async fn collect(config: &Config) -> Result<HashMap<String, Table>> {
                 }
             }
         }
-    } else {
-        // Fallback: use the already-deserialized config.set
-        // This is for tests or when config.path is not available
-        if let Some(set) = &config.set {
-            for (domain_key, domain_val) in set {
-                let mut settings = Table::new();
-                for (k, v) in domain_val {
-                    settings.insert(k.clone(), v.clone());
-                }
-                if !settings.is_empty() {
-                    out.insert(domain_key.clone(), settings);
-                }
-            }
-        }
     }
 
     Ok(out)

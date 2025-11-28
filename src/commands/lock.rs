@@ -21,7 +21,7 @@ impl Runnable for LockCmd {
         true
     }
 
-    async fn run(&self, config: &mut Config) -> Result<()> {
+    async fn run(&self, config: &Config) -> Result<()> {
         if !config.is_loadable() {
             bail!("Cannot find a configuration to lock in the first place.")
         }

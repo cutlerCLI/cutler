@@ -28,18 +28,13 @@ async fn main() {
     set_no_restart_services(args.no_restart_services);
 
     // decide configuration path for the entire lifetime of the program
-    let mut config = if let Ok(path) = get_config_path().await {
-        Config::new(path)
-    } else {
-        log_err!("Path could not be decided for the configuration file.");
-        exit(1);
-    };
+    let config = Config::new(get_config_path());
 
     // remote config auto-sync logic
     if args.no_sync {
         log_info!("Skipping remote config autosync.");
     } else {
-        try_auto_sync(&args.command, &mut config).await;
+        try_auto_sync(&args.command, &config).await;
     }
 
     // command invocation (for real this time)
@@ -55,7 +50,7 @@ async fn main() {
         exit(1);
     }
 
-    let result = runnable.run(&mut config).await;
+    let result = runnable.run(&config).await;
 
     if let Err(err) = result {
         log_err!("{err}");

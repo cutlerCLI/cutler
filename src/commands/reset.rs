@@ -24,10 +24,9 @@ impl Runnable for ResetCmd {
     fn needs_sudo(&self) -> bool {
         false
     }
-    async fn run(&self, config: &mut Config) -> Result<()> {
-        let dry_run = should_dry_run();
 
-        config.load(true).await?;
+    async fn run(&self, config: &Config) -> Result<()> {
+        let dry_run = should_dry_run();
 
         log_warn!("This will DELETE all settings defined in your config file.",);
         log_warn!("Settings will be reset to macOS defaults, not to their previous values.",);

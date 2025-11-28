@@ -16,7 +16,7 @@ impl Runnable for InitCmd {
         false
     }
 
-    async fn run(&self, config: &mut Config) -> Result<()> {
+    async fn run(&self, config: &Config) -> Result<()> {
         if config.is_loadable() {
             log_warn!("Configuration file already exists at {:?}", &config.path);
             if !confirm("Do you want to overwrite it?") {

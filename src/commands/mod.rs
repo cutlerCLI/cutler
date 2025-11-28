@@ -45,7 +45,7 @@ use crate::config::Config;
 pub trait Runnable {
     /// Run the command. The result is implemented using `anyhow::Result` since cutler's internal functions
     /// often propagate an error upto the root error handler.
-    async fn run(&self, config: &mut Config) -> Result<()>;
+    async fn run(&self, config: &Config) -> Result<()>;
 
     /// Returns if the command requires sudo privileges or not.
     /// This should always be implemented by the command.

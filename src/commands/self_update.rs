@@ -22,7 +22,7 @@ impl Runnable for SelfUpdateCmd {
         true
     }
 
-    async fn run(&self, _: &mut Config) -> Result<()> {
+    async fn run(&self, _: &Config) -> Result<()> {
         // get the path to the current executable
         let exe_path = env::current_exe()?;
         let exe_path_str = exe_path.to_string_lossy();

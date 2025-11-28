@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::cli::atomic::should_dry_run;
-use crate::config::Config;
+use crate::config::LoadedConfig;
 use crate::util::logging::{BOLD, RESET};
 use crate::{log_dry, log_exec, log_warn};
 use anyhow::{Context, Result, anyhow, bail};
@@ -22,7 +22,7 @@ struct ExecJob {
 }
 
 /// Extract a single command by name from the user config.
-fn extract_cmd(config: &Config, name: &str) -> Result<ExecJob> {
+fn extract_cmd(config: &LoadedConfig, name: &str) -> Result<ExecJob> {
     let command_map = config
         .command
         .as_ref()
@@ -54,7 +54,7 @@ fn extract_cmd(config: &Config, name: &str) -> Result<ExecJob> {
 
 // Pull all external commands written in user config into state objects.
 #[must_use]
-fn extract_all_cmds(config: &Config) -> Vec<ExecJob> {
+fn extract_all_cmds(config: &LoadedConfig) -> Vec<ExecJob> {
     let mut jobs = Vec::new();
 
     if let Some(command_map) = config.command.as_ref() {
@@ -155,7 +155,7 @@ pub enum ExecMode {
 
 /// Run all extracted external commands via `sh -c` (or `sudo sh -c`) in parallel.
 /// Returns the amount of successfully executed commmands.
-pub async fn run_all(config: Config, mode: ExecMode) -> Result<i32> {
+pub async fn run_all(config: LoadedConfig, mode: ExecMode) -> Result<i32> {
     let cmds = extract_all_cmds(&config);
 
     // separate ensure_first commands from regular commands
@@ -216,7 +216,7 @@ pub async fn run_all(config: Config, mode: ExecMode) -> Result<i32> {
 }
 
 /// Run exactly one command entry, given its name.
-pub async fn run_one(config: Config, name: &str) -> Result<()> {
+pub async fn run_one(config: LoadedConfig, name: &str) -> Result<()> {
     let state = extract_cmd(&config, name)?;
 
     if !all_bins_present(&state.required) {

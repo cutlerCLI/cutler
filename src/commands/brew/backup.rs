@@ -30,7 +30,7 @@ impl Runnable for BrewBackupCmd {
         false
     }
 
-    async fn run(&self, conf: &mut Config) -> Result<()> {
+    async fn run(&self, conf: &Config) -> Result<()> {
         let dry_run = should_dry_run();
         let mut backup_no_deps = self.no_deps;
 

@@ -25,14 +25,13 @@ impl Runnable for BrewInstallCmd {
         false
     }
 
-    async fn run(&self, config: &mut Config) -> Result<()> {
+    async fn run(&self, config: &Config) -> Result<()> {
         let dry_run = should_dry_run();
 
-        config.load(true).await?;
+        let loaded_config = config.load(true).await?;
 
-        let brew_cfg = config
+        let brew_cfg = loaded_config
             .brew
-            .clone()
             .ok_or_else(|| anyhow::anyhow!("No [brew] section found in config"))?;
 
         // ensure homebrew installation

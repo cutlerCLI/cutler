@@ -71,7 +71,7 @@ impl Runnable for ApplyCmd {
         false
     }
 
-    async fn run(&self, config: &mut Config) -> Result<()> {
+    async fn run(&self, config: &Config) -> Result<()> {
         let dry_run = should_dry_run();
 
         // remote download logic
@@ -86,14 +86,8 @@ impl Runnable for ApplyCmd {
             remote_mgr.fetch().await?;
             remote_mgr.save().await?;
 
-            log_info!(
-                "Remote config downloaded at path: {:?}",
-                get_config_path().await
-            );
+            log_info!("Remote config downloaded at path: {:?}", get_config_path());
         }
-
-        // finally either load the preexisting config / the config we just downloaded
-        config.load(true).await?;
 
         // parse + flatten domains
         let digest = get_digest(config.path.clone())?;
@@ -280,7 +274,8 @@ impl Runnable for ApplyCmd {
                 ExecMode::Regular
             };
 
-            let exec_run_count = run_all(config.clone(), mode).await?;
+            let loaded_config = config.load(true).await?;
+            let exec_run_count = run_all(loaded_config, mode).await?;
 
             if dry_run {
                 log_dry!("Would save snapshot with external command execution.",);

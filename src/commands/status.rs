@@ -29,8 +29,7 @@ impl Runnable for StatusCmd {
         false
     }
 
-    async fn run(&self, config: &mut Config) -> Result<()> {
-        config.load(false).await?;
+    async fn run(&self, config: &Config) -> Result<()> {
         let domains = collect(config).await?;
 
         // flatten all settings into a list
@@ -117,10 +116,10 @@ impl Runnable for StatusCmd {
 
         // brew status check
         {
-            let toml_brew = config.clone();
+            let toml_brew = (config.load(false)).await?.brew.clone();
             let no_brew = self.no_brew;
 
-            if !no_brew && let Some(brew_val) = toml_brew.brew {
+            if !no_brew && let Some(brew_val) = toml_brew {
                 log_info!("Homebrew status:");
 
                 // ensure homebrew is installed (skip if not)

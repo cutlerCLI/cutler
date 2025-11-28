@@ -21,7 +21,6 @@ pub async fn get_snapshot_path() -> Result<PathBuf> {
     }
 
     let config_parent = get_config_path()
-        .await?
         .parent()
         .with_context(|| "Could not determine config parent directory".to_string())?
         .to_path_buf();
