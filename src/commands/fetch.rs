@@ -24,6 +24,10 @@ pub struct FetchCmd {
 
 #[async_trait]
 impl Runnable for FetchCmd {
+    fn needs_sudo(&self) -> bool {
+        false
+    }
+
     async fn run(&self, local_config: &mut Config) -> Result<()> {
         let dry_run = should_dry_run();
 

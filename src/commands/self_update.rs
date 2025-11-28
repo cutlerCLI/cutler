@@ -18,6 +18,10 @@ pub struct SelfUpdateCmd {
 
 #[async_trait]
 impl Runnable for SelfUpdateCmd {
+    fn needs_sudo(&self) -> bool {
+        true
+    }
+
     async fn run(&self, _: &mut Config) -> Result<()> {
         // get the path to the current executable
         let exe_path = env::current_exe()?;

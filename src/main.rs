@@ -5,10 +5,10 @@ use std::process::exit;
 use clap::Parser;
 use cutler::autosync::try_auto_sync;
 
+use cutler::cli::Args;
 use cutler::cli::atomic::{
     set_accept_all, set_dry_run, set_no_restart_services, set_quiet, set_verbose,
 };
-use cutler::cli::{Args, Command};
 use cutler::commands::Runnable;
 use cutler::config::Config;
 use cutler::config::get_config_path;
@@ -42,19 +42,19 @@ async fn main() {
         try_auto_sync(&args.command, &mut config).await;
     }
 
-    // sudo protection
-    let result = match &args.command {
-        Command::SelfUpdate(_) | Command::Lock(_) | Command::Unlock(_) => run_with_root().await,
-        _ => run_with_noroot(),
-    };
+    // command invocation (for real this time)
+    let runnable: &dyn Runnable = args.command.as_runnable();
 
-    if let Err(err) = result {
-        log_err!("{err}");
+    // sudo protection
+    if let Err(e) = if runnable.needs_sudo() {
+        run_with_root().await
+    } else {
+        run_with_noroot()
+    } {
+        log_err!("{e}");
         exit(1);
     }
 
-    // command invocation (for real this time)
-    let runnable: &dyn Runnable = args.command.as_runnable();
     let result = runnable.run(&mut config).await;
 
     if let Err(err) = result {

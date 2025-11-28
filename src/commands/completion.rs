@@ -31,6 +31,10 @@ pub struct CompletionCmd {
 
 #[async_trait]
 impl Runnable for CompletionCmd {
+    fn needs_sudo(&self) -> bool {
+        false
+    }
+
     async fn run(&self, _: &mut Config) -> Result<()> {
         let shell = self.shell;
         task::spawn_blocking(move || -> Result<()> {

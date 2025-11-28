@@ -25,6 +25,10 @@ pub struct ExecCmd {
 
 #[async_trait]
 impl Runnable for ExecCmd {
+    fn needs_sudo(&self) -> bool {
+        false
+    }
+
     async fn run(&self, config: &mut Config) -> Result<()> {
         config.load(true).await?;
 

@@ -20,6 +20,10 @@ pub struct ConfigCmd {}
 
 #[async_trait]
 impl Runnable for ConfigCmd {
+    fn needs_sudo(&self) -> bool {
+        false
+    }
+
     async fn run(&self, config: &mut Config) -> Result<()> {
         // handle dry‑run
         if should_dry_run() {

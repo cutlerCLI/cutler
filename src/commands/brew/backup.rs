@@ -26,6 +26,10 @@ pub struct BrewBackupCmd {
 
 #[async_trait]
 impl Runnable for BrewBackupCmd {
+    fn needs_sudo(&self) -> bool {
+        false
+    }
+
     async fn run(&self, conf: &mut Config) -> Result<()> {
         let dry_run = should_dry_run();
         let mut backup_no_deps = self.no_deps;

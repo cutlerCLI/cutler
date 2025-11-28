@@ -21,6 +21,10 @@ pub struct CheckUpdateCmd;
 
 #[async_trait]
 impl Runnable for CheckUpdateCmd {
+    fn needs_sudo(&self) -> bool {
+        false
+    }
+
     async fn run(&self, _: &mut Config) -> Result<()> {
         let current_version = env!("CARGO_PKG_VERSION");
 

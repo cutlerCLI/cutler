@@ -17,6 +17,10 @@ pub struct UnlockCmd;
 
 #[async_trait]
 impl Runnable for UnlockCmd {
+    fn needs_sudo(&self) -> bool {
+        true
+    }
+
     async fn run(&self, config: &mut Config) -> Result<()> {
         if !config.is_loadable() {
             bail!("Cannot find a configuration to unlock in the first place.")

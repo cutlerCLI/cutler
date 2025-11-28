@@ -21,6 +21,9 @@ pub struct ResetCmd;
 
 #[async_trait]
 impl Runnable for ResetCmd {
+    fn needs_sudo(&self) -> bool {
+        false
+    }
     async fn run(&self, config: &mut Config) -> Result<()> {
         let dry_run = should_dry_run();
 

@@ -23,6 +23,10 @@ pub struct UnapplyCmd;
 
 #[async_trait]
 impl Runnable for UnapplyCmd {
+    fn needs_sudo(&self) -> bool {
+        false
+    }
+
     async fn run(&self, config: &mut Config) -> Result<()> {
         config.load(true).await?;
 

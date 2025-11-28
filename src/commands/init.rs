@@ -12,6 +12,10 @@ pub struct InitCmd;
 
 #[async_trait]
 impl Runnable for InitCmd {
+    fn needs_sudo(&self) -> bool {
+        false
+    }
+
     async fn run(&self, config: &mut Config) -> Result<()> {
         if config.is_loadable() {
             log_warn!("Configuration file already exists at {:?}", &config.path);

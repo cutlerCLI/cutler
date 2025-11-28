@@ -11,6 +11,10 @@ pub struct CookbookCmd;
 
 #[async_trait]
 impl Runnable for CookbookCmd {
+    fn needs_sudo(&self) -> bool {
+        false
+    }
+
     async fn run(&self, _: &mut Config) -> Result<()> {
         open("https://machlit.github.io/cutler").await
     }

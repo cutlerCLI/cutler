@@ -67,6 +67,10 @@ struct PreferenceJob {
 
 #[async_trait]
 impl Runnable for ApplyCmd {
+    fn needs_sudo(&self) -> bool {
+        false
+    }
+
     async fn run(&self, config: &mut Config) -> Result<()> {
         let dry_run = should_dry_run();
 

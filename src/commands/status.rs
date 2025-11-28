@@ -25,6 +25,10 @@ pub struct StatusCmd {
 
 #[async_trait]
 impl Runnable for StatusCmd {
+    fn needs_sudo(&self) -> bool {
+        false
+    }
+
     async fn run(&self, config: &mut Config) -> Result<()> {
         config.load(false).await?;
         let domains = collect(config).await?;
