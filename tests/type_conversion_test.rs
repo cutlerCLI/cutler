@@ -100,7 +100,7 @@ mod tests {
         ]);
 
         let pref = toml_to_prefvalue(&original).unwrap();
-        let back = prefvalue_to_toml(&pref);
+        let back = prefvalue_to_toml(&pref).unwrap();
 
         assert_eq!(original, back);
     }

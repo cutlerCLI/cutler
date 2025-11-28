@@ -62,10 +62,12 @@ impl RemoteConfigManager {
         fs::create_dir_all(
             config_path
                 .parent()
-                .context("Failed to initialize config path for remote sync.")?,
+                .with_context(|| "Failed to initialize config path for remote sync.".to_string())?,
         )
         .await?;
+
         fs::write(config_path, config).await?;
+
         log_info!("Successfully saved remote config to destination.");
         Ok(())
     }

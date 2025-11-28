@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::collections::{HashMap, HashSet};
+
 use crate::{
     cli::atomic::should_dry_run,
     commands::{BrewInstallCmd, Runnable},
@@ -20,7 +22,7 @@ use crate::{
         sha::get_digest,
     },
 };
-use anyhow::{Result, bail};
+use anyhow::{Context, Result, bail};
 use async_trait::async_trait;
 use clap::Args;
 use defaults_rs::{Domain, PrefValue, Preferences};
@@ -112,15 +114,15 @@ impl Runnable for ApplyCmd {
         };
 
         // turn the old snapshot into a hashmap for a quick lookup
-        let mut existing: std::collections::HashMap<_, _> = snap
+        let mut existing: HashMap<_, _> = snap
             .settings
-            .into_iter()
+            .iter()
             .map(|s| ((s.domain.clone(), s.key.clone()), s))
             .collect();
 
         let mut jobs: Vec<PreferenceJob> = Vec::new();
 
-        let domains_list: Vec<String> = Preferences::list_domains()?
+        let domains_list: HashSet<String> = Preferences::list_domains()?
             .iter()
             .map(std::string::ToString::to_string)
             .collect();
@@ -134,7 +136,9 @@ impl Runnable for ApplyCmd {
                     && eff_dom != "NSGlobalDomain"
                     && !domains_list.contains(&eff_dom)
                 {
-                    bail!("Domain \"{eff_dom}\" not found.")
+                    bail!(
+                        "Domain \"{eff_dom}\" was not found; cannot write to it. Disable this behavior by passing: --no-dom-check"
+                    )
                 }
 
                 let current_pref = core::read_current(&eff_dom, &eff_key).await;
@@ -152,16 +156,23 @@ impl Runnable for ApplyCmd {
                 if changed {
                     existing.remove(&(eff_dom.clone(), eff_key.clone()));
 
-                    // Preserve existing non-null original; otherwise, for brand new keys, capture original from system
+                    // Preserve existing non-null original
+                    // otherwise, for brand new keys, capture original from system
                     let original = if let Some(e) = &old_entry {
                         e.original_value.clone()
+                    } else if let Some(pref) = current_pref {
+                        Some(prefvalue_to_serializable(&pref).with_context(|| {
+                            format!(
+                                "Failed to serialize current preference value for key '{eff_key}'."
+                            )
+                        })?)
                     } else {
-                        current_pref.as_ref().map(prefvalue_to_serializable)
+                        None
                     };
 
                     jobs.push(PreferenceJob {
-                        domain: eff_dom.clone(),
-                        key: eff_key.clone(),
+                        domain: eff_dom,
+                        key: eff_key,
                         new_value: new_pref,
                         original: if is_bad_snap { None } else { original },
                     });
@@ -228,7 +239,7 @@ impl Runnable for ApplyCmd {
 
         let mut new_snap = Snapshot::new().await;
         for ((_, _), old_entry) in existing {
-            new_snap.settings.push(old_entry);
+            new_snap.settings.push(old_entry.clone());
         }
 
         // now append all the newly applied/updated settings
@@ -244,10 +255,10 @@ impl Runnable for ApplyCmd {
         new_snap.digest = digest;
 
         if dry_run {
-            log_dry!("Would save snapshot with system preferences.",);
+            log_dry!("Would save snapshot with system preferences.");
         } else {
             new_snap.save().await?;
-            log_info!("Logged system preferences change in snapshot.",);
+            log_info!("Logged system preferences change in snapshot.");
         }
 
         // run brew

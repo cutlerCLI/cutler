@@ -26,7 +26,7 @@ anstyle = "1.0.13"
 dialoguer = "0.12.0"
 self_update = { version = "0.42.0", features = ["archive-tar", "compression-flate2"] }
 async-trait = "0.1.89"
-defaults-rs = { version = "1.0.0", default-features = false }
+defaults-rs = { version = "1.1.0", default-features = false }
 nix = { version = "0.30.1", features = ["user"] }
 reqwest = { version = "0.12", features = [
     "json",
@@ -49,4 +49,6 @@ members = [".", "xtask"]
 unwrap_used = "deny"
 expect_used = "deny"
 unreachable = "deny"
+
+[lints.rust]
 unused_must_use = "deny"

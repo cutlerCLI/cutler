@@ -28,7 +28,7 @@ impl Runnable for InitCmd {
             &config
                 .path
                 .parent()
-                .context("Failed to initialize new configuration path.")?,
+                .with_context(|| "Failed to initialize new configuration path.".to_string())?,
         )
         .await?;
         fs::write(&config.path, default_cfg).await?;

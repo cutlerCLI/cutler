@@ -21,7 +21,7 @@ pub enum SerializablePrefValue {
 }
 
 /// Turns a `toml::Value` into its `defaults_rs::PrefValue` counterpart.
-pub fn toml_to_prefvalue(val: &Value) -> anyhow::Result<PrefValue> {
+pub fn toml_to_prefvalue(val: &Value) -> Result<PrefValue> {
     Ok(match val {
         Value::String(s) => PrefValue::String(s.clone()),
         Value::Integer(i) => PrefValue::Integer(*i),
@@ -42,26 +42,27 @@ pub fn toml_to_prefvalue(val: &Value) -> anyhow::Result<PrefValue> {
 }
 
 /// Turns a `defaults_rs::PrefValue` into its `toml::Value` counterpart.
-pub fn prefvalue_to_toml(val: &PrefValue) -> Value {
-    match val {
+pub fn prefvalue_to_toml(val: &PrefValue) -> Result<Value> {
+    Ok(match val {
         PrefValue::String(s) => Value::String(s.clone()),
         PrefValue::Integer(i) => Value::Integer(*i),
         PrefValue::Float(f) => Value::Float(*f),
         PrefValue::Boolean(b) => Value::Boolean(*b),
-        PrefValue::Array(arr) => Value::Array(arr.iter().map(prefvalue_to_toml).collect()),
-        PrefValue::Dictionary(dict) => {
-            let map = dict
-                .iter()
-                .map(|(k, v)| (k.clone(), prefvalue_to_toml(v)))
-                .collect();
-            Value::Table(map)
-        }
-        _ => unreachable!(),
-    }
+        PrefValue::Array(arr) => Value::Array(
+            arr.iter()
+                .map(prefvalue_to_toml)
+                .collect::<Result<Vec<_>>>()?,
+        ),
+        PrefValue::Dictionary(dict) => dict
+            .iter()
+            .map(|(k, v)| Ok((k.clone(), prefvalue_to_toml(v)?)))
+            .collect::<Result<toml::map::Map<_, _>>>()
+            .map(Value::Table)?,
+        _ => bail!("Support does not extend to complex types of data."),
+    })
 }
 
 /// Turns a string into its `toml::Value` counterpart.
-#[must_use] 
 pub fn string_to_toml_value(s: &str) -> toml::Value {
     // try bool, int, float, fallback to string
     if s == "true" {
@@ -78,7 +79,6 @@ pub fn string_to_toml_value(s: &str) -> toml::Value {
 }
 
 /// Normalize a `toml::Value` to a string.
-#[must_use] 
 pub fn normalize(value: &Value) -> String {
     match value {
         Value::String(s) => s.clone(),
@@ -137,22 +137,25 @@ pub fn toml_edit_to_toml(val: &EditValue) -> anyhow::Result<Value> {
 }
 
 /// Converts a `PrefValue` to a `SerializablePrefValue`.
-pub fn prefvalue_to_serializable(val: &PrefValue) -> SerializablePrefValue {
-    match val {
+/// Converts a `PrefValue` to a `SerializablePrefValue`.
+pub fn prefvalue_to_serializable(val: &PrefValue) -> Result<SerializablePrefValue> {
+    Ok(match val {
         PrefValue::String(s) => SerializablePrefValue::String(s.clone()),
         PrefValue::Integer(i) => SerializablePrefValue::Integer(*i),
         PrefValue::Float(f) => SerializablePrefValue::Float(*f),
         PrefValue::Boolean(b) => SerializablePrefValue::Boolean(*b),
-        PrefValue::Array(arr) => {
-            SerializablePrefValue::Array(arr.iter().map(prefvalue_to_serializable).collect())
-        }
+        PrefValue::Array(arr) => SerializablePrefValue::Array(
+            arr.iter()
+                .map(prefvalue_to_serializable)
+                .collect::<Result<Vec<_>>>()?,
+        ),
         PrefValue::Dictionary(dict) => SerializablePrefValue::Dictionary(
             dict.iter()
-                .map(|(k, v)| (k.clone(), prefvalue_to_serializable(v)))
-                .collect(),
+                .map(|(k, v)| Ok((k.clone(), prefvalue_to_serializable(v)?)))
+                .collect::<Result<HashMap<_, _>>>()?,
         ),
-        _ => unreachable!(),
-    }
+        _ => bail!("Unsupported PrefValue type"),
+    })
 }
 
 /// Converts a `SerializablePrefValue` to a `PrefValue`.

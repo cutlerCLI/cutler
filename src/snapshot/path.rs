@@ -23,10 +23,12 @@ pub async fn get_snapshot_path() -> Result<PathBuf> {
     let config_parent = get_config_path()
         .await?
         .parent()
-        .context("Could not determine config parent directory")?
+        .with_context(|| "Could not determine config parent directory".to_string())?
         .to_path_buf();
 
-    let old_home = dirs::home_dir().context("Could not determine home directory")?;
+    let old_home =
+        dirs::home_dir().with_context(|| "Could not determine home directory".to_string())?;
+
     let old_path = old_home.join(".cutler_snapshot");
     let new_path = config_parent.join("snapshot.json");
 
