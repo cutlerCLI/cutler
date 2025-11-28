@@ -4,27 +4,27 @@
 mod tests {
     use cutler::config::Config;
     use cutler::domains::{collect, effective};
-    use std::collections::HashMap;
     use std::io::Write;
     use tempfile::NamedTempFile;
-    use toml::{Value, value::Table};
 
-    fn config_with_set(set: HashMap<String, HashMap<String, Value>>) -> Config {
-        let mut config = Config::new(Default::default());
-        config.set = Some(set);
-        config
+    /// Helper to create a Config pointing to a temp file with given TOML content.
+    fn config_from_toml(content: &str) -> (NamedTempFile, Config) {
+        let mut temp_file = NamedTempFile::new().unwrap();
+        temp_file.write_all(content.as_bytes()).unwrap();
+        temp_file.flush().unwrap();
+        let config = Config::new(temp_file.path().to_path_buf());
+        (temp_file, config)
     }
 
     #[tokio::test]
     async fn test_collect_domains_simple() {
         // [set.domain]
         //   key1 = "value1"
-        let mut domain_map = HashMap::new();
-        domain_map.insert("key1".into(), Value::String("value1".into()));
-        let mut set_map = HashMap::new();
-        set_map.insert("domain".into(), domain_map);
-
-        let config = config_with_set(set_map);
+        let config_content = r#"
+[set.domain]
+key1 = "value1"
+"#;
+        let (_temp_file, config) = config_from_toml(config_content);
 
         let domains = collect(&config).await.unwrap();
         assert_eq!(domains.len(), 1);
@@ -38,38 +38,28 @@ mod tests {
         //   [set.root.nested]
         //   inner_key = "inner_value"
         //
-        // This test now tests that we DON'T flatten nested Value::Tables
-        // when they're created programmatically (no file path).
-        // Instead, they should be treated as inline table values.
-        let mut inner: HashMap<String, Value> = HashMap::new();
-        inner.insert("inner_key".into(), Value::String("inner_value".into()));
-        let mut nested = HashMap::new();
-        nested.insert(
-            "nested".into(),
-            Value::Table({
-                let mut tbl = Table::new();
-                tbl.insert("inner_key".into(), Value::String("inner_value".into()));
-                tbl
-            }),
-        );
-        let mut set_map = HashMap::new();
-        set_map.insert("root".into(), nested);
+        // This tests that nested table headers are treated as separate domains.
+        let config_content = r#"
+[set.root]
+top_key = "top_value"
 
-        let config = config_with_set(set_map);
+[set.root.nested]
+inner_key = "inner_value"
+"#;
+        let (_temp_file, config) = config_from_toml(config_content);
 
         let domains = collect(&config).await.unwrap();
-        // With the new behavior, "nested" is treated as an inline table value
-        // since we don't have a file path to parse with toml_edit
-        assert_eq!(domains.len(), 1);
-        let got = domains.get("root").unwrap();
+        // With the new behavior, "root.nested" becomes a separate domain
+        assert_eq!(domains.len(), 2);
 
-        // "nested" should be a table value, not a flattened domain
-        assert!(got.contains_key("nested"));
-        let nested_val = got.get("nested").unwrap();
-        assert!(nested_val.is_table());
-        let nested_table = nested_val.as_table().unwrap();
+        let root = domains.get("root").unwrap();
+        assert!(root.contains_key("top_key"));
+        assert_eq!(root.get("top_key").unwrap().as_str().unwrap(), "top_value");
+
+        let nested = domains.get("root.nested").unwrap();
+        assert!(nested.contains_key("inner_key"));
         assert_eq!(
-            nested_table.get("inner_key").unwrap().as_str().unwrap(),
+            nested.get("inner_key").unwrap().as_str().unwrap(),
             "inner_value"
         );
     }
@@ -96,16 +86,9 @@ autohide = true
 [set.NSGlobalDomain.com.apple.keyboard]
 fnState = false
 "#;
+        let (_temp_file, config) = config_from_toml(config_content);
 
-        let mut temp_file = NamedTempFile::new().unwrap();
-        temp_file.write_all(config_content.as_bytes()).unwrap();
-        temp_file.flush().unwrap();
-
-        let parsed: Config = toml::from_str(config_content).unwrap();
-        let mut config_with_path = parsed;
-        config_with_path.path = temp_file.path().to_path_buf();
-
-        let domains = collect(&config_with_path).await.unwrap();
+        let domains = collect(&config).await.unwrap();
         assert_eq!(domains.len(), 2);
         let dock = domains.get("dock").unwrap();
         assert_eq!(dock.get("tilesize").unwrap().as_str().unwrap(), "50");

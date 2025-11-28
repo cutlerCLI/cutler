@@ -7,6 +7,15 @@ mod tests {
     use std::io::Write;
     use tempfile::NamedTempFile;
 
+    /// Helper to create a Config pointing to a temp file with given TOML content.
+    fn config_from_toml(content: &str) -> (NamedTempFile, Config) {
+        let mut temp_file = NamedTempFile::new().unwrap();
+        temp_file.write_all(content.as_bytes()).unwrap();
+        temp_file.flush().unwrap();
+        let config = Config::new(temp_file.path().to_path_buf());
+        (temp_file, config)
+    }
+
     #[tokio::test]
     async fn test_inline_table_as_dictionary_value() {
         // Test that inline tables are treated as dictionary values, not domains
@@ -15,16 +24,9 @@ mod tests {
 FXInfoPanesExpanded = { Preview = false, MetaData = true }
 ShowPathbar = true
 "#;
+        let (_temp_file, config) = config_from_toml(config_content);
 
-        let mut temp_file = NamedTempFile::new().unwrap();
-        temp_file.write_all(config_content.as_bytes()).unwrap();
-        temp_file.flush().unwrap();
-
-        let config: Config = toml::from_str(config_content).unwrap();
-        let mut config_with_path = config;
-        config_with_path.path = temp_file.path().to_path_buf();
-
-        let domains = collect(&config_with_path).await.unwrap();
+        let domains = collect(&config).await.unwrap();
 
         // Should only have "finder" domain, not "finder.FXInfoPanesExpanded"
         assert_eq!(domains.len(), 1);
@@ -56,16 +58,9 @@ tilesize = 50
 [set.NSGlobalDomain.com.apple.keyboard]
 fnState = false
 "#;
+        let (_temp_file, config) = config_from_toml(config_content);
 
-        let mut temp_file = NamedTempFile::new().unwrap();
-        temp_file.write_all(config_content.as_bytes()).unwrap();
-        temp_file.flush().unwrap();
-
-        let config: Config = toml::from_str(config_content).unwrap();
-        let mut config_with_path = config;
-        config_with_path.path = temp_file.path().to_path_buf();
-
-        let domains = collect(&config_with_path).await.unwrap();
+        let domains = collect(&config).await.unwrap();
 
         // Should have "dock" and "NSGlobalDomain.com.apple.keyboard"
         assert_eq!(domains.len(), 2);
@@ -95,16 +90,9 @@ exampleArrayOfStrings = ["one", "two", "three"]
 [set.finder]
 FXInfoPanesExpanded = { Preview = false, MetaData = true, Comments = false }
 "#;
+        let (_temp_file, config) = config_from_toml(config_content);
 
-        let mut temp_file = NamedTempFile::new().unwrap();
-        temp_file.write_all(config_content.as_bytes()).unwrap();
-        temp_file.flush().unwrap();
-
-        let config: Config = toml::from_str(config_content).unwrap();
-        let mut config_with_path = config;
-        config_with_path.path = temp_file.path().to_path_buf();
-
-        let domains = collect(&config_with_path).await.unwrap();
+        let domains = collect(&config).await.unwrap();
 
         assert_eq!(domains.len(), 3);
 

@@ -16,16 +16,11 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_snapshot_path() {
-        // Test that get_snapshot_path returns .cutler_snapshot in the home directory
+        // Test that get_snapshot_path returns snapshot.json in the config parent directory
         let snapshot_path = get_snapshot_path().await.unwrap();
         assert_eq!(
             snapshot_path,
-            get_config_path()
-                .await
-                .unwrap()
-                .parent()
-                .unwrap()
-                .join("snapshot.json")
+            get_config_path().parent().unwrap().join("snapshot.json")
         );
     }
 
